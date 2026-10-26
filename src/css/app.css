@@ -436,3 +436,19 @@ details.fold summary .chev{margin-left:auto}
 .sk-stage{overflow:hidden;position:relative;touch-action:none}
 .sk-stage canvas{transform-origin:center;will-change:transform}
 @media (pointer:coarse){ #skColorPick{width:40px;height:40px} #skSizes button{min-height:36px} }
+
+/* ---------- 필기 칸 ---------- */
+.sk-size{display:flex;align-items:center;gap:6px}
+.sk-sel{display:flex;align-items:center;gap:6px;padding:2px 8px;border:1px dashed var(--accent);border-radius:var(--radius-s)}
+#skSizes button.on,#skEraseOpts button.on{background:var(--panel-2)}
+#skCursor{position:absolute;border:1.5px solid #2f3d6b;border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.8) inset;z-index:2}
+.sketch.dock{inset:0 0 0 auto;width:min(48vw,760px);min-width:380px;box-shadow:var(--shadow-l, -8px 0 30px rgba(0,0,0,.18));border-left:1px solid var(--line);background:var(--bg)}
+.sketch.dock .sk-bot textarea{height:52px;min-height:44px}
+.sketch.dock .sk-bot{flex-direction:column}
+.sketch.dock .sk-bot .row{flex-direction:row!important}
+#skDock{white-space:nowrap}
+.sketch.dock #skDock{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (max-width:1100px) and (orientation:portrait){ .sketch.dock{inset:auto 0 0 0;width:auto;min-width:0;height:56vh;border-left:0;border-top:1px solid var(--line)} }
+.sk-ctx{display:flex;align-items:center;gap:10px;min-height:44px;height:44px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.sk-ctx::-webkit-scrollbar{display:none}
+.sk-ctx>*{flex:none}

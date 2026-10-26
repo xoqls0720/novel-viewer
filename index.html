@@ -456,6 +456,22 @@ details.fold summary .chev{margin-left:auto}
 .sk-stage{overflow:hidden;position:relative;touch-action:none}
 .sk-stage canvas{transform-origin:center;will-change:transform}
 @media (pointer:coarse){ #skColorPick{width:40px;height:40px} #skSizes button{min-height:36px} }
+
+/* ---------- 필기 칸 ---------- */
+.sk-size{display:flex;align-items:center;gap:6px}
+.sk-sel{display:flex;align-items:center;gap:6px;padding:2px 8px;border:1px dashed var(--accent);border-radius:var(--radius-s)}
+#skSizes button.on,#skEraseOpts button.on{background:var(--panel-2)}
+#skCursor{position:absolute;border:1.5px solid #2f3d6b;border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.8) inset;z-index:2}
+.sketch.dock{inset:0 0 0 auto;width:min(48vw,760px);min-width:380px;box-shadow:var(--shadow-l, -8px 0 30px rgba(0,0,0,.18));border-left:1px solid var(--line);background:var(--bg)}
+.sketch.dock .sk-bot textarea{height:52px;min-height:44px}
+.sketch.dock .sk-bot{flex-direction:column}
+.sketch.dock .sk-bot .row{flex-direction:row!important}
+#skDock{white-space:nowrap}
+.sketch.dock #skDock{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (max-width:1100px) and (orientation:portrait){ .sketch.dock{inset:auto 0 0 0;width:auto;min-width:0;height:56vh;border-left:0;border-top:1px solid var(--line)} }
+.sk-ctx{display:flex;align-items:center;gap:10px;min-height:44px;height:44px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.sk-ctx::-webkit-scrollbar{display:none}
+.sk-ctx>*{flex:none}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -1074,19 +1090,25 @@ details.fold summary .chev{margin-left:auto}
 </div>
 
 <div class="sketch" id="sketch">
-  <div class="sk-head"><button class="icon" id="skX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button><b>장면 노트</b><button class="primary" id="skSave2">저장</button></div>
+  <div class="sk-head"><button class="icon" id="skX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button><b>필기</b>
+    <button id="skDock" title="읽는 화면 옆에 두기 / 크게 보기">옆에 두기</button><button id="skNewPage" title="저장하고 새 쪽 열기">새 쪽</button><button class="primary" id="skSave2">저장</button></div>
   <div class="sk-top">
-    <div class="seg" id="skTools"><button data-tool="pen" class="on">펜</button><button data-tool="hl">형광펜</button><button data-tool="erase">지우개</button></div>
-    <div class="sk-colors" id="skColors"><button data-c="#e5484d" class="on" style="background:#e5484d"></button><button data-c="#2f3d6b" style="background:#2f3d6b"></button><button data-c="#f5c400" style="background:#f5c400"></button><button data-c="#2f9e5b" style="background:#2f9e5b"></button><button data-c="#ffffff" style="background:#fff"></button><button data-c="#111111" style="background:#111"></button></div>
+    <div class="seg" id="skTools"><button data-tool="pen" class="on" title="만년필: 힘·빠르기에 따라 굵기가 바뀌어요">만년필</button><button data-tool="ball" title="볼펜: 굵기가 일정해요">볼펜</button><button data-tool="pencil" title="연필">연필</button><button data-tool="hl" title="형광펜">형광펜</button><button data-tool="erase" title="지우개">지우개</button><button data-tool="lasso" title="올가미: 둘러서 고르고 옮기기">올가미</button></div>
+    <div class="sk-colors" id="skColors"><button data-c="#111111" style="background:#111"></button><button data-c="#2f3d6b" style="background:#2f3d6b"></button><button data-c="#e5484d" class="on" style="background:#e5484d"></button><button data-c="#f5c400" style="background:#f5c400"></button><button data-c="#2f9e5b" style="background:#2f9e5b"></button><button data-c="#ffffff" style="background:#fff"></button></div>
     <div class="sk-colors" id="skRecent"></div><input type="color" id="skColorPick" value="#e5484d" title="색 고르기">
-    <div class="seg" id="skSizes"><button data-z="3" title="가늘게">가늘게</button><button data-z="6" title="보통">보통</button><button data-z="16" title="굵게">굵게</button></div>
-    <input type="range" id="skSize" min="2" max="40" value="6" title="굵기"><output id="skSizeOut">6</output>
-    <button id="skUndo">되돌리기</button><button id="skRedo">다시</button><button id="skClear" class="danger">모두 지우기</button>
+    <span class="grow"></span>
+    <button id="skUndo" title="되돌리기 (두 손가락 톡)">되돌리기</button><button id="skRedo" title="다시 (세 손가락 톡)">다시</button><button id="skClear" class="danger">모두 지우기</button>
     <button id="skFinger" title="손가락으로 그리기">손가락</button><button id="skFit" hidden>맞춤</button>
     <select id="skSend"><option value="">보내기…</option><option value="gn">굿노트로</option><option value="pc">프로크리에이트로</option><option value="file">사진·파일로 (PNG)</option></select>
     <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*,.pdf,.psd,.procreate" hidden>
   </div>
-  <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas></div>
+  <div class="sk-ctx">
+    <span class="hint" id="skLassoHint" hidden>둘러서 고른 뒤, 안쪽을 끌면 옮겨요</span>
+    <div class="sk-size" id="skSizeBox"><span id="skSizeLab" class="hint">펜 굵기</span><div class="seg" id="skSizes"><button data-z="3">가늘게</button><button data-z="6">보통</button><button data-z="16">굵게</button></div><input type="range" id="skSize" min="1" max="40" value="6"><output id="skSizeOut">6</output></div>
+    <div class="seg" id="skEraseOpts" hidden><button data-em="part" title="닿은 곳만 지우기">부분</button><button data-em="stroke" title="닿은 획을 통째로 지우기">획 전체</button></div>
+    <div class="sk-sel" id="skSelBar" hidden><span id="skSelN" class="hint"></span><button id="skSelColor">지금 색으로</button><button id="skSelDup">복제</button><button id="skSelDel" class="danger">지우기</button></div>
+  </div>
+  <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas><div id="skCursor" hidden></div></div>
   <div class="sk-bot">
     <textarea id="skNote" placeholder="이 장면에서 인상 깊은 점, 연출 메모 (예: 대사 없이 손만 클로즈업 → 감정 전환)"></textarea>
     <div class="row tight" style="flex-direction:column;align-items:stretch">
@@ -2822,7 +2844,7 @@ $('#noteMood').onclick = moodboard;
 $('#noteClaude').onclick = copyForClaude;
 
 /* ================= 장면 노트 (담고 필기하기) ================= */
-const sk = {img: null, strokes: [], tool: 'pen', color: '#e5484d', size: 6, cur: null, meta: null, editId: null};
+const sk = {img: null, strokes: [], ops: [], redo: [], tool: 'pen', color: '#e5484d', cur: null, meta: null, editId: null, sel: null, lasso: null};
 async function captureScene(){
   if (!cur) return null;
   const r = $('#reader').getBoundingClientRect();
@@ -2862,12 +2884,14 @@ async function captureScene(){
   return null;
 }
 const skLayer = document.createElement('canvas'), skTemp = document.createElement('canvas');
+// 그리는 판은 지연을 줄이는 방식으로 한 번만 연다
+const skCtx = () => $('#skCanvas').getContext('2d', {desynchronized: true});
 function strokePath(g, pts){
   g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
   for (let i = 1; i < pts.length; i++){ const [x0,y0] = pts[i-1], [x1,y1] = pts[i]; g.quadraticCurveTo(x0, y0, (x0+x1)/2, (y0+y1)/2); }
   if (pts.length === 1) g.lineTo(pts[0][0] + 0.1, pts[0][1]); else g.lineTo(pts[pts.length-1][0], pts[pts.length-1][1]);
 }
-// 애플 펜슬의 힘(필압)에 따라 굵기가 달라지게: 점마다 힘 값(p)을 갖고, 마디마다 굵기를 바꿔 이어 그린다
+// 필압(펜슬의 힘, 손가락·마우스는 빠르기로 흉내)에 따라 마디마다 굵기를 바꿔 이어 그린다
 function paintPressure(g, st){
   const P = st.pts, n = P.length, mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   for (let i = 1; i < n; i++){
@@ -2876,13 +2900,20 @@ function paintPressure(g, st){
     g.beginPath(); g.moveTo(from[0], from[1]); g.quadraticCurveTo(a[0], a[1], to[0], to[1]); g.stroke();
   }
 }
+const TOOL_ALPHA = {hl: 0.38, pencil: 0.72};
 function paintStroke(g, st){
   if (!st.pts.length) return;
+  const a = TOOL_ALPHA[st.tool];
+  if (a && g !== skTemp.getContext('2d')){   // 반투명 도구는 한 획을 따로 그린 뒤 한 번에 얹어야 겹친 곳이 진해지지 않는다
+    const t = skTemp.getContext('2d'); t.clearRect(0, 0, skTemp.width, skTemp.height); paintStroke(t, {...st, _solid: true});
+    g.save(); g.globalAlpha = a; g.drawImage(skTemp, 0, 0); g.restore(); return;
+  }
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = st.size;
-  if (st.pr && st.tool === 'pen' && st.pts.length > 1){ g.strokeStyle = st.color; paintPressure(g, st); g.restore(); return; }
-  if (st.tool === 'erase'){ g.globalCompositeOperation = 'destination-out'; g.strokeStyle = '#000'; }
-  else { g.strokeStyle = st.color; g.globalAlpha = st.tool === 'hl' ? 0.38 : 1; }
-  strokePath(g, st.pts); g.stroke(); g.restore();
+  if (st.tool === 'erase'){ g.globalCompositeOperation = 'destination-out'; g.strokeStyle = '#000'; strokePath(g, st.pts); g.stroke(); g.restore(); return; }
+  g.strokeStyle = st.color;
+  if (st.pr && st.pts.length > 1 && (st.tool === 'pen' || st.tool === 'pencil')) paintPressure(g, st);
+  else { strokePath(g, st.pts); g.stroke(); }
+  g.restore();
 }
 function skRebuildLayer(){
   const g = skLayer.getContext('2d'); g.clearRect(0, 0, skLayer.width, skLayer.height);
@@ -2892,26 +2923,41 @@ let skRaf = 0;
 function skRedraw(){
   cancelAnimationFrame(skRaf);
   skRaf = requestAnimationFrame(() => {
-    const cv = $('#skCanvas'); const g = cv.getContext('2d');
+    const cv = $('#skCanvas'); const g = skCtx();
     g.clearRect(0,0,cv.width,cv.height); g.drawImage(sk.img, 0, 0);
     if (sk.cur && sk.cur.tool === 'erase'){
-      // 지우는 중: 층 복사본에서 지금 획만큼 빼고 그린다
       const t = skTemp.getContext('2d'); t.clearRect(0,0,skTemp.width,skTemp.height); t.drawImage(skLayer, 0, 0); paintStroke(t, sk.cur); g.drawImage(skTemp, 0, 0);
     } else {
       g.drawImage(skLayer, 0, 0);
-      if (sk.cur){ const t = skTemp.getContext('2d'); t.clearRect(0,0,skTemp.width,skTemp.height); paintStroke(t, {...sk.cur, tool: 'pen'}); g.save(); if (sk.cur.tool === 'hl'){ g.globalAlpha = 0.38; g.globalCompositeOperation = 'multiply'; } g.drawImage(skTemp, 0, 0); g.restore(); }
+      if (sk.cur && sk.cur.tool !== 'lasso') paintStroke(g, sk.cur);
     }
+    // 올가미: 그리는 선, 고른 획의 테두리
+    if (sk.lasso?.length > 1){ g.save(); g.setLineDash([10, 8]); g.lineWidth = 2 * skK(); g.strokeStyle = '#2f3d6b'; g.beginPath(); sk.lasso.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); g.restore(); }
+    if (sk.sel?.length){ const b = selBox(); g.save(); g.setLineDash([12, 8]); g.lineWidth = 2.5 * skK(); g.strokeStyle = '#a8834a'; g.fillStyle = 'rgba(168,131,74,.06)'; g.fillRect(b[0], b[1], b[2] - b[0], b[3] - b[1]); g.strokeRect(b[0], b[1], b[2] - b[0], b[3] - b[1]); g.restore(); }
   });
 }
 async function openSketch(src, meta, note = '', editId = null, strokes = []){
-  sk.img = src; sk.strokes = strokes.map(x => ({...x, pts: x.pts.map(p => [...p])})); sk.meta = meta; sk.editId = editId; sk.cur = null; sk.redo = [];
-  sk.n0 = sk.strokes.length; sk.note0 = note; sk.moved = false;
+  sk.img = src; sk.strokes = strokes.map(x => ({...x, pts: x.pts.map(p => [...p])})); sk.meta = meta; sk.editId = editId; sk.cur = null; sk.ops = []; sk.redo = []; sk.sel = null; sk.lasso = null;
+  sk.note0 = note; sk.moved = false;
   const cv = $('#skCanvas'); for (const c of [cv, skLayer, skTemp]){ c.width = src.width; c.height = src.height; }
   skView(1, 0, 0); skRebuildLayer(); skRedraw();
-  $('#skNote').value = note; $('#sketch').classList.add('open'); skFingerBtn();
+  $('#skNote').value = note; $('#sketch').classList.add('open'); $('#sketch').classList.toggle('dock', store.get('lib.skDock', false)); skFingerBtn(); skToolUI(); skSelUI();
 }
-const skDirty = () => $('#sketch').classList.contains('open') && (sk.strokes.length !== sk.n0 || sk.moved || $('#skNote').value !== sk.note0);
-function skClose(force){ if (!force && skDirty() && !confirm('저장하지 않은 필기가 있어요. 저장하지 않고 닫을까요?')) return false; $('#sketch').classList.remove('open'); return true; }
+const skDirty = () => $('#sketch').classList.contains('open') && (sk.ops.length > 0 || sk.moved || $('#skNote').value !== sk.note0);
+function skClose(force){ if (!force && skDirty() && !confirm('저장하지 않은 필기가 있어요. 저장하지 않고 닫을까요?')) return false; $('#sketch').classList.remove('open'); $('#skCursor').hidden = true; return true; }
+
+/* ---------- 되돌리기: 한 번에 한 동작(획 더하기·지우기·옮기기) ---------- */
+function skDo(op){ sk.ops.push(op); sk.redo = []; }
+function skApply(op, back){
+  if (op.t === 'add'){ if (back) sk.strokes.splice(sk.strokes.indexOf(op.st), 1); else sk.strokes.push(op.st); }
+  else if (op.t === 'del'){ if (back) [...op.list].sort((a, b) => a[1] - b[1]).forEach(([st, i]) => sk.strokes.splice(i, 0, st)); else for (const [st] of op.list){ const i = sk.strokes.indexOf(st); if (i >= 0) sk.strokes.splice(i, 1); } }
+  else if (op.t === 'move'){ const d = back ? -1 : 1; for (const st of op.sts){ for (const p of st.pts){ p[0] += op.dx * d; p[1] += op.dy * d; } st.bb = null; } }
+  sk.sel = null; skSelUI(); skRebuildLayer(); skRedraw();
+}
+$('#skUndo').onclick = () => { const op = sk.ops.pop(); if (op){ skApply(op, true); sk.redo.push(op); } };
+$('#skRedo').onclick = () => { const op = sk.redo.pop(); if (op){ skApply(op, false); sk.ops.push(op); } };
+$('#skClear').onclick = () => { if (!sk.strokes.length || !confirm('필기를 모두 지울까요? (되돌리기로 살릴 수 있어요)')) return; const op = {t: 'del', list: sk.strokes.map((st, i) => [st, i])}; skDo(op); skApply(op, false); };
+$('#skCancel').onclick = () => skClose();
 
 /* ---------- 보기(확대·이동) ---------- */
 // 캔버스 가운데를 기준으로 옮기고(t) 키운다(s). 그리는 좌표는 화면 위치에서 다시 계산하니 확대해도 어긋나지 않는다.
@@ -2920,22 +2966,89 @@ function skView(s, x, y){ sk.v = {s: Math.min(8, Math.max(0.4, s)), x, y}; const
 function skZoomAt(px, py, s2){ const r = $('#skStage').getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2; const k = Math.min(8, Math.max(0.4, s2)) / sk.v.s; skView(sk.v.s * k, (px - cx) - k * ((px - cx) - sk.v.x), (py - cy) - k * ((py - cy) - sk.v.y)); }
 $('#skFit').onclick = () => skView(1, 0, 0);
 $('#skStage').addEventListener('wheel', e => { if (!$('#sketch').classList.contains('open')) return; e.preventDefault(); if (e.ctrlKey || e.metaKey) skZoomAt(e.clientX, e.clientY, sk.v.s * Math.exp(-e.deltaY * 0.01)); else skView(sk.v.s, sk.v.x - e.deltaX, sk.v.y - e.deltaY); }, {passive: false});
+// 화면 1px이 그림에서 몇 px인지(확대하지 않은 상태 기준: 확대해도 펜 굵기는 종이 위에서 같다)
+const skK = () => { const cv = $('#skCanvas'); const w = cv.getBoundingClientRect().width / sk.v.s; return w ? cv.width / w : 1; };
+
+/* ---------- 도구 ---------- */
+// 도구마다 굵기를 따로 기억한다. 지우개는 크기 범위도 따로(크게 지울 수 있게)
+const SK_SIZE = {pen: 6, ball: 4, pencil: 5, hl: 18, erase: 28};
+const SK_RANGE = {erase: [6, 160], hl: [6, 60]};
+const SK_PRESET = {erase: [[12, '작게'], [28, '보통'], [70, '크게']], hl: [[10, '가늘게'], [18, '보통'], [32, '굵게']]};
+sk.sizes = {...SK_SIZE, ...store.get('lib.skSizes', {})}; sk.eraseMode = store.get('lib.skErase', 'part');
+const skSize = () => sk.sizes[sk.tool] ?? 6;
+function skToolUI(){
+  $$('#skTools button').forEach(x => x.classList.toggle('on', x.dataset.tool === sk.tool));
+  const t = sk.tool, [lo, hi] = SK_RANGE[t] || [1, 40]; const r = $('#skSize'); r.min = lo; r.max = hi; r.value = skSize(); $('#skSizeOut').textContent = skSize();
+  $('#skSizeLab').textContent = t === 'erase' ? '지우개 크기' : t === 'lasso' ? '' : t === 'hl' ? '형광펜 굵기' : '펜 굵기';
+  const pre = SK_PRESET[t] || [[3, '가늘게'], [6, '보통'], [16, '굵게']];
+  $$('#skSizes button').forEach((b, i) => { b.dataset.z = pre[i][0]; b.textContent = pre[i][1]; b.classList.toggle('on', +b.dataset.z === skSize()); });
+  $('#skSizeBox').hidden = t === 'lasso'; $('#skLassoHint').hidden = t !== 'lasso' || !!sk.sel?.length; $('#skEraseOpts').hidden = t !== 'erase';
+  $$('#skEraseOpts button').forEach(b => b.classList.toggle('on', b.dataset.em === sk.eraseMode));
+  $('#skCanvas').style.cursor = t === 'erase' ? 'none' : t === 'lasso' ? 'default' : 'crosshair';
+}
+const skPickTool = t => { sk.tool = t; if (t !== 'lasso'){ sk.sel = null; sk.lasso = null; skSelUI(); skRedraw(); } skToolUI(); };
+$$('#skTools button').forEach(b => b.onclick = () => skPickTool(b.dataset.tool));
+$$('#skEraseOpts button').forEach(b => b.onclick = () => { sk.eraseMode = b.dataset.em; store.set('lib.skErase', sk.eraseMode); skToolUI(); toast(sk.eraseMode === 'stroke' ? '획 지우개: 닿은 획을 통째로 지워요' : '부분 지우개: 닿은 곳만 지워요'); });
+$('#skSize').oninput = () => { sk.sizes[sk.tool] = +$('#skSize').value; store.set('lib.skSizes', sk.sizes); $('#skSizeOut').textContent = skSize(); $$('#skSizes button').forEach(b => b.classList.toggle('on', +b.dataset.z === skSize())); };
+$$('#skSizes button').forEach(b => b.onclick = () => { $('#skSize').value = b.dataset.z; $('#skSize').oninput(); });
+function skSetColor(c, remember){
+  sk.color = c; $$('#skColors button').forEach(x => x.classList.toggle('on', x.dataset.c.toLowerCase() === c.toLowerCase())); $('#skColorPick').value = c;
+  if (sk.tool === 'erase' || sk.tool === 'lasso') skPickTool('pen');
+  if (remember && !$$('#skColors button').some(x => x.dataset.c.toLowerCase() === c.toLowerCase())){ const rc = [c, ...store.get('lib.skRecent', []).filter(x => x !== c)].slice(0, 6); store.set('lib.skRecent', rc); skRecent(); }
+}
+function skRecent(){ const box = $('#skRecent'); box.innerHTML = ''; for (const c of store.get('lib.skRecent', [])){ const b = document.createElement('button'); b.dataset.c = c; b.style.background = c; b.title = c; b.onclick = () => skSetColor(c); box.append(b); } }
+$$('#skColors button').forEach(b => b.onclick = () => skSetColor(b.dataset.c));
+$('#skColorPick').oninput = () => skSetColor($('#skColorPick').value);
+$('#skColorPick').onchange = () => skSetColor($('#skColorPick').value, true);
+skRecent();
 
 /* ---------- 펜·손가락 ---------- */
-// 펜슬이 한 번이라도 보인 기기는 손가락으로 움직이고(확대·이동), 펜슬로만 그린다. 펜슬이 없는 기기는 손가락으로 그린다. 위 단추로 바꿀 수 있다.
+// 펜슬이 한 번이라도 보인 기기는 손가락으로 움직이고(확대·이동), 펜슬로만 그린다. 펜슬이 없는 기기는 손가락으로 그린다.
 const skFingerDraws = () => { const v = store.get('lib.skFinger', null); return v === null ? !store.get('lib.penSeen', false) : v; };
 function skFingerBtn(){ const b = $('#skFinger'); b.classList.toggle('on', skFingerDraws()); b.title = skFingerDraws() ? '손가락으로 그려요 (누르면 손가락은 확대·이동만)' : '펜슬로만 그려요. 손가락은 확대·이동 (누르면 손가락으로도 그리기)'; }
-$('#skFinger').onclick = () => { store.set('lib.skFinger', !skFingerDraws()); skFingerBtn(); toast(skFingerDraws() ? '손가락으로도 그려요' : '펜슬로만 그려요. 손가락 두 개로 확대·이동, 두 손가락 톡 치면 되돌리기'); };
+$('#skFinger').onclick = () => { store.set('lib.skFinger', !skFingerDraws()); skFingerBtn(); toast(skFingerDraws() ? '손가락으로도 그려요' : '펜슬로만 그려요. 손가락 두 개로 확대·이동, 두 손가락 톡 되돌리기, 세 손가락 톡 다시'); };
 const skTouch = new Map(); let skG = null, skSess = null;
 function canvasPt(e){ const cv = $('#skCanvas'); const b = cv.getBoundingClientRect(); const p = e.pointerType === 'pen' ? (e.pressure > 0 ? e.pressure : 0.5) : 0.5; return [(e.clientX - b.left) * cv.width / b.width, (e.clientY - b.top) * cv.height / b.height, p]; }
 const skGesture = () => { const t = [...skTouch.values()]; return {mx: t.reduce((q, p) => q + p.x, 0) / t.length, my: t.reduce((q, p) => q + p.y, 0) / t.length, d: t.length > 1 ? Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y) : 0}; };
-// 손가락 수가 바뀔 때마다 그때의 보기를 기준으로 다시 잡는다. 두 손가락 톡(짧게·거의 안 움직임)은 되돌리기
 function skGestureStart(){ if (!skSess) skSess = {t0: Date.now(), max: 0, move: 0}; skSess.max = Math.max(skSess.max, skTouch.size); skG = {...skGesture(), v: {...sk.v}}; }
 function skGestureMove(){
   const g = skGesture(), r = $('#skStage').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, v0 = skG.v;
   const s = skTouch.size > 1 && skG.d > 0 ? Math.min(8, Math.max(0.4, v0.s * g.d / skG.d)) : v0.s, k = s / v0.s;
   skView(s, (skG.mx - cx) - k * ((skG.mx - cx) - v0.x) + (g.mx - skG.mx), (skG.my - cy) - k * ((skG.my - cy) - v0.y) + (g.my - skG.my));
 }
+
+/* ---------- 획 지우개·올가미에 쓰는 계산 ---------- */
+function stBox(st){ if (st.bb) return st.bb; let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity; for (const [x, y] of st.pts){ if (x < a) a = x; if (y < b) b = y; if (x > c) c = x; if (y > d) d = y; } const h = st.size / 2; return st.bb = [a - h, b - h, c + h, d + h]; }
+const segDist = (px, py, ax, ay, bx, by) => { const dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy; const t = l ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l)) : 0; return Math.hypot(px - ax - t * dx, py - ay - t * dy); };
+// 지우개가 지나간 길(a→b, 반지름 r)에 닿은 획을 통째로 지운다
+function skEraseStrokes(a, b, r){
+  const hit = [];
+  sk.strokes.forEach((st, i) => {
+    if (st.tool === 'erase' || st === sk.cur) return; const bb = stBox(st);
+    if (Math.max(a[0], b[0]) + r < bb[0] || Math.min(a[0], b[0]) - r > bb[2] || Math.max(a[1], b[1]) + r < bb[1] || Math.min(a[1], b[1]) - r > bb[3]) return;
+    const rr = r + st.size / 2; if (st.pts.some(([x, y]) => segDist(x, y, a[0], a[1], b[0], b[1]) <= rr)) hit.push([st, i]);
+  });
+  if (!hit.length) return;
+  for (const [st] of hit) sk.strokes.splice(sk.strokes.indexOf(st), 1);
+  sk.cur.erased.push(...hit); skRebuildLayer(); skRedraw();
+}
+const inPoly = (x, y, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++){ const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+function selBox(){ let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity; for (const st of sk.sel){ const bb = stBox(st); a = Math.min(a, bb[0]); b = Math.min(b, bb[1]); c = Math.max(c, bb[2]); d = Math.max(d, bb[3]); } const m = 8 * skK(); return [a - m, b - m, c + m, d + m]; }
+function skSelUI(){ const on = !!sk.sel?.length; $('#skSelBar').hidden = !on; $('#skLassoHint').hidden = sk.tool !== 'lasso' || on; if (on) $('#skSelN').textContent = `${sk.sel.length}개 고름`; }
+$('#skSelDel').onclick = () => { if (!sk.sel?.length) return; const op = {t: 'del', list: sk.sel.map(st => [st, sk.strokes.indexOf(st)])}; skDo(op); skApply(op, false); };
+$('#skSelColor').onclick = () => { if (!sk.sel?.length) return; for (const st of sk.sel) if (st.tool !== 'erase') st.color = sk.color; sk.moved = true; skRebuildLayer(); skRedraw(); toast('고른 획을 지금 색으로 바꿨어요'); };
+$('#skSelDup').onclick = () => { if (!sk.sel?.length) return; const d = 24 * skK(); const copies = sk.sel.map(st => ({...st, bb: null, pts: st.pts.map(([x, y, p]) => [x + d, y + d, p])})); for (const st of copies){ sk.strokes.push(st); skDo({t: 'add', st}); } sk.sel = copies; skRebuildLayer(); skRedraw(); skSelUI(); };
+
+/* ---------- 그리기 ---------- */
+// 지우개 모양(동그라미)을 펜슬·마우스가 있는 자리에 보여 준다
+function skCursor(e){
+  const c = $('#skCursor'); if (sk.tool !== 'erase' || e.pointerType === 'touch'){ c.hidden = true; return; }
+  const st = $('#skStage').getBoundingClientRect(); const d = skSize() * sk.v.s * 3; c.hidden = false; c.style.width = c.style.height = d + 'px'; c.style.left = (e.clientX - st.left - d / 2) + 'px'; c.style.top = (e.clientY - st.top - d / 2) + 'px';
+}
+// 선을 긋고 끝에서 잠깐 멈추면 곧은 선으로 바뀐다(굿노트처럼). 놓기 전까지 끝점을 움직일 수 있다
+let skHold = 0;
+function skHoldArm(){ clearTimeout(skHold); const st = sk.cur; if (!st || st.line || !['pen', 'ball', 'pencil', 'hl'].includes(st.tool) || st.pts.length < 6) return;
+  skHold = setTimeout(() => { if (sk.cur !== st) return; const a = st.pts[0], b = st.pts.at(-1); if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 30 * skK()) return; st.pts = [a, b]; st.line = true; skRedraw(); if (navigator.vibrate) navigator.vibrate(8); }, 550); }
 $('#skCanvas').addEventListener('pointerdown', e => {
   if (e.pointerType === 'pen'){ sk.penUntil = Date.now() + 1500; if (!store.get('lib.penSeen', false)){ store.set('lib.penSeen', true); skFingerBtn(); } }
   if (e.pointerType === 'touch' && (!skFingerDraws() || Date.now() < (sk.penUntil || 0))){
@@ -2944,56 +3057,81 @@ $('#skCanvas').addEventListener('pointerdown', e => {
   }
   if (!e.isPrimary || sk.cur) return;
   e.preventDefault(); try{ $('#skCanvas').setPointerCapture(e.pointerId); }catch{}
-  const cv = $('#skCanvas'); const k = cv.width / cv.getBoundingClientRect().width;
-  const pr = e.pointerType === 'pen' && sk.tool === 'pen';
-  sk.cur = {tool: sk.tool, color: sk.color, size: sk.size * k * (sk.tool === 'hl' ? 3 : sk.tool === 'erase' ? 3 : 1), pts: [canvasPt(e)], pid: e.pointerId, pr};
-  sk.strokes.push(sk.cur); sk.redo = []; skRedraw();
+  const k = skK(), pt = canvasPt(e);
+  if (sk.tool === 'lasso'){
+    if (sk.sel?.length){ const b = selBox(); if (pt[0] >= b[0] && pt[0] <= b[2] && pt[1] >= b[1] && pt[1] <= b[3]){ sk.cur = {tool: 'lasso', move: true, from: pt, dx: 0, dy: 0, pid: e.pointerId}; return; } }
+    sk.sel = null; skSelUI(); sk.lasso = [pt]; sk.cur = {tool: 'lasso', pid: e.pointerId}; skRedraw(); return;
+  }
+  const erStroke = sk.tool === 'erase' && sk.eraseMode === 'stroke';
+  const pr = sk.tool === 'pen' || (sk.tool === 'pencil' && e.pointerType === 'pen');
+  sk.cur = {tool: sk.tool, color: sk.color, size: skSize() * k * (sk.tool === 'erase' ? 3 : 1), pts: [pt], pid: e.pointerId, pr, ptype: e.pointerType, t: e.timeStamp};
+  if (erStroke){ sk.cur.whole = true; sk.cur.erased = []; skEraseStrokes(pt, pt, sk.cur.size / 2); return; }
+  sk.strokes.push(sk.cur); skRedraw(); skHoldArm();
 });
 $('#skCanvas').addEventListener('pointermove', e => {
   if (skTouch.has(e.pointerId)){
     const p = skTouch.get(e.pointerId); skSess.move += Math.abs(e.clientX - p.x) + Math.abs(e.clientY - p.y); p.x = e.clientX; p.y = e.clientY;
     skGestureMove(); return;
   }
+  skCursor(e);
   if (!sk.cur || e.pointerId !== sk.cur.pid) return;
-  let last = sk.cur.pts.at(-1)[2];
-  for (const ev of (e.getCoalescedEvents?.() || [e])){ const pt = canvasPt(ev); if (sk.cur.pr){ pt[2] = last = last * 0.6 + pt[2] * 0.4; } sk.cur.pts.push(pt); }
+  const evs = e.getCoalescedEvents?.() || [e];
+  if (sk.cur.tool === 'lasso'){
+    const pt = canvasPt(evs.at(-1));
+    if (sk.cur.move){ const dx = pt[0] - sk.cur.from[0], dy = pt[1] - sk.cur.from[1]; for (const st of sk.sel){ for (const q of st.pts){ q[0] += dx; q[1] += dy; } st.bb = null; } sk.cur.dx += dx; sk.cur.dy += dy; sk.cur.from = pt; skRebuildLayer(); }
+    else for (const ev of evs) sk.lasso.push(canvasPt(ev));
+    skRedraw(); return;
+  }
+  if (sk.cur.whole){ let a = sk.cur.pts.at(-1); for (const ev of evs){ const b = canvasPt(ev); skEraseStrokes(a, b, sk.cur.size / 2); a = b; } sk.cur.pts.push(a); return; }
+  if (sk.cur.line){ sk.cur.pts[1] = canvasPt(evs.at(-1)); skRedraw(); return; }
+  let last = sk.cur.pts.at(-1);
+  for (const ev of evs){
+    const pt = canvasPt(ev);
+    if (sk.cur.pr){
+      // 펜슬은 실제 힘, 손가락·마우스는 빨리 그을수록 가늘게
+      let raw = pt[2]; if (sk.cur.ptype !== 'pen'){ const dt = Math.max(1, ev.timeStamp - (sk.cur.t || ev.timeStamp - 16)); const v = Math.hypot(pt[0] - last[0], pt[1] - last[1]) / skK() / dt; raw = Math.max(0.15, Math.min(1, 1.1 - v * 0.45)); sk.cur.t = ev.timeStamp; }
+      pt[2] = last[2] * 0.6 + raw * 0.4;
+    }
+    sk.cur.pts.push(pt); last = pt;
+  }
+  const a = sk.cur.pts.at(-1), b = sk.cur.pts[Math.max(0, sk.cur.pts.length - 4)];
+  if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 3 * skK()) skHoldArm();
   skRedraw();
 });
+$('#skCanvas').addEventListener('pointerleave', () => { $('#skCursor').hidden = true; });
 const skEnd = e => {
   if (skTouch.has(e.pointerId)){
     skTouch.delete(e.pointerId);
     if (skTouch.size){ skGestureStart(); return; }
-    if (skSess && skSess.max === 2 && Date.now() - skSess.t0 < 320 && skSess.move < 16) $('#skUndo').click();
+    if (skSess && Date.now() - skSess.t0 < 320 && skSess.move < 20){ if (skSess.max === 2) $('#skUndo').click(); else if (skSess.max === 3) $('#skRedo').click(); }   // 두 손가락 톡 되돌리기, 세 손가락 톡 다시
     skG = skSess = null; return;
   }
-  if (!sk.cur || e.pointerId !== sk.cur.pid) return; paintStroke(skLayer.getContext('2d'), sk.cur); sk.cur = null; skRedraw();
+  if (!sk.cur || e.pointerId !== sk.cur.pid) return; clearTimeout(skHold);
+  const st = sk.cur; sk.cur = null;
+  if (st.tool === 'lasso'){
+    if (st.move){ if (st.dx || st.dy) skDo({t: 'move', sts: [...sk.sel], dx: st.dx, dy: st.dy}); }
+    else { const poly = sk.lasso || []; sk.lasso = null; if (poly.length > 4){ sk.sel = sk.strokes.filter(s => s.tool !== 'erase' && s.pts.filter(([x, y]) => inPoly(x, y, poly)).length >= Math.max(1, s.pts.length * 0.5)); if (!sk.sel.length) sk.sel = null; } }
+    skSelUI(); skRedraw(); return;
+  }
+  if (st.whole){ if (st.erased.length) skDo({t: 'del', list: st.erased}); return; }
+  skDo({t: 'add', st}); paintStroke(skLayer.getContext('2d'), st); skRedraw();
 };
 $('#skCanvas').addEventListener('pointerup', skEnd);
 $('#skCanvas').addEventListener('pointercancel', skEnd);
 
-/* ---------- 도구·색·굵기 ---------- */
-const skPickTool = t => { sk.tool = t; $$('#skTools button').forEach(x => x.classList.toggle('on', x.dataset.tool === t)); };
-$$('#skTools button').forEach(b => b.onclick = () => skPickTool(b.dataset.tool));
-function skSetColor(c, remember){
-  sk.color = c; $$('#skColors button').forEach(x => x.classList.toggle('on', x.dataset.c.toLowerCase() === c.toLowerCase())); $('#skColorPick').value = c;
-  if (sk.tool === 'erase') skPickTool('pen');
-  if (remember && !$$('#skColors button').some(x => x.dataset.c.toLowerCase() === c.toLowerCase())){ const rc = [c, ...store.get('lib.skRecent', []).filter(x => x !== c)].slice(0, 6); store.set('lib.skRecent', rc); skRecent(); }
-}
-function skRecent(){ const box = $('#skRecent'); box.innerHTML = ''; for (const c of store.get('lib.skRecent', [])){ const b = document.createElement('button'); b.dataset.c = c; b.style.background = c; b.title = c; b.onclick = () => skSetColor(c); box.append(b); } }
-$$('#skColors button').forEach(b => b.onclick = () => skSetColor(b.dataset.c));
-$('#skColorPick').oninput = () => skSetColor($('#skColorPick').value);
-$('#skColorPick').onchange = () => skSetColor($('#skColorPick').value, true);
-$$('#skSizes button').forEach(b => b.onclick = () => { $('#skSize').value = b.dataset.z; $('#skSize').oninput(); });
-$('#skSize').oninput = () => { sk.size = +$('#skSize').value; $('#skSizeOut').textContent = sk.size; };
-skRecent();
-$('#skUndo').onclick = () => { const st = sk.strokes.pop(); if (st) (sk.redo ||= []).push(st); skRebuildLayer(); skRedraw(); };
-$('#skRedo').onclick = () => { const st = sk.redo?.pop(); if (st){ sk.strokes.push(st); skRebuildLayer(); skRedraw(); } };
-$('#skClear').onclick = () => { if (sk.strokes.length && !confirm('필기를 모두 지울까요?')) return; sk.redo = [...sk.strokes].reverse(); sk.strokes = []; skRebuildLayer(); skRedraw(); };
-$('#skCancel').onclick = () => skClose();
+/* ---------- 옆에 두기·새 쪽 ---------- */
+// 옆에 두기: 읽는 화면을 가리지 않고 오른쪽(세로 화면은 아래)에 필기 칸을 붙인다
+$('#skDock').onclick = () => { const on = !$('#sketch').classList.contains('dock'); $('#sketch').classList.toggle('dock', on); store.set('lib.skDock', on); skView(1, 0, 0); };
+$('#skNewPage').onclick = async () => {
+  if (skDirty() && !(await saveSketch({keep: true}))) return;
+  const meta = {...sk.meta, base: null, epName: sk.meta?.epName || new Date().toLocaleDateString('ko-KR')};
+  openSketch(paperCanvas(store.get('lib.paper', 'plain'), store.get('lib.paperSize', 'tall')), meta, '');
+  toast('새 쪽을 열었어요. 앞 쪽은 장면 노트에 저장했어요');
+};
 
 /* ---------- 굿노트·프로크리에이트로 보내고 받기 ---------- */
 // 지금 그린 그림을 파일로: 굿노트는 PDF(공유 시트 → 굿노트), 프로크리에이트는 PNG 또는 레이어가 있는 PSD(공유 시트 → 프로크리에이트)
-async function skFlat(){ await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); const c = document.createElement('canvas'); c.width = sk.img.width; c.height = sk.img.height; const g = c.getContext('2d'); g.drawImage(sk.img, 0, 0); g.drawImage(skLayer, 0, 0); return c; }
+async function skFlat(){ sk.sel = null; sk.lasso = null; skSelUI(); await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); const c = document.createElement('canvas'); c.width = sk.img.width; c.height = sk.img.height; const g = c.getContext('2d'); g.drawImage(sk.img, 0, 0); g.drawImage(skLayer, 0, 0); return c; }
 const skMeta = () => ({workName: sk.meta?.workName || '그림', epName: sk.meta?.epName || '장면', note: $('#skNote').value});
 // 앱 바로 열기: 그림을 클립보드에 복사하고 그 앱의 주소(goodnotes://, procreate://)를 불러 앱을 띄운다. 앱에서 붙여 넣기 하면 들어간다.
 // 웹 앱은 다른 앱에 파일을 직접 꽂을 수 없어서 이 방식이 가장 가까운 길이다. 앱이 안 뜨면(주소를 못 알아들으면) 공유 시트로 바꾼다.
@@ -3073,17 +3211,19 @@ async function importDrawings(files){
 }
 $('#noteImport').onclick = () => $('#noteImportFile').click();
 $('#noteImportFile').onchange = () => { const fs = [...$('#noteImportFile').files]; $('#noteImportFile').value = ''; if (fs.length) importDrawings(fs); };
-async function saveSketch(){
+async function saveSketch(opt = {}){
+  sk.sel = null; sk.lasso = null; skSelUI(); skRedraw(); await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame);   // 고른 테두리가 그림에 찍히지 않게
   const cv = $('#skCanvas');
   const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.88));
   const thumbC = document.createElement('canvas'); const ts = Math.min(1, 360 / cv.width); thumbC.width = Math.round(cv.width*ts); thumbC.height = Math.round(cv.height*ts); thumbC.getContext('2d').drawImage(cv, 0, 0, thumbC.width, thumbC.height);
   const thumb = await new Promise(res => thumbC.toBlob(res, 'image/jpeg', 0.8));
-  const rec = {id: sk.editId || (Date.now().toString(36) + Math.random().toString(36).slice(2,6)), work: sk.meta.work, workName: sk.meta.workName, epName: sk.meta.epName, where: sk.meta.where, note: $('#skNote').value, blob, thumb, base: sk.meta.base || null, strokes: sk.strokes.map(({pid, ...st}) => st), t: Date.now()};
+  const rec = {id: sk.editId || (Date.now().toString(36) + Math.random().toString(36).slice(2,6)), work: sk.meta.work, workName: sk.meta.workName, epName: sk.meta.epName, where: sk.meta.where, note: $('#skNote').value, blob, thumb, base: sk.meta.base || null, strokes: sk.strokes.map(({pid, bb, erased, ptype, t, ...st}) => st), t: Date.now()};
   if (!rec.base){ rec.base = await new Promise(res => { const c = document.createElement('canvas'); c.width = sk.img.width; c.height = sk.img.height; c.getContext('2d').drawImage(sk.img, 0, 0); c.toBlob(res, 'image/jpeg', 0.9); }); }
   try{ await idb.tx('readwrite', st => st.put(rec), 'scraps'); window.gdSoon?.(); }catch{ toast('기기 저장 공간이 부족해 저장하지 못했어요'); return null; }
-  $('#sketch').classList.remove('open'); toast('장면을 저장했어요'); renderScraps(); return rec;
+  renderScraps(); if (opt.keep) return rec;
+  $('#sketch').classList.remove('open'); $('#skCursor').hidden = true; toast('장면을 저장했어요'); return rec;
 }
-$('#skSave').onclick = saveSketch;
+$('#skSave').onclick = () => saveSketch();
 $('#skAsk').onclick = async () => {
   const rec = await saveSketch(); if (!rec) return;
   const block = await toImageBlock(rec.blob);
@@ -3443,7 +3583,7 @@ $('#noteExport').onchange = e => { const v = e.target.value; e.target.value = ''
 
 // 장면 노트 머리 단추
 $('#skX').onclick = () => skClose();
-$('#skSave2').onclick = saveSketch;
+$('#skSave2').onclick = () => saveSketch();
 
 // 노벨AI → 그림 → 다시 뷰어로
 function naiPromptText(){ const p = naiState.last; return p ? [p.base, ...p.chars.map(c => c.prompt)].join(' | ') : ''; }

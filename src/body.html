@@ -355,19 +355,25 @@
 </div>
 
 <div class="sketch" id="sketch">
-  <div class="sk-head"><button class="icon" id="skX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button><b>장면 노트</b><button class="primary" id="skSave2">저장</button></div>
+  <div class="sk-head"><button class="icon" id="skX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button><b>필기</b>
+    <button id="skDock" title="읽는 화면 옆에 두기 / 크게 보기">옆에 두기</button><button id="skNewPage" title="저장하고 새 쪽 열기">새 쪽</button><button class="primary" id="skSave2">저장</button></div>
   <div class="sk-top">
-    <div class="seg" id="skTools"><button data-tool="pen" class="on">펜</button><button data-tool="hl">형광펜</button><button data-tool="erase">지우개</button></div>
-    <div class="sk-colors" id="skColors"><button data-c="#e5484d" class="on" style="background:#e5484d"></button><button data-c="#2f3d6b" style="background:#2f3d6b"></button><button data-c="#f5c400" style="background:#f5c400"></button><button data-c="#2f9e5b" style="background:#2f9e5b"></button><button data-c="#ffffff" style="background:#fff"></button><button data-c="#111111" style="background:#111"></button></div>
+    <div class="seg" id="skTools"><button data-tool="pen" class="on" title="만년필: 힘·빠르기에 따라 굵기가 바뀌어요">만년필</button><button data-tool="ball" title="볼펜: 굵기가 일정해요">볼펜</button><button data-tool="pencil" title="연필">연필</button><button data-tool="hl" title="형광펜">형광펜</button><button data-tool="erase" title="지우개">지우개</button><button data-tool="lasso" title="올가미: 둘러서 고르고 옮기기">올가미</button></div>
+    <div class="sk-colors" id="skColors"><button data-c="#111111" style="background:#111"></button><button data-c="#2f3d6b" style="background:#2f3d6b"></button><button data-c="#e5484d" class="on" style="background:#e5484d"></button><button data-c="#f5c400" style="background:#f5c400"></button><button data-c="#2f9e5b" style="background:#2f9e5b"></button><button data-c="#ffffff" style="background:#fff"></button></div>
     <div class="sk-colors" id="skRecent"></div><input type="color" id="skColorPick" value="#e5484d" title="색 고르기">
-    <div class="seg" id="skSizes"><button data-z="3" title="가늘게">가늘게</button><button data-z="6" title="보통">보통</button><button data-z="16" title="굵게">굵게</button></div>
-    <input type="range" id="skSize" min="2" max="40" value="6" title="굵기"><output id="skSizeOut">6</output>
-    <button id="skUndo">되돌리기</button><button id="skRedo">다시</button><button id="skClear" class="danger">모두 지우기</button>
+    <span class="grow"></span>
+    <button id="skUndo" title="되돌리기 (두 손가락 톡)">되돌리기</button><button id="skRedo" title="다시 (세 손가락 톡)">다시</button><button id="skClear" class="danger">모두 지우기</button>
     <button id="skFinger" title="손가락으로 그리기">손가락</button><button id="skFit" hidden>맞춤</button>
     <select id="skSend"><option value="">보내기…</option><option value="gn">굿노트로</option><option value="pc">프로크리에이트로</option><option value="file">사진·파일로 (PNG)</option></select>
     <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*,.pdf,.psd,.procreate" hidden>
   </div>
-  <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas></div>
+  <div class="sk-ctx">
+    <span class="hint" id="skLassoHint" hidden>둘러서 고른 뒤, 안쪽을 끌면 옮겨요</span>
+    <div class="sk-size" id="skSizeBox"><span id="skSizeLab" class="hint">펜 굵기</span><div class="seg" id="skSizes"><button data-z="3">가늘게</button><button data-z="6">보통</button><button data-z="16">굵게</button></div><input type="range" id="skSize" min="1" max="40" value="6"><output id="skSizeOut">6</output></div>
+    <div class="seg" id="skEraseOpts" hidden><button data-em="part" title="닿은 곳만 지우기">부분</button><button data-em="stroke" title="닿은 획을 통째로 지우기">획 전체</button></div>
+    <div class="sk-sel" id="skSelBar" hidden><span id="skSelN" class="hint"></span><button id="skSelColor">지금 색으로</button><button id="skSelDup">복제</button><button id="skSelDel" class="danger">지우기</button></div>
+  </div>
+  <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas><div id="skCursor" hidden></div></div>
   <div class="sk-bot">
     <textarea id="skNote" placeholder="이 장면에서 인상 깊은 점, 연출 메모 (예: 대사 없이 손만 클로즈업 → 감정 전환)"></textarea>
     <div class="row tight" style="flex-direction:column;align-items:stretch">

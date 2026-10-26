@@ -107,7 +107,7 @@ $('#noteExport').onchange = e => { const v = e.target.value; e.target.value = ''
 
 // 장면 노트 머리 단추
 $('#skX').onclick = () => skClose();
-$('#skSave2').onclick = saveSketch;
+$('#skSave2').onclick = () => saveSketch();
 
 // 노벨AI → 그림 → 다시 뷰어로
 function naiPromptText(){ const p = naiState.last; return p ? [p.base, ...p.chars.map(c => c.prompt)].join(' | ') : ''; }
