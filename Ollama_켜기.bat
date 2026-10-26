@@ -1,29 +1,60 @@
 @echo off
-chcp 65001 >nul
-title Ollama ì¼œê¸° (ë…¸ë²¨ ë·°ì–´ìš©)
-rem ë·°ì–´(ë¸Œë¼ìš°ì €)ê°€ Ollamaì— ë¶™ì„ ìˆ˜ ìžˆê²Œ í—ˆìš©í•œ ë’¤ Ollamaë¥¼ ì¼­ë‹ˆë‹¤.
+title Ollama ÄÑ±â (³ëº§ ºä¾î¿ë)
+setlocal
+rem ÀÌ ÆÄÀÏÀº ÇÑ±¹¾î À©µµ¿ì ±âº» ±ÛÀÚ(CP949)·Î ÀúÀåµÇ¾î ÀÖ¾î¿ä.
+set "OL_DIR=%LOCALAPPDATA%\Programs\Ollama"
+set "OL_APP=%OL_DIR%\ollama app.exe"
+set "OL_EXE=ollama"
 where ollama >nul 2>nul
-if errorlevel 1 (
-  echo Ollamaê°€ ì„¤ì¹˜ë˜ì–´ ìžˆì§€ ì•Šì•„ìš”. https://ollama.com/download ì—ì„œ ì„¤ì¹˜í•œ ë’¤ ë‹¤ì‹œ ì‹¤í–‰í•´ ì£¼ì„¸ìš”.
-  start "" https://ollama.com/download
-  pause
-  exit /b
-)
+if errorlevel 1 set "OL_EXE=%OL_DIR%\ollama.exe"
+if not exist "%OL_APP%" if "%OL_EXE%"=="%OL_DIR%\ollama.exe" goto noinstall
+
+echo [1/3] ºä¾î°¡ Ollama¿¡ ºÙÀ» ¼ö ÀÖ°Ô ¼³Á¤À» ÀúÀåÇØ¿ä...
+setx OLLAMA_ORIGINS "*" >nul
+setx OLLAMA_CONTEXT_LENGTH 16384 >nul
+set "OLLAMA_ORIGINS=*"
+set "OLLAMA_CONTEXT_LENGTH=16384"
+
+echo [2/3] ÄÑÁ® ÀÖ´ø Ollama¸¦ ²°´Ù°¡ ´Ù½Ã ÄÑ¿ä...
 taskkill /f /im "ollama app.exe" >nul 2>nul
 taskkill /f /im ollama.exe >nul 2>nul
-setx OLLAMA_ORIGINS "*" >nul
-set OLLAMA_ORIGINS=*
-rem íšŒì°¨ í•˜ë‚˜(ìˆ˜ì²œ ìž)ê°€ ìž˜ë¦¬ì§€ ì•Šê²Œ ëŒ€í™” ê¸¸ì´ë¥¼ ëŠ˜ë¦°ë‹¤
-setx OLLAMA_CONTEXT_LENGTH 16384 >nul
-set OLLAMA_CONTEXT_LENGTH=16384
+timeout /t 2 /nobreak >nul
+if exist "%OL_APP%" goto startapp
+start "Ollama" /min "%OL_EXE%" serve
+goto wait
+:startapp
+start "" "%OL_APP%"
+
+:wait
+echo [3/3] ÄÑÁö±â¸¦ ±â´Ù·Á¿ä...
+for /l %%i in (1,1,30) do (
+  curl -s http://127.0.0.1:11434/api/version >nul 2>nul && goto ok
+  timeout /t 1 /nobreak >nul
+)
 echo.
-echo ë°›ì€ ëª¨ë¸:
-ollama list
+echo Ollama°¡ 30ÃÊ ¾È¿¡ ÄÑÁöÁö ¾Ê¾Ò¾î¿ä.
+echo ÀÛ¾÷ Ç¥½ÃÁÙ ¿À¸¥ÂÊ ¾Æ·¡¿¡ ¶ó¸¶ ¾ÆÀÌÄÜÀÌ ÀÖ´ÂÁö º¸°í, ÄÄÇ»ÅÍ¸¦ ´Ù½Ã ÄÒ µÚ ÀÌ ÆÄÀÏÀ» ÇÑ ¹ø ´õ ½ÇÇàÇØ ÁÖ¼¼¿ä.
+pause
+exit /b 1
+
+:ok
 echo.
-echo ëª¨ë¸ì´ ì—†ìœ¼ë©´ ë‹¤ë¥¸ ì°½ì—ì„œ ì´ë ‡ê²Œ ë°›ì•„ ì£¼ì„¸ìš”:
-echo   ollama pull gemma3:4b      (ê¸€+ê·¸ë¦¼, ë¹ ë¦„. ê·¸ëž˜í”½ì¹´ë“œ 8GB ì¶”ì²œ)
-echo   ollama pull qwen3:8b       (í•œêµ­ì–´ ê¸€ì“°ê¸°Â·ë¶„ì„, 8GBì— ë§žìŒ)
-echo   ollama pull gemma3:12b     (ë” ë˜‘ë˜‘í•˜ì§€ë§Œ 8GBì—ì„œëŠ” ëŠë¦¼)
+echo Ollama°¡ ÄÑÁ³¾î¿ä. ÀÛ¾÷ Ç¥½ÃÁÙ ¿À¸¥ÂÊ ¾Æ·¡ ¶ó¸¶ ¾ÆÀÌÄÜÀ¸·Î ¶° ÀÖ¾î¼­ ÀÌ Ã¢Àº ´Ý¾Æµµ µÅ¿ä.
 echo.
-echo ì´ ì°½ì„ ë‹«ê±°ë‚˜ Ctrl+Cë¥¼ ëˆ„ë¥´ë©´ Ollamaë„ êº¼ì ¸ìš”. ë·°ì–´ ì„¤ì • íƒ­ì—ì„œ [ì—°ê²° í™•ì¸]ì„ ëˆŒëŸ¬ ì£¼ì„¸ìš”.
-ollama serve
+echo ¹ÞÀº ¸ðµ¨:
+"%OL_EXE%" list
+echo.
+echo ¸ðµ¨ÀÌ ¾ø°Å³ª ´õ ¹Þ°í ½ÍÀ¸¸é ¸í·É Ã¢¿¡¼­:
+echo   ollama pull qwen3:8b       (ÇÑ±¹¾î ±Û¾²±â¿Í ºÐ¼®, ±×·¡ÇÈÄ«µå 8GB¿¡ ¸ÂÀ½)
+echo   ollama pull gemma3:4b      (ºü¸§, ±×¸²µµ º½)
+echo   ollama pull gemma3:12b     (´õ ¶È¶ÈÇÏÁö¸¸ 8GB¿¡¼­´Â ´À¸²)
+echo.
+echo ÀÌÁ¦ ºä¾î ¼³Á¤ ÅÇ¿¡¼­ [¿¬°á È®ÀÎ]À» ´­·¯ ÁÖ¼¼¿ä.
+pause
+exit /b 0
+
+:noinstall
+echo Ollama°¡ ¼³Ä¡µÇ¾î ÀÖÁö ¾Ê¾Æ¿ä. ¿­¸®´Â ÆäÀÌÁö¿¡¼­ ¼³Ä¡ÇÑ µÚ ÀÌ ÆÄÀÏÀ» ´Ù½Ã ½ÇÇàÇØ ÁÖ¼¼¿ä.
+start "" https://ollama.com/download
+pause
+exit /b 1
