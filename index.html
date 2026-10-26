@@ -203,7 +203,7 @@ kbd{font-family:var(--ui);font-size:11px;border:1px solid var(--line);border-bot
 .tabs button{border:0;border-radius:99px;padding:7px 12px;white-space:nowrap;font-size:13px;color:var(--sub)}
 .tabs button.on{background:var(--ink);color:var(--panel);font-weight:600}
 .tabs .close{margin-left:auto;display:none;position:sticky;right:-12px;background:var(--panel);box-shadow:-10px 0 12px var(--panel)}
-.nowork .botbar,.nowork #btnTTS,.nowork #btnAuto,.nowork #epBtn svg{display:none}
+.nowork .botbar,.nowork #btnTTS,.nowork #epBtn svg{display:none}
 .pane{padding:16px 16px calc(20px + var(--sab));display:none}
 .pane.on{display:block}
 .pane h3{font-size:11px;margin:20px 0 8px;color:var(--faint);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
@@ -302,7 +302,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .immersive .reader .novel{padding-top:calc(28px + var(--sat))}
 .immersive .reader.paged .novel{top:calc(10px + var(--sat));bottom:calc(24px + var(--sab))}
 .immersive .manga{top:var(--sat);bottom:calc(18px + var(--sab))}
-.imgmode #btnTTS,.imgmode #btnAuto,.imgmode .q-sec#qNovel{display:none}
+.imgmode #btnTTS,.imgmode .q-sec#qNovel{display:none}
 .txtmode .q-sec#qImg{display:none}
 #warm{position:absolute;inset:0;pointer-events:none;z-index:4;background:#ff9a3c;mix-blend-mode:multiply;opacity:0}
 .novel{font-weight:var(--fw,400);letter-spacing:var(--ls,0em);padding-left:var(--mx,28px);padding-right:var(--mx,28px)}
@@ -432,7 +432,6 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .st-meter .grow{flex:1;min-width:100px}
 .st-meter .st-bar{margin:0}
 .st-meter .warn{color:var(--warn)}
-.st-meter .sprint{color:var(--accent);font-weight:600}
 #studio.focus .st-top,#studio.focus .st-meter,#studio.focus .st-rail{opacity:.08;transition:opacity .3s}
 #studio.focus .st-top:hover,#studio.focus .st-meter:hover,#studio.focus .st-rail:hover{opacity:1}
 #studio.focus .st-page{box-shadow:none;background:transparent}
@@ -670,7 +669,6 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <select id="epSel" hidden></select>
       <button class="icon" id="btnBm" title="책갈피 (B)"><svg class="i"><use href="#i-bm"/></svg></button>
       <button class="icon" id="btnTTS" title="읽어 주기 (T)"><svg class="i"><use href="#i-sound"/></svg></button>
-      <button class="icon desk-only" id="btnAuto" title="자동 스크롤 (Space)"><svg class="i"><use href="#i-scroll"/></svg></button>
       <button class="icon" id="btnQuick" title="보기 설정"><svg class="i"><use href="#i-aa"/></svg></button>
       <button class="icon" id="tgTool" title="분석·글쓰기·Claude (A)"><svg class="i"><use href="#i-panel"/></svg></button>
     </div>
@@ -717,7 +715,6 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
         <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option></select></div>
         <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
         <div class="qrow"><label><input type="checkbox" id="writerView"> 작가 보기 (문단 글자 수·대사·갈고리·절단·1,000자 눈금, W)</label></div>
-        <div class="qrow"><label>쪽 넘김 효과</label><select id="pageAnim"><option value="slide">밀기</option><option value="none">없음</option></select></div>
         <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
         <input type="number" id="fs" value="18" hidden>
       </div>
@@ -731,9 +728,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       </div>
       <div class="q-sec"><div class="lab">자동</div>
         <div class="qrow"><label>회차 끝에서</label><select id="autoNext"><option value="btn">다음 화 카드</option><option value="auto">자동으로 넘김</option></select></div>
-        <div class="qrow"><label>자동 스크롤 속도</label><div class="ctl"><input type="range" id="autoSpeed" min="10" max="400" step="10" value="80"><output id="autoSpeedOut"></output></div></div>
         <div class="qrow"><label>읽어 주기 속도</label><div class="ctl"><input type="range" id="ttsRate" min="0.6" max="2" step="0.1" value="1.1"><output id="ttsRateOut"></output></div></div>
-        <div class="qrow"><label>자동 스크롤</label><button id="btnAuto2">시작하기</button></div>
       </div>
     </div>
   </main>
@@ -747,7 +742,6 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <button data-tab="ai">AI 분석</button>
       <button data-tab="write">글쓰기</button>
       <button data-tab="nai">그림 프롬프트</button>
-      <button data-tab="mine">내 원고</button>
       <button data-tab="set">설정</button>
       <button class="icon close" id="toolClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button>
     </div>
@@ -823,7 +817,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <div class="row"><button id="wGo" class="primary idle-only">쓰기 시작</button><button id="wStop" class="busy-only">멈추기</button><button id="wNew">새로 시작</button></div>
       <div id="wChat"></div>
       <textarea id="wQ" style="min-height:58px" placeholder="이어서 고칠 점 (예: 대사를 더 늘려 줘 / 마지막 줄을 더 세게 / 이어서 다음 장면)"></textarea>
-      <div class="row"><button id="wAsk" class="idle-only">고치기·이어 쓰기</button><button id="wCopy">마지막 글 복사</button><button id="wToMine">내 원고로</button><button id="wSave">파일로 저장</button></div>
+      <div class="row"><button id="wAsk" class="idle-only">고치기·이어 쓰기</button><button id="wCopy">마지막 글 복사</button><button id="wToStudio">집필실 회차로</button><button id="wSave">파일로 저장</button></div>
       <div class="hint aiUsage"></div>
     </div>
 
@@ -848,16 +842,6 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <textarea id="naiNeg" style="min-height:60px">lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, cropped, worst quality, low quality, jpeg artifacts, signature, watermark, username, blurry, text, logo</textarea>
       <h3>최근 만든 프롬프트</h3>
       <div class="list" id="naiHist"></div>
-    </div>
-
-    <div class="pane" id="pane-mine">
-      <div class="row"><label>AI</label><select id="mineProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option></select><span class="hint keyHint grow"></span></div>
-      <div class="hint">쓴 원고를 붙여 넣으면 유료연재 규격과 비교해요. 쓰던 원고는 이 기기에 자동 저장돼요.</div>
-      <textarea id="mineText" placeholder="여기에 원고 한 화를 붙여 넣으세요"></textarea>
-      <div class="row" id="mineOther" hidden><span class="hint grow">다른 기기에서 쓴 원고가 따로 있어요</span><button id="mineOtherShow">불러오기</button></div>
-      <div class="row"><button id="mineCheck" class="primary">규격 확인</button><button id="mineAI" class="idle-only">AI 피드백</button><button id="mineToStudio">집필실로</button><button id="mineStop" class="busy-only">멈추기</button><button id="mineCompare">지금 화와 비교</button></div>
-      <div id="mineOut"></div>
-      <div class="msg ai" id="mineAIOut"></div>
     </div>
 
     <div class="pane" id="pane-set">
@@ -973,7 +957,6 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <button class="icon" id="stFindTg" title="찾기·바꾸기 (Ctrl+F)"><svg class="i"><use href="#i-search"/></svg></button>
       <button class="icon" id="stCmtBtn" title="고른 문장에 메모 달기 (Ctrl+Shift+M)"><svg class="i"><use href="#i-note"/></svg></button>
       <button class="icon desk-only" id="stTw" title="타자기 스크롤: 쓰는 줄을 화면 가운데에"><svg class="i"><use href="#i-type"/></svg></button>
-      <button class="icon" id="stSprintBtn" title="스프린트 (집중해서 쓰기 타이머)"><svg class="i"><use href="#i-timer"/></svg></button>
       <button class="icon desk-only" id="stFocus" title="집중 모드 (Ctrl+.)"><svg class="i"><use href="#i-focus"/></svg></button>
       <button class="icon" id="stInspTg" title="회차 정보·AI·판 기록"><svg class="i"><use href="#i-panel"/></svg></button>
     </div>
@@ -1233,7 +1216,7 @@ function workCard(w){
   const cu = coverUrl(w);
   d.innerHTML = `<div class="cv">${cu ? `<img alt="" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${({novel:'소설',webtoon:'웹툰',manga:'만화'})[w.kind]}</span>${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
   d.querySelector('.t').textContent = w.name;
-  const ph = d.querySelector('.ph'); if (ph) ph.textContent = w.name;
+  const ph = d.querySelector('.ph'); if (ph){ ph.textContent = w.name; ph.style.setProperty('--h', hueOf(w.name)); }   // 표지 없는 작품은 이름으로 색
   d.onclick = () => openWork(w);
   return d;
 }
@@ -1292,7 +1275,7 @@ async function readEpub(file){
 
 /* ================= 열기 ================= */
 async function openWork(w){
-  stopTTS(); stopAuto();
+  stopTTS();
   cur = w; chats.ai.reset(); $('#mode').value = 'auto'; $('#app').classList.remove('nowork');
   if (!w._expanded && w.kind !== 'manga' && w.eps.some(e => e.type === 'epub')){
     toast('epub 여는 중…');
@@ -1376,7 +1359,7 @@ async function openEp(i, pos = {}, jump = null){
   if (jump) gotoRange(jump);
   else if ($('#reader .webtoon')) await restoreWebtoon(pos);
   else if (!$('#reader .manga')) setFrac(pos.end ? 1 : (pos.f || 0));
-  updateProgress(); savePos();
+  updateProgress(); savePos(); wakeSync(); coach();
 }
 
 /* ---------- 소설 ---------- */
@@ -1394,6 +1377,7 @@ function renderNovel(paged){
     r.querySelectorAll('.tapzone').forEach(z => z.onclick = () => pageTurn(+z.dataset.d));
   } else appendEpEnd(r);
   applyHighlights();
+  requestAnimationFrame(writerMarks);
 }
 function appendEpEnd(r){
   const has = curEp < cur.eps.length-1;
@@ -1402,12 +1386,15 @@ function appendEpEnd(r){
 }
 function pageTurn(d){
   const nv = $('#reader.paged .novel'); if (!nv) return;
+  if ($('#tapMode').value === 'next' && d < 0 && pageTurn._tap) d = 1;   // 한 손 모드: 양쪽 다 다음 쪽
+  pageTurn._tap = false;
   const step = nv.clientWidth;
   const max = nv.scrollWidth - step;
   if (d > 0 && nv.scrollLeft >= max - 4){ if (curEp < cur.eps.length-1) openEp(curEp+1); else toast('마지막 쪽이에요'); return; }
   if (d < 0 && nv.scrollLeft <= 4){ if (curEp > 0) openEp(curEp-1, {end:true}); return; }
+  nv.style.scrollBehavior = 'smooth'; setTimeout(() => nv.style.scrollBehavior = '', 450);
   nv.scrollLeft = Math.round((nv.scrollLeft + d*step) / step) * step;
-  updateProgress(); savePos();
+  setTimeout(() => { if ($('#reader.paged')){ updateProgress(); savePos(); } }, 480);
 }
 function getFrac(){
   const r = $('#reader'); const nv = $('#reader.paged .novel');
@@ -1425,9 +1412,14 @@ function setFrac(f){
 }
 function updateProgress(){
   if (!cur) return;
-  const f = getFrac(); if (!scrubbing) $('#scrub').value = Math.round(f * 1000);
-  $('#pageInd').textContent = $('#reader .manga') ? `${mangaPos + mangaShown} / ${curImgs.length}` : `${Math.round(f*100)}%`;
+  const f = getFrac(), pi = pagedInfo(); if (!scrubbing) $('#scrub').value = Math.round(f * 1000);
+  const where = $('#reader .manga') ? `${mangaPos + mangaShown} / ${curImgs.length}` : pi ? `${pi.k} / ${pi.n}쪽` : `${Math.round(f*100)}%`;
+  $('#pageInd').textContent = where;
   if (f > 0.9) markRead(curEp);
+  // 몰입 화면 아래 한 줄: 회차 · 위치 · 남은 시간 · 시각
+  const now = new Date().toLocaleTimeString('ko-KR', {hour:'numeric', minute:'2-digit'});
+  $('#mini').textContent = [cur.eps[curEp]?.label || cur.eps[curEp]?.name, where, minutesLeft(f), now].filter(Boolean).join('  ·  ');
+  modeClass(); bmMark();
 }
 let scrubbing = false;
 function markRead(i){ if (!cur) return; const k = 'read.'+cur.key; const r = store.get(k, []); if (!r.includes(i)){ r.push(i); store.set(k, r); } }
@@ -1761,20 +1753,7 @@ reader.addEventListener('click', e => {
   if (x > 0.3 && x < 0.7) $('#app').classList.toggle('immersive');
 });
 
-/* ---------- 자동 스크롤·읽어 주기 ---------- */
-let autoOn = false, autoLast = 0, autoY = 0;
-function autoTick(t){
-  if (!autoOn) return;
-  const r = $('#reader'); const dt = autoLast ? Math.min(0.1, (t - autoLast) / 1000) : 0; autoLast = t;
-  if (Math.abs(autoY - r.scrollTop) > 3) autoY = r.scrollTop;
-  autoY += +$('#autoSpeed').value * dt; r.scrollTop = autoY;
-  if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2){ stopAuto(); if ($('#autoNext').value === 'auto' && curEp < cur.eps.length-1) openEp(curEp+1).then(startAuto); return; }
-  requestAnimationFrame(autoTick);
-}
-function startAuto(){ if (!cur || $('#reader .manga') || $('#reader.paged')) return toast('스크롤 화면에서만 돼요'); autoOn = true; autoLast = 0; autoY = $('#reader').scrollTop; $('#btnAuto').classList.add('on'); requestAnimationFrame(autoTick); }
-function stopAuto(){ autoOn = false; $('#btnAuto').classList.remove('on'); }
-$('#btnAuto').onclick = () => autoOn ? stopAuto() : startAuto();
-
+/* ---------- 읽어 주기 ---------- */
 let ttsSession = 0;
 function stopTTS(){ ttsSession++; tts?.cancel(); $('#btnTTS').classList.remove('on'); $$('.novel p.speaking').forEach(p=>p.classList.remove('speaking')); }
 function speakFrom(i, session){
@@ -2210,7 +2189,7 @@ $('#wQ').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey 
 $('#wStop').onclick = () => chats.write.abort?.abort();
 $('#wNew').onclick = () => chats.write.reset();
 $('#wCopy').onclick = () => copy(chats.write.last());
-$('#wToMine').onclick = () => { const t = chats.write.last(); if (!t) return; $('#mineText').value = t; store.set('mine', t); openTool('mine'); $('#mineCheck').click(); };
+$('#wToStudio').onclick = async () => { const t = chats.write.last(); if (!t) return toast('먼저 글을 받아 주세요'); await stOpen(); stAddEp(); taReplace(0, 0, t); stSaveText(); stMeter(); toast('집필실 새 회차로 옮겼어요'); };
 $('#wSave').onclick = () => { const t = chats.write.last(); if (t) download(`글_${new Date().toISOString().slice(0,10)}.txt`, t, 'text/plain'); };
 $('#wIn').value = store.get('wIn', '');
 $('#wIn').addEventListener('input', () => { clearTimeout(window._wi); window._wi = setTimeout(()=>store.set('wIn', $('#wIn').value), 500); });
@@ -2303,46 +2282,9 @@ $('#naiStop').onclick = () => naiState.abort?.abort();
 for (const id of ['naiChars','naiStyle','naiNeg']){ const el = $('#'+id); const v = store.get('set.'+id, null); if (v !== null) el.value = v; el.addEventListener('input', () => { clearTimeout(el._t); el._t = setTimeout(() => store.set('set.'+id, el.value), 400); }); }
 renderNaiHist();
 
-/* ---------- 내 원고 ---------- */
-let mineAbort = null;
-$('#mineText').value = store.get('mine', '');
-$('#mineText').addEventListener('input', () => { clearTimeout(window._mt); window._mt = setTimeout(()=>store.set('mine', $('#mineText').value), 500); });
-$('#mineCheck').onclick = () => { const t = $('#mineText').value; if (t.trim()) $('#mineOut').innerHTML = statHTML(analyze(t)); };
-$('#mineCompare').onclick = () => {
-  const t = $('#mineText').value; if (!t.trim() || !curText) return toast('원고와 소설 회차가 둘 다 필요해요');
-  const a = analyze(t), b = analyze(curText);
-  const row = (k, l, u='') => `<tr><td>${l}</td><td>${a[k].toLocaleString()}${u}</td><td>${b[k].toLocaleString()}${u}</td></tr>`;
-  $('#mineOut').innerHTML = `<table class="ep"><tr><th></th><th>내 원고</th><th>${esc(cur.name.slice(0,10))}</th></tr>${row('chars','분량','자')}${row('median','문단 중앙값','자')}${row('dlg','대사','%')}${row('sentAvg','문장 평균','자')}</table>
-    <h3>내 원고 마지막 세 줄</h3><div class="endlines">${a.last.map(esc).join('<br>')}</div><h3>비교 작품 마지막 세 줄</h3><div class="endlines">${b.last.map(esc).join('<br>')}</div>`;
-};
-$('#mineStop').onclick = () => mineAbort?.abort();
-$('#mineAI').onclick = async () => {
-  const t = $('#mineText').value; if (!t.trim()) return;
-  if (mineAbort) return toast('피드백을 받는 중이에요');
-  const c = await client('#mineProv'); if (!c) return;
-  const a = analyze(t); const s = spec();
-  $('#mineOut').innerHTML = statHTML(a, false);
-  const out = $('#mineAIOut'); out.textContent = '';
-  mineAbort = new AbortController(); $('#pane-mine').classList.add('busy');
-  const res = await stream(c, {system: SYSTEM_ANALYST + '\n\n사용자 문체의 결: ' + $('#voice').value, signal: mineAbort.signal, onText: x => { out.textContent += x; }, messages: [{role:'user', content:`내가 쓴 웹소설 한 화다. 수치: 분량 ${a.chars}자(목표 ${s.min}~${s.max}), 문단 중앙값 ${a.median}자(목표 ${s.para} 이하), 대사 ${a.dlg}%(목표 ${s.dmin}~${s.dmax}).
-다음 순서로 냉정하게 피드백해 줘:
-1) 첫 세 문단: 독자를 붙잡는가, 고친다면 어떻게
-2) 결핍·치트키·약속이 보이는가
-3) 대사: 캐릭터의 목소리가 구분되는가, 가장 좋은 대사와 가장 약한 대사
-4) 절단: 마지막 줄의 유형과 더 센 대안 2개
-5) 문단·호흡: 모바일에서 끊어 읽기 좋은지, 고칠 문단 예시
-6) 내 글의 결을 살리면서 상업성을 올리는 방법
-고쳐 쓴 예시 문장은 내 문체를 따라 줘.
-
-<manuscript>
-${t}
-</manuscript>`}]});
-  mineAbort = null; $('#pane-mine').classList.remove('busy');
-  if (res.note) out.textContent += res.note;
-};
 
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','autoSpeed','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','mineProv'];
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv'];
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
@@ -2354,12 +2296,21 @@ for (const id of SETTINGS){
     if (['col','fs','lh','pgap','rfont','align','indent'].includes(id) && $('#reader.paged')) setFrac(getFrac());
   });
 }
+const OUTS = {dimLv: v => v + '%', warmLv: v => v + '%', weight: v => v, ls: v => (+v).toFixed(2), lh: v => (+v).toFixed(2), pgap: v => (+v).toFixed(1), margin: v => v + 'px', col: v => v + 'px', wcol: v => v + 'px', ttsRate: v => (+v).toFixed(1) + '배'};
+function applyView2(){
+  const s = document.documentElement.style;
+  s.setProperty('--fw', $('#weight').value); s.setProperty('--ls', $('#ls').value + 'em'); s.setProperty('--mx', $('#margin').value + 'px'); s.setProperty('--wgap', $('#gap').value);
+  $('#warm').style.opacity = (+$('#warmLv').value / 100).toFixed(2);
+  for (const [id, f] of Object.entries(OUTS)){ const o = $('#'+id+'Out'); if (o) o.textContent = f($('#'+id).value); }
+}
+let epRev = false;   // 회차 목록 순서 뒤집기
 function applyView(){
   const s = document.documentElement.style;
   s.setProperty('--fs', $('#fs').value+'px'); s.setProperty('--lh', $('#lh').value); s.setProperty('--pgap', $('#pgap').value+'em');
   s.setProperty('--col', $('#col').value+'px'); s.setProperty('--rfont', $('#rfont').value); s.setProperty('--align', $('#align').value);
   s.setProperty('--wcol', $('#wcol').value+'px'); s.setProperty('--indent', $('#indent').value);
   $('#fsOut').textContent = $('#fs').value; $('#dim').style.opacity = (+$('#dimLv').value/100).toFixed(2);
+  applyView2();
 }
 function aiHint(){
   for (const id of Object.keys(PROV)){ const el = $('#st-'+id); if (!el) continue; const P = PROV[id]; el.textContent = P.key ? (store.get(P.key,'') ? '키 저장됨' : '키 없음') : (store.get('olOk', false) ? '연결됨' : '확인 전'); el.className = 'kst ' + ((P.key ? store.get(P.key,'') : store.get('olOk', false)) ? 'ok' : ''); }
@@ -2402,7 +2353,7 @@ function openTool(tab){
   const a = $('#app');
   if (isMobile()) a.classList.add('show-tool'); else a.classList.remove('hide-tool');
   $$('.tabs button[data-tab]').forEach(x=>x.classList.toggle('on', x.dataset.tab===tab)); $$('.pane').forEach(p=>p.classList.toggle('on', p.id==='pane-'+tab));
-  if (tab === 'notes'){ renderNotes(); renderScraps(); } if (tab === 'set') showStore();
+  if (tab === 'notes'){ renderNotes(); renderScraps(); renderBm(); } if (tab === 'set') showStore();
 }
 $('#btnFolder').onclick = () => $('#pickFolder').click();
 $('#btnFiles').onclick = () => $('#pickFiles').click();
@@ -2451,7 +2402,7 @@ $('#reader').addEventListener('scroll', () => {
   if (!scrubbing && Date.now() > hideBlock && cur && Math.abs(dy) > 18 && !$('.sheet.open')) $('#app').classList.toggle('immersive', dy > 0 && y > 80);   // 내리면 숨기고 올리면 보이기
   clearTimeout(anTimer);
   const r = $('#reader');
-  if ($('#autoNext').value === 'auto' && !autoOn && !$('#btnTTS').classList.contains('on') && cur && !$('#reader.paged') && !$('#reader .manga')
+  if ($('#autoNext').value === 'auto' && !$('#btnTTS').classList.contains('on') && cur && !$('#reader.paged') && !$('#reader .manga')
       && r.scrollTop > 0 && r.scrollTop + r.clientHeight >= r.scrollHeight - 2 && curEp < cur.eps.length-1)
     anTimer = setTimeout(() => { if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2) openEp(curEp+1); }, 1200);
 });
@@ -2463,12 +2414,11 @@ document.addEventListener('keydown', e => {
   else if (e.key === ']') $('#next').click();
   else if ($('#reader .manga') && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); mangaStep((e.key === 'ArrowLeft') === rtl ? 1 : -1); }
   else if ($('#reader.paged') && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'PageUp')) { e.preventDefault(); pageTurn(e.key === 'ArrowRight' || e.key === 'PageDown' ? 1 : -1); }
-  else if (e.key === ' ' && cur && !$('#reader .manga') && !$('#reader.paged')) { e.preventDefault(); autoOn ? stopAuto() : startAuto(); }
   else if (e.key === 't' || e.key === 'T') $('#btnTTS').click();
   else if (e.key === 'a' || e.key === 'A') $('#tgTool').click();
   else if (e.key === '/') { e.preventDefault(); openTool('find'); $('#findQ').focus(); }
   else if (e.key === 'f' || e.key === 'F') $('#app').classList.toggle('immersive');
-  else if (e.key === 'Escape') { $('#selbar').style.display = 'none'; stopAuto(); closeSheets(); $('#app').classList.remove('immersive'); }
+  else if (e.key === 'Escape') { $('#selbar').style.display = 'none'; closeSheets(); $('#app').classList.remove('immersive'); }
 });
 addEventListener('resize', () => { if ($('#reader.paged')) setFrac(getFrac()); });
 
@@ -2487,7 +2437,9 @@ function renderEpList(){
     frag.append(d);
   });
   list.append(frag);
+  if (epRev) [...list.children].reverse().forEach(c => list.append(c));
   list.querySelector('.cur')?.scrollIntoView({block:'center'});
+  epSplitBtn();
 }
 $('#epBtn').onclick = () => { if (!cur) { isMobile() ? $('#app').classList.add('show-side') : $('#app').classList.remove('hide-side'); return; } const open = $('#epDrawer').classList.contains('open'); closeSheets(); if (!open){ $('#epDrawer').classList.add('open'); $('#epFind').value = ''; renderEpList(); } };
 $('#epClose').onclick = closeSheets;
@@ -2496,7 +2448,6 @@ $('#btnQuick').onclick = () => { const open = $('#quick').classList.contains('op
 $('#fsDown').onclick = () => { $('#fs').value = Math.max(12, +$('#fs').value - 1); $('#fs').dispatchEvent(new Event('change')); };
 $('#fsUp').onclick = () => { $('#fs').value = Math.min(34, +$('#fs').value + 1); $('#fs').dispatchEvent(new Event('change')); };
 for (const id of ['lh','pgap','col','wcol','dimLv']) $('#'+id).addEventListener('input', () => { applyView(); if ($('#reader.paged')) setFrac(getFrac()); });
-$('#btnAuto2').onclick = () => { closeSheets(); autoOn ? stopAuto() : startAuto(); };
 $('#wFolder').onclick = () => $('#pickFolder').click();
 $('#wFiles').onclick = () => $('#pickFiles').click();
 $('#scrub').addEventListener('input', () => {
@@ -2831,7 +2782,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|set\.(stNoSide|stNoInsp|stTw|stStart|stSprintMin|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|set\.(stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -2901,7 +2852,7 @@ async function gdSync(interactive = false){
       const lt = local.ts[k] || 0, rt = remote.ts?.[k] || 0;
       merged[k] = rt > lt ? rv : lv; mts[k] = Math.max(lt, rt);
       // 긴 글(원고·메모)은 진 쪽을 버리지 않고 따로 남긴다
-      if ((['mine','wIn'].includes(k) || (k.startsWith('st.txt.') && !k.endsWith('.other'))) && lv !== rv){ const loser = rt > lt ? lv : rv; try{ if (JSON.parse(loser).trim()){ merged[k + '.other'] = loser; conflicts.push(k); } }catch{} }
+      if ((k === 'wIn' || (k.startsWith('st.txt.') && !k.endsWith('.other'))) && lv !== rv){ const loser = rt > lt ? lv : rv; try{ if (JSON.parse(loser).trim()){ merged[k + '.other'] = loser; conflicts.push(k); } }catch{} }
     }
     for (const [k, v] of Object.entries(merged)) if (v !== undefined && v !== null){ try{ localStorage.setItem('nv.' + k, v); }catch{ toast('브라우저 저장 공간이 부족해 일부를 합치지 못했어요'); } }
     try{ localStorage.setItem('nv.__ts', JSON.stringify(mts)); }catch{}
@@ -2945,9 +2896,8 @@ window.gdSoon = () => { if (!gdReady() || !$('#gdAuto').checked) return; clearTi
 function applySettingsFromStore(){
   for (const id of SETTINGS){ const el = $('#'+id); const v = store.get('set.'+id, null); if (v === null) continue; if (el.type === 'checkbox') el.checked = v; else el.value = v; }
   for (const id of ['naiChars','naiStyle','naiNeg']){ const v = store.get('set.'+id, null); if (v !== null && document.activeElement !== $('#'+id)) $('#'+id).value = v; }
-  if (document.activeElement !== $('#mineText')) $('#mineText').value = store.get('mine', '');
   if (document.activeElement !== $('#wIn')) $('#wIn').value = store.get('wIn', '');
-  $('#mineOther').hidden = !store.get('mine.other', ''); $('#wInOther').hidden = !store.get('wIn.other', '');
+  $('#wInOther').hidden = !store.get('wIn.other', '');
   applyView(); aiHint(); window.stRefresh?.();
 }
 $('#gdClient').value = store.get('gd.client', '');
@@ -2975,22 +2925,14 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 })();
 
 /* ================= 보기 편의 (책갈피·쪽 번호·화면 켜 두기·안내) ================= */
-const OUTS = {dimLv: v => v + '%', warmLv: v => v + '%', weight: v => v, ls: v => (+v).toFixed(2), lh: v => (+v).toFixed(2), pgap: v => (+v).toFixed(1), margin: v => v + 'px', col: v => v + 'px', wcol: v => v + 'px', autoSpeed: v => v, ttsRate: v => (+v).toFixed(1) + '배'};
-function applyView2(){
-  const s = document.documentElement.style;
-  s.setProperty('--fw', $('#weight').value); s.setProperty('--ls', $('#ls').value + 'em'); s.setProperty('--mx', $('#margin').value + 'px'); s.setProperty('--wgap', $('#gap').value);
-  $('#warm').style.opacity = (+$('#warmLv').value / 100).toFixed(2);
-  for (const [id, f] of Object.entries(OUTS)){ const o = $('#'+id+'Out'); if (o) o.textContent = f($('#'+id).value); }
-}
-const VIEW_IDS = ['weight','ls','margin','warmLv','gap','pageAnim','tapMode','wake'];
+const VIEW_IDS = ['weight','ls','margin','warmLv','gap','tapMode','wake'];
 for (const id of VIEW_IDS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
   if (v !== null){ if (el.type === 'checkbox') el.checked = v; else el.value = v; }
   el.addEventListener('change', () => { store.set('set.'+id, el.type === 'checkbox' ? el.checked : el.value); applyView2(); if (id === 'wake') wakeSync(); if (['weight','ls','margin'].includes(id) && $('#reader.paged')) setFrac(getFrac()); });
 }
 for (const id of Object.keys(OUTS)) $('#'+id).addEventListener('input', () => { applyView(); applyView2(); if (['weight','ls','margin'].includes(id) && $('#reader.paged')) setFrac(getFrac()); });
-const _applyView = applyView; applyView = function(){ _applyView(); applyView2(); };
-const VIEW_DEFAULT = {dimLv:'0', warmLv:'0', fs:'18', weight:'400', ls:'0', lh:'1.9', pgap:'0.9', margin:'24', col:'620', rfont:'"Noto Serif KR",serif', align:'left', indent:'0', pageAnim:'slide', tapMode:'lr', wcol:'720', gap:'0', spread:'auto', rtl:'1', fit:'h', autoSpeed:'80', ttsRate:'1.1'};
+const VIEW_DEFAULT = {dimLv:'0', warmLv:'0', fs:'18', weight:'400', ls:'0', lh:'1.9', pgap:'0.9', margin:'24', col:'620', rfont:'"Noto Serif KR",serif', align:'left', indent:'0', tapMode:'lr', wcol:'720', gap:'0', spread:'auto', rtl:'1', fit:'h', ttsRate:'1.1'};
 $('#qReset').onclick = () => {
   for (const [id, v] of Object.entries(VIEW_DEFAULT)){ const el = $('#'+id); if (!el || el.value === v) continue; el.value = v; el.dispatchEvent(new Event('change')); }
   applyView(); toast('보기 설정을 기본값으로 되돌렸어요');
@@ -3015,28 +2957,9 @@ function pagedInfo(){
   return {k, n};
 }
 function minutesLeft(f){ if (!curText) return ''; const chars = curText.replace(/\s/g,'').length * (1 - f); const m = Math.round(chars / 600); return m < 1 ? '곧 끝나요' : `이 화 ${m}분 남음`; }
-const _updateProgress = updateProgress;
-updateProgress = function(){
-  _updateProgress(); if (!cur) return;
-  const f = getFrac(), pi = pagedInfo();
-  if (pi) $('#pageInd').textContent = `${pi.k} / ${pi.n}쪽`;
-  const now = new Date().toLocaleTimeString('ko-KR', {hour:'numeric', minute:'2-digit'});
-  const where = $('#reader .manga') ? `${mangaPos + mangaShown} / ${curImgs.length}쪽` : pi ? `${pi.k} / ${pi.n}쪽` : `${Math.round(f*100)}%`;
-  $('#mini').textContent = [cur.eps[curEp]?.label || cur.eps[curEp]?.name, where, minutesLeft(f), now].filter(Boolean).join('  ·  ');
-  modeClass(); bmMark();
-};
 $('#reader').addEventListener('scroll', () => { if (!$('#reader.paged')) updateProgress(); }, {passive:true});
 
 // 쪽 넘김 효과와 한 손 모드
-const _pageTurn = pageTurn;
-pageTurn = function(d){
-  if ($('#tapMode').value === 'next' && d < 0 && pageTurn._tap) d = 1;
-  pageTurn._tap = false;
-  const nv = $('#reader.paged .novel');
-  if (nv && $('#pageAnim').value === 'slide'){ nv.style.scrollBehavior = 'smooth'; setTimeout(() => nv.style.scrollBehavior = '', 450); }
-  _pageTurn(d);
-  if (nv) setTimeout(() => { if ($('#reader.paged')){ updateProgress(); savePos(); } }, 480);
-};
 document.addEventListener('click', e => { if (e.target.closest('.tapzone')) pageTurn._tap = true; }, true);
 
 // 책갈피
@@ -3084,7 +3007,6 @@ function renderBm(){
 $('#btnBm').onclick = toggleBm;
 document.addEventListener('keydown', e => { if ((e.key === 'b' || e.key === 'B') && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && !$('#sketch').classList.contains('open') && !e.ctrlKey && !e.metaKey) toggleBm(); });
 $('#noteScope')?.addEventListener('change', renderBm);
-const _openTool = openTool; openTool = function(tab){ _openTool(tab); if (tab === 'notes') renderBm(); };
 
 // 화면 켜 두기
 let wakeLock = null;
@@ -3098,17 +3020,13 @@ async function wakeSync(){
 document.addEventListener('visibilitychange', wakeSync);
 
 // 회차 목록 도구
-let epRev = false;
 $('#epCur').onclick = () => $('#epList .cur')?.scrollIntoView({block:'center'});
 $('#epTop').onclick = () => { const l = $('#epList'); epRev ? l.lastElementChild?.scrollIntoView({block:'end'}) : (l.scrollTop = 0); };
 $('#epSort').onclick = () => { epRev = !epRev; renderEpList(); };
-const _renderEpList = renderEpList;
-renderEpList = function(){ _renderEpList(); if (epRev){ const l = $('#epList'); [...l.children].reverse().forEach(c => l.append(c)); l.querySelector('.cur')?.scrollIntoView({block:'center'}); } };
 
 // 다른 기기에서 쓴 글 불러오기
-$('#mineOtherShow').onclick = () => { const v = store.get('mine.other', ''); if (!v) return; if ($('#mineText').value.trim() && !confirm('지금 원고를 다른 기기 원고로 바꿀까요? (지금 원고는 클립보드에 복사해 둘게요)')) return; copy($('#mineText').value); $('#mineText').value = v; store.set('mine', v); store.set('mine.other', ''); $('#mineOther').hidden = true; };
 $('#wInOtherShow').onclick = () => { const v = store.get('wIn.other', ''); if (!v) return; if ($('#wIn').value.trim() && !confirm('지금 메모를 다른 기기 메모로 바꿀까요? (지금 메모는 클립보드에 복사해 둘게요)')) return; copy($('#wIn').value); $('#wIn').value = v; store.set('wIn', v); store.set('wIn.other', ''); $('#wInOther').hidden = true; };
-$('#mineOther').hidden = !store.get('mine.other', ''); $('#wInOther').hidden = !store.get('wIn.other', '');
+$('#wInOther').hidden = !store.get('wIn.other', '');
 
 // 메모 내보내기 하나로
 $('#noteExport').onchange = e => { const v = e.target.value; e.target.value = ''; ({gn: () => $('#noteGN').click(), mood: () => $('#noteMood').click(), md: () => $('#noteMd').click(), claude: () => $('#noteClaude').click()})[v]?.(); };
@@ -3161,11 +3079,7 @@ $('#reader').addEventListener('dblclick', e => {
 
 // 표지 없는 작품은 이름으로 색을 정한다
 function hueOf(s){ let h = 0; for (const ch of s) h = (h * 31 + ch.codePointAt(0)) % 360; return h; }
-const _workCard = workCard;
-workCard = function(w){ const d = _workCard(w); const ph = d.querySelector('.ph'); if (ph) ph.style.setProperty('--h', hueOf(w.name)); return d; };
 
-const _openEp = openEp;
-openEp = async function(...a){ const r = await _openEp(...a); updateProgress(); wakeSync(); coach(); return r; };
 applyView2();
 
 /* ================= 작가 보기 (읽는 화면에 문단 글자 수·대사·갈고리·절단·눈금) ================= */
@@ -3215,8 +3129,6 @@ $('#reader').addEventListener('scroll', wmapView, {passive:true});
 addEventListener('resize', () => { clearTimeout(drawWmap._t); drawWmap._t = setTimeout(drawWmap, 200); });
 { const v = store.get('set.writerView', null); if (v !== null) $('#writerView').checked = v; }
 $('#writerView').addEventListener('change', () => { store.set('set.writerView', $('#writerView').checked); writerMarks(); if ($('#reader.paged')) setFrac(getFrac()); });
-const _renderNovel = renderNovel;
-renderNovel = function(paged){ _renderNovel(paged); requestAnimationFrame(writerMarks); };
 document.addEventListener('keydown', e => { if ((e.key === 'w' || e.key === 'W') && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && $('#studio').hidden && !$('#sketch').classList.contains('open')){ $('#writerView').checked = !$('#writerView').checked; $('#writerView').dispatchEvent(new Event('change')); toast($('#writerView').checked ? '작가 보기를 켰어요' : '작가 보기를 껐어요'); } });
 
 /* ================= 원고 저장소 (IndexedDB 'texts') ================= */
@@ -3261,7 +3173,7 @@ async function txtFlushNow(){
 addEventListener('pagehide', () => { txtFlushNow(); });
 
 /* ================= 집필실 ================= */
-const ST = {pid: null, eid: null, view: 'write', saveT: null, snapT: 0, lastText: '', abort: null, outKind: '', sel: null, sprint: null, tw: false, drag: null};
+const ST = {pid: null, eid: null, view: 'write', saveT: null, snapT: 0, lastText: '', abort: null, outKind: '', sel: null, tw: false, drag: null};
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const DAYS = ['일','월','화','수','목','금','토'];
 const STATUS = {draft:'초고', revise:'퇴고', done:'완료', posted:'연재함'};
@@ -3296,7 +3208,7 @@ function stAddEp(title, after = true){
 async function stOpen(view){
   await txtReady(); navigator.storage?.persist?.().catch(() => {});
   $('#studio').hidden = false; document.body.style.overflow = 'hidden';
-  try{ stopAuto(); stopTTS(); }catch{}
+  try{ stopTTS(); }catch{}
   if (!stProjects().length) stNewProject('첫 작품');
   const last = store.get('st.cur', null);
   ST.pid = (last && stProjects().some(p => p.id === last.pid)) ? last.pid : stProjects()[0].id;
@@ -3304,7 +3216,7 @@ async function stOpen(view){
   stApplyLayout(); stRenderSide(); stRenderEditor(); stSetView(view || 'write');
   aiHint();
 }
-function stClose(){ stFlush(); stSnap(false); $('#studio').hidden = true; document.body.style.overflow = ''; }
+function stClose(){ stFlush(); stSnap(false); $('#studio').hidden = true; document.body.style.overflow = ''; bkRun(); }
 function stApplyLayout(){
   const s = $('#studio');
   if (isMobile()) s.classList.remove('noside', 'noinsp');
@@ -3319,7 +3231,8 @@ function stSetView(v){
   if (v !== 'write') $('#stFind').hidden = true;
   $('#stViewTitle').textContent = VIEW_TITLE[v] || '';
   ({board: stRenderBoard, outline: stRenderOutline, bible: stRenderBible, stats: stRenderStatsView, info: stRenderInfo})[v]?.();
-  if (v === 'write' && !isMobile()) setTimeout(() => $('#stText').focus({preventScroll: true}), 30);
+  if (v === 'write'){ stGrow(); requestAnimationFrame(stHlRender); if (!isMobile()) setTimeout(() => $('#stText').focus({preventScroll: true}), 30); }
+  if (v === 'info') bkStatus();
   $('#studio').classList.remove('mside');
 }
 
@@ -3351,7 +3264,12 @@ function stRenderStats(){
   const pct = Math.min(100, Math.round(t / (p.daily || 1) * 100)); const nd = nextPostDay(p.days);
   $('#stStats').innerHTML = `오늘 <b>${t.toLocaleString()}</b> / ${(p.daily||0).toLocaleString()}자${streak ? ` · <b>${streak}일</b> 연속` : ''}
     <div class="st-bar"><i class="${pct >= 100 ? 'ok' : ''}" style="width:${pct}%"></i></div>
-    비축 <b>${reserve}화</b> · 연재 ${posted}화 · 모두 ${eps.length}화${nd ? `<br>다음 연재 <b>${nd}</b>${reserve ? '' : ' · <span style="color:var(--warn)">비축분 없음</span>'}` : ''}`;
+    <span class="term" data-term="비축분">비축</span> <b>${reserve}화</b> · 연재 ${posted}화 · 모두 ${eps.length}화${nd ? `<br>다음 연재 <b>${nd}</b>${reserve ? '' : ' · <span style="color:var(--warn)">비축분 없음</span>'}` : ''}`;
+  // 백업이 오래되면 알린다
+  const last = Math.max(store.get('st.bk.last', 0), store.get('st.bk.manual', 0), store.get('gd.last', 0));
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  if (days === null || days >= 3){ $('#stStats').insertAdjacentHTML('beforeend', `<br><span style="color:var(--warn)">${days === null ? '아직 백업한 적이 없어요' : `백업한 지 ${days}일`}</span> · <a href="#" id="stBkGo">백업 설정</a>`); $('#stBkGo').onclick = ev => { ev.preventDefault(); stSetView('info'); }; }
+  bindTerms($('#stStats'));
 }
 function stRenderEps(){
   const box = $('#stEpList'); box.innerHTML = ''; const eps = stEps(); let part = null;
@@ -3381,9 +3299,11 @@ function stMove(fromId, toId){
 
 /* ---------- 원고 ---------- */
 function stOpenEp(eid){
+  mirrorOn = null; ST.marks = [];
   stFlush(); if (ST.eid && ST.eid !== eid) stSnap(false);
   ST.eid = eid; store.set('st.cur', {pid: ST.pid, eid});
   stRenderEditor(); stRenderEps();
+  if (!$('[data-ipane=mirror]').hidden) stRenderMirror();
 }
 function stPageNo(){ const list = stEps(); const i = list.findIndex(e => e.id === ST.eid); $('#stPageNo').textContent = i >= 0 ? `${i + 1} / ${list.length}` : ''; }
 function stRenderEditor(){
@@ -3396,21 +3316,22 @@ function stRenderEditor(){
   ST.lastText = $('#stText').value; ST.snapT = Date.now();
   $('#stOtherBox').hidden = !(e && txtOther(ST.pid, ST.eid));
   $('#stEdWrap').scrollTop = 0; stPageNo(); stRenderCast(); stMeter(); stRenderSnaps();
+  stGrow(); stRenderCmts(); requestAnimationFrame(stHlRender);
 }
 function stMeter(){
   const p = stProj(); const t = $('#stText').value; const a = analyze(t || ' ');
   const c = a.chars; const min = p?.min || 0, max = p?.max || 0;
   const pct = max ? Math.min(100, Math.round(c / max * 100)) : 0;
   const cls = max && c > max ? 'over' : min && c >= min ? 'ok' : '';
-  const st = spec(); const sp = ST.sprint;
-  let sprint = '';
-  if (sp){ const left = Math.max(0, sp.end - Date.now()); sprint = `<span class="sprint">스프린트 ${Math.floor(left/60000)}:${String(Math.floor(left/1000)%60).padStart(2,'0')} · +${Math.max(0, stCount(t) - sp.start + sp.carry).toLocaleString()}자</span>`; }
-  $('#stMeter').innerHTML = `${sprint}<span><b>${c.toLocaleString()}</b>${max ? ` / ${min.toLocaleString()}~${max.toLocaleString()}자` : '자'}</span>
+  const st = spec(); const r = p?.ref ? store.get('st.refstat.' + p.ref, null) : null;   // 참고 작품 평균
+  $('#stMeter').innerHTML = `<span><b>${c.toLocaleString()}</b>${max ? ` / ${min.toLocaleString()}~${max.toLocaleString()}자` : '자'}</span>
     <span class="grow"><div class="st-bar"><i class="${cls}" style="width:${pct}%"></i></div></span>
-    <span class="${t.trim() && (a.dlg < st.dmin || a.dlg > st.dmax) ? 'warn' : ''}">대사 <b>${t.trim() ? a.dlg : 0}%</b></span>
-    <span class="${a.median > st.para ? 'warn' : ''}">문단 <b>${a.median}</b>자</span>
-    <span>원고지 <b>${manuscriptPages(t)}</b>매</span>
+    <span class="${t.trim() && (a.dlg < st.dmin || a.dlg > st.dmax) ? 'warn' : ''}"><span class="term" data-term="대사">대사</span> <b>${t.trim() ? a.dlg : 0}%</b></span>
+    <span class="${a.median > st.para ? 'warn' : ''}"><span class="term" data-term="문단">문단</span> <b>${a.median}</b>자</span>
+    <span><span class="term" data-term="원고지">원고지</span> <b>${manuscriptPages(t)}</b>매</span>
+    ${r ? `<span class="hint" title="참고 작품 ${esc(r.name)} 앞 ${r.n}화 평균">참고 ${esc(r.name.slice(0, 6))}: ${r.chars.toLocaleString()}자 · 대사 ${r.dlg}% · 문단 ${r.median}자</span>` : ''}
     <span id="stSaved" class="hint">저장됨</span>`;
+  bindTerms($('#stMeter'));
 }
 function stFlush(){ if (!ST.saveT) return; clearTimeout(ST.saveT); ST.saveT = null; stSaveText(); }
 function stSaveText(){
@@ -3499,23 +3420,6 @@ $('#stRepAll').onclick = async () => {
   await stSnap(false); taReplace(0, ta.value.length, ta.value.split(q).join(r)); stSaveText(); stMeter(); stFindCount(); toast(`${c}곳을 바꿨어요 (이전 판은 판 기록에)`);
 };
 
-/* ---------- 스프린트 ---------- */
-$('#stSprintBtn').onclick = () => {
-  if (ST.sprint){ if (confirm('스프린트를 멈출까요?')) stSprintEnd(true); return; }
-  const m = prompt('몇 분 동안 집중해서 쓸까요? (예: 15, 25, 45)', String(store.get('set.stSprintMin', 25))); if (!m) return;
-  const min = Math.max(1, Math.min(180, parseInt(m) || 25)); store.set('set.stSprintMin', min);
-  ST.sprint = {end: Date.now() + min * 60000, start: stCount($('#stText').value), carry: 0, eid: ST.eid, min};
-  $('#stSprintBtn').classList.add('on'); ST.sprint.timer = setInterval(() => { if (Date.now() >= ST.sprint.end) stSprintEnd(false); else if (ST.view === 'write') stMeter(); }, 1000);
-  toast(`${min}분 스프린트를 시작했어요`); $('#stText').focus();
-};
-function stSprintEnd(stopped){
-  const sp = ST.sprint; if (!sp) return; clearInterval(sp.timer);
-  const n = Math.max(0, stCount($('#stText').value) - sp.start + sp.carry); ST.sprint = null; $('#stSprintBtn').classList.remove('on'); stMeter();
-  const log = store.get('st.sprints', []); log.unshift({t: Date.now(), min: sp.min, n, pid: ST.pid}); store.set('st.sprints', log.slice(0, 100));
-  toast(`${stopped ? '스프린트를 멈췄어요' : '스프린트 끝!'} ${n.toLocaleString()}자를 썼어요`);
-  try{ if (!stopped) navigator.vibrate?.(200); }catch{}
-}
-
 /* ---------- 카드보드·개요 ---------- */
 function stRenderBoard(){
   const box = $('#stBoard'); box.innerHTML = ''; const list = stEps();
@@ -3552,7 +3456,8 @@ let stBibleFilter = '';
 const BIBLE_HINT = {작법:'기법:\n원문 예시:\n내 작품에 쓰는 법:', 인물:'나이·외형:\n성격(겉/속):\n말투·예시 대사:\n주인공과의 관계:\n숨긴 것:', 설정:'무엇인지:\n규칙·제한:\n누가 알고 있나:', 플롯:'사건:\n떡밥:\n언제 회수:', 메모:''};
 function stRenderBible(){
   const all = stBible(); const kinds = ['인물','설정','플롯','작법','메모'];
-  $('#stBibleChips').innerHTML = [['', `전체 ${all.length}`], ...kinds.map(k => [k, `${k} ${all.filter(b => b.kind === k).length}`])].map(([k, l]) => `<button data-k="${k}" class="${k === stBibleFilter ? 'on' : ''}">${l}</button>`).join('') + `<span class="grow"></span><button class="primary" id="stBibleNew">+ ${stBibleFilter || '인물'} 카드</button>`;
+  $('#stBibleChips').innerHTML = [['', `전체 ${all.length}`], ...kinds.map(k => [k, `${k} ${all.filter(b => b.kind === k).length}`])].map(([k, l]) => `<button data-k="${k}" class="${k === stBibleFilter ? 'on' : ''}">${l}</button>`).join('') + `<span class="grow"></span><button id="stMdImp" title="분석 보고서(.md)를 작법 카드로">분석 보고서 가져오기</button><button class="primary" id="stBibleNew">+ ${stBibleFilter || '인물'} 카드</button>`;
+  $('#stMdImp').onclick = stImportMd;
   $$('#stBibleChips [data-k]').forEach(b => b.onclick = () => { stBibleFilter = b.dataset.k; stRenderBible(); });
   $('#stBibleNew').onclick = () => { const l = stBible(); const kind = stBibleFilter || '인물'; l.unshift({id: uid(), kind, title: '', body: BIBLE_HINT[kind], img: '', t: Date.now()}); stSetBible(l); stRenderBible(); $('#stBible input')?.focus(); };
   const box = $('#stBible'); box.innerHTML = '';
@@ -3590,7 +3495,6 @@ function stRenderStatsView(){
   for (let k = 0; k < 84 + new Date().getDay() + 1; k++){ const n = dl[dkey(d)] || 0; const g = p.daily || 3000; const lv = !n ? '' : n >= g ? 'l4' : n >= g * 0.66 ? 'l3' : n >= g * 0.33 ? 'l2' : 'l1'; cells.push(`<i class="${lv}" title="${dkey(d)} · ${n.toLocaleString()}자"></i>`); d.setDate(d.getDate() + 1); }
   const max = Math.max(p.max || 0, ...eps.map(e => e.chars || 0), 1);
   const bars = eps.map((e, i) => `<i class="${e.chars > p.max ? 'over' : e.chars < p.min ? 'short' : ''}" style="height:${Math.max(2, e.chars / max * 100)}%" title="${i+1}. ${esc(e.title)} · ${(e.chars||0).toLocaleString()}자" data-id="${e.id}"></i>`).join('');
-  const sprints = store.get('st.sprints', []).filter(s => s.pid === ST.pid).slice(0, 5);
   $('#stStatsView').innerHTML = `<h2>${esc(p.name)} 통계</h2><p class="sub">${esc(p.genre || '')}</p>
     <div class="st-kpi">
       <div><small>작품 전체</small><b>${total.toLocaleString()}</b><small>자 · 원고지 약 ${Math.round(total * 1.25 / 200).toLocaleString()}매</small></div>
@@ -3600,9 +3504,9 @@ function stRenderStatsView(){
       <div><small>연속 달성</small><b>${stStreak(dl, p.daily || 1)}</b><small>일 (하루 ${(p.daily||0).toLocaleString()}자)</small></div>
     </div>
     <div class="st-sec"><h3>최근 12주 (하루 목표 기준 색)</h3><div class="st-heat">${cells.join('')}</div></div>
-    <div class="st-sec"><h3>회차별 분량 (초록 띠 = 목표 ${p.min.toLocaleString()}~${p.max.toLocaleString()}자, 누르면 그 회차로)</h3><div class="st-bars" id="stBars"><div class="band" style="bottom:${p.min / max * 100}%;height:${(p.max - p.min) / max * 100}%"></div>${bars}</div></div>
-    ${sprints.length ? `<div class="st-sec"><h3>최근 스프린트</h3>${sprints.map(s => `<div class="hint">${new Date(s.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit'})} · ${s.min}분 · ${s.n.toLocaleString()}자 (분당 ${Math.round(s.n / s.min)}자)</div>`).join('')}</div>` : ''}`;
+    <div class="st-sec"><h3>회차별 분량 (초록 띠 = 목표 ${p.min.toLocaleString()}~${p.max.toLocaleString()}자, 누르면 그 회차로)</h3><div class="st-bars" id="stBars"><div class="band" style="bottom:${p.min / max * 100}%;height:${(p.max - p.min) / max * 100}%"></div>${bars}</div></div>`;
   $$('#stBars i').forEach(b => b.onclick = () => { stOpenEp(b.dataset.id); stSetView('write'); });
+  stStatsExtra();
 }
 
 /* ---------- 작품 정보 ---------- */
@@ -3613,6 +3517,7 @@ function stRenderInfo(){
   $('#stPRating').value = p.rating || '15'; $('#stPStyle').value = p.style || 'commercial';
   $('#stPDays').innerHTML = DAYS.map((d, i) => `<label><input type="checkbox" value="${i}"${(p.days || []).includes(i) ? ' checked' : ''}>${d}</label>`).join('');
   $('#stStartHere').checked = store.get('set.stStart', true);
+  stRenderRefSel();
 }
 function stInfoFormSave(){
   const p = stProj(); if (!p) return;
@@ -3669,8 +3574,9 @@ async function stRenderSnaps(){
   box.innerHTML = list.length ? '' : '<div class="hint" style="padding:6px 2px">아직 없어요</div>';
   list.forEach(s => {
     const d = document.createElement('div'); d.className = 'it';
-    d.innerHTML = `<span>${new Date(s.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit'})} · ${s.n.toLocaleString()}자${s.manual ? ' · 직접' : ''}</span><button>되돌리기</button>`;
-    d.querySelector('button').onclick = async () => { if (!confirm('이 판으로 되돌릴까요? 지금 글은 판 기록에 먼저 남겨 둘게요.')) return; await stSnap(false); taReplace(0, $('#stText').value.length, s.text); stSaveText(); stMeter(); toast('되돌렸어요'); };
+    d.innerHTML = `<span>${new Date(s.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit'})} · ${s.n.toLocaleString()}자${s.manual ? ' · 직접' : ''}</span><button data-a="cmp">비교</button><button>되돌리기</button>`;
+    d.querySelector('[data-a=cmp]').onclick = () => stShowDiff(s);
+    d.querySelector('button:last-child').onclick = async () => { if (!confirm('이 판으로 되돌릴까요? 지금 글은 판 기록에 먼저 남겨 둘게요.')) return; await stSnap(false); taReplace(0, $('#stText').value.length, s.text); stSaveText(); stMeter(); toast('되돌렸어요'); };
     box.append(d);
   });
 }
@@ -3759,6 +3665,9 @@ async function stRun(kind, custom){
   stFlush();
   const task = custom ? {need: '', insert: 'cursor', text: `<manuscript>\n${$('#stText').value.slice(-9000)}\n</manuscript>${stSelText() ? `\n<selected>\n${stSelText()}\n</selected>` : ''}\n\n${custom}`} : ST_TASK[kind]();
   if (task.need) return toast(task.need);
+  // 배우면서 쓰기: 왜 이렇게 썼는지, 다음에 기억할 것
+  if ($('#stWhy').checked && WHY_KINDS.includes(kind)) task.text += WHY_TAIL; else if (kind === 'feedback') task.text += MEMO_TAIL;
+  ST.outBody = null; $('#stLearn').innerHTML = ''; ST.orig = (kind === 'polish' || (kind === 'custom' && stSelText())) ? stSelText() : kind === 'dialog' ? stSelText() : '';
   const p = stProj(); if (p?.rating === 'adult' && !adultGuard(task.text + stBibleText(), 'adult')) return;
   const c = await client('#stProv'); if (!c) return;
   const t = $('#stText'); ST.sel = {s: t.selectionStart, e: t.selectionEnd}; ST.outKind = task.insert;
@@ -3772,12 +3681,13 @@ async function stRun(kind, custom){
   const res = await stream(c, {system: stSystem(), messages: [{role:'user', content}], signal: ST.abort.signal, onText: x => { out.textContent += x; out.scrollTop = out.scrollHeight; }});
   ST.abort = null; $('.st-ai').classList.remove('busy');
   if (res.note) out.textContent += res.note;
+  if (out.textContent) stSplitOut();
 }
 $$('[data-st]').forEach(b => b.onclick = () => stRun(b.dataset.st));
 $('#stAskGo').onclick = () => { const q = $('#stAsk').value.trim(); if (!q) return; stRun('custom', q); };
 $('#stAsk').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) $('#stAskGo').click(); });
 $('#stStop').onclick = () => ST.abort?.abort();
-function stOutText(){ return $('#stOut').textContent.replace(/\n\n\[[^\]]*\]$/, '').trim(); }
+function stOutText(){ return ST.outBody ?? $('#stOut').textContent.replace(/\n\n\[[^\]]*\]$/, '').trim(); }
 $('#stCopyOut').onclick = () => copy(stOutText());
 $('#stInsert').onclick = async () => {
   const v = stOutText(); if (!v) return; const t = $('#stText'); await stSnap(false);
@@ -3799,10 +3709,6 @@ $('#stToSyn').onclick = () => { const v = stOutText(); if (!v) return; stPatchEp
 /* ---------- 들어가는 곳 ---------- */
 $('#btnStudio').onclick = () => stOpen();
 $('#wStudio') && ($('#wStudio').onclick = () => stOpen());
-$('#mineToStudio') && ($('#mineToStudio').onclick = async () => {
-  const t = $('#mineText').value; if (!t.trim()) return toast('내 원고 칸이 비어 있어요');
-  await stOpen(); if (stEpText(ST.eid).trim()) stAddEp(); taReplace(0, $('#stText').value.length, t); stSaveText(); stMeter(); toast('집필실 회차로 옮겼어요');
-});
 window.stRefresh = () => { if ($('#studio').hidden) return; if (document.activeElement !== $('#stText') && !ST.saveT){ const v = txtGet(ST.pid, ST.eid); if (v !== $('#stText').value){ $('#stText').value = v; ST.lastText = v; stMeter(); } } stRenderSide(); stRenderEditorInfo(); $('#stOtherBox').hidden = !txtOther(ST.pid, ST.eid); if (ST.view !== 'write') stSetView(ST.view); };
 if (location.hash === '#studio' || (store.get('set.stStart', true) && stProjects().some(p => stEps(p.id).some(e => e.chars > 0)))) stOpen();
 
@@ -3827,16 +3733,6 @@ function stFindQuote(text, c){
   while (i >= 0){ const d = Math.abs(i - (c.at || 0)); if (d < bd){ bd = d; best = i; } i = text.indexOf(c.q, i + 1); }
   return best;
 }
-function stHlRender(){
-  const hl = $('#stHl'), ta = $('#stText'); if (!hl || $('#studio').hidden) return;
-  const text = ta.value; const rs = [];
-  for (const c of stCmts()){ const i = stFindQuote(text, c); if (i >= 0) rs.push([i, i + c.q.length, c.id]); }
-  rs.sort((a, b) => a[0] - b[0]);
-  let out = '', p = 0;
-  for (const [s, e, id] of rs){ if (s < p) continue; out += esc(text.slice(p, s)) + `<mark data-id="${id}">${esc(text.slice(s, e))}</mark>`; p = e; }
-  hl.innerHTML = out + esc(text.slice(p)) + '\n ';
-  hl.style.top = ta.offsetTop + 'px'; hl.style.left = ta.offsetLeft + 'px'; hl.style.width = ta.clientWidth + 'px';
-}
 function stRenderCmts(){
   const box = $('#stCmts'); if (!box) return; const list = stCmts(); const text = $('#stText').value;
   box.innerHTML = list.length ? '' : '<div class="hint">원고에서 문장을 고르고 위쪽 말풍선 단추(Ctrl+Shift+M)를 누르면 메모를 달 수 있어요.</div>';
@@ -3859,8 +3755,6 @@ function stAddCmt(){
 }
 $('#stCmtBtn').onclick = stAddCmt;
 document.addEventListener('keydown', e => { if (!$('#studio').hidden && (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'm' || e.key === 'M')){ e.preventDefault(); stAddCmt(); } });
-const _stRenderEditor = stRenderEditor;
-stRenderEditor = function(){ _stRenderEditor(); stGrow(); stRenderCmts(); requestAnimationFrame(stHlRender); };
 
 /* ================= 연재용 내보내기 ================= */
 const EXP_FMT = {
@@ -3926,11 +3820,6 @@ function stShowDiff(snap){
 }
 $('#stDiffBack').onclick = () => stSetView('write');
 $('#stDiffRestore').onclick = async () => { if (!stDiffSnap || !confirm('이 판으로 되돌릴까요? 지금 글은 판 기록에 남아요.')) return; await stSnap(false); stSetView('write'); taReplace(0, $('#stText').value.length, stDiffSnap.text); stSaveText(); stMeter(); toast('되돌렸어요 (Ctrl+Z로 다시 돌아올 수도 있어요)'); };
-const _stRenderSnaps = stRenderSnaps;
-stRenderSnaps = async function(){
-  await _stRenderSnaps(); const list = await stGetSnaps(`${ST.pid}/${ST.eid}`);
-  $$('#stSnaps .it').forEach((d, i) => { const b = document.createElement('button'); b.textContent = '비교'; b.onclick = () => stShowDiff(list[i]); d.insertBefore(b, d.lastElementChild); });
-};
 
 /* ================= 맞춤법·띄어쓰기 ================= */
 const SPELL_SCHEMA = {type:'object', additionalProperties:false, required:['items'], properties:{items:{type:'array', items:{type:'object', additionalProperties:false, required:['wrong','right','why'], properties:{wrong:{type:'string', description:'원문에 있는 그대로의 틀린 부분(앞뒤 한두 어절 포함)'}, right:{type:'string', description:'고친 형태'}, why:{type:'string', description:'짧은 이유(맞춤법/띄어쓰기/문법/오타)'}}}}}};
@@ -4071,7 +3960,6 @@ async function splitWorkTxt(w){
 }
 function epSplitBtn(){ const b = $('#epSplit'); if (!b || !cur) return; const can = cur._split || store.get('nosplit.' + cur.key, false); b.hidden = !can; b.textContent = cur._split ? '합본 나누기 끄기' : '합본 화 나누기'; }
 $('#epSplit').onclick = async () => { if (!cur) return; const off = !!cur._split; store.set('nosplit.' + cur.key, off); cur.eps = cur._origEps || cur.eps; cur._split = undefined; closeSheets(); await openWork(cur); toast(off ? '나누지 않고 한 파일로 볼게요' : '다시 화별로 나눴어요'); };
-const _renderEpList2 = renderEpList; renderEpList = function(){ _renderEpList2(); epSplitBtn(); };
 
 // 집필실 가져오기: 합본이면 나눌지 묻는다
 $('#stImportFile').onchange = async e => {
@@ -4113,18 +4001,9 @@ async function bkRun(){
 document.addEventListener('pointerdown', async () => { if (BK.need && BK.dir && !$('#studio').hidden){ BK.need = false; try{ if ((await BK.dir.requestPermission({mode: 'readwrite'})) === 'granted'){ bkRun(); } else BK.need = true; }catch{ BK.need = true; } bkStatus(); } }, true);
 $('#stText').addEventListener('input', () => { BK.dirty = true; });
 setInterval(() => { if (!$('#studio').hidden) bkRun(); }, 10 * 60000);
-const _stClose = stClose; stClose = function(){ _stClose(); bkRun(); };
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') bkRun(); });
 $('#stExpBackup').addEventListener('click', () => store.set('st.bk.manual', Date.now()));
 // 백업이 오래되면 왼쪽 카드에 알린다
-const _stRenderStats = stRenderStats;
-stRenderStats = function(){
-  _stRenderStats();
-  const last = Math.max(store.get('st.bk.last', 0), store.get('st.bk.manual', 0), store.get('gd.last', 0));
-  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
-  if (days === null || days >= 3) $('#stStats').insertAdjacentHTML('beforeend', `<br><span style="color:var(--warn)">${days === null ? '아직 백업한 적이 없어요' : `백업한 지 ${days}일`}</span> · <a href="#" id="stBkGo">백업 설정</a>`);
-  $('#stBkGo')?.addEventListener('click', ev => { ev.preventDefault(); stSetView('info'); });
-};
 bkLoad();
 
 /* ================= 아이폰 키보드 ================= */
@@ -4141,11 +4020,7 @@ window.visualViewport?.addEventListener('scroll', stVV);
 document.addEventListener('focusout', () => setTimeout(stVV, 50));
 
 /* ================= 보기 바꿀 때 ================= */
-const _stSetView = stSetView;
-stSetView = function(v){ _stSetView(v); if (v === 'info') bkStatus(); if (v === 'write'){ stGrow(); requestAnimationFrame(stHlRender); } };
 // 작법 카드 가져오기 단추를 설정집 위에 붙인다
-const _stRenderBible2 = stRenderBible;
-stRenderBible = function(){ _stRenderBible2(); if (!$('#stMdImp')){ $('#stBibleChips').insertAdjacentHTML('beforeend', '<button id="stMdImp" title="분석 보고서(.md)를 작법 카드로">분석 보고서 가져오기</button>'); $('#stMdImp').onclick = stImportMd; } };
 
 /* ================= 쓰면서 느는 장치 ================= */
 
@@ -4153,17 +4028,6 @@ stRenderBible = function(){ _stRenderBible2(); if (!$('#stMdImp')){ $('#stBibleC
 const WHY_TAIL = `\n\n본문을 다 쓴 뒤 맨 끝에 '===이유===' 한 줄을 쓰고, 그 아래에 왜 이렇게 썼는지(고쳤다면 무엇을 왜 바꿨는지) 2~4개를 '• [분류] 짧은 설명' 형식으로 적어. 분류는 리듬·중복·정보 순서·시점·보여주기·대사·긴장·맞춤법·호흡 중에서 고른다. 설명은 다음에 작가가 혼자서도 쓸 수 있게 원리로 적는다.`;
 const MEMO_TAIL = `\n\n맨 끝에 '===기억===' 한 줄을 쓰고, 그 아래에 이 작가가 다음 화를 쓸 때 기억할 것 한 줄만 적어.`;
 const WHY_KINDS = ['continue','polish','dialog','hook','custom'];
-const _stRun = stRun;
-stRun = async function(kind, custom){
-  ST.outBody = null; $('#stLearn').innerHTML = ''; const before = $('#stOut').textContent;
-  ST.orig = (kind === 'polish' || (kind === 'custom' && stSelText())) ? stSelText() : kind === 'dialog' ? (stSelText() || '') : '';
-  const why = $('#stWhy').checked && WHY_KINDS.includes(kind); let restore = null;
-  const wrap = tail => { const orig = ST_TASK[kind]; ST_TASK[kind] = () => { const r = orig(); r.text += tail; return r; }; restore = () => { ST_TASK[kind] = orig; }; };
-  if (why && kind !== 'custom') wrap(WHY_TAIL); else if (kind === 'feedback') wrap(MEMO_TAIL);
-  if (why && kind === 'custom') custom += WHY_TAIL;
-  try{ await _stRun(kind, custom); } finally { restore?.(); }
-  if ($('#stOut').textContent && $('#stOut').textContent !== before) stSplitOut();
-};
 function stSplitOut(){
   const full = $('#stOut').textContent; const note = (full.match(/\n\n\[[^\]]*\]$/) || [''])[0]; const raw = note ? full.slice(0, -note.length) : full;
   const [body0, memo] = raw.split(/\n*={2,}\s*기억\s*={2,}\n*/); const [body, why] = body0.split(/\n*={2,}\s*이유\s*={2,}\n*/);
@@ -4191,7 +4055,6 @@ function stSplitOut(){
     box.append(d);
   }
 }
-const _stOutText = stOutText; stOutText = () => ST.outBody ?? _stOutText();
 // 설정집 '작법' 카드 '내 퇴고 노트'에 한 줄씩 쌓는다(이것이 내 작법서가 된다)
 function stCraftNote(line){
   const l = stBible(); let c = l.find(b => b.kind === '작법' && b.title === '내 퇴고 노트');
@@ -4277,8 +4140,7 @@ function stHabitTrend(){
 $('[data-itab=mirror]').addEventListener('click', () => setTimeout(stRenderMirror, 0));
 $('#stText').addEventListener('input', () => { if (!$('[data-ipane=mirror]').hidden){ clearTimeout(stRenderMirror._t); stRenderMirror._t = setTimeout(() => { if (mirrorOn){ const h = habits($('#stText').value); ST.marks = h[mirrorOn].ranges.map(([s, e]) => [s, e, 'hb']); stHlRender(); } stRenderMirror(); }, 900); } });
 // 원고 위 칠하기: 메모(노랑)와 버릇(주황 밑줄)을 함께
-const _stHlRender = stHlRender;
-stHlRender = function(){
+function stHlRender(){
   const hl = $('#stHl'), ta = $('#stText'); if (!hl || $('#studio').hidden) return;
   const text = ta.value; const rs = [];
   for (const c of stCmts()){ const i = stFindQuote(text, c); if (i >= 0) rs.push([i, i + c.q.length, 'cm', c.id]); }
@@ -4288,8 +4150,7 @@ stHlRender = function(){
   for (const [s, e, cls, id] of rs){ if (s < p) continue; out += esc(text.slice(p, s)) + `<mark class="${cls}"${id ? ` data-id="${id}"` : ''}>${esc(text.slice(s, e))}</mark>`; p = e; }
   hl.innerHTML = out + esc(text.slice(p)) + '\n ';
   hl.style.top = ta.offsetTop + 'px'; hl.style.left = ta.offsetLeft + 'px'; hl.style.width = ta.clientWidth + 'px';
-};
-const _stOpenEp2 = stOpenEp; stOpenEp = function(eid){ mirrorOn = null; ST.marks = []; _stOpenEp2(eid); if (!$('[data-ipane=mirror]').hidden) stRenderMirror(); };
+}
 
 /* ---------- 3. 내가 고치는 패턴(판 기록끼리 비교) ---------- */
 function editPairStats(a, b){
@@ -4367,26 +4228,6 @@ $('#stRefWork').onchange = async () => {
   if (w){ toast(`${w.name} 수치를 재는 중…`); if (!w._expanded && w.eps.some(e => e.type === 'epub')){ /* epub은 자료실에서 한 번 열어야 장으로 나뉜다 */ } await splitWorkTxt(w); const r = await stRefStat(w); toast(r ? `${w.name} 앞 ${r.n}화 평균을 기준으로 삼았어요` : '잴 수 있는 회차가 없어요(자료실에서 한 번 열어 주세요)'); }
   stMeter();
 };
-const _stMeter = stMeter;
-stMeter = function(){
-  _stMeter(); const p = stProj(); const r = p?.ref ? store.get('st.refstat.' + p.ref, null) : null; if (!r) return;
-  $('#stSaved')?.insertAdjacentHTML('beforebegin', `<span class="hint" title="참고 작품 ${esc(r.name)} 앞 ${r.n}화 평균">참고 ${esc(r.name.slice(0, 6))}: ${r.chars.toLocaleString()}자 · 대사 ${r.dlg}% · 문단 ${r.median}자</span>`);
-};
-const _stRenderStatsView = stRenderStatsView;
-stRenderStatsView = function(){
-  _stRenderStatsView(); const p = stProj(); const eps = stEps().filter(e => e.chars > 200);
-  const mine = (() => { if (!eps.length) return null; const acc = {chars: 0, median: 0, dlg: 0, sentAvg: 0}; for (const e of eps.slice(-30)){ const a = analyze(stEpText(e.id)); for (const k in acc) acc[k] += a[k]; } const n = Math.min(30, eps.length); for (const k in acc) acc[k] = Math.round(acc[k] / n); return acc; })();
-  const r = p?.ref ? store.get('st.refstat.' + p.ref, null) : null;
-  const v = $('#stStatsView');
-  if (mine) v.insertAdjacentHTML('beforeend', `<div class="st-sec"><h3>내 글과 참고 작품 (최근 30화 평균)</h3>${r ? `<table class="st-tbl"><tr><th></th><th>내 작품</th><th>${esc(r.name)}</th><th>차이를 보는 법</th></tr>
-      <tr><td><span class="term" data-term="분량">분량</span></td><td class="n">${mine.chars.toLocaleString()}자</td><td class="n">${r.chars.toLocaleString()}자</td><td class="hint">유료 연재는 한 화 분량이 들쭉날쭉하면 결제 만족도가 떨어져요.</td></tr>
-      <tr><td><span class="term" data-term="대사 비율">대사 비율</span></td><td class="n">${mine.dlg}%</td><td class="n">${r.dlg}%</td><td class="hint">대사가 적으면 설명이 길어지고, 많으면 장면이 가벼워져요.</td></tr>
-      <tr><td><span class="term" data-term="문단 길이">문단 길이</span></td><td class="n">${mine.median}자</td><td class="n">${r.median}자</td><td class="hint">휴대폰 한 화면에 문단 서너 개가 보이는 게 보통이에요.</td></tr>
-      <tr><td>문장 평균</td><td class="n">${mine.sentAvg}자</td><td class="n">${r.sentAvg}자</td><td class="hint">문장이 짧을수록 빠르게 읽혀요. 감정이 큰 장면은 일부러 늘이기도 해요.</td></tr></table>` : '<div class="hint">작품 정보에서 참고 작품을 고르면 나란히 보여요.</div>'}</div>`);
-  v.insertAdjacentHTML('beforeend', '<div class="st-sec"><h3>내가 고치는 패턴</h3><div id="stRevBox"></div></div>');
-  stRenderRevision(); bindTerms(v);
-};
-const _stRenderInfo = stRenderInfo; stRenderInfo = function(){ _stRenderInfo(); stRenderRefSel(); };
 
 /* ---------- 6. 말에 손을 대면 짧은 설명 ---------- */
 const TERMS = {
@@ -4420,10 +4261,21 @@ function bindTerms(root = document){
 }
 document.addEventListener('click', e => { if (!e.target.closest('.term, #termPop')) $('#termPop').hidden = true; });
 // 원고 아래 막대의 말들에도 설명을 붙인다
-const _stMeter2 = stMeter;
-stMeter = function(){ _stMeter2(); const m = $('#stMeter'); m.querySelectorAll('span').forEach(s => { const t = s.firstChild?.textContent?.trim(); if (['대사','문단','원고지'].includes(t)){ const x = document.createElement('span'); x.className = 'term'; x.dataset.term = t; x.textContent = t; s.firstChild.replaceWith(x, ' '); } }); bindTerms(m); };
-const _stRenderStats2 = stRenderStats; stRenderStats = function(){ _stRenderStats2(); $('#stStats').innerHTML = $('#stStats').innerHTML.replace('비축 <b>', '<span class="term" data-term="비축분">비축</span> <b>'); $('#stBkGo')?.addEventListener('click', ev => { ev.preventDefault(); stSetView('info'); }); bindTerms($('#stStats')); };
 bindTerms($('#studio'));
+
+// 통계 화면 아래: 참고 작품과 나란히, 내가 고치는 패턴
+function stStatsExtra(){ const p = stProj(); const eps = stEps().filter(e => e.chars > 200);
+  const mine = (() => { if (!eps.length) return null; const acc = {chars: 0, median: 0, dlg: 0, sentAvg: 0}; for (const e of eps.slice(-30)){ const a = analyze(stEpText(e.id)); for (const k in acc) acc[k] += a[k]; } const n = Math.min(30, eps.length); for (const k in acc) acc[k] = Math.round(acc[k] / n); return acc; })();
+  const r = p?.ref ? store.get('st.refstat.' + p.ref, null) : null;
+  const v = $('#stStatsView');
+  if (mine) v.insertAdjacentHTML('beforeend', `<div class="st-sec"><h3>내 글과 참고 작품 (최근 30화 평균)</h3>${r ? `<table class="st-tbl"><tr><th></th><th>내 작품</th><th>${esc(r.name)}</th><th>차이를 보는 법</th></tr>
+      <tr><td><span class="term" data-term="분량">분량</span></td><td class="n">${mine.chars.toLocaleString()}자</td><td class="n">${r.chars.toLocaleString()}자</td><td class="hint">유료 연재는 한 화 분량이 들쭉날쭉하면 결제 만족도가 떨어져요.</td></tr>
+      <tr><td><span class="term" data-term="대사 비율">대사 비율</span></td><td class="n">${mine.dlg}%</td><td class="n">${r.dlg}%</td><td class="hint">대사가 적으면 설명이 길어지고, 많으면 장면이 가벼워져요.</td></tr>
+      <tr><td><span class="term" data-term="문단 길이">문단 길이</span></td><td class="n">${mine.median}자</td><td class="n">${r.median}자</td><td class="hint">휴대폰 한 화면에 문단 서너 개가 보이는 게 보통이에요.</td></tr>
+      <tr><td>문장 평균</td><td class="n">${mine.sentAvg}자</td><td class="n">${r.sentAvg}자</td><td class="hint">문장이 짧을수록 빠르게 읽혀요. 감정이 큰 장면은 일부러 늘이기도 해요.</td></tr></table>` : '<div class="hint">작품 정보에서 참고 작품을 고르면 나란히 보여요.</div>'}</div>`);
+  v.insertAdjacentHTML('beforeend', '<div class="st-sec"><h3>내가 고치는 패턴</h3><div id="stRevBox"></div></div>');
+  stRenderRevision(); bindTerms(v);
+}
 </script>
 </body>
 </html>

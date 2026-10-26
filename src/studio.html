@@ -1,0 +1,143 @@
+<section id="studio" hidden>
+  <nav class="st-rail">
+    <div class="logo">筆</div>
+    <button data-view="write" class="on" title="원고 (Alt+1)"><svg class="i"><use href="#i-pen"/></svg><span>원고</span></button>
+    <button data-view="board" title="카드보드 (Alt+2)"><svg class="i"><use href="#i-cards"/></svg><span>카드</span></button>
+    <button data-view="outline" title="개요 (Alt+3)"><svg class="i"><use href="#i-list"/></svg><span>개요</span></button>
+    <button data-view="bible" title="설정집 (Alt+4)"><svg class="i"><use href="#i-people"/></svg><span>설정집</span></button>
+    <button data-view="stats" title="통계 (Alt+5)"><svg class="i"><use href="#i-chart"/></svg><span>통계</span></button>
+    <div class="sp"></div>
+    <button id="stToLib" title="자료실 (뷰어)"><svg class="i"><use href="#i-book"/></svg><span>자료실</span></button>
+    <button id="stToSet" title="AI 키·동기화 설정"><svg class="i"><use href="#i-gear"/></svg><span>설정</span></button>
+  </nav>
+
+  <aside class="st-binder">
+    <div class="st-proj">
+      <div class="st-cover" id="stCover" title="작품 정보"></div>
+      <div class="pi"><select id="stProj"></select><div class="pm" id="stProjMeta"></div></div>
+      <button class="icon st-mob" data-stclose="side" title="닫기"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="st-card" id="stStats"></div>
+    <div class="st-bhead"><b>원고</b><button id="stImport" title="txt를 회차로">가져오기</button><button class="primary" id="stEpNew" title="새 회차 (Ctrl+Enter)">+ 회차</button></div>
+    <input type="file" id="stImportFile" accept=".txt,text/plain" multiple hidden>
+    <div class="st-tree" id="stEpList"></div>
+    <div class="legend2"><span><i class="sdot draft"></i>초고</span><span><i class="sdot revise"></i>퇴고</span><span><i class="sdot done"></i>완료·비축</span><span><i class="sdot posted"></i>연재함</span></div>
+    <div class="row" style="margin-top:14px"><button class="grow" id="stProjNew">+ 새 작품</button><button class="grow" id="stProjInfo">작품 정보</button></div>
+  </aside>
+
+  <div class="st-center">
+    <div class="st-top" id="stTopWrite">
+      <button class="icon" id="stSideTg" title="원고 목록"><svg class="i"><use href="#i-menu"/></svg></button>
+      <div class="st-crumb"><span id="stCrumbPart"></span><input type="text" id="stTitle" placeholder="회차 제목" autocomplete="off"></div>
+      <select id="stStatus" title="상태"><option value="draft">초고</option><option value="revise">퇴고</option><option value="done">완료</option><option value="posted">연재함</option></select>
+      <button class="icon" id="stFindTg" title="찾기·바꾸기 (Ctrl+F)"><svg class="i"><use href="#i-search"/></svg></button>
+      <button class="icon" id="stCmtBtn" title="고른 문장에 메모 달기 (Ctrl+Shift+M)"><svg class="i"><use href="#i-note"/></svg></button>
+      <button class="icon desk-only" id="stTw" title="타자기 스크롤: 쓰는 줄을 화면 가운데에"><svg class="i"><use href="#i-type"/></svg></button>
+      <button class="icon desk-only" id="stFocus" title="집중 모드 (Ctrl+.)"><svg class="i"><use href="#i-focus"/></svg></button>
+      <button class="icon" id="stInspTg" title="회차 정보·AI·판 기록"><svg class="i"><use href="#i-panel"/></svg></button>
+    </div>
+    <div class="st-top" id="stTopOther" hidden>
+      <button class="icon" id="stSideTg2" title="원고 목록"><svg class="i"><use href="#i-menu"/></svg></button>
+      <span class="vt" id="stViewTitle"></span>
+      <button class="icon" id="stInspTg2" title="회차 정보·AI"><svg class="i"><use href="#i-panel"/></svg></button>
+    </div>
+    <div class="st-find" id="stFind" hidden>
+      <input type="search" id="stFindQ" placeholder="찾기"><input type="text" id="stRepQ" placeholder="바꿀 말">
+      <button id="stFindPrev" title="이전 (Shift+Enter)">↑</button><button id="stFindNext" title="다음 (Enter)">↓</button>
+      <span class="hint" id="stFindN"></span>
+      <button id="stRep1">바꾸기</button><button id="stRepAll">모두 바꾸기</button>
+      <label class="hint"><input type="checkbox" id="stFindAll"> 작품 전체</label>
+      <button class="icon" id="stFindX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div id="stOtherBox" class="st-other" hidden><span>다른 기기에서 고친 이 회차 원고가 따로 있어요.</span><button id="stOtherShow">그걸로 바꾸기</button><button id="stOtherDrop">지우기</button></div>
+
+    <div class="st-view on" data-v="write" id="stEdWrap">
+      <div class="st-desk"><div class="st-page">
+        <div class="st-pagehead"><span class="t" id="stPageWork"></span><span id="stPageNo"></span></div>
+        <div id="stHl" aria-hidden="true"></div>
+        <textarea id="stText" spellcheck="false" placeholder="여기에 쓰면 저절로 저장돼요.&#10;&#10;문단 사이는 빈 줄로 띄우면 휴대폰에서 읽기 좋아요."></textarea>
+      </div></div>
+    </div>
+    <div class="st-view" data-v="board"><div class="st-wrap"><h2>카드보드</h2><p class="sub">회차마다 한 장. 줄거리를 적고 끌어서 순서를 바꿔요. 제목을 누르면 원고로 가요.</p><div class="st-board" id="stBoard"></div></div></div>
+    <div class="st-view" data-v="outline"><div class="st-wrap"><h2>개요</h2><p class="sub">작품 전체를 표로 봐요. 요약 칸은 바로 고칠 수 있어요.</p><table class="st-tbl" id="stOutline"></table></div></div>
+    <div class="st-view" data-v="bible"><div class="st-wrap"><h2>설정집</h2><p class="sub">인물·세계관·플롯을 카드로 적어 두면 AI가 함께 보고 써요. 인물 사진을 누르면 그림을 넣을 수 있어요.</p>
+      <div class="st-bchips" id="stBibleChips"></div><div class="st-bgrid" id="stBible"></div></div></div>
+    <div class="st-view" data-v="diff"><div class="st-wrap"><div class="row"><span id="stDiffHead" class="grow"></span><button id="stDiffRestore">이 판으로 되돌리기</button><button class="primary" id="stDiffBack">원고로</button></div><div class="st-diff" id="stDiffBody"></div></div></div>
+    <div class="st-view" data-v="stats"><div class="st-wrap" id="stStatsView"></div></div>
+    <div class="st-view" data-v="info"><div class="st-wrap"><h2>작품 정보</h2><p class="sub">여기 적은 것은 AI에게도 함께 알려 줘요.</p>
+      <div class="st-sec"><div class="st-form">
+        <div><label>작품 이름</label><input type="text" id="stPName"></div>
+        <div><label>장르 · 연재처</label><input type="text" id="stPGenre" placeholder="예: 무협 회귀물 · 카카오페이지"></div>
+        <div class="full"><label><span class="term" data-term="로그라인">로그라인</span> (한 줄 소개)</label><input type="text" id="stPLog" placeholder="예: 천하제일검이 백 년 뒤 망한 문파의 막내로 깨어난다"></div>
+        <div class="full"><label>작품 소개 · 큰 줄거리</label><textarea id="stPSyn" style="min-height:90px"></textarea></div>
+        <div><label>한 화 분량 (공백 제외, 최소 ~ 최대)</label><div class="row tight"><input type="number" id="stPMin" class="grow" step="100"><span>~</span><input type="number" id="stPMax" class="grow" step="100"></div></div>
+        <div><label>하루 목표 (쓴 글자 수)</label><input type="number" id="stPDaily" step="500"></div>
+        <div><label>연재 요일</label><div class="st-days" id="stPDays"></div></div>
+        <div><label>수위</label><select id="stPRating"><option value="all">전체이용가</option><option value="15">15세</option><option value="adult">성인(19+)</option></select></div>
+        <div><label>문체</label><select id="stPStyle"><option value="commercial">상업 웹소설</option><option value="ct">캐릭터톡</option><option value="mine">내 글의 결</option></select></div>
+        <div><label>표지</label><div class="row tight"><button id="stPCover">표지 그림 고르기</button><button id="stPCoverDel">지우기</button></div><input type="file" id="stPCoverFile" accept="image/*" hidden></div>
+        <div><label>참고 작품 (자료실의 소설)</label><select id="stRefWork"></select><div class="hint" id="stRefHint"></div></div>
+        <div class="full"><label><input type="checkbox" id="stStartHere"> 앱을 열면 집필실부터 보여 주기</label></div>
+      </div></div>
+      <div class="st-sec"><h3>자동 백업</h3><div class="hint" id="stBkStat" style="margin-bottom:8px"></div><div class="row tight"><button id="stBkDir">백업 폴더 정하기</button></div></div>
+      <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
+    </div></div>
+
+    <div class="st-meter" id="stMeter"></div>
+  </div>
+
+  <aside class="st-insp">
+    <div class="st-itabs"><button data-itab="info" class="on">회차 정보</button><button data-itab="ai">AI 도우미</button><button data-itab="snap">판 기록</button><button data-itab="mirror">거울</button><button data-itab="ref">참고</button><span class="grow"></span><button class="icon st-mob" data-stclose="insp" title="닫기" style="border:0"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="st-ipane" data-ipane="info">
+      <h3>줄거리 (카드보드에 보여요)</h3><textarea id="stSyn" placeholder="이 화에서 일어나는 일을 두세 줄로" style="min-height:80px"></textarea>
+      <h3>부 · 권</h3><input type="text" id="stPart" placeholder="예: 1부 화산의 검" style="width:100%">
+      <h3>나오는 인물</h3><div class="st-cast" id="stCast"></div>
+      <h3>작가 메모 (원고에 안 들어가요)</h3><textarea id="stNote" placeholder="복선, 고칠 곳, 자료…" style="min-height:90px"></textarea>
+      <h3>원고 메모</h3><div id="stCmts"></div>
+      <h3>순서</h3><div class="row tight"><button id="stUp">↑ 앞으로</button><button id="stDown">↓ 뒤로</button><button class="danger" id="stEpDel">이 회차 지우기</button></div>
+      <h3>연재용 내보내기</h3>
+      <div class="row tight"><select id="stExpFmt" class="grow"><option value="mobile">모바일 연재 (문단 사이 빈 줄)</option><option value="book">출판·공모전 원고 (빈 줄 없이 들여쓰기)</option><option value="raw">쓴 그대로</option></select></div>
+      <div class="row"><label class="hint"><input type="checkbox" id="stExpTitle" checked> 맨 위에 회차 제목</label><label class="hint"><input type="checkbox" id="stExpDots" checked> ... → …</label><label class="hint"><input type="checkbox" id="stExpQuote"> "곧은" → “둥근” 따옴표</label></div>
+      <div class="hint" id="stExpCount"></div>
+      <div class="row"><button id="stCopyEp">이 화 복사</button><button id="stExpEp">이 화 txt</button><button id="stExpRange">여러 화 txt</button><button id="stFmt">원고 문단 정리</button></div>
+      <div class="hint">연재처마다 글자 수 기준(공백 포함·제외)과 문단 규칙이 달라요. 올리기 전에 연재처 안내를 한 번 확인해 주세요.</div>
+    </div>
+    <div class="st-ipane st-ai" data-ipane="ai" hidden>
+      <div class="row tight"><label>AI</label><select id="stProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option></select><span class="hint keyHint grow"></span></div>
+      <div class="row tight"><label class="hint"><input type="checkbox" id="stUseCraft" checked> 작법 노트(설정집 '작법' 카드) 참고</label></div>
+      <h3>원고에 바로</h3>
+      <div class="acts">
+        <button data-st="continue">이어 쓰기<small>커서부터</small></button>
+        <button data-st="polish">문장 다듬기<small>선택</small></button>
+        <button data-st="dialog">대사 살리기<small>선택·전체</small></button>
+        <button data-st="cut">절단 대안 3개</button>
+        <button data-st="hook">첫 장면 고치기</button>
+        <button data-st="feedback">냉정한 피드백</button>
+        <button data-st="title">회차 제목 후보</button>
+        <button data-st="summary">줄거리 요약</button>
+      </div>
+      <h3>교정</h3>
+      <div class="row tight"><button id="stSpellBtn">맞춤법·띄어쓰기 검사</button><span class="hint grow">고른 부분이 있으면 그 부분만</span></div>
+      <div id="stSpell" hidden></div>
+      <div class="row"><label>이어 쓸 분량</label><select id="stLen"><option value="800">짧게 (~800자)</option><option value="1500" selected>보통 (~1,500자)</option><option value="3000">길게 (~3,000자)</option></select></div>
+      <textarea id="stAsk" placeholder="직접 부탁하기 (예: 이 장면을 청명 시점으로 바꿔 줘). Ctrl+Enter로 보내기" style="min-height:64px"></textarea>
+      <div class="row"><button class="primary idle-only" id="stAskGo">보내기</button><button class="busy-only" id="stStop">멈추기</button><span class="hint aiUsage grow"></span></div>
+      <div id="stOut"></div>
+      <div class="row tight"><label class="hint"><input type="checkbox" id="stWhy" checked> 왜 이렇게 썼는지 같이 보기 (배우면서 쓰기)</label></div>
+      <div class="row"><button id="stInsert">커서 자리에 넣기</button><button id="stReplace">선택 부분과 바꾸기</button><button id="stCopyOut">복사</button><button id="stToSyn" hidden>줄거리 칸에 넣기</button></div>
+      <div id="stLearn"></div>
+    </div>
+    <div class="st-ipane" data-ipane="mirror" hidden><div id="stMirror"></div></div>
+    <div class="st-ipane" data-ipane="ref" hidden>
+      <div class="hint" style="margin-bottom:8px">자료실에서 읽으며 형광펜을 칠한 문장이에요. 'AI로 이 기법 쓰기'를 누르면 지금 원고에 그 기법을 적용해 달라고 부탁할 수 있어요.</div>
+      <div class="st-bchips" id="stRefChips"></div>
+      <input type="search" id="stRefQ" placeholder="찾기 (작품·문장·메모)" style="width:100%;margin-bottom:8px">
+      <div id="stRefList"></div>
+    </div>
+    <div class="st-ipane" data-ipane="snap" hidden>
+      <div class="row tight"><button id="stSnapNow">지금 판 저장 (Ctrl+S)</button><span class="hint grow">5분마다·AI 넣기 전에 저절로 남겨요. 이 기기에만 있어요.</span></div>
+      <div class="st-snaps" id="stSnaps"></div>
+    </div>
+  </aside>
+  <div id="termPop" hidden></div>
+</section>

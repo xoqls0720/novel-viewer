@@ -8,3 +8,5 @@
 - Ollama(무료, 컴퓨터만): ollama.com에서 설치 → `ollama pull gemma3:12b` → `Ollama_켜기.bat` 실행 → 설정 탭 '연결 확인'.
 
 자세한 설명은 비공개 저장소 novel의 viewer/README.md에 있습니다.
+
+고치는 법은 [DEVELOPING.md](DEVELOPING.md)를 보세요.
