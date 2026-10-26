@@ -267,8 +267,9 @@
           <label>스텝</label><input type="number" id="ngSteps" value="28" min="1" max="50" style="width:64px">
           <label>가이드</label><input type="number" id="ngScale" value="5" min="1" max="10" step="0.5" style="width:60px">
           <label>장면당</label><input type="number" id="ngEach" value="1" min="1" max="8" style="width:56px">장</div>
+        <div class="row"><button id="ngGrab">노벨AI에서 설정 가져오기</button><button id="ngTplClear">가져온 설정 지우기</button></div>
         <div class="row"><button id="ngGo" class="primary">그림 만들기</button><button id="ngStop" hidden>멈추기</button><span class="hint grow" id="ngStat"></span></div>
-        <div class="hint">만든 그림은 <b>장면 노트</b>에 저장되고 동기화돼요. 무료 생성 기준은 832×1216·28스텝이에요.</div>
+        <div class="hint">'설정 가져오기'를 누르면 노벨AI 창이 열려요. 거기서 평소처럼 그림을 한 장 만들면 <b>토큰·모델·크기·스텝·샘플러</b>를 그대로 가져와서, 다음부터는 같은 설정으로 그려요. 만든 그림은 <b>장면 노트</b>에 저장되고 동기화돼요.</div>
       </div>
       <h3>그림으로 이어 가기</h3>
       <div class="row"><button id="naiOpen">노벨AI에서 만들기</button><button id="naiImport">만든 그림 가져오기</button><button id="naiSketch">구도 스케치</button></div>

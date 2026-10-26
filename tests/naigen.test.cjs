@@ -16,6 +16,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
     window.nvDesktop = {
       version: async () => '9.9.9', libPick: async () => null, libScan: async () => [], gdToken: async () => null, gdLogin: async () => null, gdLogout: async () => true, openFolder: async () => {},
       naiGen: async (token, body) => { window.__nai.push({token, body}); if (token !== 'nai-token-x') return {ok: false, status: 401, text: 'bad'}; return {ok: true, images: [png]}; },
+      naiCapture: async () => window.__cap || {ok: false, text: '취소'},
     };
   }, {png: PNG.toString('base64')});
   await p.goto(APP); await p.waitForTimeout(700);
@@ -29,14 +30,20 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   // 토큰 저장(동기화 대상)
   await p.fill('#naiKey', 'nai-token-x'); await p.click('#ngSave'); await p.waitForTimeout(200);
   console.log('token saved:', await p.evaluate(() => JSON.parse(localStorage.getItem('nv.naiKey'))), '| in key sync list:', await p.evaluate(() => !!JSON.parse(localStorage.getItem('nv.__kts') || '{}').naiKey), '| not in backup:', await p.evaluate(() => !/naiKey/.test(JSON.stringify(Object.keys(localStorage).filter(k => !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret)$/.test(k))))));
+  // 노벨AI에서 설정 가져오기: 토큰·모델·크기·스텝·샘플러까지
+  await p.evaluate(() => { window.__cap = {ok: true, token: 'nai-token-x', body: {model: 'nai-diffusion-5-full', action: 'generate', input: 'x', parameters: {width: 1216, height: 832, steps: 23, scale: 6, sampler: 'k_dpmpp_2m', noise_schedule: 'exponential', cfg_rescale: 0.4, image: 'BIGBASE64', stream: 'msgpack', characterPrompts: [], seed: 1}}}; });
+  await p.click('#ngGrab'); await p.waitForTimeout(600);
+  console.log('grab:', await p.textContent('#ngStat'));
+  console.log('grabbed fields:', await p.inputValue('#ngModel'), await p.inputValue('#ngSteps'), await p.inputValue('#ngScale'), await p.$eval('#ngSize', e => e.value), '| token:', await p.evaluate(() => JSON.parse(localStorage.getItem('nv.naiKey'))));
   // 장면 두 줄 × 2장
   await p.fill('#ngList', '카엘이 눈 내리는 성 앞에서 뒤돌아본다\n레비안이 새벽 얼음 호수에서 검을 휘두른다');
-  await p.fill('#ngEach', '2'); await p.selectOption('#ngSize', 'portrait'); await p.fill('#ngSteps', '28');
+  await p.fill('#ngEach', '2'); await p.selectOption('#ngSize', 'portrait'); await p.fill('#ngSteps', '28'); await p.evaluate(() => { document.querySelector('#ngSize').dispatchEvent(new Event('change')); });
   await p.click('#ngGo');
   for (let i = 0; i < 60; i++){ if (/끝났어요/.test(await p.textContent('#ngStat'))) break; await p.waitForTimeout(500); }
   console.log('stat:', await p.textContent('#ngStat'));
   const reqs = await p.evaluate(() => window.__nai.map(x => x.body));
   console.log('requests:', reqs.length, '| model:', reqs[0].model, '| size:', reqs[0].parameters.width + 'x' + reqs[0].parameters.height, '| steps:', reqs[0].parameters.steps);
+  console.log('kept from grab:', reqs[0].parameters.sampler, reqs[0].parameters.noise_schedule, reqs[0].parameters.cfg_rescale, '| dropped img/stream:', !('image' in reqs[0].parameters) && !('stream' in reqs[0].parameters));
   console.log('payload keys ok:', ['input', 'model', 'action'].every(k => k in reqs[0]), '| v4 caption:', reqs[0].parameters.v4_prompt.caption.base_caption.includes('snowy castle'), '| style in base:', reqs[0].parameters.v4_prompt.caption.base_caption.includes('korean webtoon'));
   console.log('char prompt:', reqs[0].parameters.characterPrompts[0].prompt, '| center:', JSON.stringify(reqs[0].parameters.characterPrompts[0].center), '| use_coords:', reqs[0].parameters.use_coords);
   console.log('neg:', reqs[0].parameters.v4_negative_prompt.caption.base_caption.includes('blurry'), '| seeds differ:', new Set(reqs.map(r => r.parameters.seed)).size === reqs.length);

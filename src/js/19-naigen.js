@@ -8,25 +8,32 @@ function ngStat(t){ const el = $('#ngStat'); if (el) el.textContent = t; }
 function ngBusy(on){ NG.run = on; $('#pane-nai')?.classList.toggle('ngbusy', on); $('#ngGo').disabled = on; $('#ngStop').hidden = !on; }
 
 // 프롬프트 묶음 → 노벨AI 요청 본문. V4 이상은 인물마다 칸이 따로 있다.
+// 노벨AI에서 가져온 설정(ngTpl)이 있으면 그 값을 바탕으로 삼고, 글·인물·씨앗만 갈아 끼운다.
 function naiBody(p, seed){
+  const tpl = store.get('set.ngTpl', null);
   const [w, h] = NAI_SIZE[$('#ngSize').value] || NAI_SIZE.portrait;
-  const model = $('#ngModel').value.trim() || 'nai-diffusion-4-5-full';
+  const model = $('#ngModel').value.trim() || tpl?.model || 'nai-diffusion-4-5-full';
   const steps = Math.max(1, Math.min(50, +$('#ngSteps').value || 28));
   const chars = (p.chars || []).slice(0, 6);
   const pos = c => { const m = /^(\d)[,:](\d)$/.exec(String(c.position || '').trim()); return m ? {x: +m[1] / 5 + 0.1, y: +m[2] / 5 + 0.1} : {x: 0.5, y: 0.5}; };
   const cp = chars.map(c => ({prompt: c.prompt, uc: c.negative || '', center: pos(c), enabled: true}));
+  const base = tpl?.parameters ? {...tpl.parameters} : {};
+  for (const k of ['image', 'mask', 'reference_image', 'reference_image_multiple', 'reference_strength_multiple', 'reference_information_extracted_multiple', 'director_reference_images', 'extra_noise_seed', 'stream']) delete base[k];
+  const coords = cp.some(c => c.center.x !== 0.5 || c.center.y !== 0.5);
   return {
     input: p.base, model, action: 'generate',
     parameters: {
-      params_version: 3, width: w, height: h, scale: +$('#ngScale').value || 5,
-      sampler: 'k_euler_ancestral', steps, n_samples: 1, ucPreset: 0, qualityToggle: true,
-      autoSmea: false, dynamic_thresholding: false, controlnet_strength: 1, legacy: false,
-      add_original_image: true, cfg_rescale: 0, noise_schedule: 'karras', legacy_v3_extend: false,
-      skip_cfg_above_sigma: null, use_coords: cp.some(c => c.center.x !== 0.5 || c.center.y !== 0.5),
-      legacy_uc: false, normalize_reference_strength_multiple: true,
+      // ① 기본값 → ② 노벨AI에서 가져온 설정(샘플러·노이즈 같은 건 가져온 쪽이 이긴다) → ③ 내가 칸에서 정한 값
+      params_version: 3, n_samples: 1, ucPreset: 0, qualityToggle: true,
+      sampler: 'k_euler_ancestral', autoSmea: false, dynamic_thresholding: false, controlnet_strength: 1,
+      legacy: false, add_original_image: true, cfg_rescale: 0, noise_schedule: 'karras', legacy_v3_extend: false,
+      skip_cfg_above_sigma: null, legacy_uc: false, normalize_reference_strength_multiple: true,
+      ...base,
+      width: w, height: h, scale: +$('#ngScale').value || 5, steps,
+      use_coords: coords,
       seed: seed ?? Math.floor(Math.random() * 4294967295),
       characterPrompts: cp,
-      v4_prompt: {caption: {base_caption: p.base, char_captions: cp.map(c => ({char_caption: c.prompt, centers: [c.center]}))}, use_coords: cp.some(c => c.center.x !== 0.5 || c.center.y !== 0.5), use_order: true},
+      v4_prompt: {caption: {base_caption: p.base, char_captions: cp.map(c => ({char_caption: c.prompt, centers: [c.center]}))}, use_coords: coords, use_order: true},
       v4_negative_prompt: {caption: {base_caption: p.neg, char_captions: cp.map(c => ({char_caption: c.uc, centers: [c.center]}))}, legacy_uc: false},
       negative_prompt: p.neg, deliberate_euler_ancestral_bug: false, prefer_brownian: true,
     },
@@ -96,8 +103,29 @@ $('#ngGo').onclick = async () => {
   ngStat(`끝났어요 · 만든 그림 ${NG.done}장${NG.fail ? ` · 실패 ${NG.fail}` : ''}${NG.stop ? ' · 멈춤' : ''}`);
   if (NG.done) toast(`그림 ${NG.done}장을 장면 노트에 저장했어요`);
 };
+// 노벨AI에서 지금 쓰는 설정을 그대로 가져온다(토큰·모델·크기·스텝·샘플러…)
+$('#ngGrab').onclick = async () => {
+  if (!DESKTOP) return toast('윈도우 프로그램에서만 돼요');
+  ngStat('노벨AI 창에서 그림을 한 장 만들어 주세요…');
+  toast('열린 노벨AI 창에서 평소처럼 그림을 한 장 만들면 설정을 가져와요');
+  let r; try{ r = await window.nvDesktop.naiCapture(); }catch(e){ return ngStat('가져오지 못했어요 (' + e.message + ')'); }
+  if (!r?.ok) return ngStat(r?.text || '가져오지 못했어요');
+  const pm = r.body.parameters || {};
+  store.set('set.ngTpl', {model: r.body.model, parameters: pm});
+  if (r.body.model) $('#ngModel').value = r.body.model;
+  if (pm.steps) $('#ngSteps').value = pm.steps;
+  if (pm.scale) $('#ngScale').value = pm.scale;
+  const sz = Object.entries(NAI_SIZE).find(([, [w, h]]) => w === pm.width && h === pm.height);
+  if (sz) $('#ngSize').value = sz[0]; else if (pm.width) ngStat(`크기 ${pm.width}×${pm.height}는 목록에 없어 세로로 둬요`);
+  for (const id of ['ngModel', 'ngSteps', 'ngScale', 'ngSize']) store.set('set.' + id, $('#' + id).value);
+  if (r.token){ store.set('naiKey', r.token); keySaved('naiKey'); }
+  ngStat(`가져왔어요 · ${r.body.model || ''} · ${pm.width}×${pm.height} · ${pm.steps}스텝 · ${pm.sampler || ''}${r.token ? ' · 토큰도 받음' : ' (토큰은 직접 넣어 주세요)'}`);
+};
+$('#ngTplClear').onclick = () => { store.set('set.ngTpl', null); ngStat('가져온 설정을 지웠어요. 기본값으로 보내요'); };
 $('#ngStop').onclick = () => { NG.stop = true; ngStat('멈추는 중… (그리던 한 장은 끝나요)'); };
 $('#naiKey').value = ''; keySaved('naiKey');
 $('#ngSave').onclick = () => saveKey('naiKey');
 $('#ngDel').onclick = () => delKey('naiKey');
+for (const id of ['ngModel', 'ngSteps', 'ngScale', 'ngSize']){ const el = $('#' + id); const v = store.get('set.' + id, null); if (v !== null) el.value = v; el.addEventListener('change', () => store.set('set.' + id, el.value)); }
+if (store.get('set.ngTpl', null)) ngStat('노벨AI에서 가져온 설정을 쓰고 있어요');
 if (DESKTOP) $$('.nai-desktop').forEach(el => el.hidden = false); else $('#ngWeb').hidden = false;

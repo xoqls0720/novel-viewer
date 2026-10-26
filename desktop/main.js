@@ -158,6 +158,36 @@ function msgpackFinals(buf){
   }
   return out;
 }
+/* 노벨AI 설정 가져오기: 노벨AI 창을 띄우고, 거기서 그림을 한 장 만들면
+   그때 나간 요청을 받아 토큰·모델·설정을 그대로 가져온다. 비밀번호는 보지 않는다. */
+ipcMain.handle('nai-capture', () => new Promise(resolve => {
+  let w;
+  try{ w = new BrowserWindow({ width: 1200, height: 880, title: '노벨AI 설정 가져오기 — 여기서 그림을 한 장 만들어 주세요', autoHideMenuBar: true, webPreferences: { partition: 'persist:novelai' } }); }
+  catch(e){ return resolve({ ok: false, text: e.message }); }
+  let body = null, done = false;
+  const ses = w.webContents.session;
+  const filter = { urls: ['https://image.novelai.net/ai/generate-image*', 'https://api.novelai.net/ai/generate-image*'] };
+  const finish = (token) => {
+    if (done || !body) return; done = true;
+    resolve({ ok: true, token: token || '', body });
+    setTimeout(() => { try{ w.close(); }catch{} }, 1200);
+  };
+  ses.webRequest.onBeforeRequest(filter, (d, cb) => {
+    try{
+      const raw = d.uploadData && d.uploadData[0] && d.uploadData[0].bytes;
+      if (raw && !done){ const j = JSON.parse(Buffer.from(raw).toString('utf8')); if (j && j.parameters) body = j; }
+    }catch{}
+    cb({});
+  });
+  ses.webRequest.onBeforeSendHeaders(filter, (d, cb) => {
+    const h = d.requestHeaders || {};
+    const a = h.Authorization || h.authorization || '';
+    if (body) finish(String(a).replace(/^Bearer\s+/i, ''));
+    cb({ requestHeaders: h });
+  });
+  w.on('closed', () => { if (!done){ done = true; resolve(body ? { ok: true, token: '', body } : { ok: false, text: '그림을 만들지 않고 창을 닫았어요' }); } });
+  w.loadURL('https://novelai.net/image');
+}));
 ipcMain.handle('nai-gen', async (_e, token, body) => {
   const stream = /nai-diffusion-(?:[4-9]|\d\d)/.test(String(body?.model || ''));
   const url = 'https://image.novelai.net/ai/generate-image' + (stream ? '-stream' : '');

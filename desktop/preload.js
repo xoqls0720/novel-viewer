@@ -9,4 +9,5 @@ contextBridge.exposeInMainWorld('nvDesktop', {
   gdLogout: () => ipcRenderer.invoke('gd-logout'),
   openFolder: () => ipcRenderer.invoke('open-data-folder'),
   naiGen: (token, body) => ipcRenderer.invoke('nai-gen', token, body),
+  naiCapture: () => ipcRenderer.invoke('nai-capture'),
 });
