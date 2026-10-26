@@ -37,7 +37,14 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
 app.on('second-instance', () => { if (win){ if (win.isMinimized()) win.restore(); win.focus(); } });
 app.whenReady().then(() => {
   protocol.handle('app', req => {
-    let p = decodeURIComponent(new URL(req.url).pathname); if (p === '/' || !p) p = '/index.html';
+    const u = new URL(req.url);
+    // 연결한 작품 폴더의 파일: app://novel/__disk/?p=<절대 경로> (연결한 폴더 안만 허용)
+    if (u.pathname === '/__disk/'){
+      const abs = path.normalize(u.searchParams.get('p') || '');
+      if (!libRoots().some(r => abs.startsWith(r + path.sep))) return new Response('forbidden', { status: 403 });
+      return net.fetch(pathToFileURL(abs).toString());
+    }
+    let p = decodeURIComponent(u.pathname); if (p === '/' || !p) p = '/index.html';
     const file = path.normalize(path.join(APP_DIR, p));
     if (!file.startsWith(APP_DIR)) return new Response('forbidden', { status: 403 });
     return net.fetch(pathToFileURL(file).toString());
@@ -73,14 +80,39 @@ async function tokenRequest(params){
   const j = await r.json(); if (!r.ok) throw new Error(j.error_description || j.error || ('token ' + r.status)); return j;
 }
 ipcMain.handle('version', () => app.getVersion());
+
+/* ---------- 작품 폴더 연결 ---------- */
+const ROOTS = () => path.join(app.getPath('userData'), 'library-roots.json');
+const libRoots = () => { try{ return JSON.parse(fs.readFileSync(ROOTS(), 'utf8')); }catch{ return []; } };
+ipcMain.handle('lib-pick', async () => {
+  const r = await dialog.showOpenDialog(win, { title: '작품 폴더 고르기', properties: ['openDirectory'] });
+  if (r.canceled || !r.filePaths[0]) return null;
+  const p = path.normalize(r.filePaths[0]); const roots = libRoots(); if (!roots.includes(p)){ roots.push(p); fs.writeFileSync(ROOTS(), JSON.stringify(roots)); }
+  return p;
+});
+// 폴더 아래 파일을 모두 훑는다(숨김 파일은 뺀다). rel 은 '폴더이름/하위/파일'
+ipcMain.handle('lib-scan', async (_e, root) => {
+  root = path.normalize(root); if (!libRoots().includes(root)) throw new Error('연결하지 않은 폴더예요');
+  const base = path.basename(root), out = [];
+  async function walk(dir, rel){
+    let ents = []; try{ ents = await fs.promises.readdir(dir, { withFileTypes: true }); }catch{ return; }
+    for (const d of ents){
+      if (d.name.startsWith('.') || d.name === 'desktop.ini' || d.name === 'Thumbs.db') continue;
+      const abs = path.join(dir, d.name), r = rel + '/' + d.name;
+      if (d.isDirectory()) await walk(abs, r);
+      else if (d.isFile()){ try{ const st = await fs.promises.stat(abs); out.push({ abs, rel: r, size: st.size, mtime: st.mtimeMs }); }catch{} }
+    }
+  }
+  await walk(root, base); return out;
+});
 ipcMain.handle('open-data-folder', () => shell.openPath(app.getPath('userData')));
 ipcMain.handle('gd-logout', () => { try{ fs.unlinkSync(TOK()); }catch{} return true; });
 ipcMain.handle('gd-token', async (_e, id, secret) => {
   const rt = loadRefresh(); if (!rt) return null;
-  try{ const j = await tokenRequest({ client_id: id, client_secret: secret, refresh_token: rt, grant_type: 'refresh_token' }); return { token: j.access_token, expires: j.expires_in }; }
+  try{ const j = await tokenRequest({ client_id: id, client_secret: secret, refresh_token: rt, grant_type: 'refresh_token' }); return { token: j.access_token, expires: j.expires_in, scope: j.scope }; }
   catch(e){ if (/invalid_grant/.test(e.message)){ try{ fs.unlinkSync(TOK()); }catch{} } throw e; }
 });
-ipcMain.handle('gd-login', (_e, id, secret) => new Promise((resolve, reject) => {
+ipcMain.handle('gd-login', (_e, id, secret, scope) => new Promise((resolve, reject) => {
   const verifier = crypto.randomBytes(32).toString('base64url'); const challenge = crypto.createHash('sha256').update(verifier).digest('base64url'); const state = crypto.randomBytes(12).toString('hex');
   const server = http.createServer(async (req, res) => {
     const u = new URL(req.url, REDIRECT); if (u.pathname !== '/'){ res.writeHead(404); res.end(); return; }
@@ -91,12 +123,12 @@ ipcMain.handle('gd-login', (_e, id, secret) => new Promise((resolve, reject) => 
       const j = await tokenRequest({ code: u.searchParams.get('code'), client_id: id, client_secret: secret, redirect_uri: REDIRECT, grant_type: 'authorization_code', code_verifier: verifier });
       if (j.refresh_token) saveRefresh(j.refresh_token);
       done(true); if (win){ if (win.isMinimized()) win.restore(); win.focus(); }
-      resolve({ token: j.access_token, expires: j.expires_in });
+      resolve({ token: j.access_token, expires: j.expires_in, scope: j.scope });
     }catch(e){ done(false, e.message); reject(e); }
   });
   server.on('error', reject);
   server.listen(PORT, '127.0.0.1', () => {
-    const q = new URLSearchParams({ client_id: id, redirect_uri: REDIRECT, response_type: 'code', scope: 'https://www.googleapis.com/auth/drive.appdata', access_type: 'offline', prompt: 'consent', code_challenge: challenge, code_challenge_method: 'S256', state });
+    const q = new URLSearchParams({ client_id: id, redirect_uri: REDIRECT, response_type: 'code', scope: scope || 'https://www.googleapis.com/auth/drive.appdata', include_granted_scopes: 'true', access_type: 'offline', prompt: 'consent', code_challenge: challenge, code_challenge_method: 'S256', state });
     shell.openExternal('https://accounts.google.com/o/oauth2/v2/auth?' + q);
   });
   setTimeout(() => { server.close(); reject(new Error('timeout')); }, 5 * 60000);

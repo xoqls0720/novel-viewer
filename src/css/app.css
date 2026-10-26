@@ -343,3 +343,16 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .app.wmap-on #wmap{display:block}
 .immersive #wmap{top:calc(10px + var(--sat));bottom:calc(20px + var(--sab))}
 
+
+/* 작품 폴더 연결 */
+.link-btn{width:100%;margin:6px 0 0;font-size:13px}
+#linkSheet .src{border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;margin:0 0 8px}
+#linkSheet .src .nm{display:flex;gap:8px;align-items:center}
+#linkSheet .src .nm b{flex:1;font-size:14px}
+#linkSheet .src .k{font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:10px;padding:1px 7px}
+#linkSheet .src .p{word-break:break-all}
+#linkSheet .src button{padding:4px 10px;font-size:12px}
+#linkSheet .drv{max-height:40vh;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-s);margin:6px 0}
+#linkSheet .drv .it{display:flex;gap:8px;align-items:center;padding:9px 12px;cursor:pointer;font-size:13.5px;border-bottom:1px solid var(--line)}
+#linkSheet .drv .it:hover{background:var(--panel-2)}
+#linkSheet .drv .it .i{width:18px;height:18px;color:var(--brass)}

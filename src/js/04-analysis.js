@@ -35,6 +35,9 @@ async function renderWorkStats(){
   const pane = $('#pane-work'); const w = cur;
   const del = w ? `<div class="row"><button id="workDel">이 작품을 기기 저장소에서 지우기</button></div>` : '';
   if (!w || !w.eps.some(isText)){ pane.innerHTML = '<div class="hint">소설 작품을 열면 회차별 수치를 보여 줘요.</div>' + del; bindWorkDel(); return; }
+  // 드라이브 작품은 회차를 다 받아야 하니 눌렀을 때만 계산한다
+  const remote = w.eps.filter(e => isText(e) && e.file?.remote).length;
+  if (remote && !w._statsOk){ pane.innerHTML = `<div class="hint">구글 드라이브에 있는 작품이에요. 회차별 수치를 보려면 ${remote}화를 내려받아요(한 번 받은 화는 기기에 남아요).</div><div class="row"><button class="primary" id="workStatGo">회차 수치 계산하기</button></div>` + del; $('#workStatGo').onclick = () => { w._statsOk = true; renderWorkStats(); }; bindWorkDel(); return; }
   const tok = ++workStatToken; pane.innerHTML = '<div class="hint">계산 중…</div>';
   const rows = [];
   for (let i=0;i<w.eps.length;i++){

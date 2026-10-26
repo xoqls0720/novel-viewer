@@ -38,6 +38,7 @@
       <input type="file" id="pickFolder" webkitdirectory multiple hidden>
       <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
       <button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg>집필실 · 내 작품 쓰기</button>
+      <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
       <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
     </div>
@@ -87,6 +88,18 @@
       <div class="eplist" id="epList"></div>
     </div>
 
+    <div class="sheet" id="linkSheet">
+      <div class="shh"><b>작품 폴더 연결</b><button class="icon" id="linkClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="hint">한 번 연결하면 켤 때마다 저절로 불러와요. 파일은 원래 자리에 두고, 열 때 그 화만 읽어요. 드라이브에서 받은 화는 기기에 남겨서 다음엔 인터넷 없이도 열려요.</div>
+      <div class="row"><button class="primary grow" id="srcDisk" hidden>내 컴퓨터 폴더 연결</button><button class="grow" id="srcDrive">구글 드라이브 폴더 연결</button></div>
+      <div id="drvBrowse" hidden>
+        <div class="row tight"><button id="drvUp">↑ 위로</button><span id="drvPath" class="hint grow"></span></div>
+        <div class="drv" id="drvList"></div>
+        <div class="row"><button class="primary" id="drvPick">이 폴더 연결</button><button id="drvCancel">그만두기</button><span class="hint grow">'노벨'·'만화'·'웹툰'처럼 종류별 폴더를 하나씩 연결하면 종류가 맞게 나뉘어요.</span></div>
+      </div>
+      <h3 style="font-size:11px;color:var(--faint);margin:14px 0 6px">연결한 폴더</h3>
+      <div id="srcList"></div>
+    </div>
     <div class="sheet" id="quick">
       <div class="grab"></div>
       <div class="shh"><b>보기 설정</b><button id="qReset">기본값</button><button class="icon" id="qClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>

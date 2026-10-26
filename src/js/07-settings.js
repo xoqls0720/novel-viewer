@@ -176,7 +176,7 @@ $('#scrub').addEventListener('change', async () => {
   quiet(); scrubbing = false; updateProgress(); savePos();
 });
 let swallowClick = 0;
-document.addEventListener('pointerdown', e => { if ($('.sheet.open') && !e.target.closest('.sheet, #epBtn, #btnQuick')){ closeSheets(); swallowClick = Date.now(); } }, true);
+document.addEventListener('pointerdown', e => { if ($('.sheet.open') && !e.target.closest('.sheet, #epBtn, #btnQuick, #btnLink')){ closeSheets(); swallowClick = Date.now(); } }, true);
 document.addEventListener('click', e => { if (Date.now() - swallowClick < 600 && !e.target.closest('.sheet')){ e.stopPropagation(); e.preventDefault(); swallowClick = 0; } }, true);
 
 

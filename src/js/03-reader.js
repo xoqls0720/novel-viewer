@@ -55,7 +55,7 @@ async function openEp(i, pos = {}, jump = null){
   let text = '', imgs = [];
   if (isText(ep)) text = await epText(ep);
   else {
-    if (ep.type === 'imgs') imgs = ep.files.map(f => ({blob:f, name:f.name}));
+    if (ep.type === 'imgs') imgs = ep.files.map(f => f.isLazy ? {lazy: () => f.blob(), name: f.name} : {blob: f, name: f.name});
     else if (ep.type === 'epub'){
       const e = await readEpub(ep.file);
       for (const c of e.chapters) for (const p of c.imgs) imgs.push({lazy: () => e.zip.file(p).async('blob'), name:p});

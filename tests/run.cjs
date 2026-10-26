@@ -11,6 +11,7 @@ const EXPECT = {
   studio: [/find count: 2곳/, /replaced: 2/, /binder part: \[ '1부 깨어남' \]/, /sys has syn: true \| bible sent: true/, /inserted: true/, /syn: 청명이 거지에게/, /cards: 4/, /after drag order: \[ '4화', '1화 검을 뽑다', '2화', '3화' \]/, /outline rows: 6/, /meta: 천하제일검이/, /snaps: 1/, /auto studio: true/, /to library: true/, /ERRORS: none/],
   safety: [/migrated text: 예전에 쓴 원고다.*ls removed: true/, /2MB persisted: true/, /insert: true \| undo: true/, /spell items: 2/, /spell fixed: 예전에 쓴 원고다\. 안 돼 없는 말\./, /comment marks: \[ '예전에 쓴 ' \] \| list: 1/, /diff view: true .*\+6자/, /export count: 내보낼 글: 공백 포함 \d+자/, /ref items: 1/, /craft sent: true \| not in bible: true/, /import split eps: 9/, /reader split eps: 8 \| btn: 합본 나누기 끄기/, /after off: 1/, /ERRORS: none/],
   scale: [/eps: 301/, /after reload eps: 301/, /끝300/, /끝150/, /sample: 청운이/, /errs \[\]/],
+  drive: [/scope asked: .*drive\.appdata .*drive\.readonly/, /root folders: \[ '공유 문서함', '노벨', '웹툰' \]/, /sources: \[ '노벨' \] \| status: 파일 2개/, /works: \[ '화산귀환' \]/, /ep text: true \| media hits: 1/, /offline works: \[ '화산귀환' \]/, /offline ep text: true/, /ERRORS: none/],
   learn: [/out body: "다듬은 문장이다\. 그는 웃었다\." \| reasons: \[ '리듬', '중복' \] \| diff: true/, /memo: 절단은/, /craft note card: \[ '내 퇴고 노트/, /mirror: 같은 어미 연속=\d+/, /marks hb: \d+/, /compare rows: 5/, /자주 지우는 말갑자기/, /meter ref: true/, /term pop: true/, /ERRORS: none/],
 };
 const only = process.argv.slice(2); let fail = 0;

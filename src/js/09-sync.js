@@ -9,22 +9,27 @@ async function gdLoadGIS(){
   if (window.google?.accounts?.oauth2) return;
   await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.onload = res; sc.onerror = rej; document.head.append(sc); });
 }
+// 드라이브 작품 폴더를 연결했으면 읽기 권한도 함께 받는다
+const SC_APP = 'https://www.googleapis.com/auth/drive.appdata', SC_READ = 'https://www.googleapis.com/auth/drive.readonly';
+function gdScopes(){ return store.get('lib.sources', []).some(s => s.kind === 'drive') ? SC_APP + ' ' + SC_READ : SC_APP; }
+function gdScopeOk(granted){ return !granted || gdScopes().split(' ').every(s => granted.includes(s)); }
 async function gdToken(interactive){
   if (GD.token && Date.now() < GD.exp - 60000) return GD.token;
-  const cached = JSON.parse(sessionStorage.getItem('nv.gdTok') || 'null'); if (cached && Date.now() < cached.exp - 60000){ GD.token = cached.t; GD.exp = cached.exp; return GD.token; }
+  const cached = JSON.parse(sessionStorage.getItem('nv.gdTok') || 'null'); if (cached && Date.now() < cached.exp - 60000 && cached.s === gdScopes()){ GD.token = cached.t; GD.exp = cached.exp; return GD.token; }
   if (!gdReady()) throw new Error('setup');
   if (DESKTOP){
     // 프로그램에서는 기본 브라우저로 로그인하고, 다시 쓸 수 있는 토큰은 프로그램이 윈도우 암호화로 보관한다
     const id = store.get('gd.client', ''), secret = store.get('gd.secret', '');
     let r = await window.nvDesktop.gdToken(id, secret).catch(() => null);
-    if (!r && interactive){ toast('기본 브라우저에서 구글 로그인을 마쳐 주세요'); r = await window.nvDesktop.gdLogin(id, secret); }
+    if (r && !gdScopeOk(r.scope)) r = null;   // 작품 폴더(드라이브 읽기) 권한이 새로 필요해진 경우
+    if (!r && interactive){ toast('기본 브라우저에서 구글 로그인을 마쳐 주세요'); r = await window.nvDesktop.gdLogin(id, secret, gdScopes()); }
     if (!r) throw new Error('auth');
     GD.token = r.token; GD.exp = Date.now() + r.expires * 1000; return GD.token;
   }
   await gdLoadGIS();
   return await new Promise((res, rej) => {
-    GD.client = google.accounts.oauth2.initTokenClient({client_id: store.get('gd.client',''), scope: 'https://www.googleapis.com/auth/drive.appdata',
-      callback: r => { if (r.error){ rej(new Error(r.error)); return; } GD.token = r.access_token; GD.exp = Date.now() + r.expires_in*1000; sessionStorage.setItem('nv.gdTok', JSON.stringify({t: GD.token, exp: GD.exp})); res(GD.token); },
+    GD.client = google.accounts.oauth2.initTokenClient({client_id: store.get('gd.client',''), scope: gdScopes(), include_granted_scopes: true,
+      callback: r => { if (r.error){ rej(new Error(r.error)); return; } GD.token = r.access_token; GD.exp = Date.now() + r.expires_in*1000; sessionStorage.setItem('nv.gdTok', JSON.stringify({t: GD.token, exp: GD.exp, s: gdScopes()})); res(GD.token); },
       error_callback: e => rej(new Error(e?.type || 'popup'))});
     GD.client.requestAccessToken({prompt: interactive ? 'consent' : ''});
     setTimeout(() => rej(new Error('timeout')), 90000);
@@ -34,6 +39,7 @@ async function gdFetch(url, opt = {}, interactive = false){
   const t = await gdToken(interactive);
   const r = await fetch(url, {...opt, headers: {...(opt.headers||{}), Authorization: 'Bearer ' + t}});
   if (r.status === 401){ GD.token = null; sessionStorage.removeItem('nv.gdTok'); throw new Error('auth'); }
+  if (r.status === 403 && /insufficient|scope/i.test(await r.clone().text())){ GD.token = null; sessionStorage.removeItem('nv.gdTok'); throw new Error('scope'); }
   if (!r.ok) throw new Error('drive ' + r.status);
   return r;
 }
@@ -54,7 +60,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|set\.(stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.|set\.(stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};

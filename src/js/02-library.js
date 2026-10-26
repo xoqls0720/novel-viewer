@@ -3,13 +3,22 @@ let works = [];
 let cur = null, curEp = -1, curText = '', curParas = [], curImgs = [], mangaPos = 0, objectUrls = [];
 let openToken = 0;
 
+// 디스크·구글 드라이브에 있는 파일을 필요할 때만 읽는 가벼운 파일(작품 폴더 연결)
+class LazyFile {
+  constructor({name, size = 0, rel, type = '', mtime = 0, get}){ Object.assign(this, {name, size, _rel: rel, type, lastModified: mtime, _get: get, isLazy: true}); }
+  blob(){ return this._get(); }
+  async text(){ return (await this._get()).text(); }
+  async arrayBuffer(){ return (await this._get()).arrayBuffer(); }
+}
+const realBlob = async f => f?.isLazy ? await f.blob() : f;
+
 async function expandZips(list){
   const out = [];
   for (const f of list){
     if (!/\.zip$/i.test(f.name)){ out.push(f); continue; }
     toast(`${f.name} 푸는 중…`);
     try{
-      const zip = await JSZip.loadAsync(f, {decodeFileName: bytes => { try{ return new TextDecoder('utf-8', {fatal:true}).decode(bytes); }catch{ try{ return new TextDecoder('euc-kr').decode(bytes); }catch{ return String.fromCharCode(...bytes); } } }});
+      const zip = await JSZip.loadAsync(await realBlob(f), {decodeFileName: bytes => { try{ return new TextDecoder('utf-8', {fatal:true}).decode(bytes); }catch{ try{ return new TextDecoder('euc-kr').decode(bytes); }catch{ return String.fromCharCode(...bytes); } } }});
       const base = relPath(f).replace(/\.zip$/i, '');
       const dir = base.includes('/') ? base.slice(0, base.lastIndexOf('/')+1) : '';
       const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
@@ -27,8 +36,9 @@ async function expandZips(list){
 
 async function addFiles(fileList, {persist = true, quiet = false} = {}){
   fileList = await expandZips(fileList);
-  if (persist && $('#keepLocal').checked && fileList.length){
-    try{ await navigator.storage?.persist?.(); await idb.putMany(fileList); showStore(); }
+  const own = fileList.filter(f => !f.isLazy);   // 연결한 폴더의 파일은 그 자리에서 읽으니 따로 저장하지 않는다
+  if (persist && $('#keepLocal').checked && own.length){
+    try{ await navigator.storage?.persist?.(); await idb.putMany(own); showStore(); }
     catch{ toast('기기 저장 공간이 부족해 일부는 저장하지 못했어요(지금은 열 수 있어요)'); }
   }
   const groups = new Map();
@@ -95,7 +105,10 @@ function prettyEp(n){
   m = n.match(/^(.*?)\s*0*(\d+)\s*권$/); if (m && m[1]) return `${+m[2]}권`;
   return n.replace(/^\d{3,4}\s+(?=\S)/, '');
 }
-function coverUrl(w){ if (w.cover && !w.coverUrl) w.coverUrl = URL.createObjectURL(w.cover); return w.coverUrl || ''; }
+function coverUrl(w){
+  if (w.cover?.isLazy && !w.coverUrl){ if (!w._coverP) w._coverP = w.cover.blob().then(b => { w.coverUrl = URL.createObjectURL(b); renderLib(); }).catch(() => {}); return ''; }
+  if (w.cover && !w.coverUrl) w.coverUrl = URL.createObjectURL(w.cover); return w.coverUrl || '';
+}
 function workCard(w){
   const pos = store.get('pos.'+w.key, null);
   const total = pos?.n || w.eps.length;
@@ -134,7 +147,7 @@ function renderLib(){
 const epubCache = new Map();
 async function readEpub(file){
   if (epubCache.has(file)) return epubCache.get(file);
-  const zip = await JSZip.loadAsync(file);
+  const zip = await JSZip.loadAsync(await realBlob(file));
   const container = await zip.file('META-INF/container.xml').async('string');
   const opfPath = container.match(/full-path="([^"]+)"/)[1];
   const base = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/')+1) : '';

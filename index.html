@@ -363,6 +363,19 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .app.wmap-on #wmap{display:block}
 .immersive #wmap{top:calc(10px + var(--sat));bottom:calc(20px + var(--sab))}
 
+
+/* 작품 폴더 연결 */
+.link-btn{width:100%;margin:6px 0 0;font-size:13px}
+#linkSheet .src{border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;margin:0 0 8px}
+#linkSheet .src .nm{display:flex;gap:8px;align-items:center}
+#linkSheet .src .nm b{flex:1;font-size:14px}
+#linkSheet .src .k{font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:10px;padding:1px 7px}
+#linkSheet .src .p{word-break:break-all}
+#linkSheet .src button{padding:4px 10px;font-size:12px}
+#linkSheet .drv{max-height:40vh;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-s);margin:6px 0}
+#linkSheet .drv .it{display:flex;gap:8px;align-items:center;padding:9px 12px;cursor:pointer;font-size:13.5px;border-bottom:1px solid var(--line)}
+#linkSheet .drv .it:hover{background:var(--panel-2)}
+#linkSheet .drv .it .i{width:18px;height:18px;color:var(--brass)}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -638,6 +651,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <input type="file" id="pickFolder" webkitdirectory multiple hidden>
       <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
       <button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg>집필실 · 내 작품 쓰기</button>
+      <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
       <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
     </div>
@@ -687,6 +701,18 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <div class="eplist" id="epList"></div>
     </div>
 
+    <div class="sheet" id="linkSheet">
+      <div class="shh"><b>작품 폴더 연결</b><button class="icon" id="linkClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="hint">한 번 연결하면 켤 때마다 저절로 불러와요. 파일은 원래 자리에 두고, 열 때 그 화만 읽어요. 드라이브에서 받은 화는 기기에 남겨서 다음엔 인터넷 없이도 열려요.</div>
+      <div class="row"><button class="primary grow" id="srcDisk" hidden>내 컴퓨터 폴더 연결</button><button class="grow" id="srcDrive">구글 드라이브 폴더 연결</button></div>
+      <div id="drvBrowse" hidden>
+        <div class="row tight"><button id="drvUp">↑ 위로</button><span id="drvPath" class="hint grow"></span></div>
+        <div class="drv" id="drvList"></div>
+        <div class="row"><button class="primary" id="drvPick">이 폴더 연결</button><button id="drvCancel">그만두기</button><span class="hint grow">'노벨'·'만화'·'웹툰'처럼 종류별 폴더를 하나씩 연결하면 종류가 맞게 나뉘어요.</span></div>
+      </div>
+      <h3 style="font-size:11px;color:var(--faint);margin:14px 0 6px">연결한 폴더</h3>
+      <div id="srcList"></div>
+    </div>
     <div class="sheet" id="quick">
       <div class="grab"></div>
       <div class="shh"><b>보기 설정</b><button id="qReset">기본값</button><button class="icon" id="qClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
@@ -1097,7 +1123,7 @@ const idb = {
   db: null,
   async open(){
     if (this.db) return this.db;
-    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 4); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 노벨 뷰어 창을 닫고 다시 열어 주세요'); });
+    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 5); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); if (!db.objectStoreNames.contains('dcache')) db.createObjectStore('dcache', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 노벨 뷰어 창을 닫고 다시 열어 주세요'); });
     return this.db;
   },
   async tx(mode, fn, name = 'files'){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
@@ -1116,13 +1142,22 @@ let works = [];
 let cur = null, curEp = -1, curText = '', curParas = [], curImgs = [], mangaPos = 0, objectUrls = [];
 let openToken = 0;
 
+// 디스크·구글 드라이브에 있는 파일을 필요할 때만 읽는 가벼운 파일(작품 폴더 연결)
+class LazyFile {
+  constructor({name, size = 0, rel, type = '', mtime = 0, get}){ Object.assign(this, {name, size, _rel: rel, type, lastModified: mtime, _get: get, isLazy: true}); }
+  blob(){ return this._get(); }
+  async text(){ return (await this._get()).text(); }
+  async arrayBuffer(){ return (await this._get()).arrayBuffer(); }
+}
+const realBlob = async f => f?.isLazy ? await f.blob() : f;
+
 async function expandZips(list){
   const out = [];
   for (const f of list){
     if (!/\.zip$/i.test(f.name)){ out.push(f); continue; }
     toast(`${f.name} 푸는 중…`);
     try{
-      const zip = await JSZip.loadAsync(f, {decodeFileName: bytes => { try{ return new TextDecoder('utf-8', {fatal:true}).decode(bytes); }catch{ try{ return new TextDecoder('euc-kr').decode(bytes); }catch{ return String.fromCharCode(...bytes); } } }});
+      const zip = await JSZip.loadAsync(await realBlob(f), {decodeFileName: bytes => { try{ return new TextDecoder('utf-8', {fatal:true}).decode(bytes); }catch{ try{ return new TextDecoder('euc-kr').decode(bytes); }catch{ return String.fromCharCode(...bytes); } } }});
       const base = relPath(f).replace(/\.zip$/i, '');
       const dir = base.includes('/') ? base.slice(0, base.lastIndexOf('/')+1) : '';
       const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
@@ -1140,8 +1175,9 @@ async function expandZips(list){
 
 async function addFiles(fileList, {persist = true, quiet = false} = {}){
   fileList = await expandZips(fileList);
-  if (persist && $('#keepLocal').checked && fileList.length){
-    try{ await navigator.storage?.persist?.(); await idb.putMany(fileList); showStore(); }
+  const own = fileList.filter(f => !f.isLazy);   // 연결한 폴더의 파일은 그 자리에서 읽으니 따로 저장하지 않는다
+  if (persist && $('#keepLocal').checked && own.length){
+    try{ await navigator.storage?.persist?.(); await idb.putMany(own); showStore(); }
     catch{ toast('기기 저장 공간이 부족해 일부는 저장하지 못했어요(지금은 열 수 있어요)'); }
   }
   const groups = new Map();
@@ -1208,7 +1244,10 @@ function prettyEp(n){
   m = n.match(/^(.*?)\s*0*(\d+)\s*권$/); if (m && m[1]) return `${+m[2]}권`;
   return n.replace(/^\d{3,4}\s+(?=\S)/, '');
 }
-function coverUrl(w){ if (w.cover && !w.coverUrl) w.coverUrl = URL.createObjectURL(w.cover); return w.coverUrl || ''; }
+function coverUrl(w){
+  if (w.cover?.isLazy && !w.coverUrl){ if (!w._coverP) w._coverP = w.cover.blob().then(b => { w.coverUrl = URL.createObjectURL(b); renderLib(); }).catch(() => {}); return ''; }
+  if (w.cover && !w.coverUrl) w.coverUrl = URL.createObjectURL(w.cover); return w.coverUrl || '';
+}
 function workCard(w){
   const pos = store.get('pos.'+w.key, null);
   const total = pos?.n || w.eps.length;
@@ -1247,7 +1286,7 @@ function renderLib(){
 const epubCache = new Map();
 async function readEpub(file){
   if (epubCache.has(file)) return epubCache.get(file);
-  const zip = await JSZip.loadAsync(file);
+  const zip = await JSZip.loadAsync(await realBlob(file));
   const container = await zip.file('META-INF/container.xml').async('string');
   const opfPath = container.match(/full-path="([^"]+)"/)[1];
   const base = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/')+1) : '';
@@ -1331,7 +1370,7 @@ async function openEp(i, pos = {}, jump = null){
   let text = '', imgs = [];
   if (isText(ep)) text = await epText(ep);
   else {
-    if (ep.type === 'imgs') imgs = ep.files.map(f => ({blob:f, name:f.name}));
+    if (ep.type === 'imgs') imgs = ep.files.map(f => f.isLazy ? {lazy: () => f.blob(), name: f.name} : {blob: f, name: f.name});
     else if (ep.type === 'epub'){
       const e = await readEpub(ep.file);
       for (const c of e.chapters) for (const p of c.imgs) imgs.push({lazy: () => e.zip.file(p).async('blob'), name:p});
@@ -1818,6 +1857,9 @@ async function renderWorkStats(){
   const pane = $('#pane-work'); const w = cur;
   const del = w ? `<div class="row"><button id="workDel">이 작품을 기기 저장소에서 지우기</button></div>` : '';
   if (!w || !w.eps.some(isText)){ pane.innerHTML = '<div class="hint">소설 작품을 열면 회차별 수치를 보여 줘요.</div>' + del; bindWorkDel(); return; }
+  // 드라이브 작품은 회차를 다 받아야 하니 눌렀을 때만 계산한다
+  const remote = w.eps.filter(e => isText(e) && e.file?.remote).length;
+  if (remote && !w._statsOk){ pane.innerHTML = `<div class="hint">구글 드라이브에 있는 작품이에요. 회차별 수치를 보려면 ${remote}화를 내려받아요(한 번 받은 화는 기기에 남아요).</div><div class="row"><button class="primary" id="workStatGo">회차 수치 계산하기</button></div>` + del; $('#workStatGo').onclick = () => { w._statsOk = true; renderWorkStats(); }; bindWorkDel(); return; }
   const tok = ++workStatToken; pane.innerHTML = '<div class="hint">계산 중…</div>';
   const rows = [];
   for (let i=0;i<w.eps.length;i++){
@@ -2462,7 +2504,7 @@ $('#scrub').addEventListener('change', async () => {
   quiet(); scrubbing = false; updateProgress(); savePos();
 });
 let swallowClick = 0;
-document.addEventListener('pointerdown', e => { if ($('.sheet.open') && !e.target.closest('.sheet, #epBtn, #btnQuick')){ closeSheets(); swallowClick = Date.now(); } }, true);
+document.addEventListener('pointerdown', e => { if ($('.sheet.open') && !e.target.closest('.sheet, #epBtn, #btnQuick, #btnLink')){ closeSheets(); swallowClick = Date.now(); } }, true);
 document.addEventListener('click', e => { if (Date.now() - swallowClick < 600 && !e.target.closest('.sheet')){ e.stopPropagation(); e.preventDefault(); swallowClick = 0; } }, true);
 
 
@@ -2747,22 +2789,27 @@ async function gdLoadGIS(){
   if (window.google?.accounts?.oauth2) return;
   await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.onload = res; sc.onerror = rej; document.head.append(sc); });
 }
+// 드라이브 작품 폴더를 연결했으면 읽기 권한도 함께 받는다
+const SC_APP = 'https://www.googleapis.com/auth/drive.appdata', SC_READ = 'https://www.googleapis.com/auth/drive.readonly';
+function gdScopes(){ return store.get('lib.sources', []).some(s => s.kind === 'drive') ? SC_APP + ' ' + SC_READ : SC_APP; }
+function gdScopeOk(granted){ return !granted || gdScopes().split(' ').every(s => granted.includes(s)); }
 async function gdToken(interactive){
   if (GD.token && Date.now() < GD.exp - 60000) return GD.token;
-  const cached = JSON.parse(sessionStorage.getItem('nv.gdTok') || 'null'); if (cached && Date.now() < cached.exp - 60000){ GD.token = cached.t; GD.exp = cached.exp; return GD.token; }
+  const cached = JSON.parse(sessionStorage.getItem('nv.gdTok') || 'null'); if (cached && Date.now() < cached.exp - 60000 && cached.s === gdScopes()){ GD.token = cached.t; GD.exp = cached.exp; return GD.token; }
   if (!gdReady()) throw new Error('setup');
   if (DESKTOP){
     // 프로그램에서는 기본 브라우저로 로그인하고, 다시 쓸 수 있는 토큰은 프로그램이 윈도우 암호화로 보관한다
     const id = store.get('gd.client', ''), secret = store.get('gd.secret', '');
     let r = await window.nvDesktop.gdToken(id, secret).catch(() => null);
-    if (!r && interactive){ toast('기본 브라우저에서 구글 로그인을 마쳐 주세요'); r = await window.nvDesktop.gdLogin(id, secret); }
+    if (r && !gdScopeOk(r.scope)) r = null;   // 작품 폴더(드라이브 읽기) 권한이 새로 필요해진 경우
+    if (!r && interactive){ toast('기본 브라우저에서 구글 로그인을 마쳐 주세요'); r = await window.nvDesktop.gdLogin(id, secret, gdScopes()); }
     if (!r) throw new Error('auth');
     GD.token = r.token; GD.exp = Date.now() + r.expires * 1000; return GD.token;
   }
   await gdLoadGIS();
   return await new Promise((res, rej) => {
-    GD.client = google.accounts.oauth2.initTokenClient({client_id: store.get('gd.client',''), scope: 'https://www.googleapis.com/auth/drive.appdata',
-      callback: r => { if (r.error){ rej(new Error(r.error)); return; } GD.token = r.access_token; GD.exp = Date.now() + r.expires_in*1000; sessionStorage.setItem('nv.gdTok', JSON.stringify({t: GD.token, exp: GD.exp})); res(GD.token); },
+    GD.client = google.accounts.oauth2.initTokenClient({client_id: store.get('gd.client',''), scope: gdScopes(), include_granted_scopes: true,
+      callback: r => { if (r.error){ rej(new Error(r.error)); return; } GD.token = r.access_token; GD.exp = Date.now() + r.expires_in*1000; sessionStorage.setItem('nv.gdTok', JSON.stringify({t: GD.token, exp: GD.exp, s: gdScopes()})); res(GD.token); },
       error_callback: e => rej(new Error(e?.type || 'popup'))});
     GD.client.requestAccessToken({prompt: interactive ? 'consent' : ''});
     setTimeout(() => rej(new Error('timeout')), 90000);
@@ -2772,6 +2819,7 @@ async function gdFetch(url, opt = {}, interactive = false){
   const t = await gdToken(interactive);
   const r = await fetch(url, {...opt, headers: {...(opt.headers||{}), Authorization: 'Bearer ' + t}});
   if (r.status === 401){ GD.token = null; sessionStorage.removeItem('nv.gdTok'); throw new Error('auth'); }
+  if (r.status === 403 && /insufficient|scope/i.test(await r.clone().text())){ GD.token = null; sessionStorage.removeItem('nv.gdTok'); throw new Error('scope'); }
   if (!r.ok) throw new Error('drive ' + r.status);
   return r;
 }
@@ -2792,7 +2840,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|set\.(stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.|set\.(stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -4287,6 +4335,163 @@ function stStatsExtra(){ const p = stProj(); const eps = stEps().filter(e => e.c
   v.insertAdjacentHTML('beforeend', '<div class="st-sec"><h3>내가 고치는 패턴</h3><div id="stRevBox"></div></div>');
   stRenderRevision(); bindTerms(v);
 }
+/* ================= 작품 폴더 연결 (내 컴퓨터 폴더 · 구글 드라이브 폴더) ================= */
+// 한 번 연결해 두면 켤 때마다 저절로 불러온다. 파일은 그 자리에 두고, 열 때 그 화만 읽는다.
+// 연결 목록은 기기마다 따로(store 'lib.sources'): {id, kind:'disk'|'drive', name, path?, folderId?, t}
+function libSources(){ return store.get('lib.sources', []).filter(s => s.id !== '__pending'); }
+function libSave(list){ store.set('lib.sources', list); renderSources(); }
+
+/* ---------- 내 컴퓨터 폴더 (윈도우 프로그램) ---------- */
+async function diskFiles(src){
+  const list = await window.nvDesktop.libScan(src.path);
+  return list.map(f => new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel,
+    get: async () => { const r = await fetch('app://novel/__disk/?p=' + encodeURIComponent(f.abs)); if (!r.ok) throw new Error('읽지 못했어요'); return r.blob(); }}));
+}
+
+/* ---------- 구글 드라이브 폴더 ---------- */
+const DRIVE_FOLDER = 'application/vnd.google-apps.folder';
+async function driveList(q){
+  const out = []; let page = '';
+  do{
+    const r = await gdFetch(`${GD_API}/files?q=${encodeURIComponent(q)}&fields=nextPageToken,files(id,name,mimeType,size,modifiedTime,shortcutDetails)&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true${page ? '&pageToken=' + page : ''}`);
+    const j = await r.json(); out.push(...(j.files || [])); page = j.nextPageToken || '';
+  } while (page);
+  return out;
+}
+// 폴더 아래를 모두 훑어 파일 목록(경로 포함)을 만든다. 한 번 만든 목록은 기기에 저장해 다음엔 바로 쓴다.
+async function driveIndex(src, onProgress){
+  const files = [], queue = [{id: src.folderId, path: src.name}], seen = new Set();
+  let folders = 0;
+  const worker = async () => {
+    while (queue.length){
+      const {id, path} = queue.shift(); if (seen.has(id)) continue; seen.add(id); folders++;
+      for (const f of await driveList(`'${id}' in parents and trashed=false`)){
+        const target = f.mimeType === 'application/vnd.google-apps.shortcut' ? f.shortcutDetails : null;
+        if (f.mimeType === DRIVE_FOLDER || target?.targetMimeType === DRIVE_FOLDER){ queue.push({id: target?.targetId || f.id, path: path + '/' + f.name}); continue; }
+        if (target || f.mimeType.startsWith('application/vnd.google-apps.')) continue;   // 구글 문서 등은 건너뛴다
+        files.push({id: f.id, rel: path + '/' + f.name, size: +f.size || 0, mtime: Date.parse(f.modifiedTime) || 0});
+      }
+      onProgress?.(folders, files.length);
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  // 같은 이름이 겹치면 뒤에 번호를 붙인다
+  const used = new Set(); for (const f of files){ let r = f.rel, k = 2; while (used.has(r)) r = f.rel.replace(/(\.[^./]+)?$/, ` (${k++})$1`); f.rel = r; used.add(r); }
+  return files;
+}
+// 한 번 받은 파일은 기기(IndexedDB 'dcache')에 남겨서 다음엔 인터넷 없이도 연다
+const DRV_INFLIGHT = new Map();
+function driveBlob(f){
+  if (!DRV_INFLIGHT.has(f.id)) DRV_INFLIGHT.set(f.id, driveBlob0(f).finally(() => DRV_INFLIGHT.delete(f.id)));
+  return DRV_INFLIGHT.get(f.id);
+}
+async function driveBlob0(f){
+  try{ const c = await idb.tx('readonly', s => s.get(f.id), 'dcache'); if (c && c.mtime === f.mtime) return c.blob; }catch{}
+  const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media&supportsAllDrives=true`);
+  const b = await r.blob();
+  try{ await idb.tx('readwrite', s => s.put({id: f.id, blob: b, mtime: f.mtime}), 'dcache'); }catch{}
+  return b;
+}
+async function driveFiles(src, refresh){
+  let idx = null;
+  if (!refresh){ try{ idx = (await idb.tx('readonly', s => s.get('__idx:' + src.id), 'dcache'))?.files; }catch{} }
+  if (!idx){
+    idx = await driveIndex(src, (d, n) => srcStatus(src.id, `목록 받는 중… 폴더 ${d}개 · 파일 ${n}개`));
+    try{ await idb.tx('readwrite', s => s.put({id: '__idx:' + src.id, files: idx, t: Date.now()}), 'dcache'); }catch{}
+  }
+  return idx.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true}));
+}
+
+/* ---------- 불러오기 ---------- */
+const SRC_STATE = {};
+function srcStatus(id, t){ SRC_STATE[id] = t; const el = document.querySelector(`[data-src="${id}"] .st`); if (el) el.textContent = t; }
+async function loadSource(src, {refresh = false, quiet = true} = {}){
+  try{
+    srcStatus(src.id, '불러오는 중…');
+    const files = src.kind === 'disk' ? await diskFiles(src) : await driveFiles(src, refresh);
+    const before = works.length;
+    await addFiles(files, {persist: false, quiet: true});
+    srcStatus(src.id, `파일 ${files.length.toLocaleString()}개 · ${new Date().toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'})}`);
+    if (!quiet) toast(`${src.name}: 작품 ${works.length - before > 0 ? (works.length - before) + '개를 새로 ' : ''}불러왔어요`);
+  }catch(e){
+    const login = /auth|scope|setup|popup|timeout/.test(e.message);
+    srcStatus(src.id, login ? '구글 연결이 필요해요 → 위 단추로 다시 연결' : '불러오지 못했어요 (' + e.message + ')');
+    if (!quiet) toast(login ? '구글 드라이브에 다시 연결해 주세요 (설정 탭 → 연결)' : `${src.name}을 불러오지 못했어요`);
+  }
+}
+async function loadAllSources(){
+  for (const s of libSources()){
+    if (s.kind === 'disk' && !DESKTOP) continue;
+    if (s.kind === 'drive' && !gdReady()) { srcStatus(s.id, '설정 탭에서 구글 드라이브를 먼저 연결해 주세요'); continue; }
+    await loadSource(s);
+  }
+}
+
+/* ---------- 화면 ---------- */
+function renderSources(){
+  const box = $('#srcList'); if (!box) return; const list = libSources();
+  box.innerHTML = list.length ? '' : '<div class="hint">아직 연결한 폴더가 없어요.</div>';
+  for (const s of list){
+    const d = document.createElement('div'); d.className = 'src'; d.dataset.src = s.id;
+    d.innerHTML = `<div class="nm"><b></b><span class="k">${s.kind === 'disk' ? '내 컴퓨터' : '구글 드라이브'}</span></div><div class="hint p"></div><div class="hint st"></div><div class="row tight"><button data-a="re">새로 고침</button><button data-a="rm">연결 끊기</button></div>`;
+    d.querySelector('b').textContent = s.name; d.querySelector('.p').textContent = s.kind === 'disk' ? s.path : '';
+    d.querySelector('.st').textContent = SRC_STATE[s.id] || '';
+    d.querySelector('[data-a=re]').onclick = () => loadSource(s, {refresh: true, quiet: false});
+    d.querySelector('[data-a=rm]').onclick = async () => {
+      if (!confirm(`'${s.name}' 연결을 끊을까요? (원래 파일은 그대로 있어요. 메모·진도도 남아요)`)) return;
+      libSave(libSources().filter(x => x.id !== s.id));
+      if (s.kind === 'drive') try{ await idb.tx('readwrite', st => st.delete('__idx:' + s.id), 'dcache'); }catch{}
+      toast('연결을 끊었어요. 다시 켜면 목록에서 빠져요');
+    };
+    box.append(d);
+  }
+  $('#srcDisk').hidden = !DESKTOP;
+}
+$('#btnLink').onclick = () => { $('#app').classList.remove('show-side'); const open = $('#linkSheet').classList.contains('open'); closeSheets(); if (!open){ $('#linkSheet').classList.add('open'); $('#drvBrowse').hidden = true; renderSources(); } };
+$('#linkClose').onclick = closeSheets;
+$('#srcDisk').onclick = async () => {
+  const p = await window.nvDesktop.libPick(); if (!p) return;
+  if (libSources().some(s => s.kind === 'disk' && s.path === p)) return toast('이미 연결한 폴더예요');
+  const src = {id: uid(), kind: 'disk', name: p.split(/[\\/]/).pop(), path: p, t: Date.now()};
+  libSave([...libSources(), src]); loadSource(src, {quiet: false});
+};
+// 드라이브 폴더 고르기: 내 드라이브(또는 공유 문서함)에서 폴더를 따라 들어가 '이 폴더 연결'
+const DRV = {stack: []};
+$('#srcDrive').onclick = async () => {
+  if (!store.get('gd.client', '')) return toast('설정 탭의 구글 드라이브 동기화에서 클라이언트 ID를 먼저 넣어 주세요');
+  if (!gdReady()) return toast(DESKTOP ? '설정 탭에 클라이언트 보안 비밀번호도 넣어 주세요' : '구글 드라이브는 https 주소(설치한 앱)에서 연결할 수 있어요');
+  // 읽기 권한을 함께 받도록 임시로 표시해 두고 로그인
+  store.set('lib.sources', [...libSources(), {id: '__pending', kind: 'drive'}]);
+  try{ GD.token = null; sessionStorage.removeItem('nv.gdTok'); await gdToken(true); }
+  catch(e){ store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); return toast('구글 로그인을 마치지 못했어요 (' + e.message + ')'); }
+  DRV.stack = [{id: 'root', name: '내 드라이브'}]; $('#drvBrowse').hidden = false; drvRender();
+};
+async function drvRender(){
+  const here = DRV.stack.at(-1); const box = $('#drvList');
+  $('#drvPath').textContent = DRV.stack.map(x => x.name).join(' › ');
+  $('#drvUp').disabled = DRV.stack.length < 2; $('#drvPick').disabled = here.id === 'root' || here.id === 'shared';
+  box.innerHTML = '<div class="hint">불러오는 중…</div>';
+  try{
+    const q = here.id === 'shared' ? `sharedWithMe and mimeType='${DRIVE_FOLDER}' and trashed=false` : `'${here.id}' in parents and mimeType='${DRIVE_FOLDER}' and trashed=false`;
+    const fs = (await driveList(q)).sort((a, b) => natural(a.name, b.name));
+    box.innerHTML = '';
+    if (here.id === 'root') fs.unshift({id: 'shared', name: '공유 문서함', _virtual: true});
+    for (const f of fs){ const d = document.createElement('div'); d.className = 'it'; d.innerHTML = `<svg class="i"><use href="#i-folder"/></svg><span></span>`; d.querySelector('span').textContent = f.name; d.onclick = () => { DRV.stack.push({id: f.id, name: f.name}); drvRender(); }; box.append(d); }
+    if (!fs.length) box.innerHTML = '<div class="hint">안에 폴더가 없어요. 이 폴더를 연결하면 돼요.</div>';
+  }catch(e){ box.innerHTML = `<div class="hint">목록을 받지 못했어요 (${esc(e.message)})</div>`; }
+}
+$('#drvUp').onclick = () => { if (DRV.stack.length > 1){ DRV.stack.pop(); drvRender(); } };
+$('#drvCancel').onclick = () => { $('#drvBrowse').hidden = true; store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); };
+$('#drvPick').onclick = () => {
+  const here = DRV.stack.at(-1);
+  const list = libSources().filter(s => s.id !== '__pending');
+  if (list.some(s => s.kind === 'drive' && s.folderId === here.id)) return toast('이미 연결한 폴더예요');
+  const src = {id: uid(), kind: 'drive', name: here.name, folderId: here.id, t: Date.now()};
+  libSave([...list, src]); $('#drvBrowse').hidden = true; loadSource(src, {quiet: false});
+};
+renderSources();
+// 켜면 저장해 둔 작품을 불러온 다음, 연결한 폴더도 불러온다
+setTimeout(loadAllSources, 600);
 </script>
 </body>
 </html>

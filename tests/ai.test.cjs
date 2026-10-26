@@ -34,10 +34,12 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   await p.$eval('#reader', r => r.scrollTop = 1500); await p.waitForTimeout(300);
   await p.keyboard.press('b'); await p.waitForTimeout(200); console.log('bm on:', await p.$eval('#btnBm', b => b.classList.contains('on')));
   // 쪽 넘김 번호
+  await p.evaluate(() => document.querySelector('#app').classList.remove('immersive')); await p.waitForTimeout(300);
   await p.click('#btnQuick'); await p.selectOption('#mode', 'paged'); await p.waitForTimeout(700);
   await p.keyboard.press('Escape');
   await p.keyboard.press('ArrowRight'); await p.waitForTimeout(600); console.log('paged ind:', await p.textContent('#pageInd'));
   // 설정 슬라이더·기본값
+  await p.evaluate(() => document.querySelector('#app').classList.remove('immersive')); await p.waitForTimeout(300);
   await p.click('#btnQuick'); await p.$eval('#weight', el => { el.value = 550; el.dispatchEvent(new Event('input')); el.dispatchEvent(new Event('change')); });
   console.log('weight out/var:', await p.textContent('#weightOut'), await p.$eval('html', h => h.style.getPropertyValue('--fw')));
   await p.click('#qReset'); await p.waitForTimeout(500); console.log('after reset weight:', await p.$eval('#weight', e => e.value), 'mode stays:', await p.$eval('#mode', e => e.value));
