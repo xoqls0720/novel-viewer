@@ -1,5 +1,6 @@
 /* ================= 구글 드라이브 동기화 ================= */
-// 드라이브의 앱 전용 숨은 폴더(appDataFolder)만 쓴다. 작품 파일·API 키는 올리지 않는다.
+// 드라이브의 앱 전용 숨은 폴더(appDataFolder)만 쓴다. 이 앱만 읽을 수 있는 칸이다.
+// API 키는 켜 두었을 때만(keys.json) 맞추고, 백업 파일에는 넣지 않는다. Ollama 주소·고른 AI는 기기마다 따로다.
 const GD = {token: null, exp: 0, client: null, busy: false, timer: null};
 const GD_API = 'https://www.googleapis.com/drive/v3', GD_UP = 'https://www.googleapis.com/upload/drive/v3';
 function gdStatus(t){ $('#gdStatus').textContent = t; }
@@ -60,7 +61,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|__kts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -92,6 +93,22 @@ async function gdSyncTexts(files, rIdx, dead){
   await txtFlushNow();
   if (res.conflict) toast('두 기기에서 따로 고친 회차가 있어서 진 쪽을 "다른 기기 원고"로 남겨 뒀어요');
   return {...res, index: Object.fromEntries([...TXT.cache].map(([k, r]) => [k, r.syncedT || r.t]))};
+}
+// API 키 맞추기: 키마다 마지막으로 바꾼 시각이 늦은 쪽을 따른다(지운 것도 빈 값으로 전해진다)
+const SYNC_KEYS = ['apiKey', 'gemKey', 'grKey'];
+async function gdSyncKeys(files){
+  const remote = (await gdGet(files, 'keys.json').catch(() => null)) || {v: 1, keys: {}, ts: {}};
+  const lt = store.get('__kts', {}); let up = false, down = 0;
+  for (const k of SYNC_KEYS){
+    const l = lt[k] || 0, r = remote.ts?.[k] || 0;
+    if (r > l){ try{ localStorage.setItem('nv.' + k, JSON.stringify(remote.keys[k] ?? '')); }catch{} lt[k] = r; down++; }
+    else if (l > r){ remote.keys[k] = store.get(k, ''); remote.ts[k] = l; up = true; }
+    else if (!l && !r && store.get(k, '')){ lt[k] = Date.now(); remote.keys[k] = store.get(k, ''); remote.ts[k] = lt[k]; up = true; }   // 예전에 넣어 둔 키
+  }
+  try{ localStorage.setItem('nv.__kts', JSON.stringify(lt)); }catch{}
+  if (up) await gdPut(files, 'keys.json', new Blob([JSON.stringify({v: 1, keys: remote.keys, ts: remote.ts})], {type: 'application/json'}));
+  if (down){ KEY_IDS.forEach(keySaved); aiHint(); if (store.get('apiKey', '')) loadSDK().catch(() => {}); }
+  return down;
 }
 const mergeById = (a, b, tomb) => { const m = new Map(); for (const x of [...(a||[]), ...(b||[])]) { const o = m.get(x.id); if (!o || (x.t||0) > (o.t||0)) m.set(x.id, x); } return [...m.values()].filter(x => !tomb.has(x.id)); };
 async function gdSync(interactive = false){
@@ -159,11 +176,12 @@ async function gdSync(interactive = false){
     }
     // 4) 집필실 원고 합치기: 회차마다 파일 하나. 두 기기에서 따로 고쳤으면 진 쪽을 '다른 기기 원고'로 남긴다
     const tx = await gdSyncTexts(files, remote.texts || {}, new Set(tomb.texts || []));
+    const kd = store.get('gd.syncKeys', true) ? await gdSyncKeys(files) : 0;
     // 5) 합친 상태 올리기
     const ls = localState().ls;
     await gdPut(files, 'state.json', new Blob([JSON.stringify({v:1, updated: Date.now(), ls, ts: store.get('__ts', {}), scraps: metas, texts: tx.index})], {type:'application/json'}));
     localStorage.setItem('nv.gd.last', JSON.stringify(Date.now()));
-    gdStatus(`마지막 동기화 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · 원고 올림 ${tx.up} · 받음 ${tx.down}${tx.conflict ? ` · 겹침 ${tx.conflict}` : ''} · 장면 올림 ${up} · 받음 ${down}`);
+    gdStatus(`마지막 동기화 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · 원고 올림 ${tx.up} · 받음 ${tx.down}${tx.conflict ? ` · 겹침 ${tx.conflict}` : ''}${kd ? ` · API 키 받음 ${kd}` : ''} · 장면 올림 ${up} · 받음 ${down}`);
     applySettingsFromStore(); renderLib(); renderNotes(); renderScraps(); renderNaiHist();
     window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js)
   }catch(e){
@@ -188,6 +206,8 @@ $('#gdSave').onclick = () => { store.set('gd.client', $('#gdClient').value.trim(
 $('#gdConnect').onclick = async () => { store.set('gd.client', $('#gdClient').value.trim()); if (DESKTOP) store.set('gd.secret', $('#gdSecret').value.trim()); try{ await gdToken(true); gdStatus('연결됐어요'); gdSync(true); }catch(e){ gdStatus('연결하지 못했어요 (' + e.message + ')'); } };
 $('#gdNow').onclick = () => gdSync(true);
 $('#gdAuto').onchange = () => store.set('gd.auto', $('#gdAuto').checked);
+$('#gdKeys').checked = store.get('gd.syncKeys', true);
+$('#gdKeys').onchange = () => { store.set('gd.syncKeys', $('#gdKeys').checked); toast($('#gdKeys').checked ? 'API 키도 기기끼리 맞춰요' : 'API 키는 이 기기에만 둬요'); };
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && gdReady() && $('#gdAuto').checked && GD.token) gdSync(false); });
 if (gdReady()){ if (!DESKTOP) gdLoadGIS().catch(()=>{}); if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
 { const last = store.get('gd.last', 0); if (last) gdStatus('마지막 동기화 ' + new Date(last).toLocaleString('ko-KR')); else if (location.protocol !== 'https:' && !DESKTOP) gdStatus('https 주소(앱으로 설치한 뷰어)에서 켤 수 있어요'); }

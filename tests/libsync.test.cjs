@@ -51,11 +51,21 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   const upBefore = uploads;
   await A.click('#libSyncNow'); await A.waitForTimeout(2500);
   console.log('re-run uploads nothing new:', uploads - upBefore <= 2, '(' + (uploads - upBefore) + ')');
+  // API 키: A에서 넣은 키가 B로 간다(state.json에는 들어가지 않는다)
+  await A.evaluate(() => { document.querySelector('#gemKey').value = 'AIza-sync-test'; document.querySelector('[data-ksave=gemKey]').click(); });
+  await A.evaluate(() => document.querySelector('#gdNow').click()); await A.waitForTimeout(2500);
+  const stateTxt = [...DB.values()].find(f => f.name === 'state.json')?.body.toString() || '';
+  console.log('keys file:', [...DB.values()].some(f => f.name === 'keys.json'), '| key not in state.json:', !stateTxt.includes('AIza-sync-test'));
   // ── 기기 B: 처음 켠 기기. 구글 로그인만 해도 작품이 보인다
   const B = (await mk()).p;
   await B.click('#gdConnect').catch(()=>{}); await B.waitForTimeout(2500);
   for (let i = 0; i < 20; i++){ if ((await B.$$('.grid .card')).length >= 4) break; await B.waitForTimeout(400); }
   console.log('B works:', await B.$$eval('.grid .card .t', e => e.map(x => x.textContent).sort()));
+  console.log('B got key:', await B.evaluate(() => JSON.parse(localStorage.getItem('nv.gemKey') || '""')), '| status:', /API 키 받음 1/.test(await B.textContent('#gdStatus')));
+  // B에서 지우면 A에서도 지워진다
+  await B.evaluate(() => document.querySelector('[data-kdel=gemKey]').click()); await B.evaluate(() => document.querySelector('#gdNow').click()); await B.waitForTimeout(2000);
+  await A.evaluate(() => document.querySelector('#gdNow').click()); await A.waitForTimeout(2000);
+  console.log('A key after B deleted:', JSON.stringify(await A.evaluate(() => JSON.parse(localStorage.getItem('nv.gemKey') || '"x"'))));
   const g0 = mediaGets;
   await B.click('.grid .card:has-text("hwasan")'); await B.waitForTimeout(1500); 
   console.log('B novel text:', (await B.textContent('#reader .novel')).length > 20, '| downloads:', mediaGets - g0);
