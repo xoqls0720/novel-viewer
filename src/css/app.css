@@ -414,3 +414,9 @@ details.fold summary .chev{margin-left:auto}
 .list .item b{box-shadow:none}
 #gdStatus{flex-basis:100%;text-align:left!important;margin-top:2px}
 .bar .icon:hover,.botbar .icon:hover{background:var(--panel-2)}
+
+.idea-tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:8px 0 2px}
+.idea-tags:empty{display:none}
+.idea-tags button{padding:3px 10px;font-size:12px;border-radius:99px;box-shadow:none}
+.idea-tags button.on{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:600}
+#ideaList .tg{color:var(--brass);font-weight:600}

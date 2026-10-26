@@ -375,3 +375,80 @@ $('#stPrint').onclick = () => {
   </body></html>`); d.close();
   setTimeout(() => { try{ f.contentWindow.focus(); f.contentWindow.print(); }catch{ toast('인쇄 창을 열지 못했어요'); } setTimeout(() => f.remove(), 60000); }, 300);
 };
+
+/* ---------- 한글(hwpx) ----------
+   한글 빈 문서 틀(16-hwpx-skeleton.js)에 본문 문단만 바꿔 넣는다. 첫 문단에는 쪽 설정이 들어 있어 그대로 둔다. */
+async function buildHwpx(blocks){
+  const zip = await JSZip.loadAsync(HWPX_SKELETON, {base64: true});
+  const sec = await zip.file('Contents/section0.xml').async('string');
+  const cut = sec.indexOf('<hp:run charPrIDRef="0"><hp:t/></hp:run>'); if (cut < 0) throw new Error('hwpx 틀이 달라요');
+  const para = (id, t) => `<hp:p id="${id}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="0">${t ? `<hp:t>${xmlEsc(t)}</hp:t>` : '<hp:t/>'}</hp:run></hp:p>`;
+  const gap = $('#stExpFmt')?.value !== 'book';   // 모바일 연재 형식이면 문단 사이에 빈 줄
+  const lines = []; blocks.forEach((b, i) => { lines.push(b.text); if (b.head || (gap && i < blocks.length - 1)) lines.push(''); });
+  let out = sec.slice(0, cut) + `<hp:run charPrIDRef="0">${lines[0] ? `<hp:t>${xmlEsc(lines[0])}</hp:t>` : '<hp:t/>'}</hp:run></hp:p>`;
+  lines.slice(1).forEach((t, k) => { out += para(k + 1, t); });
+  out += '</hs:sec>';
+  zip.file('Contents/section0.xml', out);
+  zip.file('Preview/PrvText.txt', lines.join('\r\n').slice(0, 1000));
+  zip.file('mimetype', 'application/hwp+zip', {compression: 'STORE'});
+  return zip.generateAsync({type: 'blob', mimeType: 'application/hwp+zip', compression: 'DEFLATE'});
+}
+async function saveHwpx(name, blocks){
+  const blob = await buildHwpx(blocks);
+  if (navigator.canShare?.({files: [new File([blob], name)]}) && isTouch()) return shareFiles([new File([blob], name, {type: blob.type})], name, true);
+  const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  toast('한글(hwpx) 파일로 저장했어요');
+}
+$('#stExpHwpx').onclick = () => { stFlush(); saveHwpx(`${safeName(stProj()?.name || '작품')}_${safeName($('#stTitle').value || '회차')}.hwpx`, epBlocks($('#stExpTitle').checked ? $('#stTitle').value : '', $('#stText').value)); };
+$('#stExpHwpxAll').onclick = () => { stFlush(); const p = stProj(); const blocks = []; for (const e of stEps()) blocks.push(...epBlocks(e.title, stEpText(e.id))); saveHwpx(`${safeName(p.name)}_전체.hwpx`, blocks); };
+
+/* ---------- 자료 나란히 보기: 자료실 작품을 원고 옆에 띄운다 ---------- */
+const RP = {work: null, ep: 0, urls: []};
+function rpFill(){
+  const novels = works; const st = store.get('set.stRefPane', {});
+  $('#rpWork').innerHTML = novels.length ? novels.map(w => `<option value="${esc(w.key)}">${esc(w.name)} · ${({novel:'소설',webtoon:'웹툰',manga:'만화'})[w.kind]}</option>`).join('') : '<option value="">자료실에 작품이 없어요</option>';
+  const w = novels.find(x => x.key === (RP.work?.key || st.work)) || (cur && novels.includes(cur) ? cur : null) || novels.find(x => x.kind === 'novel') || novels[0] || null;
+  if (w){ $('#rpWork').value = w.key; rpOpenWork(w, RP.work === w ? RP.ep : (st.work === w.key ? st.ep || 0 : (store.get('pos.' + w.key, null)?.ep || 0))); }
+}
+async function rpOpenWork(w, ep){
+  RP.work = w;
+  if (!w._expanded && w.eps.some(e => e.type === 'epub') && w.kind !== 'manga'){ try{ const cur0 = cur; await openWork(w); if (cur0 && cur0 !== w) await openWork(cur0); }catch{} }
+  await splitWorkTxt(w);
+  $('#rpEp').innerHTML = w.eps.map((e, i) => `<option value="${i}">${esc(e.label || e.name)}</option>`).join('');
+  rpShow(Math.min(ep, w.eps.length - 1));
+}
+async function rpShow(i){
+  const w = RP.work; if (!w || i < 0 || i >= w.eps.length) return;
+  RP.ep = i; $('#rpEp').value = i; store.set('set.stRefPane', {work: w.key, ep: i});
+  RP.urls.forEach(u => URL.revokeObjectURL(u)); RP.urls = [];
+  const ep = w.eps[i]; const body = $('#rpBody'); body.innerHTML = '<div class="hint">여는 중…</div>'; body.scrollTop = 0;
+  try{
+    if (isText(ep)){
+      const t = await epText(ep);
+      body.innerHTML = `<h4>${esc(ep.label || ep.name)}</h4>` + splitParas(t).map(p => `<p>${esc(p)}</p>`).join('');
+    } else if (ep.type === 'imgs'){
+      body.innerHTML = ''; body.style.padding = '0';
+      for (const f of ep.files){ const im = document.createElement('img'); im.loading = 'lazy'; im.alt = ''; body.append(im); const b = f.isLazy ? await f.blob() : f; const u = URL.createObjectURL(b); RP.urls.push(u); im.src = u; if (RP.ep !== i) return; }
+      return;
+    } else body.innerHTML = '<div class="hint" style="padding:20px">만화 epub은 자료실에서 열어 주세요. 여기서는 소설과 웹툰 회차를 띄울 수 있어요.</div>';
+  }catch{ body.innerHTML = '<div class="hint" style="padding:20px">이 회차를 열지 못했어요.</div>'; }
+  body.style.padding = '';
+}
+function rpToggle(on){
+  const s = $('#studio'); on = on ?? !s.classList.contains('split');
+  s.classList.toggle('split', on); $('#stRefPane').hidden = !on; $('#stSplitBtn').classList.toggle('on', on);
+  // 넓은 화면에서는 나란히 보는 동안 오른쪽 정보 칸을 접어 원고 폭을 확보한다(닫으면 원래대로)
+  if (!isMobile()) s.classList.toggle('noinsp', on || store.get('set.stNoInsp', false));
+  if (on){ rpFill(); if (ST.view !== 'write') stSetView('write'); }
+}
+$('#stSplitBtn').onclick = () => rpToggle();
+$('#rpClose').onclick = () => rpToggle(false);
+$('#rpWork').onchange = () => { const w = works.find(x => x.key === $('#rpWork').value); if (w) rpOpenWork(w, store.get('pos.' + w.key, null)?.ep || 0); };
+$('#rpEp').onchange = () => rpShow(+$('#rpEp').value);
+$('#rpPrev').onclick = () => rpShow(RP.ep - 1);
+$('#rpNext').onclick = () => rpShow(RP.ep + 1);
+$('#rpIdea').onclick = () => {
+  const t = getSelection().toString().trim(); if (!t) return toast('옆 자료에서 문장을 먼저 골라 주세요');
+  addIdea(t.slice(0, 600), RP.work ? `${RP.work.name} · ${RP.work.eps[RP.ep]?.label || RP.work.eps[RP.ep]?.name || ''}` : '');
+  getSelection().removeAllRanges();
+};

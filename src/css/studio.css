@@ -239,3 +239,21 @@
 #stText,.st-crumb input,.st-top input#stTitle,.st-ic textarea,.st-tbl textarea,.st-tbl input,.st-bc .meta input,.st-proj select{box-shadow:none}
 #stText:focus,.st-crumb input:focus,.st-ic textarea:focus,.st-tbl textarea:focus,.st-tbl input:focus{border-color:transparent;box-shadow:none}
 .st-proj select:focus{box-shadow:none;border-color:transparent}
+
+/* 자료 나란히 보기 */
+.st-refpane{display:flex;flex-direction:column;min-height:0;background:var(--reader-bg);border-left:1px solid var(--line)}
+#studio.split .st-center{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto;grid-template-areas:"top top" "find find" "oth oth" "main ref" "met met"}
+#studio.split .st-top{grid-area:top} #studio.split .st-find{grid-area:find} #studio.split .st-other{grid-area:oth} #studio.split .st-view{grid-area:main} #studio.split .st-meter{grid-area:met} #studio.split .st-refpane{grid-area:ref}
+#studio.split .st-page{padding:36px 30px 70px}
+.rp-head{display:flex;gap:6px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--hairline);background:var(--bar-bg)}
+.rp-head select{flex:1;min-width:0;padding:5px 26px 5px 9px;font-size:12.5px}
+.rp-body{flex:1;min-height:0;overflow:auto;padding:22px 26px 40px;font-family:var(--rfont,"Noto Serif KR",serif);font-size:calc(var(--fs,18px) - 2px);line-height:1.85;color:var(--reader-ink);word-break:keep-all}
+.rp-body p{margin:0 0 .8em}
+.rp-body h4{font:700 15px/1.4 var(--display);margin:0 0 18px;color:var(--brass)}
+.rp-body img{display:block;width:100%;margin:0}
+.rp-foot{display:flex;gap:6px;align-items:center;padding:7px 10px;border-top:1px solid var(--hairline);background:var(--bar-bg)}
+.rp-foot button{padding:4px 10px;font-size:12px}
+@media (max-width:1100px){
+  #studio.split .st-center{display:flex}
+  .st-refpane{position:fixed;left:0;right:0;bottom:0;height:46vh;z-index:4;border-left:0;border-top:1px solid var(--line);box-shadow:var(--shadow-l);border-radius:16px 16px 0 0;overflow:hidden}
+}

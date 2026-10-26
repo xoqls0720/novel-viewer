@@ -206,26 +206,35 @@ $('#writerView').addEventListener('change', () => { store.set('set.writerView', 
 document.addEventListener('keydown', e => { if ((e.key === 'w' || e.key === 'W') && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && $('#studio').hidden && !$('#sketch').classList.contains('open')){ $('#writerView').checked = !$('#writerView').checked; $('#writerView').dispatchEvent(new Event('change')); toast($('#writerView').checked ? '작가 보기를 켰어요' : '작가 보기를 껐어요'); } });
 
 
-/* ---------- 떠오른 문장(빠른 메모)·빈 캔버스 ---------- */
+/* ---------- 떠오른 문장(빠른 메모)·태그·빈 캔버스 ---------- */
+// 글 안의 #태그를 뽑는다(예: "#대사 너는 왜 웃어" → ['대사'])
+const ideaTags = t => [...new Set((t.match(/#([^\s#]{1,12})/g) || []).map(x => x.slice(1)))];
+let ideaTag = '';
 function renderIdeas(){
-  const box = $('#ideaList'); if (!box) return; const list = store.get('ideas', []);
-  box.innerHTML = list.length ? '' : '<div class="hint" style="padding:6px 2px">읽다가 떠오른 내 문장을 적어 두면 기기끼리 맞춰지고, 집필실 참고 탭에도 보여요.</div>';
+  const box = $('#ideaList'); if (!box) return; const all = store.get('ideas', []);
+  const tags = [...new Set(all.flatMap(i => ideaTags(i.text)))];
+  if (ideaTag && !tags.includes(ideaTag)) ideaTag = '';
+  $('#ideaFilter').innerHTML = tags.length ? `<button data-f="" class="${ideaTag ? '' : 'on'}">전체 ${all.length}</button>` + tags.map(t => `<button data-f="${esc(t)}" class="${t === ideaTag ? 'on' : ''}">#${esc(t)} ${all.filter(i => ideaTags(i.text).includes(t)).length}</button>`).join('') : '';
+  $$('#ideaFilter [data-f]').forEach(b => b.onclick = () => { ideaTag = b.dataset.f; renderIdeas(); });
+  const list = ideaTag ? all.filter(i => ideaTags(i.text).includes(ideaTag)) : all;
+  box.innerHTML = list.length ? '' : '<div class="hint" style="padding:6px 2px">읽다가 떠오른 내 문장을 적어 두면 기기끼리 맞춰지고, 집필실 참고 탭에도 보여요. #대사 처럼 태그를 붙이면 모아 볼 수 있어요.</div>';
   for (const it of list){
     const d = document.createElement('div'); d.className = 'item';
     d.innerHTML = `<div class="q"></div><div class="e">${new Date(it.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit'})}${it.from ? ' · ' + esc(it.from) : ''}</div><div class="row tight" style="justify-content:flex-end;margin:4px 0 0"><button data-a="cp">복사</button><button data-a="del">지우기</button></div>`;
-    d.querySelector('.q').textContent = it.text;
-    d.querySelector('[data-a=cp]').onclick = () => copy(it.text);
+    d.querySelector('.q').innerHTML = esc(it.text).replace(/#([^\s#]{1,12})/g, '<span class="tg">#$1</span>');
+    d.querySelector('[data-a=cp]').onclick = () => copy(it.text.replace(/#[^\s#]{1,12}\s?/g, '').trim());
     d.querySelector('[data-a=del]').onclick = () => { tomb('ideas', it.id); store.set('ideas', store.get('ideas', []).filter(x => x.id !== it.id)); renderIdeas(); };
     box.append(d);
   }
 }
-function addIdea(){
-  const v = $('#ideaIn').value.trim(); if (!v) return;
-  const list = store.get('ideas', []); list.unshift({id: uid(), text: v, from: cur ? cur.name : '', t: Date.now()});
-  store.set('ideas', list.slice(0, 500)); $('#ideaIn').value = ''; renderIdeas(); toast('남겼어요');
+function addIdea(text, from){
+  const v = (text ?? $('#ideaIn').value).trim(); if (!v) return;
+  const list = store.get('ideas', []); list.unshift({id: uid(), text: v, from: from ?? (cur ? cur.name : ''), t: Date.now()});
+  store.set('ideas', list.slice(0, 1000)); if (text === undefined) $('#ideaIn').value = ''; renderIdeas(); toast('떠오른 문장으로 남겼어요');
 }
-$('#ideaAdd').onclick = addIdea;
-$('#ideaIn').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); addIdea(); } });
+$('#ideaAdd').onclick = () => addIdea();
+$('#ideaIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); addIdea(); } });
+$$('#ideaQuick [data-t]').forEach(b => b.onclick = () => { const el = $('#ideaIn'); const tag = '#' + b.dataset.t; if (!el.value.includes(tag)) el.value = (el.value.trim() + ' ' + tag).trim() + ' '; el.focus(); });
 $('#ideaDraw').onclick = () => {
   const c = document.createElement('canvas'); c.width = 1240; c.height = 1650;
   const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);

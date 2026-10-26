@@ -13,6 +13,7 @@ const EXPECT = {
   scale: [/eps: 301/, /after reload eps: 301/, /끝300/, /끝150/, /sample: 청운이/, /errs \[\]/],
   drive: [/scope asked: .*drive\.appdata .*drive\.readonly/, /root folders: \[ '공유 문서함', '노벨', '웹툰' \]/, /sources: \[ '노벨' \] \| status: 파일 2개/, /works: \[ '화산귀환' \]/, /ep text: true \| media hits: 1/, /offline works: \[ '화산귀환' \]/, /offline ep text: true/, /ERRORS: none/],
   extras: [/title: Novelist \| brand: Novelist/, /mobile css@1024: true/, /side open: true/, /tool open@1024: true/, /idea: \[ '검은 태양 아래에서만 피는 꽃' \]/, /free canvas: true 1240x1650/, /craft saved: \[ '작법:/, /ref ideas: \[ '검은 태양/, /inserted: true/, /docx zip: true \| has document: true/, /ERRORS: none/],
+  split: [/filter chips: \[ '전체 3', '#장면 1', '#대사 1' \]/, /filtered: \[ '너는 왜 웃어 #대사' \]/, /split: true \| pane w>250: true \| text w>300: true/, /rp work: hwasan · 소설 \| paras: true/, /rp next: 0 → 1/, /rp idea saved: true \| from: hwasan · 2화/, /closed: true/, /hwpx zip: true \| mimetype first: true/, /hwpx text: true/, /ERRORS: none/],
   learn: [/out body: "다듬은 문장이다\. 그는 웃었다\." \| reasons: \[ '리듬', '중복' \] \| diff: true/, /memo: 절단은/, /craft note card: \[ '내 퇴고 노트/, /mirror: 같은 어미 연속=\d+/, /marks hb: \d+/, /compare rows: 5/, /자주 지우는 말갑자기/, /meter ref: true/, /term pop: true/, /ERRORS: none/],
 };
 const only = process.argv.slice(2); let fail = 0;

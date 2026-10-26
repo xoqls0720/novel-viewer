@@ -31,6 +31,7 @@
       <div class="st-crumb"><span id="stCrumbPart"></span><input type="text" id="stTitle" placeholder="회차 제목" autocomplete="off"></div>
       <select id="stStatus" title="상태"><option value="draft">초고</option><option value="revise">퇴고</option><option value="done">완료</option><option value="posted">연재함</option></select>
       <button class="icon" id="stFindTg" title="찾기·바꾸기 (Ctrl+F)"><svg class="i"><use href="#i-search"/></svg></button>
+      <button class="icon" id="stSplitBtn" title="자료 나란히 보기 (읽던 작품을 옆에 띄워 놓고 쓰기)"><svg class="i"><use href="#i-book"/></svg></button>
       <button class="icon" id="stCmtBtn" title="고른 문장에 메모 달기 (Ctrl+Shift+M)"><svg class="i"><use href="#i-note"/></svg></button>
       <button class="icon desk-only" id="stTw" title="타자기 스크롤: 쓰는 줄을 화면 가운데에"><svg class="i"><use href="#i-type"/></svg></button>
       <button class="icon desk-only" id="stFocus" title="집중 모드 (Ctrl+.)"><svg class="i"><use href="#i-focus"/></svg></button>
@@ -80,9 +81,14 @@
         <div class="full"><label><input type="checkbox" id="stStartHere"> 앱을 열면 집필실부터 보여 주기</label></div>
       </div></div>
       <div class="st-sec"><h3>자동 백업</h3><div class="hint" id="stBkStat" style="margin-bottom:8px"></div><div class="row tight"><button id="stBkDir">백업 폴더 정하기</button></div></div>
-      <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpDocxAll">작품 전체 docx</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
+      <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpDocxAll">작품 전체 docx</button><button id="stExpHwpxAll">작품 전체 hwpx</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
     </div></div>
 
+    <aside class="st-refpane" id="stRefPane" hidden>
+      <div class="rp-head"><select id="rpWork"></select><select id="rpEp"></select><button class="icon" id="rpClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="rp-body" id="rpBody"><div class="hint" style="padding:20px">자료실에 불러온 작품을 골라 옆에 띄워 두고 쓸 수 있어요.</div></div>
+      <div class="rp-foot"><button id="rpIdea">고른 문장 → 떠오른 문장</button><span class="hint grow">문장을 고르고 누르면 메모로 남아요</span><button id="rpPrev" title="이전 화">‹</button><button id="rpNext" title="다음 화">›</button></div>
+    </aside>
     <div class="st-meter" id="stMeter"></div>
   </div>
 
@@ -99,7 +105,7 @@
       <div class="row tight"><select id="stExpFmt" class="grow"><option value="mobile">모바일 연재 (문단 사이 빈 줄)</option><option value="book">출판·공모전 원고 (빈 줄 없이 들여쓰기)</option><option value="raw">쓴 그대로</option></select></div>
       <div class="row"><label class="hint"><input type="checkbox" id="stExpTitle" checked> 맨 위에 회차 제목</label><label class="hint"><input type="checkbox" id="stExpDots" checked> ... → …</label><label class="hint"><input type="checkbox" id="stExpQuote"> "곧은" → “둥근” 따옴표</label></div>
       <div class="hint" id="stExpCount"></div>
-      <div class="row"><button id="stCopyEp">이 화 복사</button><button id="stExpEp">txt</button><button id="stExpDocx">워드 docx</button><button id="stPrint">PDF·인쇄</button><button id="stExpRange">여러 화 txt</button><button id="stFmt">원고 문단 정리</button></div>
+      <div class="row"><button id="stCopyEp">이 화 복사</button><button id="stExpEp">txt</button><button id="stExpDocx">워드 docx</button><button id="stExpHwpx">한글 hwpx</button><button id="stPrint">PDF·인쇄</button><button id="stExpRange">여러 화 txt</button><button id="stFmt">원고 문단 정리</button></div>
       <div class="hint">연재처마다 글자 수 기준(공백 포함·제외)과 문단 규칙이 달라요. 올리기 전에 연재처 안내를 한 번 확인해 주세요.</div>
     </div>
     <div class="st-ipane st-ai" data-ipane="ai" hidden>
