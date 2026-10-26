@@ -181,8 +181,8 @@
       <h3>책갈피</h3>
       <div class="list" id="bmList"></div>
       <h3>장면 노트</h3>
-      <div class="row tight"><select id="ideaPaper" title="종이"><option value="plain">흰 종이</option><option value="grid">격자</option><option value="lined">줄 노트</option><option value="dots">점 노트</option></select><select id="ideaSize" title="크기"><option value="tall">세로</option><option value="wide">가로</option><option value="square">정사각</option></select><button id="ideaDraw" title="빈 종이에 그리기"><svg class="i"><use href="#i-pen"/></svg> 새 그림</button><button id="noteImport" title="굿노트·프로크리에이트에서 내보낸 그림(PNG·JPG)을 장면 노트로 가져와요">그림 가져오기</button><input type="file" id="noteImportFile" accept="image/*" multiple hidden></div>
-      <div class="hint">아이패드: 그림 단추로 새 종이를 열어 애플 펜슬로 그려요. 그리는 중 <b>보내기</b>로 굿노트·프로크리에이트에 넘기고, 거기서 내보낸 그림은 <b>그림 가져오기</b>로 다시 받아요.</div>
+      <div class="row tight"><select id="ideaPaper" title="종이"><option value="plain">흰 종이</option><option value="grid">격자</option><option value="lined">줄 노트</option><option value="dots">점 노트</option></select><select id="ideaSize" title="크기"><option value="tall">세로</option><option value="wide">가로</option><option value="square">정사각</option></select><button id="ideaDraw" title="빈 종이에 그리기"><svg class="i"><use href="#i-pen"/></svg> 새 그림</button><button id="noteImport" title="굿노트·프로크리에이트에서 내보낸 PNG·JPG·PDF·PSD를 장면 노트로 가져와요">그림 가져오기</button><input type="file" id="noteImportFile" accept="image/*,.pdf,.psd,.procreate" multiple hidden></div>
+      <div class="hint">아이패드: 그림 단추로 새 종이를 열어 애플 펜슬로 그려요. 그리는 중 <b>보내기</b>로 굿노트·프로크리에이트에 넘기고, 거기서 내보낸 그림은 <b>그림 가져오기</b>로 다시 받아요(PNG·JPG·PDF·PSD).</div>
       <div class="grid" id="scrapList"></div>
       <h3>문장 형광펜</h3>
       <div class="list" id="noteList"></div>
@@ -334,7 +334,7 @@
           <div class="row"><label>굿노트 쪽</label><select id="gnPage"><option value="a4">A4 쪽 (그림 + 내 메모 + 손글씨 줄)</option><option value="fit">그림 크기 그대로</option></select></div>
           <div class="row"><label>프로크리에이트 캔버스</label><select id="pcSize"><option value="tall">세로 2048×2732</option><option value="wide">가로 2732×2048</option><option value="square">정사각 2732×2732</option></select></div>
           <div class="row"><label>프로크리에이트 파일</label><select id="pcFormat"><option value="png">PNG (한 장)</option><option value="psd">PSD (장면·필기 레이어 따로)</option></select></div>
-          <div class="hint">다시 가져올 때: 굿노트는 쪽을 <b>이미지로 내보내기</b>(PNG), 프로크리에이트는 <b>공유 → PNG</b>로 파일 앱에 저장한 뒤, 메모 탭의 <b>그림 가져오기</b>를 누르고 그 파일을 고르면 돼요.</div>
+          <div class="hint">다시 가져올 때: 굿노트는 <b>PDF 또는 이미지로 내보내기</b>, 프로크리에이트는 <b>공유 → PNG 또는 PSD</b>로 파일 앱에 저장한 뒤, 메모 탭의 <b>그림 가져오기</b>를 누르고 그 파일을 고르면 돼요.</div>
         </div>
       </details>
       <details class="fold">
@@ -365,7 +365,7 @@
     <button id="skUndo">되돌리기</button><button id="skRedo">다시</button><button id="skClear" class="danger">모두 지우기</button>
     <button id="skFinger" title="손가락으로 그리기">손가락</button><button id="skFit" hidden>맞춤</button>
     <select id="skSend"><option value="">보내기…</option><option value="gn">굿노트로</option><option value="pc">프로크리에이트로</option><option value="file">사진·파일로 (PNG)</option></select>
-    <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*" hidden>
+    <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*,.pdf,.psd,.procreate" hidden>
   </div>
   <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas></div>
   <div class="sk-bot">

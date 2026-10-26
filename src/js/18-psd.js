@@ -34,3 +34,29 @@ function buildPsd(W, H, layers, flat){
   out.push(u16(0), rgb);
   return new Blob(out, {type: 'image/vnd.adobe.photoshop'});
 }
+
+// PSD 읽기: 합쳐진 그림(맨 뒤 이미지 자료)만 읽는다. 프로크리에이트·포토샵이 내보낸 8비트 RGB(압축 없음·RLE)를 지원한다.
+async function psdComposite(file){
+  const buf = await (file.arrayBuffer ? file.arrayBuffer() : new Response(file).arrayBuffer()); const v = new DataView(buf); const u8 = new Uint8Array(buf);
+  if (String.fromCharCode(...u8.slice(0, 4)) !== '8BPS') throw new Error('PSD 파일이 아니에요');
+  const ch = v.getUint16(12), H = v.getUint32(14), W = v.getUint32(18), depth = v.getUint16(22), mode = v.getUint16(24);
+  if (depth !== 8 || ![1, 3].includes(mode)) throw new Error('8비트 RGB PSD만 읽어요');
+  let p = 26; p += 4 + v.getUint32(p); p += 4 + v.getUint32(p); p += 4 + v.getUint32(p);   // 색 모드, 이미지 자원, 레이어
+  const comp = v.getUint16(p); p += 2; const n = W * H; const planes = [];
+  if (comp === 0){ for (let c = 0; c < ch; c++){ planes.push(u8.subarray(p + c * n, p + (c + 1) * n)); } }
+  else if (comp === 1){
+    p += H * ch * 2; // 줄마다 압축 크기 표
+    const counts = []; let q = 26; q += 4 + v.getUint32(q); q += 4 + v.getUint32(q); q += 4 + v.getUint32(q); q += 2;
+    for (let i = 0; i < H * ch; i++) counts.push(v.getUint16(q + i * 2));
+    let li = 0;
+    for (let c = 0; c < ch; c++){
+      const pl = new Uint8Array(n);
+      for (let y = 0; y < H; y++){ const end = p + counts[li++]; let o = y * W; while (p < end){ const h = v.getInt8(p++); if (h >= 0){ for (let k = 0; k <= h; k++) pl[o++] = u8[p++]; } else if (h !== -128){ const b = u8[p++]; for (let k = 0; k < 1 - h; k++) pl[o++] = b; } } p = end; }
+      planes.push(pl);
+    }
+  } else throw new Error('지원하지 않는 PSD 압축이에요');
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); const im = g.createImageData(W, H);
+  for (let i = 0; i < n; i++){ const r = planes[0][i]; im.data[i*4] = r; im.data[i*4+1] = planes[mode === 1 ? 0 : 1][i]; im.data[i*4+2] = planes[mode === 1 ? 0 : 2][i]; im.data[i*4+3] = ch === 2 || ch === 4 ? planes[ch - 1][i] : 255; }
+  g.putImageData(im, 0, 0);
+  const o = document.createElement('canvas'); o.width = W; o.height = H; const og = o.getContext('2d'); og.fillStyle = '#fff'; og.fillRect(0, 0, W, H); og.drawImage(c, 0, 0); return o;
+}

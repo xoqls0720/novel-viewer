@@ -900,8 +900,8 @@ details.fold summary .chev{margin-left:auto}
       <h3>책갈피</h3>
       <div class="list" id="bmList"></div>
       <h3>장면 노트</h3>
-      <div class="row tight"><select id="ideaPaper" title="종이"><option value="plain">흰 종이</option><option value="grid">격자</option><option value="lined">줄 노트</option><option value="dots">점 노트</option></select><select id="ideaSize" title="크기"><option value="tall">세로</option><option value="wide">가로</option><option value="square">정사각</option></select><button id="ideaDraw" title="빈 종이에 그리기"><svg class="i"><use href="#i-pen"/></svg> 새 그림</button><button id="noteImport" title="굿노트·프로크리에이트에서 내보낸 그림(PNG·JPG)을 장면 노트로 가져와요">그림 가져오기</button><input type="file" id="noteImportFile" accept="image/*" multiple hidden></div>
-      <div class="hint">아이패드: 그림 단추로 새 종이를 열어 애플 펜슬로 그려요. 그리는 중 <b>보내기</b>로 굿노트·프로크리에이트에 넘기고, 거기서 내보낸 그림은 <b>그림 가져오기</b>로 다시 받아요.</div>
+      <div class="row tight"><select id="ideaPaper" title="종이"><option value="plain">흰 종이</option><option value="grid">격자</option><option value="lined">줄 노트</option><option value="dots">점 노트</option></select><select id="ideaSize" title="크기"><option value="tall">세로</option><option value="wide">가로</option><option value="square">정사각</option></select><button id="ideaDraw" title="빈 종이에 그리기"><svg class="i"><use href="#i-pen"/></svg> 새 그림</button><button id="noteImport" title="굿노트·프로크리에이트에서 내보낸 PNG·JPG·PDF·PSD를 장면 노트로 가져와요">그림 가져오기</button><input type="file" id="noteImportFile" accept="image/*,.pdf,.psd,.procreate" multiple hidden></div>
+      <div class="hint">아이패드: 그림 단추로 새 종이를 열어 애플 펜슬로 그려요. 그리는 중 <b>보내기</b>로 굿노트·프로크리에이트에 넘기고, 거기서 내보낸 그림은 <b>그림 가져오기</b>로 다시 받아요(PNG·JPG·PDF·PSD).</div>
       <div class="grid" id="scrapList"></div>
       <h3>문장 형광펜</h3>
       <div class="list" id="noteList"></div>
@@ -1053,7 +1053,7 @@ details.fold summary .chev{margin-left:auto}
           <div class="row"><label>굿노트 쪽</label><select id="gnPage"><option value="a4">A4 쪽 (그림 + 내 메모 + 손글씨 줄)</option><option value="fit">그림 크기 그대로</option></select></div>
           <div class="row"><label>프로크리에이트 캔버스</label><select id="pcSize"><option value="tall">세로 2048×2732</option><option value="wide">가로 2732×2048</option><option value="square">정사각 2732×2732</option></select></div>
           <div class="row"><label>프로크리에이트 파일</label><select id="pcFormat"><option value="png">PNG (한 장)</option><option value="psd">PSD (장면·필기 레이어 따로)</option></select></div>
-          <div class="hint">다시 가져올 때: 굿노트는 쪽을 <b>이미지로 내보내기</b>(PNG), 프로크리에이트는 <b>공유 → PNG</b>로 파일 앱에 저장한 뒤, 메모 탭의 <b>그림 가져오기</b>를 누르고 그 파일을 고르면 돼요.</div>
+          <div class="hint">다시 가져올 때: 굿노트는 <b>PDF 또는 이미지로 내보내기</b>, 프로크리에이트는 <b>공유 → PNG 또는 PSD</b>로 파일 앱에 저장한 뒤, 메모 탭의 <b>그림 가져오기</b>를 누르고 그 파일을 고르면 돼요.</div>
         </div>
       </details>
       <details class="fold">
@@ -1084,7 +1084,7 @@ details.fold summary .chev{margin-left:auto}
     <button id="skUndo">되돌리기</button><button id="skRedo">다시</button><button id="skClear" class="danger">모두 지우기</button>
     <button id="skFinger" title="손가락으로 그리기">손가락</button><button id="skFit" hidden>맞춤</button>
     <select id="skSend"><option value="">보내기…</option><option value="gn">굿노트로</option><option value="pc">프로크리에이트로</option><option value="file">사진·파일로 (PNG)</option></select>
-    <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*" hidden>
+    <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*,.pdf,.psd,.procreate" hidden>
   </div>
   <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas></div>
   <div class="sk-bot">
@@ -3028,21 +3028,48 @@ $('#skImportBtn').onclick = () => $('#skImportFile').click();
 $('#skImportFile').onchange = async () => {
   const f = $('#skImportFile').files[0]; $('#skImportFile').value = ''; if (!f) return;
   if (sk.strokes.length && !confirm('지금 필기는 사라지고 가져온 그림으로 바뀌어요. 계속할까요?')) return;
-  const im = await loadImgEl(f); const c = document.createElement('canvas'); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+  let c; try{ c = (await fileToCanvases(f))[0]; }catch(e){ return toast('가져오지 못했어요 (' + e.message + ')'); }
   const meta = {...sk.meta, base: null}; const note = $('#skNote').value; await openSketch(c, meta, note, sk.editId, []); sk.moved = true; toast('가져온 그림 위에 이어서 그릴 수 있어요');
 };
-// 서재 옆 메모 칸에서 여러 장을 한꺼번에 장면 노트로
+// 다른 앱에서 내보낸 파일을 그림(캔버스)으로: 이미지, 굿노트 PDF(쪽마다), 프로크리에이트 PSD(합쳐진 그림), .procreate(미리보기만)
+let pdfjsP = null;
+function loadPdfJs(){
+  return pdfjsP ||= new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(window.pdfjsLib); }; sc.onerror = () => { pdfjsP = null; rej(new Error('PDF 도구를 불러오지 못했어요')); }; document.head.append(sc); });
+}
+const fitCanvas = (im, max = 3000) => { const k = Math.min(1, max / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); return c; };
+async function fileToCanvases(f){
+  const n = f.name.toLowerCase();
+  if (n.endsWith('.pdf')){
+    const lib = await loadPdfJs(); const pdf = await lib.getDocument({data: await f.arrayBuffer()}).promise; const out = [];
+    for (let i = 1; i <= Math.min(pdf.numPages, 40); i++){
+      const pg = await pdf.getPage(i); const base = pg.getViewport({scale: 1}); const vp = pg.getViewport({scale: Math.min(3, 2400 / Math.max(base.width, base.height))});
+      const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height); const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+      await pg.render({canvasContext: g, viewport: vp}).promise; out.push(c);
+    }
+    if (pdf.numPages > 40) toast(`쪽이 많아서 앞 40쪽만 가져왔어요 (전체 ${pdf.numPages}쪽)`);
+    return out;
+  }
+  if (n.endsWith('.psd')) return [fitCanvas(await psdComposite(f))];
+  if (n.endsWith('.procreate')){
+    const z = await JSZip.loadAsync(f); const th = z.file(/(^|\/)Thumbnail\.png$/i)[0]; if (!th) throw new Error('미리보기가 없는 파일이에요');
+    toast('프로크리에이트 원본은 레이어를 읽을 수 없어서 미리보기만 가져와요. 그림 전체는 프로크리에이트에서 PNG나 PSD로 내보내 주세요'); return [fitCanvas(await loadImgEl(new Blob([await th.async('arraybuffer')], {type: 'image/png'})))];
+  }
+  return [fitCanvas(await loadImgEl(f))];
+}
 async function importDrawings(files){
-  let n = 0;
+  let n = 0, bad = '';
   for (const f of files){
     try{
-      const im = await loadImgEl(f); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-      const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
-      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), thumb = await new Promise(r => tc.toBlob(r, 'image/jpeg', 0.8));
-      await idb.tx('readwrite', st => st.put({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), work: cur?.key || '', workName: cur?.name || '내 그림', epName: f.name.replace(/\.[^.]+$/, '') || '가져온 그림', where: {}, note: '', blob, thumb, base: null, strokes: null, t: Date.now()}), 'scraps'); n++;
-    }catch{}
+      const cs = await fileToCanvases(f); let i = 0;
+      for (const c of cs){
+        const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
+        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), thumb = await new Promise(r => tc.toBlob(r, 'image/jpeg', 0.8));
+        const base = f.name.replace(/\.[^.]+$/, '') || '가져온 그림';
+        await idb.tx('readwrite', st => st.put({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), work: cur?.key || '', workName: cur?.name || '내 그림', epName: cs.length > 1 ? `${base} ${++i}쪽` : base, where: {}, note: '', blob, thumb, base: null, strokes: null, t: Date.now()}), 'scraps'); n++;
+      }
+    }catch(e){ bad = e.message; }
   }
-  if (n){ window.gdSoon?.(); renderScraps(); toast(`그림 ${n}장을 장면 노트로 가져왔어요`); } else toast('그림을 읽지 못했어요 (PNG·JPG만 가져와요)');
+  if (n){ window.gdSoon?.(); renderScraps(); toast(`그림 ${n}장을 장면 노트로 가져왔어요`); } else toast(bad ? `가져오지 못했어요 (${bad})` : '그림을 읽지 못했어요');
 }
 $('#noteImport').onclick = () => $('#noteImportFile').click();
 $('#noteImportFile').onchange = () => { const fs = [...$('#noteImportFile').files]; $('#noteImportFile').value = ''; if (fs.length) importDrawings(fs); };
@@ -5248,6 +5275,32 @@ function buildPsd(W, H, layers, flat){
   for (let i = 0; i < n; i++){ rgb[i] = fp[i*4]; rgb[n + i] = fp[i*4 + 1]; rgb[2*n + i] = fp[i*4 + 2]; }
   out.push(u16(0), rgb);
   return new Blob(out, {type: 'image/vnd.adobe.photoshop'});
+}
+
+// PSD 읽기: 합쳐진 그림(맨 뒤 이미지 자료)만 읽는다. 프로크리에이트·포토샵이 내보낸 8비트 RGB(압축 없음·RLE)를 지원한다.
+async function psdComposite(file){
+  const buf = await (file.arrayBuffer ? file.arrayBuffer() : new Response(file).arrayBuffer()); const v = new DataView(buf); const u8 = new Uint8Array(buf);
+  if (String.fromCharCode(...u8.slice(0, 4)) !== '8BPS') throw new Error('PSD 파일이 아니에요');
+  const ch = v.getUint16(12), H = v.getUint32(14), W = v.getUint32(18), depth = v.getUint16(22), mode = v.getUint16(24);
+  if (depth !== 8 || ![1, 3].includes(mode)) throw new Error('8비트 RGB PSD만 읽어요');
+  let p = 26; p += 4 + v.getUint32(p); p += 4 + v.getUint32(p); p += 4 + v.getUint32(p);   // 색 모드, 이미지 자원, 레이어
+  const comp = v.getUint16(p); p += 2; const n = W * H; const planes = [];
+  if (comp === 0){ for (let c = 0; c < ch; c++){ planes.push(u8.subarray(p + c * n, p + (c + 1) * n)); } }
+  else if (comp === 1){
+    p += H * ch * 2; // 줄마다 압축 크기 표
+    const counts = []; let q = 26; q += 4 + v.getUint32(q); q += 4 + v.getUint32(q); q += 4 + v.getUint32(q); q += 2;
+    for (let i = 0; i < H * ch; i++) counts.push(v.getUint16(q + i * 2));
+    let li = 0;
+    for (let c = 0; c < ch; c++){
+      const pl = new Uint8Array(n);
+      for (let y = 0; y < H; y++){ const end = p + counts[li++]; let o = y * W; while (p < end){ const h = v.getInt8(p++); if (h >= 0){ for (let k = 0; k <= h; k++) pl[o++] = u8[p++]; } else if (h !== -128){ const b = u8[p++]; for (let k = 0; k < 1 - h; k++) pl[o++] = b; } } p = end; }
+      planes.push(pl);
+    }
+  } else throw new Error('지원하지 않는 PSD 압축이에요');
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); const im = g.createImageData(W, H);
+  for (let i = 0; i < n; i++){ const r = planes[0][i]; im.data[i*4] = r; im.data[i*4+1] = planes[mode === 1 ? 0 : 1][i]; im.data[i*4+2] = planes[mode === 1 ? 0 : 2][i]; im.data[i*4+3] = ch === 2 || ch === 4 ? planes[ch - 1][i] : 255; }
+  g.putImageData(im, 0, 0);
+  const o = document.createElement('canvas'); o.width = W; o.height = H; const og = o.getContext('2d'); og.fillStyle = '#fff'; og.fillRect(0, 0, W, H); og.drawImage(c, 0, 0); return o;
 }
 </script>
 </body>

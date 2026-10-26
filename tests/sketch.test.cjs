@@ -59,6 +59,20 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   // 메모 칸에서 그림 여러 장 가져오기
   await p.setInputFiles('#noteImportFile', [src, path.join(DATA, 'vt2', 'webtoon', 'misaeng', '0001 ep', '001.png')]); await p.waitForTimeout(900);
   console.log('scraps after import:', await p.$$eval('#scrapList .card', e => e.length));
+  // 다른 앱 파일: 굿노트 PDF(위에서 만든 것), RLE 압축 PSD, .procreate 미리보기
+  const fx = path.join(__dirname, 'out', 'fx'); fs.mkdirSync(fx, {recursive: true});
+  require('child_process').execFileSync('python3', ['-I', '-c', `
+from PIL import Image
+from psd_tools import PSDImage
+import zipfile, io
+im = Image.new('RGB', (120, 80), (200, 30, 30)); im.paste((30, 30, 200), (60, 0, 120, 80)); PSDImage.frompil(im).save('${fx}/rle.psd')
+b = io.BytesIO(); im.save(b, 'PNG'); z = zipfile.ZipFile('${fx}/art.procreate', 'w'); z.writestr('QuickLook/Thumbnail.png', b.getvalue()); z.writestr('Document.archive', b'x'); z.close()
+`]);
+  const before = (await p.$$('#scrapList .card')).length;
+  await p.setInputFiles('#noteImportFile', [path.join(__dirname, 'out', 'sk.pdf'), path.join(fx, 'rle.psd'), path.join(fx, 'art.procreate')]); await p.waitForTimeout(4000);
+  console.log('other-app files imported:', (await p.$$('#scrapList .card')).length - before, '| names:', (await p.$$eval('#scrapList .card .m', e => e.map(x => x.textContent.split(' · ')[1]))).slice(0, 3));
+  const px = await p.evaluate(async () => { const all = await new Promise(res => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('scraps').objectStore('scraps').getAll(); g.onsuccess = () => res(g.result); }; }); const x = all.find(a => a.epName === 'rle'); if (!x) return 'none'; const bm = await createImageBitmap(x.blob); const c = document.createElement('canvas'); c.width = bm.width; c.height = bm.height; const g = c.getContext('2d'); g.drawImage(bm, 0, 0); const l = g.getImageData(10, 40, 1, 1).data, r = g.getImageData(c.width - 10, 40, 1, 1).data; return [l[0] > 150 && l[2] < 80, r[2] > 150 && r[0] < 80, c.width + 'x' + c.height].join(' '); });
+  console.log('psd rle colors:', px);
   console.log('ERRORS:', errs.length ? errs : 'none');
   await b.close();
 })();

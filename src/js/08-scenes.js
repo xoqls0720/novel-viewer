@@ -340,21 +340,48 @@ $('#skImportBtn').onclick = () => $('#skImportFile').click();
 $('#skImportFile').onchange = async () => {
   const f = $('#skImportFile').files[0]; $('#skImportFile').value = ''; if (!f) return;
   if (sk.strokes.length && !confirm('지금 필기는 사라지고 가져온 그림으로 바뀌어요. 계속할까요?')) return;
-  const im = await loadImgEl(f); const c = document.createElement('canvas'); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+  let c; try{ c = (await fileToCanvases(f))[0]; }catch(e){ return toast('가져오지 못했어요 (' + e.message + ')'); }
   const meta = {...sk.meta, base: null}; const note = $('#skNote').value; await openSketch(c, meta, note, sk.editId, []); sk.moved = true; toast('가져온 그림 위에 이어서 그릴 수 있어요');
 };
-// 서재 옆 메모 칸에서 여러 장을 한꺼번에 장면 노트로
+// 다른 앱에서 내보낸 파일을 그림(캔버스)으로: 이미지, 굿노트 PDF(쪽마다), 프로크리에이트 PSD(합쳐진 그림), .procreate(미리보기만)
+let pdfjsP = null;
+function loadPdfJs(){
+  return pdfjsP ||= new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(window.pdfjsLib); }; sc.onerror = () => { pdfjsP = null; rej(new Error('PDF 도구를 불러오지 못했어요')); }; document.head.append(sc); });
+}
+const fitCanvas = (im, max = 3000) => { const k = Math.min(1, max / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); return c; };
+async function fileToCanvases(f){
+  const n = f.name.toLowerCase();
+  if (n.endsWith('.pdf')){
+    const lib = await loadPdfJs(); const pdf = await lib.getDocument({data: await f.arrayBuffer()}).promise; const out = [];
+    for (let i = 1; i <= Math.min(pdf.numPages, 40); i++){
+      const pg = await pdf.getPage(i); const base = pg.getViewport({scale: 1}); const vp = pg.getViewport({scale: Math.min(3, 2400 / Math.max(base.width, base.height))});
+      const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height); const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+      await pg.render({canvasContext: g, viewport: vp}).promise; out.push(c);
+    }
+    if (pdf.numPages > 40) toast(`쪽이 많아서 앞 40쪽만 가져왔어요 (전체 ${pdf.numPages}쪽)`);
+    return out;
+  }
+  if (n.endsWith('.psd')) return [fitCanvas(await psdComposite(f))];
+  if (n.endsWith('.procreate')){
+    const z = await JSZip.loadAsync(f); const th = z.file(/(^|\/)Thumbnail\.png$/i)[0]; if (!th) throw new Error('미리보기가 없는 파일이에요');
+    toast('프로크리에이트 원본은 레이어를 읽을 수 없어서 미리보기만 가져와요. 그림 전체는 프로크리에이트에서 PNG나 PSD로 내보내 주세요'); return [fitCanvas(await loadImgEl(new Blob([await th.async('arraybuffer')], {type: 'image/png'})))];
+  }
+  return [fitCanvas(await loadImgEl(f))];
+}
 async function importDrawings(files){
-  let n = 0;
+  let n = 0, bad = '';
   for (const f of files){
     try{
-      const im = await loadImgEl(f); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-      const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
-      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), thumb = await new Promise(r => tc.toBlob(r, 'image/jpeg', 0.8));
-      await idb.tx('readwrite', st => st.put({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), work: cur?.key || '', workName: cur?.name || '내 그림', epName: f.name.replace(/\.[^.]+$/, '') || '가져온 그림', where: {}, note: '', blob, thumb, base: null, strokes: null, t: Date.now()}), 'scraps'); n++;
-    }catch{}
+      const cs = await fileToCanvases(f); let i = 0;
+      for (const c of cs){
+        const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
+        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), thumb = await new Promise(r => tc.toBlob(r, 'image/jpeg', 0.8));
+        const base = f.name.replace(/\.[^.]+$/, '') || '가져온 그림';
+        await idb.tx('readwrite', st => st.put({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), work: cur?.key || '', workName: cur?.name || '내 그림', epName: cs.length > 1 ? `${base} ${++i}쪽` : base, where: {}, note: '', blob, thumb, base: null, strokes: null, t: Date.now()}), 'scraps'); n++;
+      }
+    }catch(e){ bad = e.message; }
   }
-  if (n){ window.gdSoon?.(); renderScraps(); toast(`그림 ${n}장을 장면 노트로 가져왔어요`); } else toast('그림을 읽지 못했어요 (PNG·JPG만 가져와요)');
+  if (n){ window.gdSoon?.(); renderScraps(); toast(`그림 ${n}장을 장면 노트로 가져왔어요`); } else toast(bad ? `가져오지 못했어요 (${bad})` : '그림을 읽지 못했어요');
 }
 $('#noteImport').onclick = () => $('#noteImportFile').click();
 $('#noteImportFile').onchange = () => { const fs = [...$('#noteImportFile').files]; $('#noteImportFile').value = ''; if (fs.length) importDrawings(fs); };
