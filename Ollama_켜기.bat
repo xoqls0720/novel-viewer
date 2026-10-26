@@ -18,9 +18,9 @@ echo 받은 모델:
 ollama list
 echo.
 echo 모델이 없으면 다른 창에서 이렇게 받아 주세요:
-echo   ollama pull gemma3:12b     (글+그림, 그래픽카드 8GB 이상)
-echo   ollama pull gemma3:4b      (가벼움)
-echo   ollama pull qwen3:14b      (한국어 글쓰기)
+echo   ollama pull gemma3:4b      (글+그림, 빠름. 그래픽카드 8GB 추천)
+echo   ollama pull qwen3:8b       (한국어 글쓰기·분석, 8GB에 맞음)
+echo   ollama pull gemma3:12b     (더 똑똑하지만 8GB에서는 느림)
 echo.
-echo 이 창을 닫으면 Ollama도 꺼져요. 뷰어 설정 탭에서 [연결 확인]을 눌러 주세요.
+echo 이 창을 닫거나 Ctrl+C를 누르면 Ollama도 꺼져요. 뷰어 설정 탭에서 [연결 확인]을 눌러 주세요.
 ollama serve
