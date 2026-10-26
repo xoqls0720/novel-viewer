@@ -3,10 +3,17 @@ let AnthropicSDK = null, sdkLoading = null;
 function loadSDK(){ return sdkLoading ??= import(SDK_URL).then(m => (AnthropicSDK = m.default)).catch(e => { sdkLoading = null; throw e; }); }
 const PROV = {
   claude: {name:'Claude', key:'apiKey', model: () => $('#model').value || DEFAULT_MODEL},
-  gemini: {name:'Gemini', key:'gemKey', model: () => $('#gemModel').value.trim() || 'gemini-2.5-flash'},
+  gemini: {name:'Gemini', key:'gemKey', model: () => gemModelName()},
   ollama: {name:'Ollama', key:null, model: () => $('#olModel').value.trim() || 'gemma3:12b'},
   groq:   {name:'Groq', key:'grKey', model: () => $('#grModel').value.trim() || 'llama-3.3-70b-versatile'},
 };
+// 모델 이름 칸에 공백·'models/'·한글 등이 섞여도 구글이 받는 모양으로 고친다(안 되면 기본 모델)
+const GEM_DEFAULT = 'gemini-2.5-flash';
+function gemModelName(){
+  let m = ($('#gemModel').value || '').trim().replace(/^models\//i, '').replace(/\s+/g, '-').toLowerCase();
+  if (!/^[a-z0-9][a-z0-9._-]*$/.test(m)){ if (m && !gemModelName.warned){ gemModelName.warned = true; toast(`Gemini 모델 이름이 올바르지 않아 ${GEM_DEFAULT}로 보냈어요. 설정 탭에서 확인해 주세요`); } return GEM_DEFAULT; }
+  return m;
+}
 const KEY_IDS = ['apiKey','gemKey','grKey'];
 function provOf(sel){ let v = sel ? $(sel)?.value : 'default'; if (!v || v === 'default') v = $('#provider').value; return PROV[v] ? v : 'claude'; }
 function olBase(){ return ($('#olUrl').value.trim() || 'http://localhost:11434').replace(/\/+$/, ''); }

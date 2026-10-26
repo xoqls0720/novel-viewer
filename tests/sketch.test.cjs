@@ -74,11 +74,17 @@ b = io.BytesIO(); im.save(b, 'PNG'); z = zipfile.ZipFile('${fx}/art.procreate', 
   const px = await p.evaluate(async () => { const all = await new Promise(res => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('scraps').objectStore('scraps').getAll(); g.onsuccess = () => res(g.result); }; }); const x = all.find(a => a.epName === 'rle'); if (!x) return 'none'; const bm = await createImageBitmap(x.blob); const c = document.createElement('canvas'); c.width = bm.width; c.height = bm.height; const g = c.getContext('2d'); g.drawImage(bm, 0, 0); const l = g.getImageData(10, 40, 1, 1).data, r = g.getImageData(c.width - 10, 40, 1, 1).data; return [l[0] > 150 && l[2] < 80, r[2] > 150 && r[0] < 80, c.width + 'x' + c.height].join(' '); });
   console.log('psd rle colors:', px);
   // 필기 칸에서 Gemini에게 연출 묻기: 그림이 inline_data로 간다
-  let gemBody = null; await p.route('https://generativelanguage.googleapis.com/**', r => { gemBody = r.request().postData(); r.fulfill({status: 200, headers: {'content-type': 'text/event-stream', 'access-control-allow-origin': '*'}, body: `data: ${JSON.stringify({candidates: [{content: {parts: [{text: '제미나이 연출 답'}]}, finishReason: 'STOP'}]})}\n\n`}); });
+  let gemBody = null, gemUrl = ''; await p.route('https://generativelanguage.googleapis.com/**', r => { gemBody = r.request().postData(); gemUrl = r.request().url(); r.fulfill({status: 200, headers: {'content-type': 'text/event-stream', 'access-control-allow-origin': '*'}, body: `data: ${JSON.stringify({candidates: [{content: {parts: [{text: '제미나이 연출 답'}]}, finishReason: 'STOP'}]})}\n\n`}); });
   await p.evaluate(() => { localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); });
   await p.reload(); await p.waitForTimeout(700); await p.click('#tgTool').catch(() => {}); await p.click('.tabs button[data-tab=notes]'); await p.click('#ideaDraw'); await p.waitForTimeout(300);
   await p.selectOption('#skAskProv', 'gemini'); await p.click('#skAsk'); await p.waitForTimeout(1500);
   console.log('ask gemini: image sent', /inline_data/.test(gemBody || ''), '| answer shown', (await p.textContent('#chat')).includes('제미나이 연출 답'), '| ai tab provider', await p.$eval('#aiProv', e => e.value));
+  // 모델 이름에 공백·대문자·models/ 가 섞여도 구글이 받는 모양으로 보낸다
+  for (const [typed, want] of [['Gemini 2.5 Flash', 'gemini-2.5-flash:'], ['models/gemini-2.5-pro', 'gemini-2.5-pro:'], ['제미나이', 'gemini-2.5-flash:']]){
+    await p.evaluate(v => { const e = document.querySelector('#gemModel'); e.value = v; e.dispatchEvent(new Event('change', {bubbles: true})); }, typed);
+    await p.click('.tabs button[data-tab=notes]'); await p.click('#ideaDraw'); await p.waitForTimeout(300); gemUrl = ''; await p.selectOption('#skAskProv', 'gemini'); await p.click('#skAsk'); await p.waitForTimeout(1200);
+    console.log('model name', JSON.stringify(typed), '→', gemUrl.includes('/models/' + want));
+  }
   console.log('ERRORS:', errs.length ? errs : 'none');
   await b.close();
 })();
