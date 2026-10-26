@@ -205,3 +205,29 @@ addEventListener('resize', () => { clearTimeout(drawWmap._t); drawWmap._t = setT
 $('#writerView').addEventListener('change', () => { store.set('set.writerView', $('#writerView').checked); writerMarks(); if ($('#reader.paged')) setFrac(getFrac()); });
 document.addEventListener('keydown', e => { if ((e.key === 'w' || e.key === 'W') && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && $('#studio').hidden && !$('#sketch').classList.contains('open')){ $('#writerView').checked = !$('#writerView').checked; $('#writerView').dispatchEvent(new Event('change')); toast($('#writerView').checked ? '작가 보기를 켰어요' : '작가 보기를 껐어요'); } });
 
+
+/* ---------- 떠오른 문장(빠른 메모)·빈 캔버스 ---------- */
+function renderIdeas(){
+  const box = $('#ideaList'); if (!box) return; const list = store.get('ideas', []);
+  box.innerHTML = list.length ? '' : '<div class="hint" style="padding:6px 2px">읽다가 떠오른 내 문장을 적어 두면 기기끼리 맞춰지고, 집필실 참고 탭에도 보여요.</div>';
+  for (const it of list){
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = `<div class="q"></div><div class="e">${new Date(it.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit'})}${it.from ? ' · ' + esc(it.from) : ''}</div><div class="row tight" style="justify-content:flex-end;margin:4px 0 0"><button data-a="cp">복사</button><button data-a="del">지우기</button></div>`;
+    d.querySelector('.q').textContent = it.text;
+    d.querySelector('[data-a=cp]').onclick = () => copy(it.text);
+    d.querySelector('[data-a=del]').onclick = () => { tomb('ideas', it.id); store.set('ideas', store.get('ideas', []).filter(x => x.id !== it.id)); renderIdeas(); };
+    box.append(d);
+  }
+}
+function addIdea(){
+  const v = $('#ideaIn').value.trim(); if (!v) return;
+  const list = store.get('ideas', []); list.unshift({id: uid(), text: v, from: cur ? cur.name : '', t: Date.now()});
+  store.set('ideas', list.slice(0, 500)); $('#ideaIn').value = ''; renderIdeas(); toast('남겼어요');
+}
+$('#ideaAdd').onclick = addIdea;
+$('#ideaIn').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); addIdea(); } });
+$('#ideaDraw').onclick = () => {
+  const c = document.createElement('canvas'); c.width = 1240; c.height = 1650;
+  const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
+  openSketch(c, {work: cur?.key || '', workName: '자유 그림', epName: new Date().toLocaleDateString('ko-KR'), where: {}});
+};

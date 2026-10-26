@@ -228,3 +228,15 @@ for (const id of ['naiChars','naiStyle','naiNeg']){ const el = $('#'+id); const 
 renderNaiHist();
 
 
+
+// 분석 답을 집필실 설정집의 '작법' 카드로 — AI가 이 작품에서 배운 것을 내 집필에 계속 쓰게 한다
+$('#aiCraft').onclick = () => {
+  const t = chats.ai.last(); if (!t) return toast('저장할 답이 아직 없어요');
+  const ps = store.get('st.projects', []); if (!ps.length) return toast('집필실에서 작품을 먼저 하나 만들어 주세요');
+  const pid = (store.get('st.cur', null)?.pid && ps.some(p => p.id === store.get('st.cur', null).pid)) ? store.get('st.cur', null).pid : ps[0].id;
+  const key = 'st.bible.' + pid; const l = store.get(key, []) || [];
+  const title = (cur ? cur.name + ' · ' : '') + (chats.ai.turns.at(-1)?.display || '분석').replace(/^\[|\]$/g, '').slice(0, 30);
+  l.unshift({id: uid(), kind: '작법', title, body: t.slice(0, 12000), img: '', t: Date.now()});
+  store.set(key, l);
+  toast(`'${ps.find(p => p.id === pid).name}' 설정집 → 작법 카드로 저장했어요. 집필실 AI가 함께 봐요`);
+};

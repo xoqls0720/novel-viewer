@@ -1,6 +1,6 @@
 {
-  "name": "노벨 뷰어",
-  "short_name": "노벨 뷰어",
+  "name": "Novelist",
+  "short_name": "Novelist",
   "description": "소설·웹툰·만화 뷰어와 작가용 분석 도구",
   "start_url": "./index.html",
   "scope": "./",

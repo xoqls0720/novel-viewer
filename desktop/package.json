@@ -1,7 +1,7 @@
 {
   "name": "novel-viewer",
-  "productName": "노벨 뷰어",
-  "version": "1.0.2",
+  "productName": "Novelist",
+  "version": "1.0.3",
   "description": "소설·웹툰·만화 뷰어와 작가용 집필실",
   "author": "xoqls0720",
   "main": "main.js",
@@ -21,8 +21,8 @@
   },
   "build": {
     "appId": "io.github.xoqls0720.novelviewer",
-    "productName": "노벨 뷰어",
-    "artifactName": "NovelViewer-Setup-${version}.${ext}",
+    "productName": "Novelist",
+    "artifactName": "Novelist-Setup-${version}.${ext}",
     "files": [
       "main.js",
       "preload.js",
@@ -42,7 +42,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "노벨 뷰어",
+      "shortcutName": "Novelist",
       "deleteAppDataOnUninstall": false
     },
     "publish": [

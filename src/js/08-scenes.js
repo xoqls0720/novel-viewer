@@ -86,7 +86,7 @@ async function moodboard(){
   const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
   g.fillStyle = '#f7f5f0'; g.fillRect(0,0,W,H);
   g.fillStyle = '#1c1b19'; g.font = '700 64px "Gowun Batang", serif'; g.fillText(cur ? cur.name : '장면 모음', M, M + 40);
-  g.fillStyle = '#a8834a'; g.font = '600 28px "Pretendard Variable", sans-serif'; g.fillText('무드보드 · 노벨 뷰어', M, M + 90);
+  g.fillStyle = '#a8834a'; g.font = '600 28px "Pretendard Variable", sans-serif'; g.fillText('무드보드 · Novelist', M, M + 90);
   const cw = (W - M*2 - gap*(cols-1)) / cols; const colY = Array(cols).fill(M + 140);
   for (const x of xs.slice(0, 18)){
     const ci = colY.indexOf(Math.min(...colY)); const im = await loadImgEl(x.blob); const h = im.height * cw / im.width;
@@ -101,7 +101,7 @@ async function moodboard(){
 function copyForClaude(){
   const md = notesMarkdown(); const xs = lastScraps;
   const scenes = xs.map(x => `- ${x.workName} · ${x.epName}${x.note ? ` — ${x.note}` : ''}`).join('\n');
-  const text = `아래는 내가 노벨 뷰어에서 읽으며 남긴 메모야. 굿노트에 넣어 줘:
+  const text = `아래는 내가 Novelist에서 읽으며 남긴 메모야. 굿노트에 넣어 줘:
 1) 문서: 작품별로 정리한 독서 노트(좋은 문장·구조·대사 구분, 내 메모 포함)
 2) 마인드맵: 등장인물과 관계
 3) 타임라인: 회차별 주요 사건과 절단

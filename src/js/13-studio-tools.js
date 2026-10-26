@@ -173,6 +173,21 @@ function stRenderRef(){
   $('#stRefChips').innerHTML = [['', '전체'], ['y', '좋은 문장'], ['g', '구조·기술'], ['p', '대사']].map(([c, l]) => `<button data-c="${c}" class="${c === stRefColor ? 'on' : ''}">${l}</button>`).join('');
   $$('#stRefChips button').forEach(b => b.onclick = () => { stRefColor = b.dataset.c; stRenderRef(); });
   box.innerHTML = all.length ? '' : '<div class="hint">자료실(뷰어)에서 읽다가 형광펜을 칠한 문장이 여기 모여요. 노랑=좋은 문장, 초록=구조·기술, 분홍=대사.</div>';
+  // 메모 탭의 '떠오른 문장'도 함께 보여 준다
+  const ideas = store.get('ideas', []).filter(i => !q || (i.text + (i.from || '')).includes(q)).slice(0, 30);
+  if (!stRefColor && ideas.length){
+    const wrap = document.createElement('div');
+    wrap.innerHTML = '<div class="st-lh" style="margin-top:0">떠오른 문장 (메모 탭에서 적음)</div>';
+    for (const it of ideas){
+      const d = document.createElement('div'); d.className = 'st-ref';
+      d.innerHTML = `<div class="w">내 메모${it.from ? ' · ' + esc(it.from) : ''}</div><div class="q"></div><div class="row tight"><button data-a="ins">커서 자리에 넣기</button><button data-a="cp">복사</button></div>`;
+      d.querySelector('.q').textContent = it.text;
+      d.querySelector('[data-a=cp]').onclick = () => copy(it.text);
+      d.querySelector('[data-a=ins]').onclick = () => { stSetView('write'); const ta = $('#stText'); const pos = ta.selectionEnd; taReplace(pos, pos, (pos && !/\n$/.test(ta.value.slice(0, pos)) ? '\n\n' : '') + it.text); stSaveText(); $('#studio').classList.remove('minsp'); };
+      wrap.append(d);
+    }
+    box.prepend(wrap);
+  }
   for (const n of all.slice(0, 200)){
     const d = document.createElement('div'); d.className = 'st-ref hl-' + n.color;
     d.innerHTML = `<div class="w"></div><div class="q"></div>${n.note ? '<div class="n"></div>' : ''}<div class="row tight"><button data-a="ai">AI로 이 기법 쓰기</button><button data-a="cp">복사</button></div>`;
@@ -307,3 +322,56 @@ document.addEventListener('focusout', () => setTimeout(stVV, 50));
 /* ================= 보기 바꿀 때 ================= */
 // 작법 카드 가져오기 단추를 설정집 위에 붙인다
 
+
+/* ---------- 워드(.docx)와 PDF(인쇄) ----------
+   docx는 zip 안의 XML이라 JSZip으로 직접 만든다. 워드·한글(HWP)·구글 문서가 모두 열 수 있다. */
+const xmlEsc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function docxParagraph(text, head){
+  const r = `<w:r><w:rPr>${head ? '<w:b/><w:sz w:val="32"/><w:szCs w:val="32"/>' : ''}</w:rPr><w:t xml:space="preserve">${xmlEsc(text)}</w:t></w:r>`;
+  const pr = `<w:pPr><w:spacing w:after="${head ? 480 : 240}" w:line="360" w:lineRule="auto"/>${head ? '<w:keepNext/>' : ''}</w:pPr>`;
+  return `<w:p>${pr}${r}</w:p>`;
+}
+async function buildDocx(blocks){   // blocks: [{text, head}]
+  const body = blocks.map(b => docxParagraph(b.text, b.head)).join('') +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1701" w:right="1440" w:bottom="1701" w:left="1440"/></w:sectPr>';
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}</w:body></w:document>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Batang" w:eastAsia="바탕" w:hAnsi="Batang"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:eastAsia="ko-KR"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`);
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  zip.file('word/styles.xml', styles);
+  zip.file('word/document.xml', doc);
+  return zip.generateAsync({type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+function epBlocks(title, text){
+  const out = []; if (title) out.push({text: title, head: true});
+  for (const line of stExport(text, '').split('\n')) if (line.trim()) out.push({text: line});
+  return out;
+}
+async function saveDocx(name, blocks){
+  const blob = await buildDocx(blocks);
+  if (navigator.canShare?.({files: [new File([blob], name)]}) && isTouch()) return shareFiles([new File([blob], name, {type: blob.type})], name, true);
+  const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  toast('워드 파일로 저장했어요. 워드·한글·구글 문서에서 열려요');
+}
+$('#stExpDocx').onclick = () => { stFlush(); saveDocx(`${safeName(stProj()?.name || '작품')}_${safeName($('#stTitle').value || '회차')}.docx`, epBlocks($('#stExpTitle').checked ? $('#stTitle').value : '', $('#stText').value)); };
+$('#stExpDocxAll').onclick = () => { stFlush(); const p = stProj(); const blocks = []; for (const e of stEps()) blocks.push(...epBlocks(e.title, stEpText(e.id))); saveDocx(`${safeName(p.name)}_전체.docx`, blocks); };
+// PDF: 인쇄 화면을 띄워 'PDF로 저장'을 고르면 된다(컴퓨터·아이폰·아이패드 공통)
+$('#stPrint').onclick = () => {
+  stFlush(); const title = $('#stTitle').value || ''; const text = stExport($('#stText').value, '');
+  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  document.body.append(f);
+  const d = f.contentDocument;
+  d.open(); d.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${xmlEsc(title)}</title><style>
+    @page{size:A4;margin:22mm 20mm} body{font-family:"Batang","바탕","Noto Serif KR",serif;font-size:11.5pt;line-height:1.85;color:#111;word-break:keep-all}
+    h1{font-size:15pt;margin:0 0 14mm;text-align:center} p{margin:0 0 .85em;text-indent:0}</style></head><body>
+    ${$('#stExpTitle').checked && title ? `<h1>${xmlEsc(title)}</h1>` : ''}${text.split('\n').filter(l => l.trim()).map(l => `<p>${xmlEsc(l)}</p>`).join('')}
+  </body></html>`); d.close();
+  setTimeout(() => { try{ f.contentWindow.focus(); f.contentWindow.print(); }catch{ toast('인쇄 창을 열지 못했어요'); } setTimeout(() => f.remove(), 60000); }, 300);
+};

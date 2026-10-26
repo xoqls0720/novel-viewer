@@ -60,7 +60,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.|set\.(stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.|set\.(provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -123,6 +123,7 @@ async function gdSync(interactive = false){
           const a = JSON.parse(lv), b = JSON.parse(rv);
           if (Array.isArray(a) && Array.isArray(b)){ const kind = k === 'st.projects' ? 'projects' : k.startsWith('st.eps.') ? 'eps' : 'bible'; const lt0 = local.ts[k] || 0, rt0 = remote.ts?.[k] || 0; merged[k] = JSON.stringify(rt0 > lt0 ? mergeOrdered(b, a, new Set(tomb[kind] || [])) : mergeOrdered(a, b, new Set(tomb[kind] || []))); mts[k] = Math.max(lt0, rt0); continue; }
         }
+        if (k === 'ideas'){ merged[k] = JSON.stringify(mergeById(JSON.parse(lv), JSON.parse(rv), new Set(tomb.ideas || [])).sort((x, y) => y.t - x.t)); continue; }
         if (k.startsWith('read.')){ merged[k] = JSON.stringify([...new Set([...JSON.parse(lv), ...JSON.parse(rv)])]); continue; }
         if (k.startsWith('pos.')){ const a = JSON.parse(lv), b = JSON.parse(rv); merged[k] = (b.t||0) > (a.t||0) ? rv : lv; continue; }
         if (k === 'naiHist'){ const a = JSON.parse(lv), b = JSON.parse(rv); const m = new Map([...a, ...b].map(x => [x.t, x])); merged[k] = JSON.stringify([...m.values()].sort((x,y)=>y.t-x.t).slice(0,30)); continue; }

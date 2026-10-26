@@ -30,7 +30,7 @@
 <div class="app hide-tool nowork" id="app">
   <aside>
     <div class="side-head">
-      <div class="brand"><h1><span class="dot"></span>노벨 뷰어</h1><button class="icon mobile-only" id="sideClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="brand"><h1><span class="dot"></span>Novelist</h1><button class="icon mobile-only" id="sideClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
       <div class="row tight">
         <button class="primary grow" id="btnFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button>
         <button class="grow" id="btnFiles"><svg class="i"><use href="#i-file"/></svg>파일 열기</button>
@@ -48,7 +48,7 @@
   <main>
     <div class="reader" id="reader"><div class="welcome"><div class="box">
       <div class="logo"><svg class="i"><use href="#i-book"/></svg></div>
-      <h2>노벨 뷰어</h2>
+      <h2>Novelist</h2>
       <p>소설·웹툰·만화를 한곳에서 읽고,<br>좋은 장면은 표시하고, 바로 분석하고, 내 글로 옮겨요.</p>
       <div class="row" style="justify-content:center"><button class="primary" id="wFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button><button id="wFiles"><svg class="i"><use href="#i-file"/></svg>파일·zip 열기</button><button id="wStudio"><svg class="i"><use href="#i-pen"/></svg>집필실</button></div>
       <div class="tiles">
@@ -168,6 +168,9 @@
         <button id="noteAI">Claude로 정리</button>
         <button id="noteMd" hidden></button><button id="noteGN" hidden></button><button id="noteMood" hidden></button><button id="noteClaude" hidden></button></div>
       <div class="hint">형광펜(노랑=좋은 문장, 초록=구조·기술, 분홍=대사)과 장면 노트가 여기에 모여요. 누르면 그 위치로 가요. 굿노트용 PDF는 장면 아래에 손글씨 줄 칸이 있어요.</div>
+      <h3>떠오른 문장</h3>
+      <div class="row tight"><input type="text" id="ideaIn" placeholder="읽다가 떠오른 문장·생각을 바로 적어 두세요 (Enter)" class="grow" autocomplete="off"><button id="ideaAdd" class="primary">남기기</button><button id="ideaDraw" title="빈 캔버스에 그리기"><svg class="i"><use href="#i-pen"/></svg></button></div>
+      <div class="list" id="ideaList"></div>
       <h3>책갈피</h3>
       <div class="list" id="bmList"></div>
       <h3>장면 노트</h3>
@@ -202,7 +205,7 @@
       <h3>대화 <span class="hint">· 같은 화에서 이어 물으면 본문을 다시 보내지 않아 싸게 돌아가요(Claude는 캐시)</span></h3>
       <div id="chat"></div>
       <textarea id="aiQ" style="min-height:76px" placeholder="예) 이 화에서 청명의 말투가 가장 잘 드러나는 대사 세 개와 이유 (Ctrl+Enter로 보내기)"></textarea>
-      <div class="row"><button id="aiAsk" class="primary idle-only">보내기</button><button id="aiStop" class="busy-only">멈추기</button><button id="aiNew">새 대화</button><button id="aiCopy">마지막 답 복사</button><button id="aiSave">대화 저장</button></div>
+      <div class="row"><button id="aiAsk" class="primary idle-only">보내기</button><button id="aiStop" class="busy-only">멈추기</button><button id="aiNew">새 대화</button><button id="aiCopy">마지막 답 복사</button><button id="aiSave">대화 저장</button><button id="aiCraft" title="마지막 답을 집필실 설정집의 작법 카드로">작법 카드로</button></div>
       <div class="hint aiUsage"></div>
     </div>
 

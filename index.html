@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>노벨 뷰어</title>
+<title>Novelist</title>
 <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="노벨 뷰어">
+<meta name="apple-mobile-web-app-title" content="Novelist">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
@@ -709,7 +709,7 @@ details.fold summary .chev{margin-left:auto}
 <div class="app hide-tool nowork" id="app">
   <aside>
     <div class="side-head">
-      <div class="brand"><h1><span class="dot"></span>노벨 뷰어</h1><button class="icon mobile-only" id="sideClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="brand"><h1><span class="dot"></span>Novelist</h1><button class="icon mobile-only" id="sideClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
       <div class="row tight">
         <button class="primary grow" id="btnFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button>
         <button class="grow" id="btnFiles"><svg class="i"><use href="#i-file"/></svg>파일 열기</button>
@@ -727,7 +727,7 @@ details.fold summary .chev{margin-left:auto}
   <main>
     <div class="reader" id="reader"><div class="welcome"><div class="box">
       <div class="logo"><svg class="i"><use href="#i-book"/></svg></div>
-      <h2>노벨 뷰어</h2>
+      <h2>Novelist</h2>
       <p>소설·웹툰·만화를 한곳에서 읽고,<br>좋은 장면은 표시하고, 바로 분석하고, 내 글로 옮겨요.</p>
       <div class="row" style="justify-content:center"><button class="primary" id="wFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button><button id="wFiles"><svg class="i"><use href="#i-file"/></svg>파일·zip 열기</button><button id="wStudio"><svg class="i"><use href="#i-pen"/></svg>집필실</button></div>
       <div class="tiles">
@@ -847,6 +847,9 @@ details.fold summary .chev{margin-left:auto}
         <button id="noteAI">Claude로 정리</button>
         <button id="noteMd" hidden></button><button id="noteGN" hidden></button><button id="noteMood" hidden></button><button id="noteClaude" hidden></button></div>
       <div class="hint">형광펜(노랑=좋은 문장, 초록=구조·기술, 분홍=대사)과 장면 노트가 여기에 모여요. 누르면 그 위치로 가요. 굿노트용 PDF는 장면 아래에 손글씨 줄 칸이 있어요.</div>
+      <h3>떠오른 문장</h3>
+      <div class="row tight"><input type="text" id="ideaIn" placeholder="읽다가 떠오른 문장·생각을 바로 적어 두세요 (Enter)" class="grow" autocomplete="off"><button id="ideaAdd" class="primary">남기기</button><button id="ideaDraw" title="빈 캔버스에 그리기"><svg class="i"><use href="#i-pen"/></svg></button></div>
+      <div class="list" id="ideaList"></div>
       <h3>책갈피</h3>
       <div class="list" id="bmList"></div>
       <h3>장면 노트</h3>
@@ -881,7 +884,7 @@ details.fold summary .chev{margin-left:auto}
       <h3>대화 <span class="hint">· 같은 화에서 이어 물으면 본문을 다시 보내지 않아 싸게 돌아가요(Claude는 캐시)</span></h3>
       <div id="chat"></div>
       <textarea id="aiQ" style="min-height:76px" placeholder="예) 이 화에서 청명의 말투가 가장 잘 드러나는 대사 세 개와 이유 (Ctrl+Enter로 보내기)"></textarea>
-      <div class="row"><button id="aiAsk" class="primary idle-only">보내기</button><button id="aiStop" class="busy-only">멈추기</button><button id="aiNew">새 대화</button><button id="aiCopy">마지막 답 복사</button><button id="aiSave">대화 저장</button></div>
+      <div class="row"><button id="aiAsk" class="primary idle-only">보내기</button><button id="aiStop" class="busy-only">멈추기</button><button id="aiNew">새 대화</button><button id="aiCopy">마지막 답 복사</button><button id="aiSave">대화 저장</button><button id="aiCraft" title="마지막 답을 집필실 설정집의 작법 카드로">작법 카드로</button></div>
       <div class="hint aiUsage"></div>
     </div>
 
@@ -1115,7 +1118,7 @@ details.fold summary .chev{margin-left:auto}
         <div class="full"><label><input type="checkbox" id="stStartHere"> 앱을 열면 집필실부터 보여 주기</label></div>
       </div></div>
       <div class="st-sec"><h3>자동 백업</h3><div class="hint" id="stBkStat" style="margin-bottom:8px"></div><div class="row tight"><button id="stBkDir">백업 폴더 정하기</button></div></div>
-      <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
+      <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpDocxAll">작품 전체 docx</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
     </div></div>
 
     <div class="st-meter" id="stMeter"></div>
@@ -1134,7 +1137,7 @@ details.fold summary .chev{margin-left:auto}
       <div class="row tight"><select id="stExpFmt" class="grow"><option value="mobile">모바일 연재 (문단 사이 빈 줄)</option><option value="book">출판·공모전 원고 (빈 줄 없이 들여쓰기)</option><option value="raw">쓴 그대로</option></select></div>
       <div class="row"><label class="hint"><input type="checkbox" id="stExpTitle" checked> 맨 위에 회차 제목</label><label class="hint"><input type="checkbox" id="stExpDots" checked> ... → …</label><label class="hint"><input type="checkbox" id="stExpQuote"> "곧은" → “둥근” 따옴표</label></div>
       <div class="hint" id="stExpCount"></div>
-      <div class="row"><button id="stCopyEp">이 화 복사</button><button id="stExpEp">이 화 txt</button><button id="stExpRange">여러 화 txt</button><button id="stFmt">원고 문단 정리</button></div>
+      <div class="row"><button id="stCopyEp">이 화 복사</button><button id="stExpEp">txt</button><button id="stExpDocx">워드 docx</button><button id="stPrint">PDF·인쇄</button><button id="stExpRange">여러 화 txt</button><button id="stFmt">원고 문단 정리</button></div>
       <div class="hint">연재처마다 글자 수 기준(공백 포함·제외)과 문단 규칙이 달라요. 올리기 전에 연재처 안내를 한 번 확인해 주세요.</div>
     </div>
     <div class="st-ipane st-ai" data-ipane="ai" hidden>
@@ -1197,7 +1200,7 @@ const IMG = /\.(jpe?g|png|webp|gif|bmp)$/i;
 const natural = (a,b) => a.localeCompare(b, 'ko', {numeric:true, sensitivity:'base'});
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('show'), 2600); }
-const isMobile = () => matchMedia('(max-width:900px)').matches;
+const isMobile = () => matchMedia('(max-width:1100px)').matches;   // CSS의 덮개 배치 기준과 같아야 한다
 const isTouch = () => matchMedia('(pointer:coarse)').matches;
 const tts = window.speechSynthesis || null;
 const copy = t => { navigator.clipboard?.writeText(t).then(() => toast('복사했어요'), () => toast('복사하지 못했어요')); };
@@ -1207,7 +1210,7 @@ const idb = {
   db: null,
   async open(){
     if (this.db) return this.db;
-    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 5); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); if (!db.objectStoreNames.contains('dcache')) db.createObjectStore('dcache', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 노벨 뷰어 창을 닫고 다시 열어 주세요'); });
+    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 5); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); if (!db.objectStoreNames.contains('dcache')) db.createObjectStore('dcache', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 Novelist 창을 닫고 다시 열어 주세요'); });
     return this.db;
   },
   async tx(mode, fn, name = 'files'){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
@@ -2410,8 +2413,20 @@ for (const id of ['naiChars','naiStyle','naiNeg']){ const el = $('#'+id); const 
 renderNaiHist();
 
 
+
+// 분석 답을 집필실 설정집의 '작법' 카드로 — AI가 이 작품에서 배운 것을 내 집필에 계속 쓰게 한다
+$('#aiCraft').onclick = () => {
+  const t = chats.ai.last(); if (!t) return toast('저장할 답이 아직 없어요');
+  const ps = store.get('st.projects', []); if (!ps.length) return toast('집필실에서 작품을 먼저 하나 만들어 주세요');
+  const pid = (store.get('st.cur', null)?.pid && ps.some(p => p.id === store.get('st.cur', null).pid)) ? store.get('st.cur', null).pid : ps[0].id;
+  const key = 'st.bible.' + pid; const l = store.get(key, []) || [];
+  const title = (cur ? cur.name + ' · ' : '') + (chats.ai.turns.at(-1)?.display || '분석').replace(/^\[|\]$/g, '').slice(0, 30);
+  l.unshift({id: uid(), kind: '작법', title, body: t.slice(0, 12000), img: '', t: Date.now()});
+  store.set(key, l);
+  toast(`'${ps.find(p => p.id === pid).name}' 설정집 → 작법 카드로 저장했어요. 집필실 AI가 함께 봐요`);
+};
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv'];
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv'];
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
@@ -2478,7 +2493,7 @@ $('#spentReset').onclick = () => { store.set('spent', {in:0,out:0,cache:0,n:0});
 $('#storeClear').onclick = async () => { if (!confirm('이 기기에 저장한 작품 파일을 모두 지울까요? (메모·진도·설정은 남아요)')) return; await idb.clear(); showStore(); toast('지웠어요'); };
 $('#bkOut').onclick = () => {
   const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|gd\.secret)$/.test(k)) data[k] = localStorage.getItem(k); }
-  download('노벨뷰어_백업.json', JSON.stringify(data), 'application/json');
+  download('Novelist_백업.json', JSON.stringify(data), 'application/json');
 };
 $('#bkIn').onclick = () => $('#bkFile').click();
 $('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|gd\.secret)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
@@ -2487,7 +2502,7 @@ function openTool(tab){
   const a = $('#app');
   if (isMobile()) a.classList.add('show-tool'); else a.classList.remove('hide-tool');
   $$('.tabs button[data-tab]').forEach(x=>x.classList.toggle('on', x.dataset.tab===tab)); $$('.pane').forEach(p=>p.classList.toggle('on', p.id==='pane-'+tab));
-  if (tab === 'notes'){ renderNotes(); renderScraps(); renderBm(); } if (tab === 'set') showStore();
+  if (tab === 'notes'){ renderNotes(); renderScraps(); renderBm(); renderIdeas(); } if (tab === 'set') showStore();
 }
 $('#btnFolder').onclick = () => $('#pickFolder').click();
 $('#btnFiles').onclick = () => $('#pickFiles').click();
@@ -2687,7 +2702,7 @@ async function moodboard(){
   const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
   g.fillStyle = '#f7f5f0'; g.fillRect(0,0,W,H);
   g.fillStyle = '#1c1b19'; g.font = '700 64px "Gowun Batang", serif'; g.fillText(cur ? cur.name : '장면 모음', M, M + 40);
-  g.fillStyle = '#a8834a'; g.font = '600 28px "Pretendard Variable", sans-serif'; g.fillText('무드보드 · 노벨 뷰어', M, M + 90);
+  g.fillStyle = '#a8834a'; g.font = '600 28px "Pretendard Variable", sans-serif'; g.fillText('무드보드 · Novelist', M, M + 90);
   const cw = (W - M*2 - gap*(cols-1)) / cols; const colY = Array(cols).fill(M + 140);
   for (const x of xs.slice(0, 18)){
     const ci = colY.indexOf(Math.min(...colY)); const im = await loadImgEl(x.blob); const h = im.height * cw / im.width;
@@ -2702,7 +2717,7 @@ async function moodboard(){
 function copyForClaude(){
   const md = notesMarkdown(); const xs = lastScraps;
   const scenes = xs.map(x => `- ${x.workName} · ${x.epName}${x.note ? ` — ${x.note}` : ''}`).join('\n');
-  const text = `아래는 내가 노벨 뷰어에서 읽으며 남긴 메모야. 굿노트에 넣어 줘:
+  const text = `아래는 내가 Novelist에서 읽으며 남긴 메모야. 굿노트에 넣어 줘:
 1) 문서: 작품별로 정리한 독서 노트(좋은 문장·구조·대사 구분, 내 메모 포함)
 2) 마인드맵: 등장인물과 관계
 3) 타임라인: 회차별 주요 사건과 절단
@@ -2931,7 +2946,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.|set\.(stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.|set\.(provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -2994,6 +3009,7 @@ async function gdSync(interactive = false){
           const a = JSON.parse(lv), b = JSON.parse(rv);
           if (Array.isArray(a) && Array.isArray(b)){ const kind = k === 'st.projects' ? 'projects' : k.startsWith('st.eps.') ? 'eps' : 'bible'; const lt0 = local.ts[k] || 0, rt0 = remote.ts?.[k] || 0; merged[k] = JSON.stringify(rt0 > lt0 ? mergeOrdered(b, a, new Set(tomb[kind] || [])) : mergeOrdered(a, b, new Set(tomb[kind] || []))); mts[k] = Math.max(lt0, rt0); continue; }
         }
+        if (k === 'ideas'){ merged[k] = JSON.stringify(mergeById(JSON.parse(lv), JSON.parse(rv), new Set(tomb.ideas || [])).sort((x, y) => y.t - x.t)); continue; }
         if (k.startsWith('read.')){ merged[k] = JSON.stringify([...new Set([...JSON.parse(lv), ...JSON.parse(rv)])]); continue; }
         if (k.startsWith('pos.')){ const a = JSON.parse(lv), b = JSON.parse(rv); merged[k] = (b.t||0) > (a.t||0) ? rv : lv; continue; }
         if (k === 'naiHist'){ const a = JSON.parse(lv), b = JSON.parse(rv); const m = new Map([...a, ...b].map(x => [x.t, x])); merged[k] = JSON.stringify([...m.values()].sort((x,y)=>y.t-x.t).slice(0,30)); continue; }
@@ -3281,6 +3297,32 @@ addEventListener('resize', () => { clearTimeout(drawWmap._t); drawWmap._t = setT
 $('#writerView').addEventListener('change', () => { store.set('set.writerView', $('#writerView').checked); writerMarks(); if ($('#reader.paged')) setFrac(getFrac()); });
 document.addEventListener('keydown', e => { if ((e.key === 'w' || e.key === 'W') && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && $('#studio').hidden && !$('#sketch').classList.contains('open')){ $('#writerView').checked = !$('#writerView').checked; $('#writerView').dispatchEvent(new Event('change')); toast($('#writerView').checked ? '작가 보기를 켰어요' : '작가 보기를 껐어요'); } });
 
+
+/* ---------- 떠오른 문장(빠른 메모)·빈 캔버스 ---------- */
+function renderIdeas(){
+  const box = $('#ideaList'); if (!box) return; const list = store.get('ideas', []);
+  box.innerHTML = list.length ? '' : '<div class="hint" style="padding:6px 2px">읽다가 떠오른 내 문장을 적어 두면 기기끼리 맞춰지고, 집필실 참고 탭에도 보여요.</div>';
+  for (const it of list){
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = `<div class="q"></div><div class="e">${new Date(it.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit'})}${it.from ? ' · ' + esc(it.from) : ''}</div><div class="row tight" style="justify-content:flex-end;margin:4px 0 0"><button data-a="cp">복사</button><button data-a="del">지우기</button></div>`;
+    d.querySelector('.q').textContent = it.text;
+    d.querySelector('[data-a=cp]').onclick = () => copy(it.text);
+    d.querySelector('[data-a=del]').onclick = () => { tomb('ideas', it.id); store.set('ideas', store.get('ideas', []).filter(x => x.id !== it.id)); renderIdeas(); };
+    box.append(d);
+  }
+}
+function addIdea(){
+  const v = $('#ideaIn').value.trim(); if (!v) return;
+  const list = store.get('ideas', []); list.unshift({id: uid(), text: v, from: cur ? cur.name : '', t: Date.now()});
+  store.set('ideas', list.slice(0, 500)); $('#ideaIn').value = ''; renderIdeas(); toast('남겼어요');
+}
+$('#ideaAdd').onclick = addIdea;
+$('#ideaIn').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); addIdea(); } });
+$('#ideaDraw').onclick = () => {
+  const c = document.createElement('canvas'); c.width = 1240; c.height = 1650;
+  const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
+  openSketch(c, {work: cur?.key || '', workName: '자유 그림', epName: new Date().toLocaleDateString('ko-KR'), where: {}});
+};
 /* ================= 원고 저장소 (IndexedDB 'texts') ================= */
 // 원고는 용량이 넉넉한 IndexedDB에 둔다. 메모리에 한 번 읽어 두고, 고치면 바로 기기에 쓴다.
 const TXT = {cache: new Map(), dirty: new Set(), timer: null, ready: null};
@@ -4038,6 +4080,21 @@ function stRenderRef(){
   $('#stRefChips').innerHTML = [['', '전체'], ['y', '좋은 문장'], ['g', '구조·기술'], ['p', '대사']].map(([c, l]) => `<button data-c="${c}" class="${c === stRefColor ? 'on' : ''}">${l}</button>`).join('');
   $$('#stRefChips button').forEach(b => b.onclick = () => { stRefColor = b.dataset.c; stRenderRef(); });
   box.innerHTML = all.length ? '' : '<div class="hint">자료실(뷰어)에서 읽다가 형광펜을 칠한 문장이 여기 모여요. 노랑=좋은 문장, 초록=구조·기술, 분홍=대사.</div>';
+  // 메모 탭의 '떠오른 문장'도 함께 보여 준다
+  const ideas = store.get('ideas', []).filter(i => !q || (i.text + (i.from || '')).includes(q)).slice(0, 30);
+  if (!stRefColor && ideas.length){
+    const wrap = document.createElement('div');
+    wrap.innerHTML = '<div class="st-lh" style="margin-top:0">떠오른 문장 (메모 탭에서 적음)</div>';
+    for (const it of ideas){
+      const d = document.createElement('div'); d.className = 'st-ref';
+      d.innerHTML = `<div class="w">내 메모${it.from ? ' · ' + esc(it.from) : ''}</div><div class="q"></div><div class="row tight"><button data-a="ins">커서 자리에 넣기</button><button data-a="cp">복사</button></div>`;
+      d.querySelector('.q').textContent = it.text;
+      d.querySelector('[data-a=cp]').onclick = () => copy(it.text);
+      d.querySelector('[data-a=ins]').onclick = () => { stSetView('write'); const ta = $('#stText'); const pos = ta.selectionEnd; taReplace(pos, pos, (pos && !/\n$/.test(ta.value.slice(0, pos)) ? '\n\n' : '') + it.text); stSaveText(); $('#studio').classList.remove('minsp'); };
+      wrap.append(d);
+    }
+    box.prepend(wrap);
+  }
   for (const n of all.slice(0, 200)){
     const d = document.createElement('div'); d.className = 'st-ref hl-' + n.color;
     d.innerHTML = `<div class="w"></div><div class="q"></div>${n.note ? '<div class="n"></div>' : ''}<div class="row tight"><button data-a="ai">AI로 이 기법 쓰기</button><button data-a="cp">복사</button></div>`;
@@ -4172,6 +4229,59 @@ document.addEventListener('focusout', () => setTimeout(stVV, 50));
 /* ================= 보기 바꿀 때 ================= */
 // 작법 카드 가져오기 단추를 설정집 위에 붙인다
 
+
+/* ---------- 워드(.docx)와 PDF(인쇄) ----------
+   docx는 zip 안의 XML이라 JSZip으로 직접 만든다. 워드·한글(HWP)·구글 문서가 모두 열 수 있다. */
+const xmlEsc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function docxParagraph(text, head){
+  const r = `<w:r><w:rPr>${head ? '<w:b/><w:sz w:val="32"/><w:szCs w:val="32"/>' : ''}</w:rPr><w:t xml:space="preserve">${xmlEsc(text)}</w:t></w:r>`;
+  const pr = `<w:pPr><w:spacing w:after="${head ? 480 : 240}" w:line="360" w:lineRule="auto"/>${head ? '<w:keepNext/>' : ''}</w:pPr>`;
+  return `<w:p>${pr}${r}</w:p>`;
+}
+async function buildDocx(blocks){   // blocks: [{text, head}]
+  const body = blocks.map(b => docxParagraph(b.text, b.head)).join('') +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1701" w:right="1440" w:bottom="1701" w:left="1440"/></w:sectPr>';
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}</w:body></w:document>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Batang" w:eastAsia="바탕" w:hAnsi="Batang"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:eastAsia="ko-KR"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`);
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  zip.file('word/styles.xml', styles);
+  zip.file('word/document.xml', doc);
+  return zip.generateAsync({type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+function epBlocks(title, text){
+  const out = []; if (title) out.push({text: title, head: true});
+  for (const line of stExport(text, '').split('\n')) if (line.trim()) out.push({text: line});
+  return out;
+}
+async function saveDocx(name, blocks){
+  const blob = await buildDocx(blocks);
+  if (navigator.canShare?.({files: [new File([blob], name)]}) && isTouch()) return shareFiles([new File([blob], name, {type: blob.type})], name, true);
+  const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  toast('워드 파일로 저장했어요. 워드·한글·구글 문서에서 열려요');
+}
+$('#stExpDocx').onclick = () => { stFlush(); saveDocx(`${safeName(stProj()?.name || '작품')}_${safeName($('#stTitle').value || '회차')}.docx`, epBlocks($('#stExpTitle').checked ? $('#stTitle').value : '', $('#stText').value)); };
+$('#stExpDocxAll').onclick = () => { stFlush(); const p = stProj(); const blocks = []; for (const e of stEps()) blocks.push(...epBlocks(e.title, stEpText(e.id))); saveDocx(`${safeName(p.name)}_전체.docx`, blocks); };
+// PDF: 인쇄 화면을 띄워 'PDF로 저장'을 고르면 된다(컴퓨터·아이폰·아이패드 공통)
+$('#stPrint').onclick = () => {
+  stFlush(); const title = $('#stTitle').value || ''; const text = stExport($('#stText').value, '');
+  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  document.body.append(f);
+  const d = f.contentDocument;
+  d.open(); d.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${xmlEsc(title)}</title><style>
+    @page{size:A4;margin:22mm 20mm} body{font-family:"Batang","바탕","Noto Serif KR",serif;font-size:11.5pt;line-height:1.85;color:#111;word-break:keep-all}
+    h1{font-size:15pt;margin:0 0 14mm;text-align:center} p{margin:0 0 .85em;text-indent:0}</style></head><body>
+    ${$('#stExpTitle').checked && title ? `<h1>${xmlEsc(title)}</h1>` : ''}${text.split('\n').filter(l => l.trim()).map(l => `<p>${xmlEsc(l)}</p>`).join('')}
+  </body></html>`); d.close();
+  setTimeout(() => { try{ f.contentWindow.focus(); f.contentWindow.print(); }catch{ toast('인쇄 창을 열지 못했어요'); } setTimeout(() => f.remove(), 60000); }, 300);
+};
 /* ================= 쓰면서 느는 장치 ================= */
 
 /* ---------- 1. 고친 이유 · 4. 기억할 것 ---------- */

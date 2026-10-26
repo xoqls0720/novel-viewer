@@ -1,5 +1,5 @@
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv'];
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv'];
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
@@ -66,7 +66,7 @@ $('#spentReset').onclick = () => { store.set('spent', {in:0,out:0,cache:0,n:0});
 $('#storeClear').onclick = async () => { if (!confirm('이 기기에 저장한 작품 파일을 모두 지울까요? (메모·진도·설정은 남아요)')) return; await idb.clear(); showStore(); toast('지웠어요'); };
 $('#bkOut').onclick = () => {
   const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|gd\.secret)$/.test(k)) data[k] = localStorage.getItem(k); }
-  download('노벨뷰어_백업.json', JSON.stringify(data), 'application/json');
+  download('Novelist_백업.json', JSON.stringify(data), 'application/json');
 };
 $('#bkIn').onclick = () => $('#bkFile').click();
 $('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|gd\.secret)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
@@ -75,7 +75,7 @@ function openTool(tab){
   const a = $('#app');
   if (isMobile()) a.classList.add('show-tool'); else a.classList.remove('hide-tool');
   $$('.tabs button[data-tab]').forEach(x=>x.classList.toggle('on', x.dataset.tab===tab)); $$('.pane').forEach(p=>p.classList.toggle('on', p.id==='pane-'+tab));
-  if (tab === 'notes'){ renderNotes(); renderScraps(); renderBm(); } if (tab === 'set') showStore();
+  if (tab === 'notes'){ renderNotes(); renderScraps(); renderBm(); renderIdeas(); } if (tab === 'set') showStore();
 }
 $('#btnFolder').onclick = () => $('#pickFolder').click();
 $('#btnFiles').onclick = () => $('#pickFiles').click();

@@ -15,7 +15,7 @@ const IMG = /\.(jpe?g|png|webp|gif|bmp)$/i;
 const natural = (a,b) => a.localeCompare(b, 'ko', {numeric:true, sensitivity:'base'});
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('show'), 2600); }
-const isMobile = () => matchMedia('(max-width:900px)').matches;
+const isMobile = () => matchMedia('(max-width:1100px)').matches;   // CSS의 덮개 배치 기준과 같아야 한다
 const isTouch = () => matchMedia('(pointer:coarse)').matches;
 const tts = window.speechSynthesis || null;
 const copy = t => { navigator.clipboard?.writeText(t).then(() => toast('복사했어요'), () => toast('복사하지 못했어요')); };
@@ -25,7 +25,7 @@ const idb = {
   db: null,
   async open(){
     if (this.db) return this.db;
-    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 5); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); if (!db.objectStoreNames.contains('dcache')) db.createObjectStore('dcache', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 노벨 뷰어 창을 닫고 다시 열어 주세요'); });
+    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 5); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); if (!db.objectStoreNames.contains('dcache')) db.createObjectStore('dcache', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 Novelist 창을 닫고 다시 열어 주세요'); });
     return this.db;
   },
   async tx(mode, fn, name = 'files'){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
