@@ -27,7 +27,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   console.log('auto studio:', await p.isVisible('#studio'), '| migrated text:', await p.inputValue('#stText'), '| ls removed:', await p.evaluate(() => localStorage.getItem('nv.st.txt.p1.e1') === null));
   // 2) 큰 원고 (2MB) 저장 → 새로 고침 뒤 유지
   await p.evaluate(() => { const ta = document.querySelector('#stText'); ta.value = ta.value + '\n' + '가'.repeat(2_000_000); ta.dispatchEvent(new Event('input')); });
-  await p.waitForTimeout(1500); await p.reload(); await p.waitForTimeout(1500);
+  await p.waitForTimeout(3500); await p.reload(); await p.waitForTimeout(2000);
   console.log('2MB persisted:', (await p.inputValue('#stText')).length > 2_000_000);
   await p.evaluate(() => { const ta = document.querySelector('#stText'); ta.value = '예전에 쓴 원고다. 않되 없는말.\n\n두 번째 문단.'; ta.dispatchEvent(new Event('input')); }); await p.waitForTimeout(900);
   // 3) AI 넣기 후 Ctrl+Z

@@ -164,8 +164,9 @@
   .st-meter{gap:10px;padding-bottom:7px}
   .st-tbl .hide-m{display:none}
 }
-.studio-btn{width:100%;margin:8px 0 0;color:var(--brass);border-color:color-mix(in srgb, var(--brass) 45%, transparent);font-weight:600}
-.studio-btn:hover{background:color-mix(in srgb, var(--brass) 10%, transparent)}
+.studio-btn{width:100%;margin:2px 0 0;padding:11px 13px;justify-content:flex-start;gap:10px;background:linear-gradient(135deg, var(--brass-soft), transparent 75%);border-color:color-mix(in srgb, var(--brass) 30%, var(--line));color:var(--ink);font-weight:600;border-radius:12px;font-size:13.5px}
+.studio-btn svg{color:var(--brass)}
+.studio-btn:hover{border-color:color-mix(in srgb, var(--brass) 55%, var(--line));background:var(--brass-soft)}
 /* 원고 메모·맞춤법·참고·판 비교 */
 .st-page{position:relative}
 #stHl{position:absolute;z-index:0;pointer-events:none;color:transparent;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:break-word;font-family:var(--rfont,"Noto Serif KR",serif);font-size:var(--fs,18px);line-height:var(--lh,1.9);font-weight:var(--fw,400);letter-spacing:var(--ls,0em)}
@@ -231,3 +232,10 @@
 #termPop b{display:block;margin-bottom:2px}
 #termPop .ex{color:var(--sub);margin-top:6px;font-family:"Gowun Batang",serif}
 [hidden]{display:none!important}
+
+.st-rail button,.st-itabs button,.st-tabs button,.st-it .ud button,.st-bc .del,.st-ic .h b{background:transparent;box-shadow:none}
+.st-rail .logo{font-family:var(--display)}
+.st-tabs button.on{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+#stText,.st-crumb input,.st-top input#stTitle,.st-ic textarea,.st-tbl textarea,.st-tbl input,.st-bc .meta input,.st-proj select{box-shadow:none}
+#stText:focus,.st-crumb input:focus,.st-ic textarea:focus,.st-tbl textarea:focus,.st-tbl input:focus{border-color:transparent;box-shadow:none}
+.st-proj select:focus{box-shadow:none;border-color:transparent}

@@ -30,7 +30,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   console.log('theme:', await p.$eval('html', h=>h.dataset.theme), 'fs:', await p.$eval('html', h=>getComputedStyle(h).getPropertyValue('--fs')));
   await quick(async () => { await p.click('#themeSw [data-theme=light]'); });
   // Claude 대화 (실패 후 이어가기)
-  await p.click('#tgTool'); await p.click('.tabs button[data-tab=set]'); await p.fill('#apiKey','sk-ant-test'); await p.click('#keySave');
+  await p.click('#tgTool'); await p.click('.tabs button[data-tab=set]'); await p.evaluate(() => document.querySelectorAll('details.prov').forEach(d => d.open = true)); await p.fill('#apiKey','sk-ant-test'); await p.click('#keySave');
   await p.click('.tabs button[data-tab=ai]'); mode = 'refuse'; await p.click('button[data-ai=cut]'); await p.waitForTimeout(5000);
   mode = 'ok'; await p.fill('#aiQ','다시'); await p.click('#aiAsk'); await p.waitForTimeout(1200); await p.fill('#aiQ','이어서'); await p.click('#aiAsk'); await p.waitForTimeout(1200);
   const last = bodies[bodies.length-1];

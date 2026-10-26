@@ -19,54 +19,73 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
-  --bg:#f7f5f0; --panel:#fffefb; --panel-2:#f1eee7; --ink:#1c1b19; --sub:#6b6862; --faint:#8a857c; --line:#e6e1d6;
-  --accent:#2f3d6b; --accent-ink:#ffffff; --accent-soft:color-mix(in srgb, var(--accent) 10%, transparent);
-  --brass:#a8834a; --warn:#b4471b; --ok:#2f7a4c;
-  --reader-bg:#fbfaf7; --reader-ink:#24221f;
+  --bg:#efece4; --panel:#faf8f2; --panel-2:#e9e5d9; --ink:#1f1d18; --sub:#6b675d; --faint:#8f8a7e; --line:#dfdacb; --hairline:color-mix(in srgb, var(--line) 62%, transparent);
+  --accent:#32406e; --accent-ink:#ffffff; --accent-soft:color-mix(in srgb, var(--accent) 9%, transparent);
+  --brass:#9b7839; --brass-soft:color-mix(in srgb, var(--brass) 11%, transparent); --warn:#b0451a; --ok:#2f7a4c;
+  --reader-bg:#fbf9f3; --reader-ink:#262420;
   --hl-y:#f8e3a1; --hl-g:#cdeed6; --hl-p:#f7d3e3;
-  --radius:14px; --radius-s:10px;
-  --shadow:0 1px 2px rgb(20 18 14 / 6%), 0 8px 28px rgb(20 18 14 / 8%);
-  --bar-bg:color-mix(in srgb, var(--panel) 94%, transparent);
+  --radius:14px; --radius-s:10px; --radius-l:20px;
+  --shadow-s:0 1px 2px rgb(40 34 22 / 7%);
+  --shadow:0 1px 2px rgb(40 34 22 / 5%), 0 10px 34px rgb(40 34 22 / 9%);
+  --shadow-l:0 2px 6px rgb(40 34 22 / 7%), 0 24px 70px rgb(40 34 22 / 16%);
+  --bar-bg:color-mix(in srgb, var(--panel) 90%, transparent);
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
   --ui:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --display:"Gowun Batang","Noto Serif KR",serif;
 }
 :root[data-theme="sepia"]{
-  --bg:#efe7d6; --panel:#f8f1e2; --panel-2:#ece2cd; --ink:#3a2e1f; --sub:#74644e; --faint:#8f7e64; --line:#dfd2b8;
-  --accent:#6b4a25; --brass:#9a6b2f; --reader-bg:#f5ecd9; --reader-ink:#3a2e1f;
+  --bg:#eadfc8; --panel:#f7efdd; --panel-2:#e7dcc2; --ink:#39301f; --sub:#73644a; --faint:#8f7f63; --line:#dccfae;
+  --accent:#6b4a25; --brass:#946a2c; --reader-bg:#f4ead4; --reader-ink:#39301f;
 }
 :root[data-theme="dark"]{
-  --bg:#121214; --panel:#1a1a1d; --panel-2:#232327; --ink:#ebe8e2; --sub:#a6a29a; --faint:#85817a; --line:#2c2c31;
-  --accent:#9fb0e8; --accent-ink:#0d0d10; --brass:#d1ab6d; --warn:#f08a5d; --ok:#79d9a0;
-  --reader-bg:#161618; --reader-ink:#c9c4ba;
+  --bg:#101013; --panel:#191a1e; --panel-2:#232329; --ink:#eae7e0; --sub:#a4a098; --faint:#827e76; --line:#2b2b31; --hairline:color-mix(in srgb, var(--line) 70%, transparent);
+  --accent:#a3b4ea; --accent-ink:#0d0d10; --brass:#d2ac6e; --warn:#f08a5d; --ok:#7cd9a1;
+  --reader-bg:#141417; --reader-ink:#c9c4ba;
   --hl-y:#5c4c1a; --hl-g:#1e4a31; --hl-p:#5a2340;
-  --shadow:0 1px 2px rgb(0 0 0 / 30%), 0 10px 30px rgb(0 0 0 / 40%);
+  --shadow-s:0 1px 2px rgb(0 0 0 / 35%);
+  --shadow:0 1px 2px rgb(0 0 0 / 30%), 0 12px 36px rgb(0 0 0 / 42%);
+  --shadow-l:0 2px 8px rgb(0 0 0 / 40%), 0 28px 80px rgb(0 0 0 / 55%);
 }
 :root[data-theme="black"]{
-  --bg:#000; --panel:#0c0c0d; --panel-2:#17171a; --ink:#e6e3dc; --sub:#9a968f; --faint:#7a766f; --line:#222226;
-  --accent:#9fb0e8; --accent-ink:#000; --brass:#d1ab6d; --warn:#f08a5d; --ok:#79d9a0;
+  --bg:#000; --panel:#0c0c0e; --panel-2:#18181c; --ink:#e6e3dc; --sub:#9a968f; --faint:#78746d; --line:#232327; --hairline:#1c1c20;
+  --accent:#a3b4ea; --accent-ink:#000; --brass:#d2ac6e; --warn:#f08a5d; --ok:#7cd9a1;
   --reader-bg:#000; --reader-ink:#b8b3aa;
   --hl-y:#4a3d12; --hl-g:#163a26; --hl-p:#481b33;
-  --shadow:0 0 0 1px #222226, 0 10px 30px rgb(0 0 0 / 60%);
+  --shadow-s:0 0 0 1px #1c1c20;
+  --shadow:0 0 0 1px #222226, 0 12px 36px rgb(0 0 0 / 60%);
+  --shadow-l:0 0 0 1px #26262b, 0 28px 80px rgb(0 0 0 / 70%);
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;overscroll-behavior:none}
 body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:14px;letter-spacing:-0.01em;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
 button,select,input,textarea{font:inherit;color:inherit;letter-spacing:inherit}
 svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
-button{background:transparent;border:1px solid var(--line);border-radius:var(--radius-s);padding:7px 12px;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,color .15s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
-button:hover{background:var(--panel-2)}
+button{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-s);padding:7px 13px;cursor:pointer;touch-action:manipulation;transition:background .15s,border-color .15s,color .15s,box-shadow .15s;display:inline-flex;align-items:center;gap:6px;justify-content:center;box-shadow:var(--shadow-s);font-weight:500}
+button:hover{background:color-mix(in srgb, var(--panel-2) 55%, var(--panel));border-color:color-mix(in srgb, var(--faint) 38%, var(--line))}
 button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-button.primary:hover{filter:brightness(1.08);background:var(--accent)}
-button.icon{border:0;width:40px;height:40px;padding:0;border-radius:12px;color:var(--ink)}
+button.primary{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 92%, #fff), var(--accent));color:var(--accent-ink);border-color:var(--accent);font-weight:600;box-shadow:var(--shadow-s), inset 0 1px 0 rgb(255 255 255 / 14%)}
+button.primary:hover{filter:brightness(1.07)}
+button.icon{border:0;background:transparent;box-shadow:none;width:40px;height:40px;padding:0;border-radius:12px;color:var(--ink)}
 button.icon.on,button.on{background:var(--accent-soft);color:var(--accent);border-color:transparent}
 button:disabled{opacity:.45;cursor:default}
-select,input[type=text],input[type=password],input[type=number],input[type=search],textarea{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-s);padding:8px 10px;outline:none}
+select,input[type=text],input[type=password],input[type=number],input[type=search],textarea{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-s);padding:8px 11px;outline:none;box-shadow:inset 0 1px 2px rgb(40 34 22 / 4%);transition:border-color .15s,box-shadow .15s}
+select:focus,input:focus,textarea:focus{border-color:color-mix(in srgb, var(--accent) 55%, var(--line));box-shadow:0 0 0 3px var(--accent-soft)}
+input::placeholder,textarea::placeholder{color:var(--faint)}
 select{appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
 input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;vertical-align:-3px}
-input[type=range]{accent-color:var(--accent)}
+/* 슬라이더: 가는 트랙 + 흰 손잡이 */
+input[type=range]{appearance:none;-webkit-appearance:none;height:28px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right, var(--accent) var(--pct,50%), var(--line) var(--pct,50%))}
+input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:#fff;border:1px solid color-mix(in srgb, var(--ink) 16%, var(--line));box-shadow:0 1px 4px rgb(30 26 18 / 25%);margin-top:-6.5px;cursor:grab}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--accent)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid color-mix(in srgb, var(--ink) 16%, var(--line));box-shadow:0 1px 4px rgb(30 26 18 / 25%);cursor:grab}
 textarea{width:100%;min-height:140px;resize:vertical;line-height:1.65}
 ::selection{background:color-mix(in srgb, var(--hl-y) 75%, transparent)}
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb, var(--faint) 36%, transparent) transparent}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb, var(--faint) 34%, transparent);border-radius:5px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
 
 /* ---------- 큰 틀 ---------- */
 .app{display:grid;grid-template-columns:300px 1fr 420px;grid-template-rows:100%;height:100vh;height:100dvh;overflow:hidden;padding:0 var(--sar) 0 var(--sal)}
@@ -79,28 +98,32 @@ aside{border-right:1px solid var(--line)}
 .hide-side aside,.hide-tool .tool{display:none}
 
 /* ---------- 서재 ---------- */
-.side-head{padding:calc(18px + var(--sat)) 16px 12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:0;background:var(--panel);z-index:2;border-bottom:1px solid var(--line)}
+.side-head{padding:calc(16px + var(--sat)) 16px 12px;display:flex;flex-direction:column;gap:9px;position:sticky;top:0;background:var(--panel);z-index:2;border-bottom:1px solid var(--hairline)}
 .brand{display:flex;align-items:center;gap:10px;justify-content:space-between}
-.brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px}
-.brand h1 .dot{width:8px;height:8px;border-radius:50%;background:var(--brass)}
+.brand h1{font-family:var(--display);font-size:19px;margin:0;font-weight:700;letter-spacing:-0.01em;display:flex;align-items:center;gap:9px}
+.brand h1 .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(145deg, color-mix(in srgb, var(--brass) 86%, #fff), var(--brass));box-shadow:var(--shadow-s);position:relative}
+.brand h1 .dot::after{content:"書";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:700 13px/1 var(--display)}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0}
 .row.tight{margin:0}
 .grow{flex:1}
-.drop{border:1.5px dashed var(--line);border-radius:var(--radius-s);padding:10px;text-align:center;color:var(--faint);font-size:12px}
+.drop{border:1.5px dashed transparent;border-radius:var(--radius-s);padding:3px;text-align:center;color:var(--faint);font-size:11.5px}
 .drop.over{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 .lib{padding:8px 14px calc(16px + var(--sab))}
-.lib h4{font-size:11px;color:var(--faint);margin:18px 2px 10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.lib h4{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--faint);margin:20px 2px 10px;font-weight:600;letter-spacing:.07em}
+.lib h4::after{content:"";flex:1;height:1px;background:var(--hairline)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:16px 12px}
 .card{cursor:pointer;min-width:0}
-.card .cv{position:relative;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:linear-gradient(150deg,var(--panel-2),color-mix(in srgb,var(--accent) 18%,var(--panel-2)));box-shadow:var(--shadow);transition:transform .2s}
-.card:hover .cv{transform:translateY(-2px)}
-.card.on .cv{outline:2px solid var(--accent);outline-offset:2px}
+.card .cv{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;background:linear-gradient(150deg,var(--panel-2),color-mix(in srgb,var(--accent) 18%,var(--panel-2)));box-shadow:var(--shadow);transition:transform .22s,box-shadow .22s}
+.card .cv::after{content:"";position:absolute;inset:0;border-radius:8px;box-shadow:inset 0 0 0 1px rgb(255 255 255 / 9%), inset 3px 0 6px -3px rgb(0 0 0 / 22%);pointer-events:none}
+.card:hover .cv{transform:translateY(-3px);box-shadow:var(--shadow-l)}
+.card.on .cv{outline:2.5px solid var(--accent);outline-offset:2px}
+.card.on .t{color:var(--accent)}
 .card .cv img{width:100%;height:100%;object-fit:cover;display:block}
 .card .cv .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;font-family:"Gowun Batang",serif;font-size:15px;line-height:1.35;color:var(--sub)}
 .card .cv .kind{position:absolute;left:6px;top:6px;font-size:10px;font-weight:600;padding:2px 6px;border-radius:99px;background:rgb(0 0 0 / 55%);color:#fff;backdrop-filter:blur(6px)}
 .card .cv .pb{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgb(0 0 0 / 25%)}
 .card .cv .pb i{display:block;height:100%;background:var(--brass)}
-.card .t{font-size:13px;font-weight:600;line-height:1.35;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .t{font-family:var(--display);font-size:13px;font-weight:700;line-height:1.4;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .m{font-size:11.5px;color:var(--faint);margin-top:2px}
 .cont{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
 .cont .card{flex:0 0 96px}
@@ -160,13 +183,13 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;position:relati
 .welcome .box{max-width:560px;width:100%;text-align:center}
 .welcome .logo{width:64px;height:64px;border-radius:18px;margin:0 auto 18px;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
 .welcome .logo svg{width:34px;height:34px;stroke:#fff}
-.welcome h2{font-family:"Gowun Batang",serif;font-size:28px;margin:0 0 8px;letter-spacing:-0.02em}
+.welcome h2{font-family:var(--display);font-size:30px;margin:0 0 10px;letter-spacing:-0.02em}
 .welcome p{color:var(--sub);line-height:1.7;margin:0 0 22px}
 .welcome .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:26px 0 18px;text-align:left}
-.welcome .tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.welcome .tile{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow-s)}
 .welcome .tile b{display:block;font-size:13.5px;margin:6px 0 4px}
 .welcome .tile span{font-size:12px;color:var(--sub);line-height:1.55}
-.welcome .tile svg{color:var(--brass)}
+.welcome .tile svg{width:32px;height:32px;padding:7px;border-radius:10px;background:var(--brass-soft);color:var(--brass)}
 .welcome .keys{font-size:12px;color:var(--faint);line-height:1.9}
 kbd{font-family:var(--ui);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--panel)}
 
@@ -174,7 +197,7 @@ kbd{font-family:var(--ui);font-size:11px;border:1px solid var(--line);border-bot
 .sheet{position:absolute;z-index:8;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);display:none;flex-direction:column;overflow:hidden}
 .sheet.open{display:flex}
 #epDrawer{top:calc(58px + var(--sat));left:12px;width:min(420px,calc(100% - 24px));max-height:min(70vh,640px)}
-#quick{top:calc(58px + var(--sat));right:12px;width:min(380px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;padding:14px 16px}
+#quick{top:calc(58px + var(--sat));right:12px;width:min(392px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;padding:14px;background:color-mix(in srgb, var(--bg) 52%, var(--panel))}
 .sheet .sh{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
 .eplist{overflow:auto;padding:6px}
 .eplist .it{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:13.5px}
@@ -183,8 +206,8 @@ kbd{font-family:var(--ui);font-size:11px;border:1px solid var(--line);border-bot
 .eplist .it .no{font-variant-numeric:tabular-nums;color:var(--faint);font-size:12px;min-width:34px}
 .eplist .it.read .no::after{content:" ✓";color:var(--ok)}
 .eplist .it .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.q-sec{margin:4px 0 14px}
-.q-sec>.lab{font-size:11px;color:var(--faint);font-weight:600;letter-spacing:.08em;margin-bottom:8px;text-transform:uppercase}
+.q-sec{background:var(--panel);border:1px solid var(--hairline);border-radius:14px;padding:12px 14px;margin:0 0 10px;box-shadow:var(--shadow-s)}
+.q-sec>.lab{font-size:11px;color:var(--brass);font-weight:700;letter-spacing:.07em;margin-bottom:9px}
 .seg{display:flex;background:var(--panel-2);border-radius:12px;padding:3px;gap:2px}
 .seg button{flex:1;border:0;border-radius:9px;padding:7px 6px;font-size:12.5px;color:var(--sub)}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0 / 12%);font-weight:600}
@@ -193,20 +216,22 @@ kbd{font-family:var(--ui);font-size:11px;border:1px solid var(--line);border-bot
 .swatches button.on{outline:2px solid var(--accent);outline-offset:2px}
 .stepper{display:flex;align-items:center;gap:8px}
 .stepper output{min-width:42px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px}
-.qrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;font-size:13px}
+.qrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-size:13px}
 .qrow label{color:var(--sub)}
-.qrow input[type=range]{width:150px}
+.qrow input[type=range]{width:156px}
 
 /* ---------- 도구 창 ---------- */
-.tabs{display:flex;flex-wrap:wrap;gap:4px;position:sticky;top:0;background:var(--panel);z-index:2;padding:calc(10px + var(--sat)) 12px 10px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.tabs{display:flex;flex-wrap:wrap;gap:3px;position:sticky;top:0;background:var(--panel);z-index:2;padding:calc(10px + var(--sat)) 12px 9px;border-bottom:1px solid var(--hairline);scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs button{border:0;border-radius:99px;padding:7px 12px;white-space:nowrap;font-size:13px;color:var(--sub)}
-.tabs button.on{background:var(--ink);color:var(--panel);font-weight:600}
+.tabs button{border:0;background:transparent;box-shadow:none;border-radius:99px;padding:6px 11px;white-space:nowrap;font-size:12.5px;color:var(--sub);font-weight:500}
+.tabs button:hover{background:var(--panel-2)}
+.tabs button.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
 .tabs .close{margin-left:auto;display:none;position:sticky;right:-12px;background:var(--panel);box-shadow:-10px 0 12px var(--panel)}
 .nowork .botbar,.nowork #btnTTS,.nowork #epBtn svg{display:none}
 .pane{padding:16px 16px calc(20px + var(--sab));display:none}
 .pane.on{display:block}
-.pane h3{font-size:11px;margin:20px 0 8px;color:var(--faint);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.pane h3{display:flex;align-items:center;gap:10px;font-size:11.5px;margin:24px 0 10px;color:var(--brass);font-weight:700;letter-spacing:.07em}
+.pane h3::after{content:"";flex:1;height:1px;background:var(--hairline)}
 .pane h3:first-child{margin-top:4px}
 .pane h3 .hint{text-transform:none;letter-spacing:0;font-weight:400}
 .kv{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;align-items:baseline;background:var(--panel-2);border-radius:var(--radius);padding:14px}
@@ -223,8 +248,8 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .row label{color:var(--sub);font-size:12.5px}
 .msg{white-space:pre-wrap;padding:10px 12px;border-radius:12px;margin:8px 0;line-height:1.75;font-size:13.5px}
 .msg:empty{display:none}
-.msg.user{background:var(--accent-soft);margin-left:24px}
-.msg.ai{background:var(--panel-2)}
+.msg.user{background:var(--accent-soft);margin-left:28px;border-radius:14px 14px 4px 14px}
+.msg.ai{background:color-mix(in srgb, var(--panel-2) 62%, var(--panel));border:1px solid var(--hairline);border-radius:4px 14px 14px 14px}
 .msg.failed{opacity:.55}
 .hint{color:var(--sub);font-size:12px;line-height:1.65}
 .spark{display:block;width:100%;height:64px;background:var(--panel-2);border-radius:10px}
@@ -235,7 +260,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .list .item .e{color:var(--faint);font-size:11px}
 .list .item b{background:var(--hl-y);font-weight:inherit;color:inherit;border-radius:3px}
 .chip{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
-.field{background:var(--panel-2);border-radius:12px;padding:10px 12px;margin:8px 0}
+.field{background:color-mix(in srgb, var(--panel-2) 55%, var(--panel));border:1px solid var(--hairline);border-radius:12px;padding:10px 12px;margin:8px 0}
 .field .fh{display:flex;justify-content:space-between;align-items:center;color:var(--sub);font-size:12px;margin-bottom:6px;gap:8px}
 .field .fv{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.6}
 .field button{padding:3px 10px;font-size:12px}
@@ -365,7 +390,9 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 
 
 /* 작품 폴더 연결 */
-.link-btn{width:100%;margin:6px 0 0;font-size:13px}
+.link-btn{width:100%;margin:-2px 0 0;font-size:12.5px;border:0;background:transparent;box-shadow:none;color:var(--sub);justify-content:flex-start;padding:3px 4px;gap:8px}
+.link-btn:hover{background:transparent;color:var(--accent)}
+.link-btn svg{width:16px;height:16px}
 #linkSheet .src{border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 12px;margin:0 0 8px}
 #linkSheet .src .nm{display:flex;gap:8px;align-items:center}
 #linkSheet .src .nm b{flex:1;font-size:14px}
@@ -376,6 +403,37 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 #linkSheet .drv .it{display:flex;gap:8px;align-items:center;padding:9px 12px;cursor:pointer;font-size:13.5px;border-bottom:1px solid var(--line)}
 #linkSheet .drv .it:hover{background:var(--panel-2)}
 #linkSheet .drv .it .i{width:18px;height:18px;color:var(--brass)}
+
+/* ---------- 설정: AI 아코디언·접는 묶음 ---------- */
+details.prov,details.fold{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:0 0 8px;box-shadow:var(--shadow-s);overflow:hidden}
+details.prov summary,details.fold summary{display:flex;align-items:center;gap:9px;padding:12px 13px;cursor:pointer;list-style:none;-webkit-user-select:none;user-select:none}
+summary::-webkit-details-marker{display:none}
+details.prov summary b{font-size:14px}
+details.prov summary:hover,details.fold summary:hover{background:color-mix(in srgb, var(--panel-2) 40%, var(--panel))}
+.pv-sub{color:var(--faint);font-size:11.5px;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chev{width:16px;height:16px;color:var(--faint);transition:transform .18s;flex:none}
+details[open]>summary .chev{transform:rotate(180deg)}
+details.prov[open]{border-color:color-mix(in srgb, var(--accent) 26%, var(--line))}
+.pv-body{padding:10px 13px 13px;border-top:1px solid var(--hairline)}
+.pv-body .hint{margin-top:8px}
+.kst{font-size:11px;color:var(--faint);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.kst::before{content:"";width:7px;height:7px;border-radius:50%;background:color-mix(in srgb, var(--faint) 45%, var(--line))}
+.kst.ok{color:var(--ok)} .kst.ok::before{background:var(--ok)}
+.krow{display:flex;gap:6px;align-items:center}
+.krow input{flex:1;min-width:0}
+.krow button{flex:none}
+.mini-act{padding:4px 11px;font-size:12px;box-shadow:none;background:transparent}
+details.fold summary{color:var(--sub);font-weight:600;font-size:13px}
+details.fold summary .chev{margin-left:auto}
+
+/* 바탕 없는 단추들 되살리기 */
+.epbtn,.tabs button,.seg button,.selbar button,.eptools button{box-shadow:none}
+.epbtn,.selbar button{background:transparent}
+.seg button{background:transparent}
+.seg button.on{background:var(--panel)}
+.list .item b{box-shadow:none}
+#gdStatus{flex-basis:100%;text-align:left!important;margin-top:2px}
+.bar .icon:hover,.botbar .icon:hover{background:var(--panel-2)}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -542,8 +600,9 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
   .st-meter{gap:10px;padding-bottom:7px}
   .st-tbl .hide-m{display:none}
 }
-.studio-btn{width:100%;margin:8px 0 0;color:var(--brass);border-color:color-mix(in srgb, var(--brass) 45%, transparent);font-weight:600}
-.studio-btn:hover{background:color-mix(in srgb, var(--brass) 10%, transparent)}
+.studio-btn{width:100%;margin:2px 0 0;padding:11px 13px;justify-content:flex-start;gap:10px;background:linear-gradient(135deg, var(--brass-soft), transparent 75%);border-color:color-mix(in srgb, var(--brass) 30%, var(--line));color:var(--ink);font-weight:600;border-radius:12px;font-size:13.5px}
+.studio-btn svg{color:var(--brass)}
+.studio-btn:hover{border-color:color-mix(in srgb, var(--brass) 55%, var(--line));background:var(--brass-soft)}
 /* 원고 메모·맞춤법·참고·판 비교 */
 .st-page{position:relative}
 #stHl{position:absolute;z-index:0;pointer-events:none;color:transparent;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:break-word;font-family:var(--rfont,"Noto Serif KR",serif);font-size:var(--fs,18px);line-height:var(--lh,1.9);font-weight:var(--fw,400);letter-spacing:var(--ls,0em)}
@@ -609,6 +668,13 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 #termPop b{display:block;margin-bottom:2px}
 #termPop .ex{color:var(--sub);margin-top:6px;font-family:"Gowun Batang",serif}
 [hidden]{display:none!important}
+
+.st-rail button,.st-itabs button,.st-tabs button,.st-it .ud button,.st-bc .del,.st-ic .h b{background:transparent;box-shadow:none}
+.st-rail .logo{font-family:var(--display)}
+.st-tabs button.on{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+#stText,.st-crumb input,.st-top input#stTitle,.st-ic textarea,.st-tbl textarea,.st-tbl input,.st-bc .meta input,.st-proj select{box-shadow:none}
+#stText:focus,.st-crumb input:focus,.st-ic textarea:focus,.st-tbl textarea:focus,.st-tbl input:focus{border-color:transparent;box-shadow:none}
+.st-proj select:focus{box-shadow:none;border-color:transparent}
 </style>
 </head>
 <body>
@@ -872,56 +938,74 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 
     <div class="pane" id="pane-set">
       <h3>AI 연결</h3>
-      <div class="hint">키는 이 기기의 브라우저 저장소에만 저장되고, 요청은 이 기기에서 각 회사로 바로 가요. 동기화·백업 파일에도 들어가지 않아요. 공용 기기에서는 저장하지 마세요.</div>
-      <div class="row"><label>기본 AI</label><select id="provider"><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama (내 컴퓨터·무료)</option><option value="groq">Groq (무료 등급)</option></select></div>
-      <div class="field"><div class="fh"><b>Claude</b><span id="st-claude"></span></div>
-        <div class="row tight"><input type="password" id="apiKey" placeholder="sk-ant-..." class="grow" autocomplete="off"><button id="keySave">저장</button><button id="keyDel">지우기</button></div>
-        <div class="row"><select id="model">
-          <option value="claude-opus-5-5">Claude Opus 5.5 (기본)</option>
-          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (싸고 빠름)</option>
-          <option value="claude-haiku-5-5">Claude Haiku 5.5 (가장 쌈)</option>
-          <option value="claude-fable-5-1">Claude Fable 5.1 (가장 강함·비쌈)</option>
-        </select><label>생각 깊이</label><select id="effort"><option value="low">빠르게</option><option value="medium" selected>보통</option><option value="high">깊게</option><option value="xhigh">아주 깊게</option></select></div>
-      </div>
-      <div class="field"><div class="fh"><b>Gemini</b><span id="st-gemini"></span></div>
-        <div class="row tight"><input type="password" id="gemKey" placeholder="Google AI Studio API 키 (AIza...)" class="grow" autocomplete="off"><button data-ksave="gemKey">저장</button><button data-kdel="gemKey">지우기</button></div>
-        <div class="row"><label>모델</label><input type="text" id="gemModel" list="gemList" value="gemini-2.5-flash" class="grow"></div>
-        <datalist id="gemList"><option value="gemini-2.5-flash"><option value="gemini-2.5-pro"><option value="gemini-2.5-flash-lite"></datalist>
-        <div class="hint">키 받기: aistudio.google.com → Get API key. 카드 등록 없이 무료 등급으로 쓸 수 있어요(무료는 하루·분당 횟수 제한이 있고, 무료 요청은 구글이 품질 개선에 쓸 수 있어요).</div>
-      </div>
-      <div class="field"><div class="fh"><b>Ollama (내 컴퓨터, 무료)</b><span id="st-ollama"></span></div>
-        <div class="row tight"><input type="text" id="olUrl" value="http://localhost:11434" class="grow" autocomplete="off"><button id="olTest">연결 확인</button></div>
-        <div class="row"><label>모델</label><input type="text" id="olModel" list="olList" value="gemma3:12b" class="grow"></div>
-        <datalist id="olList"></datalist>
-        <div class="hint">키 없이 내 컴퓨터에서 돌아가요. ollama.com에서 설치한 뒤 viewer 폴더의 <b>Ollama_켜기.bat</b>으로 켜면 뷰어가 바로 붙어요. 아이폰에서는 쓸 수 없고 컴퓨터에서만 돼요. 그림까지 보려면 gemma3·qwen2.5vl 같은 그림 모델을 받아 주세요.</div>
-      </div>
-      <div class="field"><div class="fh"><b>Groq (무료 등급)</b><span id="st-groq"></span></div>
-        <div class="row tight"><input type="password" id="grKey" placeholder="gsk_..." class="grow" autocomplete="off"><button data-ksave="grKey">저장</button><button data-kdel="grKey">지우기</button></div>
-        <div class="row"><label>모델</label><input type="text" id="grModel" list="grList" value="llama-3.3-70b-versatile" class="grow"></div>
-        <datalist id="grList"><option value="llama-3.3-70b-versatile"><option value="moonshotai/kimi-k2-instruct"><option value="qwen/qwen3-32b"><option value="openai/gpt-oss-120b"><option value="meta-llama/llama-4-scout-17b-16e-instruct"></datalist>
-        <div class="hint">키 받기: console.groq.com → API Keys. 카드 등록 없이 하루 사용량 안에서 무료이고 아주 빨라요. 아이폰에서도 돼요. 그림은 llama-4-scout만 볼 수 있어요.</div>
-      </div>
-      <div class="row"><label>누적 사용</label><span id="spent" class="hint"></span><button id="spentReset">초기화</button></div>
+      <div class="row" style="margin:2px 0 10px"><label>기본으로 쓸 AI</label><select id="provider" class="grow" style="max-width:220px"><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama (내 컴퓨터·무료)</option><option value="groq">Groq (무료 등급)</option></select></div>
+      <details class="prov" data-prov="claude">
+        <summary><b>Claude</b><span class="pv-sub">글이 가장 좋아요 · 쓴 만큼 유료</span><span class="kst" id="st-claude"></span><svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="pv-body">
+          <div class="krow"><input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off"><button id="keySave" class="primary">저장</button><button id="keyDel" title="키 지우기"><svg class="i" style="width:16px;height:16px"><use href="#i-x"/></svg></button></div>
+          <div class="row tight" style="margin-top:8px"><select id="model" class="grow">
+            <option value="claude-opus-5-5">Claude Opus 5.5 (기본)</option>
+            <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (싸고 빠름)</option>
+            <option value="claude-haiku-5-5">Claude Haiku 5.5 (가장 쌈)</option>
+            <option value="claude-fable-5-1">Claude Fable 5.1 (가장 강함·비쌈)</option>
+          </select><select id="effort"><option value="low">빠르게</option><option value="medium" selected>보통</option><option value="high">깊게</option><option value="xhigh">아주 깊게</option></select></div>
+          <div class="hint">키 받기: console.anthropic.com → API Keys</div>
+        </div>
+      </details>
+      <details class="prov" data-prov="gemini">
+        <summary><b>Gemini</b><span class="pv-sub">무료 등급 · 아이폰에서도</span><span class="kst" id="st-gemini"></span><svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="pv-body">
+          <div class="krow"><input type="password" id="gemKey" placeholder="AIza..." autocomplete="off"><button data-ksave="gemKey" class="primary">저장</button><button data-kdel="gemKey" title="키 지우기"><svg class="i" style="width:16px;height:16px"><use href="#i-x"/></svg></button></div>
+          <div class="row" style="margin-top:8px"><label>모델</label><input type="text" id="gemModel" list="gemList" value="gemini-2.5-flash" class="grow"></div>
+          <datalist id="gemList"><option value="gemini-2.5-flash"><option value="gemini-2.5-pro"><option value="gemini-2.5-flash-lite"></datalist>
+          <div class="hint">키 받기: aistudio.google.com → Get API key (카드 등록 없음). 무료는 하루·분당 횟수 제한이 있고, 무료 요청은 구글이 품질 개선에 쓸 수 있어요.</div>
+        </div>
+      </details>
+      <details class="prov" data-prov="ollama">
+        <summary><b>Ollama</b><span class="pv-sub">내 컴퓨터에서 · 완전 무료</span><span class="kst" id="st-ollama"></span><svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="pv-body">
+          <div class="krow"><input type="text" id="olUrl" value="http://localhost:11434" autocomplete="off"><button id="olTest" class="primary">연결 확인</button></div>
+          <div class="row" style="margin-top:8px"><label>모델</label><input type="text" id="olModel" list="olList" value="gemma3:12b" class="grow"></div>
+          <datalist id="olList"></datalist>
+          <div class="hint">ollama.com에서 설치하고 <b>Ollama_켜기.bat</b>을 실행하면 붙어요. 컴퓨터에서만 되고, 그림까지 보려면 gemma3 같은 그림 모델을 받아 주세요.</div>
+        </div>
+      </details>
+      <details class="prov" data-prov="groq">
+        <summary><b>Groq</b><span class="pv-sub">무료 등급 · 아주 빠름</span><span class="kst" id="st-groq"></span><svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="pv-body">
+          <div class="krow"><input type="password" id="grKey" placeholder="gsk_..." autocomplete="off"><button data-ksave="grKey" class="primary">저장</button><button data-kdel="grKey" title="키 지우기"><svg class="i" style="width:16px;height:16px"><use href="#i-x"/></svg></button></div>
+          <div class="row" style="margin-top:8px"><label>모델</label><input type="text" id="grModel" list="grList" value="llama-3.3-70b-versatile" class="grow"></div>
+          <datalist id="grList"><option value="llama-3.3-70b-versatile"><option value="moonshotai/kimi-k2-instruct"><option value="qwen/qwen3-32b"><option value="openai/gpt-oss-120b"><option value="meta-llama/llama-4-scout-17b-16e-instruct"></datalist>
+          <div class="hint">키 받기: console.groq.com → API Keys (카드 등록 없음). 그림은 llama-4-scout만 볼 수 있어요.</div>
+        </div>
+      </details>
+      <div class="hint" style="margin-top:10px">키는 이 기기에만 저장되고 동기화·백업 파일에는 들어가지 않아요. 공용 기기에서는 저장하지 마세요.</div>
+      <div class="row" style="margin-top:6px"><label>누적 사용</label><span id="spent" class="hint grow"></span><button id="spentReset" class="mini-act">초기화</button></div>
+
       <h3>구글 드라이브 동기화</h3>
-      <div class="hint">메모·형광펜·진도·읽은 화·장면 노트·설정을 구글 드라이브의 앱 전용 숨은 폴더에 저장해 컴퓨터와 아이폰을 같게 맞춰요. 작품 파일과 API 키는 올리지 않아요.</div>
-      <div class="row"><input type="text" id="gdClient" placeholder="OAuth 클라이언트 ID (….apps.googleusercontent.com)" class="grow" autocomplete="off"><button id="gdSave">저장</button></div>
-      <div class="row desktop-only" hidden><input type="password" id="gdSecret" placeholder="클라이언트 보안 비밀번호 (GOCSPX-…, 윈도우 프로그램에서만)" class="grow" autocomplete="off"></div>
-      <div class="row"><button class="primary" id="gdConnect">연결</button><button id="gdNow">지금 동기화</button><label><input type="checkbox" id="gdAuto"> 자동</label></div>
-      <div class="hint" id="gdStatus"></div>
+      <div class="hint" style="margin-bottom:8px">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰 컴퓨터와 아이폰을 같게 해요. 작품 파일과 API 키는 올라가지 않아요.</div>
+      <div class="krow"><input type="text" id="gdClient" placeholder="OAuth 클라이언트 ID (….apps.googleusercontent.com)" autocomplete="off"><button id="gdSave">저장</button></div>
+      <div class="krow desktop-only" hidden style="margin-top:6px"><input type="password" id="gdSecret" placeholder="클라이언트 보안 비밀번호 (GOCSPX-…)" autocomplete="off"></div>
+      <div class="row" style="margin-top:8px"><button class="primary" id="gdConnect">연결</button><button id="gdNow">지금 동기화</button><label class="hint"><input type="checkbox" id="gdAuto"> 자동</label><span class="hint grow" id="gdStatus" style="text-align:right"></span></div>
       <div class="hint">등록할 주소(승인된 JavaScript 원본): <b id="gdOrigin"></b></div>
+
       <h3>이 기기에 저장</h3>
-      <div class="row"><label><input type="checkbox" id="keepLocal"> 가져온 작품을 이 기기에 저장해 다음에도 바로 열기</label></div>
-      <div class="row"><span class="hint grow" id="storeInfo"></span><button id="storeClear" class="danger">저장한 작품 모두 지우기</button></div>
-      <div class="hint">휴대폰은 홈 화면에 추가한 앱으로 쓰면 저장한 작품이 지워지지 않아요. 컴퓨터에서 큰 폴더를 열 때는 끄는 걸 권해요.</div>
-      <h3>규격 (내 원고·이 화 비교 기준)</h3>
-      <div class="row"><label>분량(공백 제외)</label><input type="number" id="specMin" value="4000" style="width:84px">~<input type="number" id="specMax" value="5000" style="width:84px"></div>
-      <div class="row"><label>문단 중앙값 최대</label><input type="number" id="specPara" value="25" style="width:70px">
-        <label>대사</label><input type="number" id="specDlgMin" value="35" style="width:62px">~<input type="number" id="specDlgMax" value="45" style="width:62px">%</div>
-      <div class="hint">기본값은 화산귀환 1~238화와 환생한 감독님 분석에서 나온 값이에요.</div>
-      <h3>내 글의 결 (글쓰기·피드백에 함께 보냄)</h3>
-      <textarea id="voice" style="min-height:90px">긴 문장을 끊지 않고 잇는다. 쉬운 일상의 말을 쓰고, 생각은 나에게로 돌아오게 맺는다. 명제, 반문, 하지만, 바람의 흐름. 단정하지 않고 낮게 가라앉은 확신. 감정은 직접 설명하지 않고 행간으로. 끝에는 슬픔을 지나 도착한 작은 온기.</textarea>
-      <h3>백업</h3>
-      <div class="row"><button id="bkOut">메모·진도·설정 내보내기</button><button id="bkIn">가져오기</button><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
+      <div class="row"><label class="hint grow"><input type="checkbox" id="keepLocal"> 가져온 작품을 이 기기에 저장해 다음에도 바로 열기</label></div>
+      <div class="row"><span class="hint grow" id="storeInfo"></span><button id="storeClear" class="danger mini-act">저장한 작품 모두 지우기</button></div>
+
+      <details class="fold">
+        <summary>규격 · 내 글의 결 · 백업<svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="pv-body">
+          <div class="hint" style="margin:4px 0 6px"><b>규격</b> — 내 원고·이 화 비교 기준. 기본값은 화산귀환·환생한 감독님 분석에서 나온 값이에요.</div>
+          <div class="row"><label>분량(공백 제외)</label><input type="number" id="specMin" value="4000" style="width:84px">~<input type="number" id="specMax" value="5000" style="width:84px"></div>
+          <div class="row"><label>문단 중앙값 최대</label><input type="number" id="specPara" value="25" style="width:70px">
+            <label>대사</label><input type="number" id="specDlgMin" value="35" style="width:62px">~<input type="number" id="specDlgMax" value="45" style="width:62px">%</div>
+          <div class="hint" style="margin:14px 0 6px"><b>내 글의 결</b> — 글쓰기·피드백에 함께 보내요.</div>
+          <textarea id="voice" style="min-height:90px">긴 문장을 끊지 않고 잇는다. 쉬운 일상의 말을 쓰고, 생각은 나에게로 돌아오게 맺는다. 명제, 반문, 하지만, 바람의 흐름. 단정하지 않고 낮게 가라앉은 확신. 감정은 직접 설명하지 않고 행간으로. 끝에는 슬픔을 지나 도착한 작은 온기.</textarea>
+          <div class="hint" style="margin:14px 0 6px"><b>백업</b> — 메모·진도·설정을 파일로.</div>
+          <div class="row"><button id="bkOut">내보내기</button><button id="bkIn">가져오기</button><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
+        </div>
+      </details>
     </div>
   </div>
 </div>
@@ -2347,12 +2431,16 @@ function applyView2(){
   for (const [id, f] of Object.entries(OUTS)){ const o = $('#'+id+'Out'); if (o) o.textContent = f($('#'+id).value); }
 }
 let epRev = false;   // 회차 목록 순서 뒤집기
+// 슬라이더의 채워진 부분(--pct)을 값에 맞춘다
+function rangeFill(el){ const min = +el.min || 0, max = +el.max || 100; const v = Math.min(max, Math.max(min, +el.value || 0)); el.style.setProperty('--pct', (max > min ? (v - min) / (max - min) * 100 : 0) + '%'); }
+document.addEventListener('input', e => { if (e.target.matches?.('input[type=range]')) rangeFill(e.target); }, true);
 function applyView(){
   const s = document.documentElement.style;
   s.setProperty('--fs', $('#fs').value+'px'); s.setProperty('--lh', $('#lh').value); s.setProperty('--pgap', $('#pgap').value+'em');
   s.setProperty('--col', $('#col').value+'px'); s.setProperty('--rfont', $('#rfont').value); s.setProperty('--align', $('#align').value);
   s.setProperty('--wcol', $('#wcol').value+'px'); s.setProperty('--indent', $('#indent').value);
   $('#fsOut').textContent = $('#fs').value; $('#dim').style.opacity = (+$('#dimLv').value/100).toFixed(2);
+  $$('input[type=range]').forEach(rangeFill);
   applyView2();
 }
 function aiHint(){
@@ -2364,7 +2452,7 @@ function aiHint(){
     el.textContent = ready ? `${P.name} · ${P.model()}${extra}` : `설정 탭에 ${P.name} API 키를 넣으면 쓸 수 있어요.`;
   });
 }
-function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'Google AI Studio API 키 (AIza...)', grKey:'gsk_...'})[id]; }
+function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'AIza...', grKey:'gsk_...'})[id]; }
 function saveKey(id){ const v = $('#'+id).value.trim(); if (!v) return; store.set(id, v); $('#'+id).value=''; keySaved(id); aiHint(); toast('API 키를 저장했어요'); }
 function delKey(id){ store.set(id, ''); keySaved(id); aiHint(); toast('API 키를 지웠어요'); }
 $('#keySave').onclick = () => saveKey('apiKey');
@@ -2372,6 +2460,9 @@ $('#keyDel').onclick = () => delKey('apiKey');
 $$('[data-ksave]').forEach(b => b.onclick = () => saveKey(b.dataset.ksave));
 $$('[data-kdel]').forEach(b => b.onclick = () => delKey(b.dataset.kdel));
 KEY_IDS.forEach(keySaved);
+// 기본으로 고른 AI의 칸만 펼쳐 둔다
+function provReveal(){ $$('details.prov').forEach(d => { d.open = d.dataset.prov === provOf(); }); }
+provReveal(); $('#provider').addEventListener('change', provReveal);
 $('#olTest').onclick = async () => {
   try{
     const r = await fetch(olBase() + '/api/tags'); if (!r.ok) throw new Error(r.status);
@@ -4201,7 +4292,9 @@ $('#stText').addEventListener('input', () => { if (!$('[data-ipane=mirror]').hid
 // 원고 위 칠하기: 메모(노랑)와 버릇(주황 밑줄)을 함께
 function stHlRender(){
   const hl = $('#stHl'), ta = $('#stText'); if (!hl || $('#studio').hidden) return;
-  const text = ta.value; const rs = [];
+  const text = ta.value;
+  if (text.length > 400000){ hl.innerHTML = ''; return; }   // 아주 긴 글에서는 겹칠판을 쉬게 한다
+  const rs = [];
   for (const c of stCmts()){ const i = stFindQuote(text, c); if (i >= 0) rs.push([i, i + c.q.length, 'cm', c.id]); }
   for (const [s, e, cls] of ST.marks || []) if (e <= text.length) rs.push([s, e, cls]);
   rs.sort((a, b) => a[0] - b[0]);

@@ -118,7 +118,9 @@ $('#stText').addEventListener('input', () => { if (!$('[data-ipane=mirror]').hid
 // 원고 위 칠하기: 메모(노랑)와 버릇(주황 밑줄)을 함께
 function stHlRender(){
   const hl = $('#stHl'), ta = $('#stText'); if (!hl || $('#studio').hidden) return;
-  const text = ta.value; const rs = [];
+  const text = ta.value;
+  if (text.length > 400000){ hl.innerHTML = ''; return; }   // 아주 긴 글에서는 겹칠판을 쉬게 한다
+  const rs = [];
   for (const c of stCmts()){ const i = stFindQuote(text, c); if (i >= 0) rs.push([i, i + c.q.length, 'cm', c.id]); }
   for (const [s, e, cls] of ST.marks || []) if (e <= text.length) rs.push([s, e, cls]);
   rs.sort((a, b) => a[0] - b[0]);

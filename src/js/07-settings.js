@@ -19,12 +19,16 @@ function applyView2(){
   for (const [id, f] of Object.entries(OUTS)){ const o = $('#'+id+'Out'); if (o) o.textContent = f($('#'+id).value); }
 }
 let epRev = false;   // 회차 목록 순서 뒤집기
+// 슬라이더의 채워진 부분(--pct)을 값에 맞춘다
+function rangeFill(el){ const min = +el.min || 0, max = +el.max || 100; const v = Math.min(max, Math.max(min, +el.value || 0)); el.style.setProperty('--pct', (max > min ? (v - min) / (max - min) * 100 : 0) + '%'); }
+document.addEventListener('input', e => { if (e.target.matches?.('input[type=range]')) rangeFill(e.target); }, true);
 function applyView(){
   const s = document.documentElement.style;
   s.setProperty('--fs', $('#fs').value+'px'); s.setProperty('--lh', $('#lh').value); s.setProperty('--pgap', $('#pgap').value+'em');
   s.setProperty('--col', $('#col').value+'px'); s.setProperty('--rfont', $('#rfont').value); s.setProperty('--align', $('#align').value);
   s.setProperty('--wcol', $('#wcol').value+'px'); s.setProperty('--indent', $('#indent').value);
   $('#fsOut').textContent = $('#fs').value; $('#dim').style.opacity = (+$('#dimLv').value/100).toFixed(2);
+  $$('input[type=range]').forEach(rangeFill);
   applyView2();
 }
 function aiHint(){
@@ -36,7 +40,7 @@ function aiHint(){
     el.textContent = ready ? `${P.name} · ${P.model()}${extra}` : `설정 탭에 ${P.name} API 키를 넣으면 쓸 수 있어요.`;
   });
 }
-function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'Google AI Studio API 키 (AIza...)', grKey:'gsk_...'})[id]; }
+function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'AIza...', grKey:'gsk_...'})[id]; }
 function saveKey(id){ const v = $('#'+id).value.trim(); if (!v) return; store.set(id, v); $('#'+id).value=''; keySaved(id); aiHint(); toast('API 키를 저장했어요'); }
 function delKey(id){ store.set(id, ''); keySaved(id); aiHint(); toast('API 키를 지웠어요'); }
 $('#keySave').onclick = () => saveKey('apiKey');
@@ -44,6 +48,9 @@ $('#keyDel').onclick = () => delKey('apiKey');
 $$('[data-ksave]').forEach(b => b.onclick = () => saveKey(b.dataset.ksave));
 $$('[data-kdel]').forEach(b => b.onclick = () => delKey(b.dataset.kdel));
 KEY_IDS.forEach(keySaved);
+// 기본으로 고른 AI의 칸만 펼쳐 둔다
+function provReveal(){ $$('details.prov').forEach(d => { d.open = d.dataset.prov === provOf(); }); }
+provReveal(); $('#provider').addEventListener('change', provReveal);
 $('#olTest').onclick = async () => {
   try{
     const r = await fetch(olBase() + '/api/tags'); if (!r.ok) throw new Error(r.status);

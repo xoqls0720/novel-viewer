@@ -46,6 +46,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   await p.click('#qClose');
   // AI 키
   await p.click('#tgTool'); await p.click('.tabs button[data-tab=set]');
+  await p.evaluate(() => document.querySelectorAll('details.prov, details.fold').forEach(d => d.open = true));
   await p.fill('#gemKey', 'AIza-test'); await p.click('[data-ksave=gemKey]');
   await p.fill('#grKey', 'gsk_test'); await p.click('[data-ksave=grKey]');
   await p.click('#olTest'); await p.waitForTimeout(400);
