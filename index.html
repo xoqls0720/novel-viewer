@@ -343,6 +343,108 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .legend{display:flex;gap:12px;font-size:11.5px;color:var(--sub);margin:4px 0}
 .legend i{display:inline-block;width:10px;height:3px;vertical-align:middle;margin-right:4px}
 @media (max-width:700px){ .sheet .grab{display:block} #quick{padding-top:10px} }
+
+/* ===== 작가 보기 (읽는 화면) ===== */
+.reader.writer .novel p{position:relative}
+.reader.writer .novel p::after{content:attr(data-n);position:absolute;right:calc(-1 * var(--mx,28px) + 4px);top:.35em;font:500 10.5px/1 var(--ui);color:var(--faint);font-variant-numeric:tabular-nums;opacity:.85}
+.reader.writer .novel p.long::after{color:var(--warn);font-weight:700}
+.reader.writer .novel p.dl{box-shadow:inset 3px 0 0 color-mix(in srgb, var(--accent) 45%, transparent);padding-left:10px;margin-left:-13px}
+.reader.writer .novel p.hook{background:color-mix(in srgb, var(--ok) 7%, transparent);border-radius:6px}
+.reader.writer .novel p.cut{background:color-mix(in srgb, var(--warn) 8%, transparent);border-radius:6px}
+.reader.writer .novel p.hook0::before,.reader.writer .novel p.cut0::before,.reader.writer .novel p.km::before{display:block;font:600 10.5px/1 var(--ui);letter-spacing:.06em;margin:0 0 6px;color:var(--faint)}
+.reader.writer .novel p.hook0::before{content:"첫 세 문단 · 갈고리";color:var(--ok)}
+.reader.writer .novel p.cut0::before{content:"마지막 세 문단 · 절단";color:var(--warn)}
+.reader.writer .novel p.km::before{content:"── " attr(data-k) " ──";text-align:center}
+.reader.writer .novel p.hook0.km::before{content:"첫 세 문단 · 갈고리"}
+.reader.writer .novel p.cut0.km::before{content:"마지막 세 문단 · 절단 · " attr(data-k)}
+#wmap{position:absolute;right:calc(6px + var(--sar));top:calc(64px + var(--sat));bottom:calc(68px + var(--sab));width:12px;z-index:3;border-radius:6px;background:var(--panel-2);cursor:pointer;display:none;overflow:hidden}
+#wmap canvas{width:100%;height:100%;display:block}
+#wmap i{position:absolute;left:0;right:0;border:1.5px solid var(--accent);border-radius:4px;pointer-events:none}
+.app.wmap-on #wmap{display:block}
+.immersive #wmap{top:calc(10px + var(--sat));bottom:calc(20px + var(--sab))}
+
+/* ===== 집필실 ===== */
+#studio{position:fixed;inset:0;z-index:30;background:var(--bg);display:grid;grid-template-columns:280px minmax(0,1fr) 360px;font-family:var(--ui)}
+#studio[hidden]{display:none}
+#studio.noside{grid-template-columns:0 minmax(0,1fr) 360px}
+#studio.noai{grid-template-columns:280px minmax(0,1fr) 0}
+#studio.noside.noai{grid-template-columns:0 minmax(0,1fr) 0}
+#studio.noside .st-side,#studio.noai .st-ai{display:none}
+.st-side,.st-ai{background:var(--panel);overflow:auto;min-height:0;padding:calc(12px + var(--sat)) 14px calc(16px + var(--sab))}
+.st-side{border-right:1px solid var(--line)}
+.st-ai{border-left:1px solid var(--line)}
+.st-side h3,.st-ai h3{font-size:11px;margin:18px 0 8px;color:var(--faint);font-weight:600;letter-spacing:.08em}
+.st-brand{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
+.st-brand b{font:700 16px/1 "Gowun Batang",serif;flex:1}
+.st-card{background:var(--panel-2);border-radius:var(--radius-s);padding:10px 12px;font-size:12.5px;line-height:1.7;color:var(--sub)}
+.st-card b{color:var(--ink);font-variant-numeric:tabular-nums}
+.st-bar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin:4px 0 2px}
+.st-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.st-bar i.over{background:var(--warn)}
+.st-bar i.ok{background:var(--ok)}
+.st-tabs{display:flex;gap:4px;margin:14px 0 8px}
+.st-tabs button{flex:1;padding:6px}
+.st-list{display:flex;flex-direction:column;gap:2px}
+.st-it{display:flex;align-items:center;gap:8px;padding:8px 8px;border-radius:9px;cursor:pointer;font-size:13.5px}
+.st-it:hover{background:var(--panel-2)}
+.st-it.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.st-it .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-it .n{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+.st-it .ud{display:none;gap:2px}
+.st-it:hover .ud,.st-it.on .ud{display:flex}
+.st-it .ud button{padding:0 5px;height:22px;font-size:11px;border:0}
+.sdot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--line)}
+.sdot.draft{background:#c9b27a}.sdot.revise{background:#d98b4a}.sdot.done{background:var(--ok)}.sdot.posted{background:var(--accent)}
+.legend2{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:var(--faint);margin:6px 2px}
+.legend2 span{display:inline-flex;align-items:center;gap:4px}
+.st-bible .bc{border:1px solid var(--line);border-radius:var(--radius-s);padding:8px 10px;margin:0 0 6px;background:var(--panel)}
+.st-bible .bc .bh{display:flex;gap:6px;align-items:center}
+.st-bible .bc .bh input{flex:1;border:0;background:transparent;padding:2px 0;font-weight:600}
+.st-bible .bc .bh select{padding:2px 22px 2px 6px;font-size:11.5px;background-position:right 6px center}
+.st-bible .bc textarea{min-height:60px;border:0;background:transparent;padding:4px 0;font-size:13px}
+.st-form label{display:block;font-size:12px;color:var(--sub);margin:8px 0 3px}
+.st-form input,.st-form select{width:100%}
+.st-days{display:flex;gap:3px}
+.st-days label{margin:0;flex:1;text-align:center;border:1px solid var(--line);border-radius:8px;padding:4px 0;font-size:12px;cursor:pointer}
+.st-days input{display:none}
+.st-days label:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.st-main{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--reader-bg)}
+.st-top{display:flex;align-items:center;gap:6px;padding:calc(8px + var(--sat)) 10px 8px;border-bottom:1px solid var(--line);background:var(--bar-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.st-top input#stTitle{flex:1;min-width:0;border:0;background:transparent;font:600 16px/1.3 "Gowun Batang",serif;padding:6px 4px}
+.st-top select{padding:5px 26px 5px 9px;font-size:12.5px}
+.st-edwrap{flex:1;min-height:0;overflow:auto;display:flex;justify-content:center}
+#stText{width:min(100%, calc(var(--col,620px) + 2 * var(--mx,28px)));min-height:100%;border:0;border-radius:0;background:transparent;resize:none;outline:none;padding:40px var(--mx,28px) 40vh;font-family:var(--rfont,"Noto Serif KR",serif);font-size:var(--fs,18px);line-height:var(--lh,1.9);color:var(--reader-ink);font-weight:var(--fw,400);letter-spacing:var(--ls,0em);field-sizing:content}
+#stText::placeholder{color:var(--faint)}
+.st-meter{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 14px calc(8px + var(--sab));border-top:1px solid var(--line);background:var(--bar-bg);font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.st-meter b{color:var(--ink)}
+.st-meter .grow{flex:1;min-width:120px}
+.st-meter .st-bar{margin:0}
+.st-meter .warn{color:var(--warn)}.st-meter .good{color:var(--ok)}
+#studio.focus .st-top,#studio.focus .st-meter{opacity:.12;transition:opacity .3s}
+#studio.focus .st-top:hover,#studio.focus .st-meter:hover{opacity:1}
+.st-ai .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.st-ai .acts button{justify-content:flex-start;font-size:13px;padding:8px 10px}
+.st-ai .acts button small{color:var(--faint);font-size:11px;margin-left:auto}
+#stOut{white-space:pre-wrap;font-family:var(--rfont,"Noto Serif KR",serif);font-size:14.5px;line-height:1.8;background:var(--reader-bg);border:1px solid var(--line);border-radius:var(--radius-s);padding:12px;min-height:80px;max-height:46vh;overflow:auto;color:var(--reader-ink)}
+#stOut:empty::before{content:"결과가 여기에 나와요. 원고에 넣거나 선택한 부분과 바꿀 수 있어요.";color:var(--faint);font-family:var(--ui);font-size:12.5px}
+.st-snaps .it{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 4px;border-bottom:1px solid var(--line)}
+.st-snaps .it span{flex:1;color:var(--sub)}
+.st-other{background:color-mix(in srgb, var(--warn) 10%, var(--panel));border:1px solid color-mix(in srgb, var(--warn) 35%, transparent);border-radius:var(--radius-s);padding:8px 12px;margin:10px auto 0;width:min(calc(100% - 24px), 660px);font-size:12.5px;display:flex;gap:8px;align-items:center}
+.st-other span{flex:1}
+.st-empty{margin:auto;text-align:center;color:var(--sub);padding:40px 20px;font-size:14px;line-height:1.8}
+.st-empty b{display:block;font:700 22px/1.4 "Gowun Batang",serif;color:var(--ink);margin-bottom:8px}
+.st-mob{display:none}
+@media (max-width:1100px){
+  #studio,#studio.noside,#studio.noai,#studio.noside.noai{grid-template-columns:minmax(0,1fr)}
+  .st-side,.st-ai{position:fixed;top:0;bottom:0;z-index:2;width:min(340px,88vw);box-shadow:var(--shadow);display:none}
+  .st-side{left:0}.st-ai{right:0;width:min(420px,100vw)}
+  #studio.mside .st-side,#studio.mai .st-ai{display:block}
+  .st-mob{display:inline-flex}
+  #stText{padding-top:24px}
+}
+.studio-btn{width:100%;margin:8px 0 0;color:var(--brass);border-color:color-mix(in srgb, var(--brass) 45%, transparent);font-weight:600}
+.studio-btn:hover{background:color-mix(in srgb, var(--brass) 10%, transparent)}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -376,6 +478,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       </div>
       <input type="file" id="pickFolder" webkitdirectory multiple hidden>
       <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
+      <button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg>집필실 · 내 작품 쓰기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
       <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
     </div>
@@ -387,7 +490,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <div class="logo"><svg class="i"><use href="#i-book"/></svg></div>
       <h2>노벨 뷰어</h2>
       <p>소설·웹툰·만화를 한곳에서 읽고,<br>좋은 장면은 표시하고, 바로 분석하고, 내 글로 옮겨요.</p>
-      <div class="row" style="justify-content:center"><button class="primary" id="wFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button><button id="wFiles"><svg class="i"><use href="#i-file"/></svg>파일·zip 열기</button></div>
+      <div class="row" style="justify-content:center"><button class="primary" id="wFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button><button id="wFiles"><svg class="i"><use href="#i-file"/></svg>파일·zip 열기</button><button id="wStudio"><svg class="i"><use href="#i-pen"/></svg>집필실</button></div>
       <div class="tiles">
         <div class="tile"><svg class="i"><use href="#i-book"/></svg><b>읽기</b><span>소설은 스크롤·쪽 넘김, 웹툰은 세로, 만화는 두 쪽 펼침</span></div>
         <div class="tile"><svg class="i"><use href="#i-pen"/></svg><b>표시하기</b><span>문장 형광펜, 장면을 담아 그 위에 필기</span></div>
@@ -399,6 +502,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
     <div id="dim"></div><div id="warm"></div>
     <div class="mini" id="mini"></div>
     <div class="coach" id="coach" hidden></div>
+    <div id="wmap" title="문단 지도: 진한 색=대사, 주황=긴 문단. 누르면 그 자리로"><canvas></canvas><i></i></div>
 
     <div class="bar">
       <button class="icon" id="tgSide" title="서재"><svg class="i"><use href="#i-menu"/></svg></button>
@@ -452,6 +556,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
         <div class="qrow desk-only"><label>글 폭</label><div class="ctl"><input type="range" id="col" min="420" max="1100" step="20" value="620"><output id="colOut"></output></div></div>
         <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option></select></div>
         <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
+        <div class="qrow"><label><input type="checkbox" id="writerView"> 작가 보기 (문단 글자 수·대사·갈고리·절단·1,000자 눈금, W)</label></div>
         <div class="qrow"><label>쪽 넘김 효과</label><select id="pageAnim"><option value="slide">밀기</option><option value="none">없음</option></select></div>
         <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
         <input type="number" id="fs" value="18" hidden>
@@ -479,7 +584,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <button data-tab="work">작품</button>
       <button data-tab="notes">메모</button>
       <button data-tab="find">검색</button>
-      <button data-tab="ai">Claude</button>
+      <button data-tab="ai">AI 분석</button>
       <button data-tab="write">글쓰기</button>
       <button data-tab="nai">그림 프롬프트</button>
       <button data-tab="mine">내 원고</button>
@@ -590,7 +695,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
       <div class="hint">쓴 원고를 붙여 넣으면 유료연재 규격과 비교해요. 쓰던 원고는 이 기기에 자동 저장돼요.</div>
       <textarea id="mineText" placeholder="여기에 원고 한 화를 붙여 넣으세요"></textarea>
       <div class="row" id="mineOther" hidden><span class="hint grow">다른 기기에서 쓴 원고가 따로 있어요</span><button id="mineOtherShow">불러오기</button></div>
-      <div class="row"><button id="mineCheck" class="primary">규격 확인</button><button id="mineAI" class="idle-only">Claude 피드백</button><button id="mineStop" class="busy-only">멈추기</button><button id="mineCompare">지금 화와 비교</button></div>
+      <div class="row"><button id="mineCheck" class="primary">규격 확인</button><button id="mineAI" class="idle-only">AI 피드백</button><button id="mineToStudio">집필실로</button><button id="mineStop" class="busy-only">멈추기</button><button id="mineCompare">지금 화와 비교</button></div>
       <div id="mineOut"></div>
       <div class="msg ai" id="mineAIOut"></div>
     </div>
@@ -673,6 +778,74 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
   <button data-hl="p" class="dotb" title="대사" style="background:var(--hl-p)"></button>
   <button id="selNote">메모</button><button id="selAsk">묻기</button><button id="selCopy">복사</button>
 </div>
+<section id="studio" hidden>
+  <div class="st-side">
+    <div class="st-brand"><svg class="i"><use href="#i-pen"/></svg><b>집필실</b><button class="icon st-mob" data-stclose="side" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="row tight"><select id="stProj" class="grow"></select><button id="stProjNew" title="새 작품">새 작품</button></div>
+    <div class="st-card" id="stStats" style="margin-top:10px"></div>
+    <div class="st-tabs"><button class="on" data-sttab="eps">회차</button><button data-sttab="bible">설정집</button><button data-sttab="proj">작품 설정</button></div>
+    <div data-stpane="eps">
+      <div class="row tight"><button class="primary grow" id="stEpNew">+ 새 회차</button><button id="stImport" title="txt 파일을 회차로 가져오기">가져오기</button></div>
+      <input type="file" id="stImportFile" accept=".txt,text/plain" multiple hidden>
+      <div class="legend2"><span><i class="sdot draft"></i>초고</span><span><i class="sdot revise"></i>퇴고</span><span><i class="sdot done"></i>완료(비축)</span><span><i class="sdot posted"></i>연재함</span></div>
+      <div class="st-list" id="stEpList"></div>
+    </div>
+    <div data-stpane="bible" hidden>
+      <div class="row tight"><select id="stBibleKind" class="grow"><option value="">전체</option><option>인물</option><option>설정</option><option>플롯</option><option>메모</option></select><button class="primary" id="stBibleNew">+ 카드</button></div>
+      <div class="hint" style="margin:6px 2px">설정집은 AI에게 함께 보내져서 이름·말투·설정이 어긋나지 않게 해요.</div>
+      <div class="st-bible" id="stBible"></div>
+    </div>
+    <div data-stpane="proj" hidden class="st-form">
+      <label>작품 이름</label><input type="text" id="stPName">
+      <label>장르 · 플랫폼 (AI에게 알려 줘요)</label><input type="text" id="stPGenre" placeholder="예: 무협 회귀물 · 카카오페이지">
+      <label>한 화 분량 (공백 제외, 최소 ~ 최대)</label><div class="row tight"><input type="number" id="stPMin" class="grow" step="100"><span>~</span><input type="number" id="stPMax" class="grow" step="100"></div>
+      <label>하루 목표 (쓴 글자 수)</label><input type="number" id="stPDaily" step="500">
+      <label>연재 요일</label><div class="st-days" id="stPDays"></div>
+      <label>수위</label><select id="stPRating"><option value="all">전체이용가</option><option value="15">15세</option><option value="adult">성인(19+)</option></select>
+      <label>문체</label><select id="stPStyle"><option value="commercial">상업 웹소설</option><option value="ct">캐릭터톡</option><option value="mine">내 글의 결</option></select>
+      <div class="row" style="margin-top:14px"><button id="stExpAll">작품 전체 txt</button><button id="stExpBackup">작품 백업 json</button><button class="danger" id="stProjDel">작품 지우기</button></div>
+    </div>
+  </div>
+
+  <div class="st-main">
+    <div class="st-top">
+      <button class="icon" id="stSideTg" title="작품·회차"><svg class="i"><use href="#i-menu"/></svg></button>
+      <input type="text" id="stTitle" placeholder="회차 제목" autocomplete="off">
+      <select id="stStatus" title="상태"><option value="draft">초고</option><option value="revise">퇴고</option><option value="done">완료</option><option value="posted">연재함</option></select>
+      <button class="icon" id="stFocus" title="집중 모드 (Ctrl+.)"><svg class="i"><use href="#i-book"/></svg></button>
+      <button class="icon" id="stAITg" title="AI 도우미"><svg class="i"><use href="#i-panel"/></svg></button>
+      <button id="stClose" title="뷰어로 돌아가기">뷰어로</button>
+    </div>
+    <div id="stOtherBox" class="st-other" hidden><span>다른 기기에서 고친 이 회차 원고가 따로 있어요.</span><button id="stOtherShow">그걸로 바꾸기</button><button id="stOtherDrop">지우기</button></div>
+    <div class="st-edwrap" id="stEdWrap"><textarea id="stText" spellcheck="false" placeholder="여기에 쓰면 저절로 저장돼요.&#10;&#10;문단 사이는 빈 줄로 띄우면 휴대폰에서 읽기 좋아요."></textarea></div>
+    <div class="st-meter" id="stMeter"></div>
+  </div>
+
+  <div class="st-ai">
+    <div class="st-brand"><b>AI 도우미</b><button class="icon st-mob" data-stclose="ai" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="row"><label>AI</label><select id="stProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option></select><span class="hint keyHint grow"></span></div>
+    <div class="acts">
+      <button data-st="continue">이어 쓰기<small>커서부터</small></button>
+      <button data-st="polish">문장 다듬기<small>선택</small></button>
+      <button data-st="dialog">대사 살리기<small>선택·전체</small></button>
+      <button data-st="cut">절단 대안 3개</button>
+      <button data-st="hook">첫 장면 고치기</button>
+      <button data-st="feedback">냉정한 피드백</button>
+      <button data-st="title">회차 제목 후보</button>
+      <button data-st="summary">요약 → 설정집</button>
+    </div>
+    <div class="row"><label>이어 쓸 분량</label><select id="stLen"><option value="800">짧게 (~800자)</option><option value="1500" selected>보통 (~1,500자)</option><option value="3000">길게 (~3,000자)</option></select></div>
+    <textarea id="stAsk" placeholder="직접 부탁하기 (예: 이 장면을 청명 시점으로 바꿔 줘). Ctrl+Enter로 보내기" style="min-height:64px"></textarea>
+    <div class="row"><button class="primary idle-only" id="stAskGo">보내기</button><button class="busy-only" id="stStop">멈추기</button><span class="hint aiUsage grow"></span></div>
+    <div id="stOut"></div>
+    <div class="row"><button id="stInsert">커서 자리에 넣기</button><button id="stReplace">선택 부분과 바꾸기</button><button id="stCopyOut">복사</button><button id="stToBible" hidden>설정집에 저장</button></div>
+    <h3>판 기록 (이 기기)</h3>
+    <div class="row tight"><button id="stSnapNow">지금 판 저장 (Ctrl+S)</button><span class="hint grow">5분마다 저절로 남겨요</span></div>
+    <div class="st-snaps" id="stSnaps"></div>
+    <h3>내보내기</h3>
+    <div class="row"><button id="stCopyEp">이 화 복사 (연재처에 붙여 넣기)</button><button id="stExpEp">이 화 txt</button><button id="stFmt">문단 사이 빈 줄 맞추기</button></div>
+  </div>
+</section>
 <div class="toast" id="toast"></div>
 <button class="primary share-ready" id="shareReady" hidden><svg class="i"><use href="#i-right"/></svg><span></span></button>
 
@@ -704,7 +877,7 @@ const idb = {
   db: null,
   async open(){
     if (this.db) return this.db;
-    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 2); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 노벨 뷰어 창을 닫고 다시 열어 주세요'); });
+    this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 3); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 노벨 뷰어 창을 닫고 다시 열어 주세요'); });
     return this.db;
   },
   async tx(mode, fn, name = 'files'){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
@@ -914,10 +1087,12 @@ function freeUrls(){ objectUrls.forEach(u=>URL.revokeObjectURL(u)); objectUrls =
 const url = blob => { const u = URL.createObjectURL(blob); objectUrls.push(u); return u; };
 const isText = ep => ep.type === 'txt' || ep.type === 'epubch';
 async function epText(ep){
-  if (ep.type === 'txt') return await ep.file.text();
+  if (ep.type === 'txt') return await decodeText(ep.file);
   if (ep.type === 'epubch') return (await readEpub(ep.file)).chapters[ep.idx]?.text || '';
   return '';
 }
+// 윈도우에서 만든 txt(EUC-KR·CP949)도 읽는다
+async function decodeText(f){ const buf = await f.arrayBuffer(); try{ return new TextDecoder('utf-8', {fatal:true}).decode(buf).replace(/^\uFEFF/, ''); }catch{ try{ return new TextDecoder('euc-kr').decode(buf); }catch{ return new TextDecoder().decode(buf); } } }
 const splitParas = t => t.split(/\n\s*\n|\n/).map(s=>s.trim()).filter(Boolean);
 function viewMode(){
   const m = $('#mode').value;
@@ -1649,9 +1824,9 @@ function makeChat(boxSel, sendBtnSel, systemFn, provSel){
       const messages = [];
       for (const t of okTurns) messages.push({role:'user', content:t.q}, {role:'assistant', content:t.a});
       messages.push({role:'user', content:q});
-      this.abort = new AbortController(); this.render();
+      this.abort = new AbortController(); this.render(); const pane = $(boxSel).closest('.pane'); pane?.classList.add('busy');
       const res = await stream(c, {messages, system: systemFn() + (extraSystem ? '\n\n' + extraSystem : ''), signal: this.abort.signal, onText: x => { turn.a += x; turn.el.textContent = turn.a; }});
-      this.abort = null;
+      this.abort = null; pane?.classList.remove('busy');
       if (res.ok && turn.a.trim()){ turn.status = 'ok'; if (turn.ctxKey) this.ctxKey = turn.ctxKey; if (res.note) turn.note = res.note; }
       else { turn.status = 'failed'; turn.note = res.note || '\n\n[답을 받지 못했어요]'; }
       this.render(); $(boxSel).lastElementChild?.scrollIntoView({block:'nearest'});
@@ -1875,9 +2050,9 @@ ${dict.length ? dict.join('\n') : '(없음 — 장면 설명에서 외형을 정
 장면:
 ${desc}`});
   const out = $('#naiOut'); out.innerHTML = '<div class="hint">만드는 중…</div>';
-  naiState.abort = new AbortController();
+  naiState.abort = new AbortController(); $('#pane-nai').classList.add('busy');
   const res = await stream(c, {messages:[{role:'user', content}], system: SYSTEM_NAI, signal: naiState.abort.signal, format: {type:'json_schema', schema: NAI_SCHEMA}});
-  naiState.abort = null;
+  naiState.abort = null; $('#pane-nai').classList.remove('busy');
   if (!res.ok){ out.innerHTML = `<div class="hint">${esc((res.note || '실패했어요').trim())}</div>`; return; }
   let data; try{ data = parseJSON(res.text); }catch{ out.innerHTML = `<div class="hint">결과를 읽지 못했어요. 다시 눌러 주세요.</div><div class="field"><div class="fv">${esc(res.text)}</div></div>`; return; }
   const p = naiPack(data);
@@ -1909,7 +2084,7 @@ $('#mineAI').onclick = async () => {
   const a = analyze(t); const s = spec();
   $('#mineOut').innerHTML = statHTML(a, false);
   const out = $('#mineAIOut'); out.textContent = '';
-  mineAbort = new AbortController();
+  mineAbort = new AbortController(); $('#pane-mine').classList.add('busy');
   const res = await stream(c, {system: SYSTEM_ANALYST + '\n\n사용자 문체의 결: ' + $('#voice').value, signal: mineAbort.signal, onText: x => { out.textContent += x; }, messages: [{role:'user', content:`내가 쓴 웹소설 한 화다. 수치: 분량 ${a.chars}자(목표 ${s.min}~${s.max}), 문단 중앙값 ${a.median}자(목표 ${s.para} 이하), 대사 ${a.dlg}%(목표 ${s.dmin}~${s.dmax}).
 다음 순서로 냉정하게 피드백해 줘:
 1) 첫 세 문단: 독자를 붙잡는가, 고친다면 어떻게
@@ -1923,7 +2098,7 @@ $('#mineAI').onclick = async () => {
 <manuscript>
 ${t}
 </manuscript>`}]});
-  mineAbort = null;
+  mineAbort = null; $('#pane-mine').classList.remove('busy');
   if (res.note) out.textContent += res.note;
 };
 
@@ -2417,7 +2592,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|set\.(olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|set\.(stNoSide|stNoAI|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -2454,7 +2629,7 @@ async function gdSync(interactive = false){
       const lt = local.ts[k] || 0, rt = remote.ts?.[k] || 0;
       merged[k] = rt > lt ? rv : lv; mts[k] = Math.max(lt, rt);
       // 긴 글(원고·메모)은 진 쪽을 버리지 않고 따로 남긴다
-      if (['mine','wIn'].includes(k) && lv !== rv){ const loser = rt > lt ? lv : rv; try{ if (JSON.parse(loser).trim()){ merged[k + '.other'] = loser; conflicts.push(k); } }catch{} }
+      if ((['mine','wIn'].includes(k) || (k.startsWith('st.txt.') && !k.endsWith('.other'))) && lv !== rv){ const loser = rt > lt ? lv : rv; try{ if (JSON.parse(loser).trim()){ merged[k + '.other'] = loser; conflicts.push(k); } }catch{} }
     }
     for (const [k, v] of Object.entries(merged)) if (v !== undefined && v !== null){ try{ localStorage.setItem('nv.' + k, v); }catch{ toast('브라우저 저장 공간이 부족해 일부를 합치지 못했어요'); } }
     try{ localStorage.setItem('nv.__ts', JSON.stringify(mts)); }catch{}
@@ -2499,7 +2674,7 @@ function applySettingsFromStore(){
   if (document.activeElement !== $('#mineText')) $('#mineText').value = store.get('mine', '');
   if (document.activeElement !== $('#wIn')) $('#wIn').value = store.get('wIn', '');
   $('#mineOther').hidden = !store.get('mine.other', ''); $('#wInOther').hidden = !store.get('wIn.other', '');
-  applyView(); aiHint();
+  applyView(); aiHint(); window.stRefresh?.();
 }
 $('#gdClient').value = store.get('gd.client', '');
 $('#gdAuto').checked = store.get('gd.auto', true);
@@ -2718,6 +2893,388 @@ workCard = function(w){ const d = _workCard(w); const ph = d.querySelector('.ph'
 const _openEp = openEp;
 openEp = async function(...a){ const r = await _openEp(...a); updateProgress(); wakeSync(); coach(); return r; };
 applyView2();
+
+/* ================= 작가 보기 (읽는 화면에 문단 글자 수·대사·갈고리·절단·눈금) ================= */
+function writerMarks(){
+  const r = $('#reader'); const on = $('#writerView').checked && !!$('#reader .novel');
+  r.classList.toggle('writer', on);
+  $('#app').classList.toggle('wmap-on', on && !$('#reader.paged'));
+  if (!on) return;
+  const ps = $$('#reader .novel p'); const s = spec(); const n = ps.length;
+  const isDl = t => /^[“"‘'「『]/.test(t) || /^[^\s:：]{1,12}[:：]\s*["“]/.test(t);
+  let acc = 0, nextK = 1000;
+  ps.forEach((p, i) => {
+    const t = p.textContent.trim(); const c = t.replace(/\s/g, '').length;
+    p.dataset.n = c.toLocaleString();
+    p.classList.toggle('long', c > Math.max(120, s.para * 2));
+    p.classList.toggle('dl', isDl(t));
+    p.classList.toggle('hook', i < 3); p.classList.toggle('hook0', i === 0);
+    p.classList.toggle('cut', i >= n - 3); p.classList.toggle('cut0', i === n - 3 || (n < 3 && i === 0 && false));
+    p.classList.remove('km'); delete p.dataset.k;
+    if (acc >= nextK && i > 0){ p.classList.add('km'); p.dataset.k = `${(Math.floor(acc / 1000) * 1000).toLocaleString()}자`; while (nextK <= acc) nextK += 1000; }
+    acc += c;
+  });
+  drawWmap();
+}
+function drawWmap(){
+  if (!$('#app').classList.contains('wmap-on')) return;
+  const box = $('#wmap'), cv = box.querySelector('canvas'); const ps = $$('#reader .novel p'); if (!ps.length) return;
+  const H = box.clientHeight, W = box.clientWidth, dpr = devicePixelRatio || 1; cv.width = W * dpr; cv.height = H * dpr;
+  const g = cv.getContext('2d'); g.scale(dpr, dpr); g.clearRect(0, 0, W, H);
+  const r = $('#reader'); const total = r.scrollHeight || 1; const top0 = $('#reader .novel').offsetTop;
+  const css = getComputedStyle(document.documentElement);
+  const cDl = css.getPropertyValue('--accent').trim() || '#2f3d6b', cNa = css.getPropertyValue('--line').trim() || '#ddd', cLong = css.getPropertyValue('--warn').trim() || '#b4471b';
+  for (const p of ps){
+    const y = (top0 + p.offsetTop) / total * H, h = Math.max(1, p.offsetHeight / total * H - 0.5);
+    g.fillStyle = p.classList.contains('long') ? cLong : p.classList.contains('dl') ? cDl : cNa;
+    g.globalAlpha = p.classList.contains('dl') ? 0.75 : 1; g.fillRect(0, y, W, h);
+  }
+  wmapView();
+}
+function wmapView(){
+  if (!$('#app').classList.contains('wmap-on')) return;
+  const r = $('#reader'), box = $('#wmap'), H = box.clientHeight, i = box.querySelector('i');
+  i.style.top = (r.scrollTop / r.scrollHeight * H) + 'px'; i.style.height = Math.max(8, r.clientHeight / r.scrollHeight * H) + 'px';
+}
+$('#wmap').addEventListener('click', e => { const b = $('#wmap').getBoundingClientRect(); const r = $('#reader'); quiet(); r.scrollTop = (e.clientY - b.top) / b.height * r.scrollHeight - r.clientHeight / 2; });
+$('#reader').addEventListener('scroll', wmapView, {passive:true});
+addEventListener('resize', () => { clearTimeout(drawWmap._t); drawWmap._t = setTimeout(drawWmap, 200); });
+{ const v = store.get('set.writerView', null); if (v !== null) $('#writerView').checked = v; }
+$('#writerView').addEventListener('change', () => { store.set('set.writerView', $('#writerView').checked); writerMarks(); if ($('#reader.paged')) setFrac(getFrac()); });
+const _renderNovel = renderNovel;
+renderNovel = function(paged){ _renderNovel(paged); requestAnimationFrame(writerMarks); };
+document.addEventListener('keydown', e => { if ((e.key === 'w' || e.key === 'W') && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && $('#studio').hidden && !$('#sketch').classList.contains('open')){ $('#writerView').checked = !$('#writerView').checked; $('#writerView').dispatchEvent(new Event('change')); toast($('#writerView').checked ? '작가 보기를 켰어요' : '작가 보기를 껐어요'); } });
+
+/* ================= 집필실 ================= */
+const ST = {pid: null, eid: null, saveT: null, snapT: 0, lastText: '', abort: null, outKind: '', sel: null};
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const DAYS = ['일','월','화','수','목','금','토'];
+const STATUS = {draft:'초고', revise:'퇴고', done:'완료', posted:'연재함'};
+const stCount = t => (t || '').replace(/\s/g, '').length;
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+function stProjects(){ return store.get('st.projects', []); }
+function stProj(){ return stProjects().find(p => p.id === ST.pid) || null; }
+function stSaveProj(p){ const ps = stProjects(); const i = ps.findIndex(x => x.id === p.id); if (i >= 0) ps[i] = p; else ps.push(p); store.set('st.projects', ps); }
+function stEps(pid = ST.pid){ return store.get('st.eps.' + pid, []); }
+function stSetEps(list, pid = ST.pid){ store.set('st.eps.' + pid, list); }
+function stTextKey(eid = ST.eid, pid = ST.pid){ return `st.txt.${pid}.${eid}`; }
+function stBible(pid = ST.pid){ return store.get('st.bible.' + pid, []); }
+function stSetBible(list){ store.set('st.bible.' + ST.pid, list); }
+
+function stNewProject(name){
+  const p = {id: uid(), name: name || '새 작품', genre: '', min: 5000, max: 6000, daily: 3000, days: [1,2,3,4,5], rating: '15', style: 'commercial', t: Date.now()};
+  stSaveProj(p); ST.pid = p.id; ST.eid = null;
+  stSetEps([]); stAddEp('1화'); return p;
+}
+function stAddEp(title){
+  const list = stEps(); const e = {id: uid(), title: title || `${list.length + 1}화`, status: 'draft', chars: 0, t: Date.now()};
+  list.push(e); stSetEps(list); store.set(stTextKey(e.id), ''); stOpenEp(e.id); return e;
+}
+function stOpen(){
+  $('#studio').hidden = false; document.body.style.overflow = 'hidden';
+  stopAuto?.(); if (typeof stopTTS === 'function') stopTTS();
+  const last = store.get('st.cur', null);
+  if (!stProjects().length) stNewProject('첫 작품');
+  ST.pid = (last && stProjects().some(p => p.id === last.pid)) ? last.pid : stProjects()[0].id;
+  const eps = stEps(); ST.eid = (last && last.pid === ST.pid && eps.some(e => e.id === last.eid)) ? last.eid : eps.at(-1)?.id || null;
+  stApplyLayout(); stRenderAll(); if (ST.eid) stOpenEp(ST.eid); else stRenderEditor();
+  aiHint(); if (!isMobile()) setTimeout(() => $('#stText').focus(), 50);
+}
+function stClose(){ stFlush(); stSnap(false); $('#studio').hidden = true; document.body.style.overflow = ''; }
+function stApplyLayout(){
+  const s = $('#studio');
+  if (isMobile()){ s.classList.remove('noside', 'noai'); }
+  else { s.classList.toggle('noside', store.get('set.stNoSide', false)); s.classList.toggle('noai', store.get('set.stNoAI', false)); s.classList.remove('mside', 'mai'); }
+}
+function stRenderAll(){ stRenderProjSel(); stRenderStats(); stRenderEps(); stRenderBible(); stRenderProjForm(); }
+function stRenderProjSel(){
+  $('#stProj').innerHTML = stProjects().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  $('#stProj').value = ST.pid;
+}
+function nextPostDay(days){
+  if (!days?.length) return null;
+  const d = new Date(); for (let k = 0; k < 8; k++){ const x = new Date(d); x.setDate(d.getDate() + k); if (days.includes(x.getDay())) return k === 0 ? '오늘' : k === 1 ? '내일' : `${DAYS[x.getDay()]}요일`; }
+  return null;
+}
+function stRenderStats(){
+  const p = stProj(); if (!p) return;
+  const eps = stEps(); const dl = store.get('st.daily', {}); const t = dl[today()] || 0;
+  const reserve = eps.filter(e => e.status === 'done').length, posted = eps.filter(e => e.status === 'posted').length;
+  const total = eps.reduce((s, e) => s + (e.chars || 0), 0);
+  let streak = 0; { const d = new Date(); if (!(dl[today()] >= (p.daily || 1))) d.setDate(d.getDate() - 1); for (;;){ const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; if ((dl[k] || 0) >= (p.daily || 1)){ streak++; d.setDate(d.getDate() - 1); } else break; } }
+  const pct = Math.min(100, Math.round(t / (p.daily || 1) * 100));
+  const nd = nextPostDay(p.days);
+  $('#stStats').innerHTML = `오늘 <b>${t.toLocaleString()}</b> / ${(p.daily||0).toLocaleString()}자${streak ? ` · <b>${streak}일</b> 연속` : ''}
+    <div class="st-bar"><i class="${pct >= 100 ? 'ok' : ''}" style="width:${pct}%"></i></div>
+    비축분 <b>${reserve}화</b> · 연재 ${posted}화 · 모두 ${eps.length}화${nd ? `<br>다음 연재 <b>${nd}</b>${reserve ? '' : ' · <span style="color:var(--warn)">비축분 없음</span>'}` : ''}<br>작품 전체 ${total.toLocaleString()}자`;
+}
+function stRenderEps(){
+  const box = $('#stEpList'); box.innerHTML = ''; const eps = stEps();
+  eps.forEach((e, i) => {
+    const d = document.createElement('div'); d.className = 'st-it' + (e.id === ST.eid ? ' on' : '');
+    d.innerHTML = `<span class="sdot ${e.status}" title="${STATUS[e.status]}"></span><span class="nm"></span><span class="n">${(e.chars||0).toLocaleString()}</span><span class="ud"><button data-m="-1" title="위로">↑</button><button data-m="1" title="아래로">↓</button><button data-m="del" title="지우기">✕</button></span>`;
+    d.querySelector('.nm').textContent = e.title || `${i+1}화`;
+    d.onclick = ev => {
+      const m = ev.target.closest('[data-m]')?.dataset.m;
+      if (!m){ stOpenEp(e.id); if (isMobile()) $('#studio').classList.remove('mside'); return; }
+      ev.stopPropagation(); const list = stEps();
+      if (m === 'del'){
+        if (!confirm(`'${e.title}'을 지울까요? 원고도 함께 지워져요. (지우기 전 판은 이 기기 판 기록에 남아요)`)) return;
+        stSnap(true, e.id); list.splice(i, 1); stSetEps(list); localStorage.removeItem('nv.' + stTextKey(e.id)); store.set(stTextKey(e.id), null);
+        if (ST.eid === e.id){ ST.eid = list.at(Math.min(i, list.length - 1))?.id || null; if (ST.eid) stOpenEp(ST.eid); else stRenderEditor(); }
+      } else { const j = i + +m; if (j < 0 || j >= list.length) return; [list[i], list[j]] = [list[j], list[i]]; stSetEps(list); }
+      stRenderEps(); stRenderStats();
+    };
+    box.append(d);
+  });
+  if (!eps.length) box.innerHTML = '<div class="hint" style="padding:8px">아직 회차가 없어요</div>';
+}
+function stRenderBible(){
+  const box = $('#stBible'); box.innerHTML = ''; const kind = $('#stBibleKind').value;
+  const list = stBible().filter(b => !kind || b.kind === kind);
+  for (const b of list){
+    const d = document.createElement('div'); d.className = 'bc';
+    d.innerHTML = `<div class="bh"><select>${['인물','설정','플롯','메모'].map(k => `<option${k === b.kind ? ' selected' : ''}>${k}</option>`).join('')}</select><input type="text" placeholder="이름·제목"><button class="icon" style="width:26px;height:26px" title="지우기">✕</button></div><textarea placeholder="외형, 말투(예시 대사), 관계, 숨긴 것…"></textarea>`;
+    const [sel, inp, del, ta] = [d.querySelector('select'), d.querySelector('input'), d.querySelector('button'), d.querySelector('textarea')];
+    inp.value = b.title || ''; ta.value = b.body || '';
+    const save = () => { const all = stBible(); const x = all.find(y => y.id === b.id); if (!x) return; x.kind = sel.value; x.title = inp.value; x.body = ta.value; x.t = Date.now(); stSetBible(all); };
+    let t; const soon = () => { clearTimeout(t); t = setTimeout(save, 500); };
+    sel.onchange = save; inp.oninput = soon; ta.oninput = soon;
+    del.onclick = () => { if ((b.body || b.title) && !confirm('이 카드를 지울까요?')) return; stSetBible(stBible().filter(y => y.id !== b.id)); stRenderBible(); };
+    box.append(d);
+  }
+  if (!list.length) box.innerHTML = '<div class="hint" style="padding:8px">인물·세계관·플롯을 카드로 적어 두면 AI가 참고해요.</div>';
+}
+function stRenderProjForm(){
+  const p = stProj(); if (!p) return;
+  $('#stPName').value = p.name; $('#stPGenre').value = p.genre || ''; $('#stPMin').value = p.min; $('#stPMax').value = p.max; $('#stPDaily').value = p.daily;
+  $('#stPRating').value = p.rating || '15'; $('#stPStyle').value = p.style || 'commercial';
+  $('#stPDays').innerHTML = DAYS.map((d, i) => `<label><input type="checkbox" value="${i}"${(p.days || []).includes(i) ? ' checked' : ''}>${d}</label>`).join('');
+}
+function stProjFormSave(){
+  const p = stProj(); if (!p) return;
+  p.name = $('#stPName').value.trim() || '이름 없는 작품'; p.genre = $('#stPGenre').value.trim();
+  p.min = +$('#stPMin').value || 0; p.max = +$('#stPMax').value || 0; p.daily = +$('#stPDaily').value || 0;
+  p.days = $$('#stPDays input:checked').map(x => +x.value); p.rating = $('#stPRating').value; p.style = $('#stPStyle').value;
+  stSaveProj(p); stRenderProjSel(); stRenderStats(); stMeter();
+}
+for (const id of ['stPName','stPGenre','stPMin','stPMax','stPDaily','stPRating','stPStyle']) $('#'+id).addEventListener('change', stProjFormSave);
+$('#stPDays').addEventListener('change', stProjFormSave);
+
+function stOpenEp(eid){
+  stFlush(); if (ST.eid && ST.eid !== eid) stSnap(false);
+  ST.eid = eid; store.set('st.cur', {pid: ST.pid, eid});
+  stRenderEditor(); stRenderEps();
+}
+function stRenderEditor(){
+  const e = stEps().find(x => x.id === ST.eid);
+  $('#stText').disabled = !e; $('#stTitle').disabled = !e; $('#stStatus').disabled = !e;
+  $('#stText').value = e ? store.get(stTextKey(), '') || '' : '';
+  $('#stTitle').value = e?.title || ''; $('#stStatus').value = e?.status || 'draft';
+  ST.lastText = $('#stText').value; ST.snapT = Date.now();
+  $('#stOtherBox').hidden = !(e && store.get(stTextKey() + '.other', ''));
+  $('#stEdWrap').scrollTop = 0; stMeter(); stRenderSnaps();
+}
+function stMeter(){
+  const p = stProj(); const t = $('#stText').value; const a = analyze(t || ' ');
+  const c = a.chars; const min = p?.min || 0, max = p?.max || 0;
+  const pct = max ? Math.min(100, Math.round(c / max * 100)) : 0;
+  const cls = max && c > max ? 'over' : min && c >= min ? 'ok' : '';
+  const st = spec();
+  $('#stMeter').innerHTML = `<span><b>${c.toLocaleString()}</b>${max ? ` / ${min.toLocaleString()}~${max.toLocaleString()}자` : '자'}</span>
+    <span class="grow"><div class="st-bar"><i class="${cls}" style="width:${pct}%"></i></div></span>
+    <span class="${a.dlg < st.dmin || a.dlg > st.dmax ? 'warn' : ''}">대사 <b>${t.trim() ? a.dlg : 0}%</b></span>
+    <span class="${a.median > st.para ? 'warn' : ''}">문단 <b>${a.median}</b>자</span>
+    <span>약 <b>${Math.max(1, Math.round(c / 500))}</b>분</span>
+    <span id="stSaved" class="hint">저장됨</span>`;
+}
+function stFlush(){
+  if (!ST.saveT) return; clearTimeout(ST.saveT); ST.saveT = null; stSaveText();
+}
+function stSaveText(){
+  if (!ST.pid || !ST.eid) return;
+  const t = $('#stText').value; const before = stCount(ST.lastText), after = stCount(t);
+  store.set(stTextKey(), t);
+  if (after > before){ const dl = store.get('st.daily', {}); dl[today()] = (dl[today()] || 0) + (after - before); const keys = Object.keys(dl).sort(); while (keys.length > 400) delete dl[keys.shift()]; store.set('st.daily', dl); }
+  ST.lastText = t;
+  const list = stEps(); const e = list.find(x => x.id === ST.eid); if (e){ e.chars = after; e.t = Date.now(); stSetEps(list); }
+  $('#stSaved') && ($('#stSaved').textContent = '저장됨');
+  stRenderStats(); const it = $('#stEpList .st-it.on .n'); if (it) it.textContent = after.toLocaleString();
+  if (Date.now() - ST.snapT > 5 * 60000) stSnap(false);
+}
+$('#stText').addEventListener('input', () => {
+  $('#stSaved') && ($('#stSaved').textContent = '저장 중…');
+  clearTimeout(ST.saveT); ST.saveT = setTimeout(() => { ST.saveT = null; stSaveText(); }, 700);
+  clearTimeout(stMeter._t); stMeter._t = setTimeout(stMeter, 250);
+});
+$('#stTitle').addEventListener('input', () => { const list = stEps(); const e = list.find(x => x.id === ST.eid); if (!e) return; e.title = $('#stTitle').value; stSetEps(list); const nm = $('#stEpList .st-it.on .nm'); if (nm) nm.textContent = e.title; });
+$('#stStatus').onchange = () => { const list = stEps(); const e = list.find(x => x.id === ST.eid); if (!e) return; e.status = $('#stStatus').value; stSetEps(list); stRenderEps(); stRenderStats(); };
+
+// 판 기록: 이 기기의 IndexedDB(snaps)에 회차마다 최근 20판
+async function snapDB(){ return idb.open(); }
+async function stGetSnaps(key){ try{ return (await idb.tx('readonly', s => s.get(key), 'snaps'))?.list || []; }catch{ return []; } }
+async function stSnap(manual, eid = ST.eid){
+  if (!ST.pid || !eid) return;
+  const key = `${ST.pid}/${eid}`; const text = eid === ST.eid ? $('#stText').value : (store.get(stTextKey(eid), '') || '');
+  ST.snapT = Date.now();
+  const list = await stGetSnaps(key);
+  if (!text.trim() || list[0]?.text === text){ if (manual) toast('바뀐 게 없어서 이전 판 그대로예요'); return; }
+  list.unshift({t: Date.now(), text, n: stCount(text), manual: !!manual});
+  try{ await idb.tx('readwrite', s => s.put({id: key, list: list.slice(0, 20)}), 'snaps'); }catch{ return; }
+  if (manual) toast('지금 판을 저장했어요');
+  if (eid === ST.eid) stRenderSnaps();
+}
+async function stRenderSnaps(){
+  const box = $('#stSnaps'); if (!ST.eid){ box.innerHTML = ''; return; }
+  const list = await stGetSnaps(`${ST.pid}/${ST.eid}`);
+  box.innerHTML = list.length ? '' : '<div class="hint" style="padding:6px 2px">아직 없어요</div>';
+  list.forEach(s => {
+    const d = document.createElement('div'); d.className = 'it';
+    d.innerHTML = `<span>${new Date(s.t).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'numeric', minute:'2-digit'})} · ${s.n.toLocaleString()}자${s.manual ? ' · 직접' : ''}</span><button>되돌리기</button>`;
+    d.querySelector('button').onclick = async () => {
+      if (!confirm('이 판으로 되돌릴까요? 지금 글은 판 기록에 먼저 남겨 둘게요.')) return;
+      await stSnap(false); $('#stText').value = s.text; stSaveText(); stMeter(); toast('되돌렸어요');
+    };
+    box.append(d);
+  });
+}
+$('#stSnapNow').onclick = () => { stFlush(); stSnap(true); };
+
+// 다른 기기에서 고친 판
+$('#stOtherShow').onclick = async () => { const v = store.get(stTextKey() + '.other', ''); if (!v) return; await stSnap(false); $('#stText').value = v; stSaveText(); store.set(stTextKey() + '.other', ''); $('#stOtherBox').hidden = true; stMeter(); toast('다른 기기 판으로 바꿨어요. 이전 글은 판 기록에 있어요'); };
+$('#stOtherDrop').onclick = () => { store.set(stTextKey() + '.other', ''); $('#stOtherBox').hidden = true; };
+
+// 왼쪽 패널
+$$('[data-sttab]').forEach(b => b.onclick = () => { $$('[data-sttab]').forEach(x => x.classList.toggle('on', x === b)); $$('[data-stpane]').forEach(p => p.hidden = p.dataset.stpane !== b.dataset.sttab); });
+$('#stProj').onchange = () => { stFlush(); stSnap(false); ST.pid = $('#stProj').value; ST.eid = stEps().at(-1)?.id || null; store.set('st.cur', {pid: ST.pid, eid: ST.eid}); stRenderAll(); stRenderEditor(); };
+$('#stProjNew').onclick = () => { const n = prompt('새 작품 이름', ''); if (n === null) return; stFlush(); stNewProject(n.trim() || '새 작품'); stRenderAll(); $$('[data-sttab]')[2].click(); };
+$('#stProjDel').onclick = () => {
+  const p = stProj(); if (!p) return;
+  if (prompt(`'${p.name}'과 모든 회차·설정집을 지워요. 지우려면 작품 이름을 그대로 입력해 주세요.`) !== p.name) return;
+  for (const e of stEps()){ localStorage.removeItem('nv.' + stTextKey(e.id)); store.set(stTextKey(e.id), null); }
+  store.set('st.eps.' + p.id, null); store.set('st.bible.' + p.id, null);
+  store.set('st.projects', stProjects().filter(x => x.id !== p.id));
+  if (!stProjects().length) stNewProject('첫 작품'); else { ST.pid = stProjects()[0].id; ST.eid = stEps().at(-1)?.id || null; }
+  stRenderAll(); stRenderEditor(); toast('지웠어요');
+};
+$('#stEpNew').onclick = () => { stFlush(); const n = stEps().length + 1; stAddEp(`${n}화`); stRenderStats(); $('#stTitle').select(); };
+$('#stImport').onclick = () => $('#stImportFile').click();
+$('#stImportFile').onchange = async e => {
+  const fs = [...e.target.files].sort((a, b) => natural(a.name, b.name)); e.target.value = ''; if (!fs.length) return;
+  stFlush(); let last = null;
+  for (const f of fs){ const t = await decodeText(f); const list = stEps(); const ep = {id: uid(), title: f.name.replace(/\.txt$/i, ''), status: 'draft', chars: stCount(t), t: Date.now()}; list.push(ep); stSetEps(list); store.set(stTextKey(ep.id), t); last = ep.id; }
+  stOpenEp(last); stRenderStats(); toast(`${fs.length}개를 회차로 가져왔어요`);
+};
+$('#stBibleNew').onclick = () => { const all = stBible(); all.unshift({id: uid(), kind: $('#stBibleKind').value || '인물', title: '', body: '', t: Date.now()}); stSetBible(all); stRenderBible(); $('#stBible input')?.focus(); };
+$('#stBibleKind').onchange = stRenderBible;
+
+// 위 막대
+$('#stSideTg').onclick = () => { const s = $('#studio'); if (isMobile()) { s.classList.toggle('mside'); s.classList.remove('mai'); } else { s.classList.toggle('noside'); store.set('set.stNoSide', s.classList.contains('noside')); } };
+$('#stAITg').onclick = () => { const s = $('#studio'); if (isMobile()) { s.classList.toggle('mai'); s.classList.remove('mside'); } else { s.classList.toggle('noai'); store.set('set.stNoAI', s.classList.contains('noai')); } };
+$$('[data-stclose]').forEach(b => b.onclick = () => $('#studio').classList.remove(b.dataset.stclose === 'side' ? 'mside' : 'mai'));
+$('#stFocus').onclick = () => { const s = $('#studio'); const on = !s.classList.contains('focus'); s.classList.toggle('focus', on); if (!isMobile()){ s.classList.toggle('noside', on || store.get('set.stNoSide', false)); s.classList.toggle('noai', on || store.get('set.stNoAI', false)); } if (on) s.classList.remove('mside', 'mai'); $('#stFocus').classList.toggle('on', on); $('#stText').focus(); };
+$('#stClose').onclick = stClose;
+document.addEventListener('keydown', e => {
+  if ($('#studio').hidden) return;
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')){ e.preventDefault(); stFlush(); stSnap(true); }
+  else if ((e.ctrlKey || e.metaKey) && e.key === '.'){ e.preventDefault(); $('#stFocus').click(); }
+  else if (e.key === 'Escape' && $('#studio').classList.contains('focus')) $('#stFocus').click();
+}, true);
+addEventListener('beforeunload', () => { stFlush(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') stFlush(); });
+
+// 내보내기
+function stEpText(eid){ return eid === ST.eid ? $('#stText').value : (store.get(stTextKey(eid), '') || ''); }
+$('#stCopyEp').onclick = () => { stFlush(); copy($('#stText').value.trim()); };
+$('#stExpEp').onclick = () => { stFlush(); download(`${safeName(stProj()?.name || '작품')}_${safeName($('#stTitle').value || '회차')}.txt`, $('#stText').value, 'text/plain'); };
+$('#stExpAll').onclick = () => { stFlush(); const p = stProj(); download(`${safeName(p.name)}_전체.txt`, stEps().map(e => `${e.title}\n\n${stEpText(e.id).trim()}`).join('\n\n\n'), 'text/plain'); };
+$('#stExpBackup').onclick = () => { stFlush(); const p = stProj(); download(`${safeName(p.name)}_백업.json`, JSON.stringify({project: p, eps: stEps().map(e => ({...e, text: stEpText(e.id)})), bible: stBible()}, null, 1), 'application/json'); };
+$('#stFmt').onclick = () => {
+  const t = $('#stText').value; const lines = t.split('\n').map(s => s.replace(/\s+$/, '')).filter(s => s.trim());
+  const out = lines.join('\n\n'); if (out === t.trim()) return toast('이미 맞춰져 있어요');
+  stSnap(false); $('#stText').value = out; stSaveText(); stMeter(); toast('문단 사이를 빈 줄 하나로 맞췄어요 (이전 판은 판 기록에)');
+};
+
+// AI 도우미
+function stBibleText(){
+  const b = stBible().filter(x => (x.title || x.body || '').trim());
+  if (!b.length) return '';
+  return '<story_bible>\n' + b.map(x => `[${x.kind}] ${x.title}\n${x.body}`).join('\n\n').slice(0, 8000) + '\n</story_bible>';
+}
+function stPrevTail(){
+  const list = stEps(); const i = list.findIndex(e => e.id === ST.eid); if (i <= 0) return '';
+  const t = stEpText(list[i - 1].id).trim(); return t ? `<previous_episode title="${esc(list[i-1].title)}">\n${t.slice(-1500)}\n</previous_episode>` : '';
+}
+function stSystem(){
+  const p = stProj() || {};
+  return SYSTEM_WRITER() + '\n\n' + [RATING_TEXT[p.rating || '15'], STYLE_TEXT[p.style || 'commercial'], p.style === 'mine' ? '사용자 문체의 결: ' + $('#voice').value : '', `작품: ${p.name || ''}${p.genre ? ' · ' + p.genre : ''}. 한 화 목표 분량: 공백 제외 ${p.min}~${p.max}자.`, '원고의 기존 문체·시점·시제·인물 말투를 그대로 따른다.'].filter(Boolean).join('\n');
+}
+const ST_TASK = {
+  continue: () => { const t = $('#stText'); const before = t.value.slice(0, t.selectionStart); return {need: before.trim() ? '' : '이어 쓸 원고가 없어요. 먼저 몇 줄 써 주세요', insert: 'cursor', text: `<manuscript_before_cursor>\n${before.slice(-7000)}\n</manuscript_before_cursor>${t.value.slice(t.selectionEnd).trim() ? `\n<manuscript_after_cursor>\n${t.value.slice(t.selectionEnd, t.selectionEnd + 1500)}\n</manuscript_after_cursor>` : ''}\n\n커서 자리부터 이어질 본문만 공백 제외 약 ${$('#stLen').value}자 써 줘. 앞 내용을 되풀이하지 말고, 뒤 내용이 있으면 자연스럽게 이어지게.`}; },
+  polish: () => { const s = stSelText(); return {need: s ? '' : '다듬을 부분을 원고에서 먼저 골라 주세요', insert: 'replace', text: `<selected>\n${s}\n</selected>\n\n위 부분을 내용과 사건은 그대로 두고 문장·호흡만 다듬어 줘. 고친 본문만 출력해.`}; },
+  dialog: () => { const s = stSelText() || $('#stText').value; return {need: s.trim() ? '' : '원고가 비어 있어요', insert: stSelText() ? 'replace' : 'none', text: `<text>\n${s.slice(0, 9000)}\n</text>\n\n대사를 인물마다 목소리가 구분되게 살려 줘(설정집의 말투를 따른다). 지문은 최소한만 고치고, 고친 본문만 출력해.`}; },
+  cut: () => { const t = $('#stText').value.trim(); return {need: t ? '' : '원고가 비어 있어요', insert: 'none', text: `<episode_end>\n${t.slice(-2500)}\n</episode_end>\n\n이 화의 마지막 장면을 다음 화 결제를 누르게 만드는 절단으로 바꾼 대안 3개를 써 줘. 각각 [유형] 한 줄 + 바꿔 쓸 마지막 3~6문단. 유형은 서로 다르게(새 인물 등장/위기 직전/주인공 선언/반전 정보/주변 반응 등).`}; },
+  hook: () => { const t = $('#stText').value.trim(); return {need: t ? '' : '원고가 비어 있어요', insert: 'none', text: `<episode_start>\n${t.slice(0, 2500)}\n</episode_start>\n\n이 화의 첫 세 문단이 독자를 붙잡는지 한 줄로 판정하고, 더 세게 고친 첫 장면(5~8문단)을 써 줘.`}; },
+  feedback: () => { const t = $('#stText').value; const a = analyze(t || ' '); const p = stProj(); return {need: t.trim() ? '' : '원고가 비어 있어요', insert: 'none', text: `내가 쓴 한 화다. 수치: 분량 ${a.chars}자(목표 ${p.min}~${p.max}), 문단 중앙값 ${a.median}자, 대사 ${a.dlg}%.\n<manuscript>\n${t.slice(0, 16000)}\n</manuscript>\n\n냉정하게 피드백해 줘: 1) 첫 세 문단 2) 이 화의 보상(사이다·설렘·반전) 3) 대사와 인물 목소리 4) 설정집과 어긋나는 곳 5) 절단 6) 모바일 호흡. 각 항목마다 고칠 문장 예시를 하나씩.`}; },
+  title: () => { const t = $('#stText').value.trim(); return {need: t ? '' : '원고가 비어 있어요', insert: 'none', text: `<manuscript>\n${t.slice(0, 12000)}\n</manuscript>\n\n이 화의 제목 후보 6개를 줘. 3개는 주인공·인물의 짧고 센 대사형, 3개는 상황형. 목록만.`}; },
+  summary: () => { const t = $('#stText').value.trim(); return {need: t ? '' : '원고가 비어 있어요', insert: 'none', bible: true, text: `<manuscript>\n${t.slice(0, 16000)}\n</manuscript>\n\n이 화를 설정집에 남길 메모로 요약해 줘: 사건 3줄, 새로 나온 인물·설정(이름과 한 줄), 다음 화로 넘긴 떡밥. 짧게.`}; },
+};
+function stSelText(){ const t = $('#stText'); return t.selectionEnd > t.selectionStart ? t.value.slice(t.selectionStart, t.selectionEnd) : ''; }
+async function stRun(kind, custom){
+  if (ST.abort) return toast('AI가 쓰는 중이에요');
+  stFlush();
+  const task = custom ? {need: '', insert: 'cursor', text: `<manuscript>\n${$('#stText').value.slice(-9000)}\n</manuscript>${stSelText() ? `\n<selected>\n${stSelText()}\n</selected>` : ''}\n\n${custom}`} : ST_TASK[kind]();
+  if (task.need) return toast(task.need);
+  const p = stProj(); if (p?.rating === 'adult' && !adultGuard(task.text + stBibleText(), 'adult')) return;
+  const c = await client('#stProv'); if (!c) return;
+  const t = $('#stText'); ST.sel = {s: t.selectionStart, e: t.selectionEnd}; ST.outKind = task.insert;
+  $('#stToBible').hidden = !task.bible;
+  const ctx = [stBibleText(), stPrevTail()].filter(Boolean).join('\n\n');
+  const content = [];
+  if (ctx) content.push({type:'text', text: ctx, cache_control: {type:'ephemeral'}});
+  content.push({type:'text', text: task.text});
+  const out = $('#stOut'); out.textContent = '';
+  ST.abort = new AbortController(); $('.st-ai').classList.add('busy');
+  if (isMobile()) $('#studio').classList.add('mai');
+  const res = await stream(c, {system: stSystem(), messages: [{role:'user', content}], signal: ST.abort.signal, onText: x => { out.textContent += x; out.scrollTop = out.scrollHeight; }});
+  ST.abort = null; $('.st-ai').classList.remove('busy');
+  if (res.note) out.textContent += res.note;
+}
+$$('[data-st]').forEach(b => b.onclick = () => stRun(b.dataset.st));
+$('#stAskGo').onclick = () => { const q = $('#stAsk').value.trim(); if (!q) return; stRun('custom', q); };
+$('#stAsk').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) $('#stAskGo').click(); });
+$('#stStop').onclick = () => ST.abort?.abort();
+function stOutText(){ return $('#stOut').textContent.replace(/\n\n\[(멈췄어요|길이 제한[^\]]*|오류[^\]]*|[^\]]*막[^\]]*)\]$/, '').trim(); }
+$('#stCopyOut').onclick = () => copy(stOutText());
+$('#stInsert').onclick = () => {
+  const v = stOutText(); if (!v) return; const t = $('#stText'); stSnap(false);
+  const pos = ST.outKind === 'cursor' && ST.sel ? ST.sel.e : t.selectionEnd;
+  const pre = t.value.slice(0, pos), post = t.value.slice(pos);
+  const sep = pre && !/\n\s*$/.test(pre) ? '\n\n' : '';
+  t.value = pre + sep + v + (post && !/^\s*\n/.test(post) ? '\n\n' : '') + post;
+  t.selectionStart = t.selectionEnd = (pre + sep + v).length; stSaveText(); stMeter(); t.focus(); toast('원고에 넣었어요 (이전 판은 판 기록에)');
+};
+$('#stReplace').onclick = () => {
+  const v = stOutText(); if (!v) return; const t = $('#stText');
+  const s = ST.outKind === 'replace' && ST.sel && ST.sel.e > ST.sel.s ? ST.sel : {s: t.selectionStart, e: t.selectionEnd};
+  if (s.e <= s.s) return toast('바꿀 부분을 원고에서 먼저 골라 주세요');
+  stSnap(false); t.value = t.value.slice(0, s.s) + v + t.value.slice(s.e); t.selectionStart = s.s; t.selectionEnd = s.s + v.length;
+  stSaveText(); stMeter(); t.focus(); toast('바꿨어요 (이전 판은 판 기록에)');
+};
+$('#stToBible').onclick = () => { const v = stOutText(); if (!v) return; const all = stBible(); all.unshift({id: uid(), kind: '플롯', title: `${$('#stTitle').value || '회차'} 요약`, body: v, t: Date.now()}); stSetBible(all); stRenderBible(); $('#stToBible').hidden = true; toast('설정집 플롯 카드로 남겼어요'); };
+
+// 들어가는 곳
+$('#btnStudio').onclick = stOpen;
+$('#wStudio') && ($('#wStudio').onclick = stOpen);
+$('#mineToStudio') && ($('#mineToStudio').onclick = () => {
+  const t = $('#mineText').value; if (!t.trim()) return toast('내 원고 칸이 비어 있어요');
+  stOpen(); const list = stEps(); const cur0 = list.find(e => e.id === ST.eid);
+  if (cur0 && !stEpText(cur0.id).trim()){ $('#stText').value = t; stSaveText(); } else { stAddEp(`${list.length + 1}화`); $('#stText').value = t; stSaveText(); }
+  stMeter(); toast('집필실 회차로 옮겼어요');
+});
+window.stRefresh = () => { if ($('#studio').hidden) return; if (document.activeElement !== $('#stText')){ const v = store.get(stTextKey(), ''); if (v !== null && v !== $('#stText').value && !ST.saveT){ $('#stText').value = v; ST.lastText = v; stMeter(); } } stRenderAll(); $('#stOtherBox').hidden = !store.get(stTextKey() + '.other', ''); };
+addEventListener('resize', () => { if (!$('#studio').hidden) stApplyLayout(); });
+if (location.hash === '#studio') stOpen();
 </script>
 </body>
 </html>
