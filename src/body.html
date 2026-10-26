@@ -377,7 +377,7 @@
   <div class="sk-bot">
     <textarea id="skNote" placeholder="이 장면에서 인상 깊은 점, 연출 메모 (예: 대사 없이 손만 클로즈업 → 감정 전환)"></textarea>
     <div class="row tight" style="flex-direction:column;align-items:stretch">
-      <button class="primary" id="skSave">저장</button><button id="skAsk">저장하고 Claude에게 연출 묻기</button><button id="skCancel">취소</button>
+      <button class="primary" id="skSave">저장</button><div class="row tight"><button id="skAsk" class="grow">저장하고 AI에게 연출 묻기</button><select id="skAskProv" title="어느 AI에게 물을지 (기본 AI는 설정에서 고른 것)"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div><button id="skCancel">취소</button>
     </div>
   </div>
 </div>

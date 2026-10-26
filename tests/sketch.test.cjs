@@ -73,6 +73,12 @@ b = io.BytesIO(); im.save(b, 'PNG'); z = zipfile.ZipFile('${fx}/art.procreate', 
   console.log('other-app files imported:', (await p.$$('#scrapList .card')).length - before, '| names:', (await p.$$eval('#scrapList .card .m', e => e.map(x => x.textContent.split(' · ')[1]))).slice(0, 3));
   const px = await p.evaluate(async () => { const all = await new Promise(res => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('scraps').objectStore('scraps').getAll(); g.onsuccess = () => res(g.result); }; }); const x = all.find(a => a.epName === 'rle'); if (!x) return 'none'; const bm = await createImageBitmap(x.blob); const c = document.createElement('canvas'); c.width = bm.width; c.height = bm.height; const g = c.getContext('2d'); g.drawImage(bm, 0, 0); const l = g.getImageData(10, 40, 1, 1).data, r = g.getImageData(c.width - 10, 40, 1, 1).data; return [l[0] > 150 && l[2] < 80, r[2] > 150 && r[0] < 80, c.width + 'x' + c.height].join(' '); });
   console.log('psd rle colors:', px);
+  // 필기 칸에서 Gemini에게 연출 묻기: 그림이 inline_data로 간다
+  let gemBody = null; await p.route('https://generativelanguage.googleapis.com/**', r => { gemBody = r.request().postData(); r.fulfill({status: 200, headers: {'content-type': 'text/event-stream', 'access-control-allow-origin': '*'}, body: `data: ${JSON.stringify({candidates: [{content: {parts: [{text: '제미나이 연출 답'}]}, finishReason: 'STOP'}]})}\n\n`}); });
+  await p.evaluate(() => { localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); });
+  await p.reload(); await p.waitForTimeout(700); await p.click('#tgTool').catch(() => {}); await p.click('.tabs button[data-tab=notes]'); await p.click('#ideaDraw'); await p.waitForTimeout(300);
+  await p.selectOption('#skAskProv', 'gemini'); await p.click('#skAsk'); await p.waitForTimeout(1500);
+  console.log('ask gemini: image sent', /inline_data/.test(gemBody || ''), '| answer shown', (await p.textContent('#chat')).includes('제미나이 연출 답'), '| ai tab provider', await p.$eval('#aiProv', e => e.value));
   console.log('ERRORS:', errs.length ? errs : 'none');
   await b.close();
 })();

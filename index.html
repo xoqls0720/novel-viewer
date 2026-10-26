@@ -1112,7 +1112,7 @@ details.fold summary .chev{margin-left:auto}
   <div class="sk-bot">
     <textarea id="skNote" placeholder="이 장면에서 인상 깊은 점, 연출 메모 (예: 대사 없이 손만 클로즈업 → 감정 전환)"></textarea>
     <div class="row tight" style="flex-direction:column;align-items:stretch">
-      <button class="primary" id="skSave">저장</button><button id="skAsk">저장하고 Claude에게 연출 묻기</button><button id="skCancel">취소</button>
+      <button class="primary" id="skSave">저장</button><div class="row tight"><button id="skAsk" class="grow">저장하고 AI에게 연출 묻기</button><select id="skAskProv" title="어느 AI에게 물을지 (기본 AI는 설정에서 고른 것)"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div><button id="skCancel">취소</button>
     </div>
   </div>
 </div>
@@ -3225,8 +3225,13 @@ async function saveSketch(opt = {}){
   $('#sketch').classList.remove('open'); $('#skCursor').hidden = true; toast('장면을 저장했어요'); return rec;
 }
 $('#skSave').onclick = () => saveSketch();
+$('#skAskProv').value = store.get('lib.skAskProv', 'default');
 $('#skAsk').onclick = async () => {
+  const pv = $('#skAskProv').value; store.set('lib.skAskProv', pv);
+  const name = PROV[provOf(pv === 'default' ? '' : '#skAskProv')]?.name || 'AI';
+  if (['groq', 'ollama'].includes(provOf(pv === 'default' ? '' : '#skAskProv'))) toast(`${name}은 그림을 볼 수 있는 모델이어야 해요 (설정의 모델 칸을 확인해 주세요)`);
   const rec = await saveSketch(); if (!rec) return;
+  $('#aiProv').value = pv;   // 필기 칸에서 고른 AI로 질문을 보낸다
   const block = await toImageBlock(rec.blob);
   openTool('ai'); chats.ai.reset();
   chats.ai.ask({question: `내가 ${rec.workName} · ${rec.epName}에서 인상 깊어서 담은 장면이야(내가 그 위에 필기한 표시가 있을 수 있어).${rec.note ? `\n내 메모: ${rec.note}` : ''}\n이 장면의 연출(구도·칸·시선·여백·대사·감정 전환)이 왜 효과적인지 분석하고, 웹소설 문장이나 내 작품에 옮겨 쓸 방법 3가지를 알려 줘.`, display: '[장면 노트 분석]', ctx: {key: 'scrap:' + rec.id, blocks: [block], fresh: true}});

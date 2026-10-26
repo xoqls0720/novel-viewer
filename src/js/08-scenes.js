@@ -514,8 +514,13 @@ async function saveSketch(opt = {}){
   $('#sketch').classList.remove('open'); $('#skCursor').hidden = true; toast('장면을 저장했어요'); return rec;
 }
 $('#skSave').onclick = () => saveSketch();
+$('#skAskProv').value = store.get('lib.skAskProv', 'default');
 $('#skAsk').onclick = async () => {
+  const pv = $('#skAskProv').value; store.set('lib.skAskProv', pv);
+  const name = PROV[provOf(pv === 'default' ? '' : '#skAskProv')]?.name || 'AI';
+  if (['groq', 'ollama'].includes(provOf(pv === 'default' ? '' : '#skAskProv'))) toast(`${name}은 그림을 볼 수 있는 모델이어야 해요 (설정의 모델 칸을 확인해 주세요)`);
   const rec = await saveSketch(); if (!rec) return;
+  $('#aiProv').value = pv;   // 필기 칸에서 고른 AI로 질문을 보낸다
   const block = await toImageBlock(rec.blob);
   openTool('ai'); chats.ai.reset();
   chats.ai.ask({question: `내가 ${rec.workName} · ${rec.epName}에서 인상 깊어서 담은 장면이야(내가 그 위에 필기한 표시가 있을 수 있어).${rec.note ? `\n내 메모: ${rec.note}` : ''}\n이 장면의 연출(구도·칸·시선·여백·대사·감정 전환)이 왜 효과적인지 분석하고, 웹소설 문장이나 내 작품에 옮겨 쓸 방법 3가지를 알려 줘.`, display: '[장면 노트 분석]', ctx: {key: 'scrap:' + rec.id, blocks: [block], fresh: true}});
