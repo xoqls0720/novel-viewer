@@ -1024,8 +1024,8 @@ details.fold summary .chev{margin-left:auto}
         <summary><b>Gemini</b><span class="pv-sub">무료 등급 · 아이폰에서도</span><span class="kst" id="st-gemini"></span><svg class="i chev"><use href="#i-down"/></svg></summary>
         <div class="pv-body">
           <div class="krow"><input type="password" id="gemKey" placeholder="AIza..." autocomplete="off"><button data-ksave="gemKey" class="primary">저장</button><button data-kdel="gemKey" title="키 지우기"><svg class="i" style="width:16px;height:16px"><use href="#i-x"/></svg></button></div>
-          <div class="row" style="margin-top:8px"><label>모델</label><input type="text" id="gemModel" list="gemList" value="gemini-2.5-flash" class="grow"></div>
-          <datalist id="gemList"><option value="gemini-2.5-flash"><option value="gemini-2.5-pro"><option value="gemini-2.5-flash-lite"></datalist>
+          <div class="row" style="margin-top:8px"><label>모델</label><input type="text" id="gemModel" list="gemList" value="gemini-3.8-flash" class="grow"></div>
+          <datalist id="gemList"><option value="gemini-3.8-flash"><option value="gemini-3.5-flash-lite"><option value="gemini-3.6-flash"><option value="gemini-4-argon"><option value="gemini-2.5-flash"></datalist>
           <div class="hint">키 받기: aistudio.google.com → Get API key (카드 등록 없음). 무료는 하루·분당 횟수 제한이 있고, 무료 요청은 구글이 품질 개선에 쓸 수 있어요.</div>
         </div>
       </details>
@@ -2085,7 +2085,7 @@ const PROV = {
   groq:   {name:'Groq', key:'grKey', model: () => $('#grModel').value.trim() || 'llama-3.3-70b-versatile'},
 };
 // 모델 이름 칸에 공백·'models/'·한글 등이 섞여도 구글이 받는 모양으로 고친다(안 되면 기본 모델)
-const GEM_DEFAULT = 'gemini-2.5-flash';
+const GEM_DEFAULT = 'gemini-3.8-flash';
 function gemModelName(){
   let m = ($('#gemModel').value || '').trim().replace(/^models\//i, '').replace(/\s+/g, '-').toLowerCase();
   if (!/^[a-z0-9][a-z0-9._-]*$/.test(m)){ if (m && !gemModelName.warned){ gemModelName.warned = true; toast(`Gemini 모델 이름이 올바르지 않아 ${GEM_DEFAULT}로 보냈어요. 설정 탭에서 확인해 주세요`); } return GEM_DEFAULT; }

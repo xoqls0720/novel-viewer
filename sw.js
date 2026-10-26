@@ -1,5 +1,5 @@
 // 노벨 뷰어 오프라인 캐시: 앱 파일과 라이브러리는 캐시에서, 새 버전은 다음 실행 때 반영
-const CACHE = 'nv-v23';
+const CACHE = 'nv-v24';
 const APP = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const LIBS = /^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
 

@@ -80,7 +80,7 @@ b = io.BytesIO(); im.save(b, 'PNG'); z = zipfile.ZipFile('${fx}/art.procreate', 
   await p.selectOption('#skAskProv', 'gemini'); await p.click('#skAsk'); await p.waitForTimeout(1500);
   console.log('ask gemini: image sent', /inline_data/.test(gemBody || ''), '| answer shown', (await p.textContent('#chat')).includes('제미나이 연출 답'), '| ai tab provider', await p.$eval('#aiProv', e => e.value));
   // 모델 이름에 공백·대문자·models/ 가 섞여도 구글이 받는 모양으로 보낸다
-  for (const [typed, want] of [['Gemini 2.5 Flash', 'gemini-2.5-flash:'], ['models/gemini-2.5-pro', 'gemini-2.5-pro:'], ['제미나이', 'gemini-2.5-flash:']]){
+  for (const [typed, want] of [['Gemini 3.8 Flash', 'gemini-3.8-flash:'], ['models/gemini-4-argon', 'gemini-4-argon:'], ['제미나이', 'gemini-3.8-flash:']]){
     await p.evaluate(v => { const e = document.querySelector('#gemModel'); e.value = v; e.dispatchEvent(new Event('change', {bubbles: true})); }, typed);
     await p.click('.tabs button[data-tab=notes]'); await p.click('#ideaDraw'); await p.waitForTimeout(300); gemUrl = ''; await p.selectOption('#skAskProv', 'gemini'); await p.click('#skAsk'); await p.waitForTimeout(1200);
     console.log('model name', JSON.stringify(typed), '→', gemUrl.includes('/models/' + want));

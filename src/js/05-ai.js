@@ -8,7 +8,7 @@ const PROV = {
   groq:   {name:'Groq', key:'grKey', model: () => $('#grModel').value.trim() || 'llama-3.3-70b-versatile'},
 };
 // 모델 이름 칸에 공백·'models/'·한글 등이 섞여도 구글이 받는 모양으로 고친다(안 되면 기본 모델)
-const GEM_DEFAULT = 'gemini-2.5-flash';
+const GEM_DEFAULT = 'gemini-3.8-flash';
 function gemModelName(){
   let m = ($('#gemModel').value || '').trim().replace(/^models\//i, '').replace(/\s+/g, '-').toLowerCase();
   if (!/^[a-z0-9][a-z0-9._-]*$/.test(m)){ if (m && !gemModelName.warned){ gemModelName.warned = true; toast(`Gemini 모델 이름이 올바르지 않아 ${GEM_DEFAULT}로 보냈어요. 설정 탭에서 확인해 주세요`); } return GEM_DEFAULT; }
