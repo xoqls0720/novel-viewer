@@ -2,17 +2,20 @@
 chcp 65001 >nul
 title Ollama 켜기 (노벨 뷰어용)
 rem 뷰어(브라우저)가 Ollama에 붙을 수 있게 허용한 뒤 Ollama를 켭니다.
-where ollama >/dev/null 2>nul
+where ollama >nul 2>nul
 if errorlevel 1 (
   echo Ollama가 설치되어 있지 않아요. https://ollama.com/download 에서 설치한 뒤 다시 실행해 주세요.
   start "" https://ollama.com/download
   pause
   exit /b
 )
-taskkill /f /im "ollama app.exe" >/dev/null 2>nul
-taskkill /f /im ollama.exe >/dev/null 2>nul
+taskkill /f /im "ollama app.exe" >nul 2>nul
+taskkill /f /im ollama.exe >nul 2>nul
 setx OLLAMA_ORIGINS "*" >nul
 set OLLAMA_ORIGINS=*
+rem 회차 하나(수천 자)가 잘리지 않게 대화 길이를 늘린다
+setx OLLAMA_CONTEXT_LENGTH 16384 >nul
+set OLLAMA_CONTEXT_LENGTH=16384
 echo.
 echo 받은 모델:
 ollama list
