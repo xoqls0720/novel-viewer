@@ -3,7 +3,8 @@
 const GD = {token: null, exp: 0, client: null, busy: false, timer: null};
 const GD_API = 'https://www.googleapis.com/drive/v3', GD_UP = 'https://www.googleapis.com/upload/drive/v3';
 function gdStatus(t){ $('#gdStatus').textContent = t; }
-function gdReady(){ return location.protocol === 'https:' && store.get('gd.client', ''); }
+const DESKTOP = !!window.nvDesktop;   // 윈도우 프로그램(Electron)으로 열었을 때
+function gdReady(){ return (location.protocol === 'https:' || (DESKTOP && store.get('gd.secret', ''))) && store.get('gd.client', ''); }
 async function gdLoadGIS(){
   if (window.google?.accounts?.oauth2) return;
   await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.onload = res; sc.onerror = rej; document.head.append(sc); });
@@ -12,6 +13,14 @@ async function gdToken(interactive){
   if (GD.token && Date.now() < GD.exp - 60000) return GD.token;
   const cached = JSON.parse(sessionStorage.getItem('nv.gdTok') || 'null'); if (cached && Date.now() < cached.exp - 60000){ GD.token = cached.t; GD.exp = cached.exp; return GD.token; }
   if (!gdReady()) throw new Error('setup');
+  if (DESKTOP){
+    // 프로그램에서는 기본 브라우저로 로그인하고, 다시 쓸 수 있는 토큰은 프로그램이 윈도우 암호화로 보관한다
+    const id = store.get('gd.client', ''), secret = store.get('gd.secret', '');
+    let r = await window.nvDesktop.gdToken(id, secret).catch(() => null);
+    if (!r && interactive){ toast('기본 브라우저에서 구글 로그인을 마쳐 주세요'); r = await window.nvDesktop.gdLogin(id, secret); }
+    if (!r) throw new Error('auth');
+    GD.token = r.token; GD.exp = Date.now() + r.expires * 1000; return GD.token;
+  }
   await gdLoadGIS();
   return await new Promise((res, rej) => {
     GD.client = google.accounts.oauth2.initTokenClient({client_id: store.get('gd.client',''), scope: 'https://www.googleapis.com/auth/drive.appdata',
@@ -165,14 +174,15 @@ function applySettingsFromStore(){
 }
 $('#gdClient').value = store.get('gd.client', '');
 $('#gdAuto').checked = store.get('gd.auto', true);
-$('#gdOrigin').textContent = location.origin.startsWith('http') ? location.origin : '(https 주소에서 열어야 보여요)';
-$('#gdSave').onclick = () => { store.set('gd.client', $('#gdClient').value.trim()); toast('저장했어요'); };
-$('#gdConnect').onclick = async () => { store.set('gd.client', $('#gdClient').value.trim()); try{ await gdToken(true); gdStatus('연결됐어요'); gdSync(true); }catch(e){ gdStatus('연결하지 못했어요 (' + e.message + ')'); } };
+$('#gdOrigin').textContent = DESKTOP ? '윈도우 프로그램: 같은 클라이언트의 "승인된 리디렉션 URI"에 http://127.0.0.1:53682/ 를 추가하고, 보안 비밀번호를 아래에 넣어 주세요' : location.origin.startsWith('http') ? location.origin : '(https 주소에서 열어야 보여요)';
+if (DESKTOP){ $$('.desktop-only').forEach(el => el.hidden = false); $('#gdSecret').value = store.get('gd.secret', ''); }
+$('#gdSave').onclick = () => { store.set('gd.client', $('#gdClient').value.trim()); if (DESKTOP) store.set('gd.secret', $('#gdSecret').value.trim()); toast('저장했어요'); };
+$('#gdConnect').onclick = async () => { store.set('gd.client', $('#gdClient').value.trim()); if (DESKTOP) store.set('gd.secret', $('#gdSecret').value.trim()); try{ await gdToken(true); gdStatus('연결됐어요'); gdSync(true); }catch(e){ gdStatus('연결하지 못했어요 (' + e.message + ')'); } };
 $('#gdNow').onclick = () => gdSync(true);
 $('#gdAuto').onchange = () => store.set('gd.auto', $('#gdAuto').checked);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && gdReady() && $('#gdAuto').checked && GD.token) gdSync(false); });
-if (gdReady()){ gdLoadGIS().catch(()=>{}); if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
-{ const last = store.get('gd.last', 0); if (last) gdStatus('마지막 동기화 ' + new Date(last).toLocaleString('ko-KR')); else if (location.protocol !== 'https:') gdStatus('https 주소(앱으로 설치한 뷰어)에서 켤 수 있어요'); }
+if (gdReady()){ if (!DESKTOP) gdLoadGIS().catch(()=>{}); if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
+{ const last = store.get('gd.last', 0); if (last) gdStatus('마지막 동기화 ' + new Date(last).toLocaleString('ko-KR')); else if (location.protocol !== 'https:' && !DESKTOP) gdStatus('https 주소(앱으로 설치한 뷰어)에서 켤 수 있어요'); }
 
 if (store.get('apiKey','')) setTimeout(() => loadSDK().catch(()=>{}), 1200);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(()=>{});

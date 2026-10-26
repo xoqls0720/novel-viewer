@@ -1,0 +1,56 @@
+{
+  "name": "novel-viewer",
+  "productName": "노벨 뷰어",
+  "version": "1.0.0",
+  "description": "소설·웹툰·만화 뷰어와 작가용 집필실",
+  "author": "xoqls0720",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "prepare-app": "node prepare.js",
+    "start": "node prepare.js && electron .",
+    "dist": "node prepare.js && electron-builder --win nsis --x64",
+    "publish": "node prepare.js && electron-builder --win nsis --x64 --publish always"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.11"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.xoqls0720.novelviewer",
+    "productName": "노벨 뷰어",
+    "artifactName": "NovelViewer-Setup-${version}.${ext}",
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "노벨 뷰어",
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "xoqls0720",
+        "repo": "novel-viewer"
+      }
+    ]
+  }
+}

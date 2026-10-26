@@ -1,3 +1,7 @@
 tests/data/
 tests/out/
 node_modules/
+desktop/node_modules/
+desktop/dist/
+desktop/app/
+desktop/build/
