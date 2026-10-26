@@ -1,5 +1,5 @@
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat'];
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat','sendMode'];
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);

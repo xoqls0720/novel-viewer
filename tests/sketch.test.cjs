@@ -36,7 +36,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   console.log('saved strokes after 2-finger undo:', rec[0].n, '| pressure stroke:', rec[0].pr, '| p varied:', new Set(rec[0].ps).size > 2);
   // 다시 열어 PDF·PSD
   await p.click('#scrapList .card [data-a=edit]'); await p.waitForTimeout(500);
-  await setSel('gnPage', 'a4');
+  await setSel('gnPage', 'a4'); await setSel('sendMode', 'share');
   const dl1 = p.waitForEvent('download', {timeout: 20000}); await p.selectOption('#skSend', 'gn'); const pdf = await dl1; const pf = path.join(__dirname, 'out', 'sk.pdf'); await pdf.saveAs(pf);
   console.log('goodnotes pdf:', fs.readFileSync(pf).slice(0, 4).toString());
   await setSel('pcFormat', 'psd'); await setSel('pcSize', 'tall');
@@ -45,6 +45,12 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   await setSel('pcFormat', 'png');
   const dl3 = p.waitForEvent('download', {timeout: 20000}); await p.selectOption('#skSend', 'pc'); const png = await dl3; const nf = path.join(__dirname, 'out', 'sk_pc.png'); await png.saveAs(nf);
   console.log('procreate png:', fs.readFileSync(nf).slice(1, 4).toString());
+  // 앱 바로 열기: 그림을 클립보드에 복사하고 앱 주소를 부른다. 앱이 안 뜨는 환경에서는 공유 시트 단추가 나온다
+  await ctx.grantPermissions(['clipboard-read', 'clipboard-write']); await setSel('sendMode', 'open');
+  await p.evaluate(() => { window.__nav = []; const orig = Object.getOwnPropertyDescriptor(Location.prototype, 'href'); });
+  await p.selectOption('#skSend', 'gn'); await p.waitForTimeout(700);
+  console.log('open mode copied image:', await p.evaluate(async () => { try{ const it = await navigator.clipboard.read(); return it[0].types.join(',') ; }catch(e){ return 'err ' + e.message; } }), '| toast:', (await p.textContent('#toast')).includes('복사했어요'));
+  await p.waitForTimeout(2600); console.log('open fallback to share:', await p.isVisible('#shareReady') || (await p.textContent('#toast')).includes('파일로 저장했어요'));
   // 바깥 그림 가져오기(바탕 바꾸기): 닫을 때 저장 확인 · 가져오기
   const src = path.join(DATA, 'vt2', 'novel', 'hwasan', 'cover.png');
   await p.setInputFiles('#skImportFile', src); await p.waitForTimeout(600);

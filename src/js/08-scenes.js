@@ -307,14 +307,32 @@ $('#skCancel').onclick = () => skClose();
 // 지금 그린 그림을 파일로: 굿노트는 PDF(공유 시트 → 굿노트), 프로크리에이트는 PNG 또는 레이어가 있는 PSD(공유 시트 → 프로크리에이트)
 async function skFlat(){ await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); const c = document.createElement('canvas'); c.width = sk.img.width; c.height = sk.img.height; const g = c.getContext('2d'); g.drawImage(sk.img, 0, 0); g.drawImage(skLayer, 0, 0); return c; }
 const skMeta = () => ({workName: sk.meta?.workName || '그림', epName: sk.meta?.epName || '장면', note: $('#skNote').value});
+// 앱 바로 열기: 그림을 클립보드에 복사하고 그 앱의 주소(goodnotes://, procreate://)를 불러 앱을 띄운다. 앱에서 붙여 넣기 하면 들어간다.
+// 웹 앱은 다른 앱에 파일을 직접 꽂을 수 없어서 이 방식이 가장 가까운 길이다. 앱이 안 뜨면(주소를 못 알아들으면) 공유 시트로 바꾼다.
+const APP_URL = {gn: ['goodnotes://', '굿노트'], pc: ['procreate://', '프로크리에이트']};
+const sendMode = () => $('#sendMode')?.value || 'open';
+async function openInApp(kind, canvas, file){
+  const [url, label] = APP_URL[kind]; let copied = false;
+  try{ await navigator.clipboard.write([new ClipboardItem({'image/png': new Promise(res => canvas.toBlob(res, 'image/png'))})]); copied = true; }catch{}
+  let left = false; const onv = () => { if (document.hidden) left = true; }; document.addEventListener('visibilitychange', onv); window.addEventListener('pagehide', onv, {once: true});
+  toast(copied ? `그림을 복사했어요. ${label}이 열리면 붙여 넣기 하세요` : `${label}을 여는 중…`);
+  setTimeout(() => { location.href = url; }, 350);
+  setTimeout(() => { document.removeEventListener('visibilitychange', onv); if (!left){ toast(`${label}이 바로 안 열려요. 공유 시트로 보낼게요`); shareFiles([file], label + '로'); } }, 2600);
+}
 async function skToGoodnotes(){
   const m = skMeta(); const flat = await skFlat(); const page = $('#gnPage')?.value || 'a4';
-  const pg = page === 'fit' ? flat : await scrapPage(m, flat);
-  const pdf = await canvasesToPdf([pg], `${safeName(m.workName)}_${safeName(m.epName)}.pdf`); if (pdf) shareFiles([pdf], '굿노트로', true);
+  const pg = page === 'fit' ? flat : await scrapPage(m, flat); const name = `${safeName(m.workName)}_${safeName(m.epName)}`;
+  if (sendMode() === 'open'){ const b = await new Promise(r => pg.toBlob(r, 'image/png')); return openInApp('gn', pg, new File([b], name + '.png', {type: 'image/png'})); }
+  const pdf = await canvasesToPdf([pg], name + '.pdf'); if (pdf) shareFiles([pdf], '굿노트로', true);
 }
 async function skToProcreate(){
-  const m = skMeta(); const sc = sk.img; const ink = sk.strokes.length ? skLayer : null;
-  const f = await procreateFile(m, {scene: sc, ink}); shareFiles([f], '프로크리에이트로', true);
+  const m = skMeta(); const ink = sk.strokes.length ? skLayer : null;
+  if (sendMode() === 'open'){
+    const [W, H] = pcDims(); const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+    const k = Math.min((W - 160) / sk.img.width, (H - 160) / sk.img.height), w = sk.img.width * k, h = sk.img.height * k; g.drawImage(sk.img, (W - w) / 2, (H - h) / 2, w, h); if (ink) g.drawImage(ink, (W - w) / 2, (H - h) / 2, w, h);
+    const b = await new Promise(r => c.toBlob(r, 'image/png')); return openInApp('pc', c, new File([b], `${safeName(m.workName)}_${safeName(m.epName)}_캔버스.png`, {type: 'image/png'}));
+  }
+  const f = await procreateFile(m, {scene: sk.img, ink}); shareFiles([f], '프로크리에이트로', true);
 }
 $('#skSend').onchange = async e => { const v = e.target.value; e.target.value = ''; ({gn: skToGoodnotes, pc: skToProcreate, file: async () => { const m = skMeta(); const flat = await skFlat(); const b = await new Promise(r => flat.toBlob(r, 'image/png')); shareFiles([new File([b], `${safeName(m.workName)}_${safeName(m.epName)}.png`, {type: 'image/png'})], '그림', true); }}[v])?.(); };
 // 바깥에서 그린 그림(굿노트·프로크리에이트에서 내보낸 PNG·JPG)을 이 노트의 바탕으로

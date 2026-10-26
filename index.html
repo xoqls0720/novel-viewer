@@ -1048,7 +1048,8 @@ details.fold summary .chev{margin-left:auto}
       <details class="fold">
         <summary>굿노트 · 프로크리에이트 연동<svg class="i chev"><use href="#i-down"/></svg></summary>
         <div class="pv-body">
-          <div class="hint" style="margin:4px 0 6px">그림·장면 노트의 <b>보내기</b>는 아이패드의 공유 시트를 열어요. 시트에서 <b>굿노트</b> 또는 <b>Procreate</b>를 누르면 그 앱으로 바로 들어가요. (앱이 안 보이면 공유 시트의 앱 줄 끝 '더 보기'에서 켜 주세요)</div>
+          <div class="hint" style="margin:4px 0 6px">그림 화면의 <b>보내기</b> → 굿노트·프로크리에이트를 고르면, 그림을 복사하고 그 앱을 바로 띄워요. 앱이 열리면 <b>붙여 넣기</b>만 하면 돼요(굿노트: 쪽을 길게 눌러 붙여넣기 / 프로크리에이트: 캔버스에서 세 손가락 아래로 쓸기 → 붙여넣기). 앱이 안 열리면 자동으로 공유 시트로 바꿔 보내요. PSD 레이어와 PDF는 '공유 시트'로 바꾸면 보낼 수 있어요.</div>
+          <div class="row"><label>보내는 방식</label><select id="sendMode"><option value="open">앱 바로 열기 (그림 복사 → 앱 실행 → 붙여 넣기)</option><option value="share">공유 시트 (파일로 보내기)</option></select></div>
           <div class="row"><label>굿노트 쪽</label><select id="gnPage"><option value="a4">A4 쪽 (그림 + 내 메모 + 손글씨 줄)</option><option value="fit">그림 크기 그대로</option></select></div>
           <div class="row"><label>프로크리에이트 캔버스</label><select id="pcSize"><option value="tall">세로 2048×2732</option><option value="wide">가로 2732×2048</option><option value="square">정사각 2732×2732</option></select></div>
           <div class="row"><label>프로크리에이트 파일</label><select id="pcFormat"><option value="png">PNG (한 장)</option><option value="psd">PSD (장면·필기 레이어 따로)</option></select></div>
@@ -1082,7 +1083,7 @@ details.fold summary .chev{margin-left:auto}
     <input type="range" id="skSize" min="2" max="40" value="6" title="굵기"><output id="skSizeOut">6</output>
     <button id="skUndo">되돌리기</button><button id="skRedo">다시</button><button id="skClear" class="danger">모두 지우기</button>
     <button id="skFinger" title="손가락으로 그리기">손가락</button><button id="skFit" hidden>맞춤</button>
-    <select id="skSend"><option value="">보내기…</option><option value="gn">굿노트로 (PDF)</option><option value="pc">프로크리에이트로</option><option value="file">사진·파일로 (PNG)</option></select>
+    <select id="skSend"><option value="">보내기…</option><option value="gn">굿노트로</option><option value="pc">프로크리에이트로</option><option value="file">사진·파일로 (PNG)</option></select>
     <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*" hidden>
   </div>
   <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas></div>
@@ -2497,7 +2498,7 @@ $('#aiCraft').onclick = () => {
   toast(`'${ps.find(p => p.id === pid).name}' 설정집 → 작법 카드로 저장했어요. 집필실 AI가 함께 봐요`);
 };
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat'];
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat','sendMode'];
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
@@ -2994,14 +2995,32 @@ $('#skCancel').onclick = () => skClose();
 // 지금 그린 그림을 파일로: 굿노트는 PDF(공유 시트 → 굿노트), 프로크리에이트는 PNG 또는 레이어가 있는 PSD(공유 시트 → 프로크리에이트)
 async function skFlat(){ await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); const c = document.createElement('canvas'); c.width = sk.img.width; c.height = sk.img.height; const g = c.getContext('2d'); g.drawImage(sk.img, 0, 0); g.drawImage(skLayer, 0, 0); return c; }
 const skMeta = () => ({workName: sk.meta?.workName || '그림', epName: sk.meta?.epName || '장면', note: $('#skNote').value});
+// 앱 바로 열기: 그림을 클립보드에 복사하고 그 앱의 주소(goodnotes://, procreate://)를 불러 앱을 띄운다. 앱에서 붙여 넣기 하면 들어간다.
+// 웹 앱은 다른 앱에 파일을 직접 꽂을 수 없어서 이 방식이 가장 가까운 길이다. 앱이 안 뜨면(주소를 못 알아들으면) 공유 시트로 바꾼다.
+const APP_URL = {gn: ['goodnotes://', '굿노트'], pc: ['procreate://', '프로크리에이트']};
+const sendMode = () => $('#sendMode')?.value || 'open';
+async function openInApp(kind, canvas, file){
+  const [url, label] = APP_URL[kind]; let copied = false;
+  try{ await navigator.clipboard.write([new ClipboardItem({'image/png': new Promise(res => canvas.toBlob(res, 'image/png'))})]); copied = true; }catch{}
+  let left = false; const onv = () => { if (document.hidden) left = true; }; document.addEventListener('visibilitychange', onv); window.addEventListener('pagehide', onv, {once: true});
+  toast(copied ? `그림을 복사했어요. ${label}이 열리면 붙여 넣기 하세요` : `${label}을 여는 중…`);
+  setTimeout(() => { location.href = url; }, 350);
+  setTimeout(() => { document.removeEventListener('visibilitychange', onv); if (!left){ toast(`${label}이 바로 안 열려요. 공유 시트로 보낼게요`); shareFiles([file], label + '로'); } }, 2600);
+}
 async function skToGoodnotes(){
   const m = skMeta(); const flat = await skFlat(); const page = $('#gnPage')?.value || 'a4';
-  const pg = page === 'fit' ? flat : await scrapPage(m, flat);
-  const pdf = await canvasesToPdf([pg], `${safeName(m.workName)}_${safeName(m.epName)}.pdf`); if (pdf) shareFiles([pdf], '굿노트로', true);
+  const pg = page === 'fit' ? flat : await scrapPage(m, flat); const name = `${safeName(m.workName)}_${safeName(m.epName)}`;
+  if (sendMode() === 'open'){ const b = await new Promise(r => pg.toBlob(r, 'image/png')); return openInApp('gn', pg, new File([b], name + '.png', {type: 'image/png'})); }
+  const pdf = await canvasesToPdf([pg], name + '.pdf'); if (pdf) shareFiles([pdf], '굿노트로', true);
 }
 async function skToProcreate(){
-  const m = skMeta(); const sc = sk.img; const ink = sk.strokes.length ? skLayer : null;
-  const f = await procreateFile(m, {scene: sc, ink}); shareFiles([f], '프로크리에이트로', true);
+  const m = skMeta(); const ink = sk.strokes.length ? skLayer : null;
+  if (sendMode() === 'open'){
+    const [W, H] = pcDims(); const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+    const k = Math.min((W - 160) / sk.img.width, (H - 160) / sk.img.height), w = sk.img.width * k, h = sk.img.height * k; g.drawImage(sk.img, (W - w) / 2, (H - h) / 2, w, h); if (ink) g.drawImage(ink, (W - w) / 2, (H - h) / 2, w, h);
+    const b = await new Promise(r => c.toBlob(r, 'image/png')); return openInApp('pc', c, new File([b], `${safeName(m.workName)}_${safeName(m.epName)}_캔버스.png`, {type: 'image/png'}));
+  }
+  const f = await procreateFile(m, {scene: sk.img, ink}); shareFiles([f], '프로크리에이트로', true);
 }
 $('#skSend').onchange = async e => { const v = e.target.value; e.target.value = ''; ({gn: skToGoodnotes, pc: skToProcreate, file: async () => { const m = skMeta(); const flat = await skFlat(); const b = await new Promise(r => flat.toBlob(r, 'image/png')); shareFiles([new File([b], `${safeName(m.workName)}_${safeName(m.epName)}.png`, {type: 'image/png'})], '그림', true); }}[v])?.(); };
 // 바깥에서 그린 그림(굿노트·프로크리에이트에서 내보낸 PNG·JPG)을 이 노트의 바탕으로
