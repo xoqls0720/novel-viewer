@@ -39,3 +39,15 @@ node tests/run.cjs studio # 하나만
 ## 올리기
 
 `main` 에 올리면 GitHub Pages 가 https://xoqls0720.github.io/novel-viewer/ 로 내보내요. 올리기 전에 `sw.js` 의 `CACHE` 이름을 바꿔야 설치한 앱이 새 판을 받아요.
+
+## 윈도우 프로그램(desktop/)
+
+Electron 껍데기예요. 웹 앱을 `app://novel/` 주소로 띄우고, 구글 로그인(기본 브라우저 + 127.0.0.1:53682)과 자동 업데이트를 맡아요.
+
+```bash
+python3 build.py && cd desktop && npm ci
+npm start            # 이 컴퓨터에서 실행
+npm run dist         # 윈도우 설치 파일 → desktop/dist/ (리눅스에서는 wine, wine32 필요)
+```
+
+`v1.2.3` 같은 태그를 올리면 `.github/workflows/desktop.yml`이 윈도우에서 설치 파일을 만들어 GitHub 릴리스에 올리고, 설치된 프로그램은 거기서 새 판을 받아요(공개 다운로드가 생기니 올릴지 먼저 정하세요).
