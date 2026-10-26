@@ -165,6 +165,7 @@ async function gdSync(interactive = false){
     localStorage.setItem('nv.gd.last', JSON.stringify(Date.now()));
     gdStatus(`마지막 동기화 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · 원고 올림 ${tx.up} · 받음 ${tx.down}${tx.conflict ? ` · 겹침 ${tx.conflict}` : ''} · 장면 올림 ${up} · 받음 ${down}`);
     applySettingsFromStore(); renderLib(); renderNotes(); renderScraps(); renderNaiHist();
+    window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js)
   }catch(e){
     const needLogin = e.message === 'auth' || /popup|access_denied|interaction|timeout/.test(e.message);
     gdStatus(e.message === 'setup' ? '설정이 필요해요' : needLogin ? '구글 로그인이 필요해요. 설정 탭에서 "연결"을 눌러 주세요' : '동기화하지 못했어요 (' + e.message + ')');

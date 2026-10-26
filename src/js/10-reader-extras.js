@@ -106,7 +106,7 @@ $('#wInOther').hidden = !store.get('wIn.other', '');
 $('#noteExport').onchange = e => { const v = e.target.value; e.target.value = ''; ({gn: () => $('#noteGN').click(), mood: () => $('#noteMood').click(), md: () => $('#noteMd').click(), claude: () => $('#noteClaude').click()})[v]?.(); };
 
 // 장면 노트 머리 단추
-$('#skX').onclick = () => $('#sketch').classList.remove('open');
+$('#skX').onclick = () => skClose();
 $('#skSave2').onclick = saveSketch;
 
 // 노벨AI → 그림 → 다시 뷰어로
@@ -235,8 +235,18 @@ function addIdea(text, from){
 $('#ideaAdd').onclick = () => addIdea();
 $('#ideaIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); addIdea(); } });
 $$('#ideaQuick [data-t]').forEach(b => b.onclick = () => { const el = $('#ideaIn'); const tag = '#' + b.dataset.t; if (!el.value.includes(tag)) el.value = (el.value.trim() + ' ' + tag).trim() + ' '; el.focus(); });
+// 새 종이: 흰 종이·격자·줄 노트·점 노트, 세로·가로·정사각
+const PAPER = {tall: [1240, 1754], wide: [1754, 1240], square: [1500, 1500]};
+function paperCanvas(kind, size){
+  const [w, h] = PAPER[size] || PAPER.tall; const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d8dde6'; g.fillStyle = '#c4cad6'; g.lineWidth = 1.5; const st = 56;
+  if (kind === 'grid'){ for (let x = st; x < w; x += st){ g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = st; y < h; y += st){ g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } }
+  else if (kind === 'lined'){ for (let y = st * 1.5; y < h; y += st){ g.beginPath(); g.moveTo(60, y); g.lineTo(w - 60, y); g.stroke(); } }
+  else if (kind === 'dots'){ for (let x = st; x < w; x += st) for (let y = st; y < h; y += st){ g.beginPath(); g.arc(x, y, 2.4, 0, 7); g.fill(); } }
+  return c;
+}
+$('#ideaPaper').value = store.get('lib.paper', 'plain'); $('#ideaSize').value = store.get('lib.paperSize', 'tall');
 $('#ideaDraw').onclick = () => {
-  const c = document.createElement('canvas'); c.width = 1240; c.height = 1650;
-  const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
-  openSketch(c, {work: cur?.key || '', workName: '자유 그림', epName: new Date().toLocaleDateString('ko-KR'), where: {}});
+  store.set('lib.paper', $('#ideaPaper').value); store.set('lib.paperSize', $('#ideaSize').value);
+  openSketch(paperCanvas($('#ideaPaper').value, $('#ideaSize').value), {work: cur?.key || '', workName: '자유 그림', epName: new Date().toLocaleDateString('ko-KR'), where: {}});
 };

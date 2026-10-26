@@ -440,6 +440,22 @@ details.fold summary .chev{margin-left:auto}
 .idea-tags button{padding:3px 10px;font-size:12px;border-radius:99px;box-shadow:none}
 .idea-tags button.on{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:600}
 #ideaList .tg{color:var(--brass);font-weight:600}
+
+#linkSheet .lsl{margin-top:6px}
+#linkSheet .lsw{display:flex;gap:8px;align-items:center;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13px}
+#linkSheet .lsw .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#linkSheet .lsw .s{font-size:11px;color:var(--faint);white-space:nowrap}
+#linkSheet .lsw button{font-size:11px;padding:3px 8px}
+
+.sk-top{row-gap:8px}
+#skRecent{gap:5px}
+#skRecent button{width:22px;height:22px}
+#skColorPick{width:34px;height:30px;padding:0;border:2px solid var(--line);border-radius:50%;background:none;overflow:hidden;cursor:pointer}
+#skSizeOut{font-size:12px;color:var(--faint);min-width:20px;text-align:right}
+#skFinger.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sk-stage{overflow:hidden;position:relative;touch-action:none}
+.sk-stage canvas{transform-origin:center;will-change:transform}
+@media (pointer:coarse){ #skColorPick{width:40px;height:40px} #skSizes button{min-height:36px} }
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -802,6 +818,11 @@ details.fold summary .chev{margin-left:auto}
       </div>
       <h3 style="font-size:11px;color:var(--faint);margin:14px 0 6px">연결한 폴더</h3>
       <div id="srcList"></div>
+      <h3 style="font-size:11px;color:var(--faint);margin:18px 0 6px">작품 동기화 (기기끼리 작품 파일 맞추기)</h3>
+      <div class="hint">이 기기에 불러온 작품을 구글 드라이브의 앱 전용 칸에 올려 두면, 다른 기기에서 같은 구글 계정으로 연결했을 때 같은 작품이 보여요. 기기마다 열 때 그 화만 받아요. 구글 드라이브 저장 공간(기본 15GB)을 써요.</div>
+      <div class="row"><label class="grow"><input type="checkbox" id="libSyncOn"> 이 기기의 작품 올리기</label><button id="libSyncNow">지금 맞추기</button><button id="libSyncStop" hidden>멈추기</button></div>
+      <div class="hint" id="libSyncStat"></div>
+      <div id="libSyncList" class="lsl"></div>
     </div>
     <div class="sheet" id="quick">
       <div class="grab"></div>
@@ -872,13 +893,15 @@ details.fold summary .chev{margin-left:auto}
         <button id="noteMd" hidden></button><button id="noteGN" hidden></button><button id="noteMood" hidden></button><button id="noteClaude" hidden></button></div>
       <div class="hint">형광펜(노랑=좋은 문장, 초록=구조·기술, 분홍=대사)과 장면 노트가 여기에 모여요. 누르면 그 위치로 가요. 굿노트용 PDF는 장면 아래에 손글씨 줄 칸이 있어요.</div>
       <h3>떠오른 문장</h3>
-      <div class="row tight"><input type="text" id="ideaIn" placeholder="읽다가 떠오른 문장·생각을 바로 적어 두세요 (Enter)" class="grow" autocomplete="off"><button id="ideaAdd" class="primary">남기기</button><button id="ideaDraw" title="빈 캔버스에 그리기"><svg class="i"><use href="#i-pen"/></svg></button></div>
+      <div class="row tight"><input type="text" id="ideaIn" placeholder="읽다가 떠오른 문장·생각을 바로 적어 두세요 (Enter)" class="grow" autocomplete="off"><button id="ideaAdd" class="primary">남기기</button></div>
       <div class="idea-tags" id="ideaQuick"><span class="hint">태그</span><button data-t="대사">#대사</button><button data-t="장면">#장면</button><button data-t="인물">#인물</button><button data-t="설정">#설정</button><button data-t="제목">#제목</button><button data-t="절단">#절단</button></div>
       <div class="idea-tags" id="ideaFilter"></div>
       <div class="list" id="ideaList"></div>
       <h3>책갈피</h3>
       <div class="list" id="bmList"></div>
       <h3>장면 노트</h3>
+      <div class="row tight"><select id="ideaPaper" title="종이"><option value="plain">흰 종이</option><option value="grid">격자</option><option value="lined">줄 노트</option><option value="dots">점 노트</option></select><select id="ideaSize" title="크기"><option value="tall">세로</option><option value="wide">가로</option><option value="square">정사각</option></select><button id="ideaDraw" title="빈 종이에 그리기"><svg class="i"><use href="#i-pen"/></svg> 새 그림</button><button id="noteImport" title="굿노트·프로크리에이트에서 내보낸 그림(PNG·JPG)을 장면 노트로 가져와요">그림 가져오기</button><input type="file" id="noteImportFile" accept="image/*" multiple hidden></div>
+      <div class="hint">아이패드: 그림 단추로 새 종이를 열어 애플 펜슬로 그려요. 그리는 중 <b>보내기</b>로 굿노트·프로크리에이트에 넘기고, 거기서 내보낸 그림은 <b>그림 가져오기</b>로 다시 받아요.</div>
       <div class="grid" id="scrapList"></div>
       <h3>문장 형광펜</h3>
       <div class="list" id="noteList"></div>
@@ -1023,6 +1046,16 @@ details.fold summary .chev{margin-left:auto}
       <div class="row"><span class="hint grow" id="storeInfo"></span><button id="storeClear" class="danger mini-act">저장한 작품 모두 지우기</button></div>
 
       <details class="fold">
+        <summary>굿노트 · 프로크리에이트 연동<svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="pv-body">
+          <div class="hint" style="margin:4px 0 6px">그림·장면 노트의 <b>보내기</b>는 아이패드의 공유 시트를 열어요. 시트에서 <b>굿노트</b> 또는 <b>Procreate</b>를 누르면 그 앱으로 바로 들어가요. (앱이 안 보이면 공유 시트의 앱 줄 끝 '더 보기'에서 켜 주세요)</div>
+          <div class="row"><label>굿노트 쪽</label><select id="gnPage"><option value="a4">A4 쪽 (그림 + 내 메모 + 손글씨 줄)</option><option value="fit">그림 크기 그대로</option></select></div>
+          <div class="row"><label>프로크리에이트 캔버스</label><select id="pcSize"><option value="tall">세로 2048×2732</option><option value="wide">가로 2732×2048</option><option value="square">정사각 2732×2732</option></select></div>
+          <div class="row"><label>프로크리에이트 파일</label><select id="pcFormat"><option value="png">PNG (한 장)</option><option value="psd">PSD (장면·필기 레이어 따로)</option></select></div>
+          <div class="hint">다시 가져올 때: 굿노트는 쪽을 <b>이미지로 내보내기</b>(PNG), 프로크리에이트는 <b>공유 → PNG</b>로 파일 앱에 저장한 뒤, 메모 탭의 <b>그림 가져오기</b>를 누르고 그 파일을 고르면 돼요.</div>
+        </div>
+      </details>
+      <details class="fold">
         <summary>규격 · 내 글의 결 · 백업<svg class="i chev"><use href="#i-down"/></svg></summary>
         <div class="pv-body">
           <div class="hint" style="margin:4px 0 6px"><b>규격</b> — 내 원고·이 화 비교 기준. 기본값은 화산귀환·환생한 감독님 분석에서 나온 값이에요.</div>
@@ -1044,8 +1077,13 @@ details.fold summary .chev{margin-left:auto}
   <div class="sk-top">
     <div class="seg" id="skTools"><button data-tool="pen" class="on">펜</button><button data-tool="hl">형광펜</button><button data-tool="erase">지우개</button></div>
     <div class="sk-colors" id="skColors"><button data-c="#e5484d" class="on" style="background:#e5484d"></button><button data-c="#2f3d6b" style="background:#2f3d6b"></button><button data-c="#f5c400" style="background:#f5c400"></button><button data-c="#2f9e5b" style="background:#2f9e5b"></button><button data-c="#ffffff" style="background:#fff"></button><button data-c="#111111" style="background:#111"></button></div>
-    <input type="range" id="skSize" min="2" max="40" value="6" title="굵기">
+    <div class="sk-colors" id="skRecent"></div><input type="color" id="skColorPick" value="#e5484d" title="색 고르기">
+    <div class="seg" id="skSizes"><button data-z="3" title="가늘게">가늘게</button><button data-z="6" title="보통">보통</button><button data-z="16" title="굵게">굵게</button></div>
+    <input type="range" id="skSize" min="2" max="40" value="6" title="굵기"><output id="skSizeOut">6</output>
     <button id="skUndo">되돌리기</button><button id="skRedo">다시</button><button id="skClear" class="danger">모두 지우기</button>
+    <button id="skFinger" title="손가락으로 그리기">손가락</button><button id="skFit" hidden>맞춤</button>
+    <select id="skSend"><option value="">보내기…</option><option value="gn">굿노트로 (PDF)</option><option value="pc">프로크리에이트로</option><option value="file">사진·파일로 (PNG)</option></select>
+    <button id="skImportBtn" title="굿노트·프로크리에이트에서 내보낸 그림으로 바탕 바꾸기">가져오기</button><input type="file" id="skImportFile" accept="image/*" hidden>
   </div>
   <div class="sk-stage" id="skStage"><canvas id="skCanvas"></canvas></div>
   <div class="sk-bot">
@@ -1292,7 +1330,7 @@ async function expandZips(list){
   return out;
 }
 
-async function addFiles(fileList, {persist = true, quiet = false} = {}){
+async function addFiles(fileList, {persist = true, quiet = false, fromLib = false} = {}){
   fileList = await expandZips(fileList);
   const own = fileList.filter(f => !f.isLazy);   // 연결한 폴더의 파일은 그 자리에서 읽으니 따로 저장하지 않는다
   if (persist && $('#keepLocal').checked && own.length){
@@ -1343,6 +1381,7 @@ async function addFiles(fileList, {persist = true, quiet = false} = {}){
   }
   works.sort((a,b)=>natural(a.top+a.name, b.top+b.name));
   renderLib(); if (!quiet) toast(`작품 ${added}개를 불러왔어요`);
+  if (!fromLib) window.libSoon?.();   // 새로 불러온 작품은 잠시 뒤 클라우드에도 올린다(켜 둔 경우)
 }
 
 // 폴더 이름을 한국어 분류로
@@ -2458,7 +2497,7 @@ $('#aiCraft').onclick = () => {
   toast(`'${ps.find(p => p.id === pid).name}' 설정집 → 작법 카드로 저장했어요. 집필실 AI가 함께 봐요`);
 };
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv'];
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat'];
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
@@ -2588,7 +2627,7 @@ $('#reader').addEventListener('scroll', () => {
     anTimer = setTimeout(() => { if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2) openEp(curEp+1); }, 1200);
 });
 document.addEventListener('keydown', e => {
-  if ($('#sketch').classList.contains('open')){ if (e.key === 'Escape') $('#sketch').classList.remove('open'); else if ((e.ctrlKey || e.metaKey) && e.key === 'z'){ e.preventDefault(); $('#skUndo').click(); } return; }
+  if ($('#sketch').classList.contains('open')){ if (e.key === 'Escape') skClose(); else if ((e.ctrlKey || e.metaKey) && e.key === 'z'){ e.preventDefault(); $('#skUndo').click(); } return; }
   if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
   const rtl = $('#rtl').value === '1';
   if (e.key === '[') $('#prev').click();
@@ -2670,19 +2709,22 @@ async function getScraps(scope = $('#noteScope').value){
 }
 // 굿노트용: 장면 위, 손글씨 줄 칸 아래. 한글 글꼴 문제를 피하려고 쪽마다 그림으로 그려 PDF에 넣는다
 function wrapText(g, text, maxW){ const out = []; for (const para of String(text).split('\n')){ let line = ''; for (const ch of para){ if (g.measureText(line + ch).width > maxW){ out.push(line); line = ch; } else line += ch; } out.push(line); } return out; }
+const NW = 1240, NH = 1754, NM = 90;
+const notePage = () => { const c = document.createElement('canvas'); c.width = NW; c.height = NH; const g = c.getContext('2d'); g.fillStyle = '#fffefb'; g.fillRect(0,0,NW,NH); return [c, g]; };
+const noteRuled = (g, y0) => { g.strokeStyle = '#d9d4c7'; g.lineWidth = 2; for (let y = y0; y < NH - NM; y += 56){ g.beginPath(); g.moveTo(NM, y); g.lineTo(NW - NM, y); g.stroke(); } };
+const noteHead = (g, t, sub) => { g.fillStyle = '#a8834a'; g.font = '600 24px "Pretendard Variable", sans-serif'; g.fillText(sub, NM, NM); g.fillStyle = '#1c1b19'; g.font = '700 38px "Gowun Batang", serif'; g.fillText(t, NM, NM + 52); };
+// 장면(또는 그림) 한 장을 굿노트용 쪽으로: 위에 그림, 가운데 내 메모, 아래 손글씨 줄 칸
+async function scrapPage(x, im){
+  const [c, g] = notePage(); noteHead(g, x.epName, x.workName);
+  im = im || await loadImgEl(x.blob); const maxW = NW - NM*2, maxH = NH * 0.5; const k = Math.min(maxW / im.width, maxH / im.height);
+  const w = im.width * k, h = im.height * k; g.drawImage(im, NM + (maxW - w)/2, NM + 90, w, h);
+  let y = NM + 90 + h + 50;
+  if (x.note){ g.fillStyle = '#3b3833'; g.font = '28px "Noto Serif KR", serif'; for (const l of wrapText(g, x.note, maxW)){ g.fillText(l, NM, y); y += 44; } y += 20; }
+  noteRuled(g, Math.max(y, NM + 90 + h + 60)); return c;
+}
 async function notePages(){
-  const W = 1240, H = 1754, M = 90; const pages = [];
-  const page = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fffefb'; g.fillRect(0,0,W,H); return [c, g]; };
-  const ruled = (g, y0) => { g.strokeStyle = '#d9d4c7'; g.lineWidth = 2; for (let y = y0; y < H - M; y += 56){ g.beginPath(); g.moveTo(M, y); g.lineTo(W - M, y); g.stroke(); } };
-  const head = (g, t, sub) => { g.fillStyle = '#a8834a'; g.font = '600 24px "Pretendard Variable", sans-serif'; g.fillText(sub, M, M); g.fillStyle = '#1c1b19'; g.font = '700 38px "Gowun Batang", serif'; g.fillText(t, M, M + 52); };
-  for (const x of await getScraps()){
-    const [c, g] = page(); head(g, x.epName, x.workName);
-    const im = await loadImgEl(x.blob); const maxW = W - M*2, maxH = H * 0.5; const k = Math.min(maxW / im.width, maxH / im.height);
-    const w = im.width * k, h = im.height * k; g.drawImage(im, M + (maxW - w)/2, M + 90, w, h);
-    let y = M + 90 + h + 50;
-    if (x.note){ g.fillStyle = '#3b3833'; g.font = '28px "Noto Serif KR", serif'; for (const l of wrapText(g, x.note, maxW)){ g.fillText(l, M, y); y += 44; } y += 20; }
-    ruled(g, Math.max(y, M + 90 + h + 60)); pages.push(c);
-  }
+  const W = NW, H = NH, M = NM; const pages = []; const page = notePage, head = noteHead;
+  for (const x of await getScraps()) pages.push(await scrapPage(x));
   if (cur){
     const notes = getNotes().sort(noteSort);
     if (notes.length){
@@ -2710,6 +2752,12 @@ async function loadJsPDF(){
   await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; sc.onload = res; sc.onerror = rej; document.head.append(sc); });
   return (jsPDFLib = window.jspdf.jsPDF);
 }
+async function canvasesToPdf(pages, name){
+  let J; try{ J = await loadJsPDF(); }catch{ toast('PDF 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요'); return null; }
+  const doc = new J({unit: 'px', format: [pages[0].width, pages[0].height], hotfixes: ['px_scaling']});
+  pages.forEach((c, i) => { if (i) doc.addPage([c.width, c.height]); doc.addImage(c.toDataURL('image/jpeg', 0.88), 'JPEG', 0, 0, c.width, c.height); });
+  return new File([doc.output('blob')], name, {type: 'application/pdf'});
+}
 async function exportNotesPDF(){
   const pages = await notePages(); if (!pages.length) return toast('담은 장면이나 형광펜이 없어요');
   toast('PDF 만드는 중…');
@@ -2720,13 +2768,24 @@ async function exportNotesPDF(){
   await shareFiles([new File([doc.output('blob')], name, {type:'application/pdf'})], name);
 }
 // 프로크리에이트용: 아이패드 화면 크기 캔버스 가운데에 장면을 놓은 PNG
-async function procreateFile(x){
-  const W = 2048, H = 2732; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
-  g.fillStyle = '#ffffff'; g.fillRect(0,0,W,H);
-  const im = await loadImgEl(x.base || x.blob); const k = Math.min((W - 160) / im.width, (H - 160) / im.height); const w = im.width * k, h = im.height * k;
-  g.drawImage(im, (W - w)/2, (H - h)/2, w, h);
+const PC_SIZE = {tall: [2048, 2732], wide: [2732, 2048], square: [2732, 2732]};
+const pcDims = () => PC_SIZE[$('#pcSize')?.value] || PC_SIZE.tall;
+// 장면 그림(scene)과 필기(ink, 없을 수 있음)를 캔버스 가운데에 놓는다. 'psd'면 장면·필기를 따로 둔 레이어 파일, 아니면 한 장짜리 PNG
+async function procreateFile(x, {scene, ink} = {}){
+  const [W, H] = pcDims(); const fmt = $('#pcFormat')?.value || 'png';
+  scene = scene || await loadImgEl(x.base || x.blob);
+  const k = Math.min((W - 160) / scene.width, (H - 160) / scene.height); const w = Math.round(scene.width * k), h = Math.round(scene.height * k), ox = Math.round((W - w) / 2), oy = Math.round((H - h) / 2);
+  const name = `${safeName(x.workName)}_${safeName(x.epName)}_캔버스`;
+  const layer = src => { const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(src, 0, 0, w, h); return c; };
+  if (fmt === 'psd'){
+    const layers = [{name: '장면', x: ox, y: oy, canvas: layer(scene)}]; if (ink) layers.push({name: '필기', x: ox, y: oy, canvas: layer(ink)});
+    const flat = document.createElement('canvas'); flat.width = W; flat.height = H; const fg = flat.getContext('2d'); fg.fillStyle = '#fff'; fg.fillRect(0, 0, W, H); for (const l of layers) fg.drawImage(l.canvas, l.x, l.y);
+    return new File([buildPsd(W, H, layers, flat)], name + '.psd', {type: 'image/vnd.adobe.photoshop'});
+  }
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+  g.drawImage(scene, ox, oy, w, h); if (ink) g.drawImage(ink, ox, oy, w, h);
   const blob = await new Promise(res => c.toBlob(res, 'image/png'));
-  return new File([blob], `${safeName(x.workName)}_${safeName(x.epName)}_캔버스.png`, {type:'image/png'});
+  return new File([blob], name + '.png', {type: 'image/png'});
 }
 async function moodboard(){
   const xs = await getScraps(); if (!xs.length) return toast('담은 장면이 없어요');
@@ -2807,9 +2866,19 @@ function strokePath(g, pts){
   for (let i = 1; i < pts.length; i++){ const [x0,y0] = pts[i-1], [x1,y1] = pts[i]; g.quadraticCurveTo(x0, y0, (x0+x1)/2, (y0+y1)/2); }
   if (pts.length === 1) g.lineTo(pts[0][0] + 0.1, pts[0][1]); else g.lineTo(pts[pts.length-1][0], pts[pts.length-1][1]);
 }
+// 애플 펜슬의 힘(필압)에 따라 굵기가 달라지게: 점마다 힘 값(p)을 갖고, 마디마다 굵기를 바꿔 이어 그린다
+function paintPressure(g, st){
+  const P = st.pts, n = P.length, mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  for (let i = 1; i < n; i++){
+    const a = P[i-1], b = P[i]; const from = i > 1 ? mid(P[i-2], a) : a, to = i < n - 1 ? mid(a, b) : b;
+    g.lineWidth = st.size * (0.25 + 1.05 * (((a[2] ?? 0.5) + (b[2] ?? 0.5)) / 2));
+    g.beginPath(); g.moveTo(from[0], from[1]); g.quadraticCurveTo(a[0], a[1], to[0], to[1]); g.stroke();
+  }
+}
 function paintStroke(g, st){
   if (!st.pts.length) return;
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = st.size;
+  if (st.pr && st.tool === 'pen' && st.pts.length > 1){ g.strokeStyle = st.color; paintPressure(g, st); g.restore(); return; }
   if (st.tool === 'erase'){ g.globalCompositeOperation = 'destination-out'; g.strokeStyle = '#000'; }
   else { g.strokeStyle = st.color; g.globalAlpha = st.tool === 'hl' ? 0.38 : 1; }
   strokePath(g, st.pts); g.stroke(); g.restore();
@@ -2834,34 +2903,130 @@ function skRedraw(){
   });
 }
 async function openSketch(src, meta, note = '', editId = null, strokes = []){
-  sk.img = src; sk.strokes = strokes.map(x => ({...x, pts: x.pts.map(p => [...p])})); sk.meta = meta; sk.editId = editId; sk.cur = null;
+  sk.img = src; sk.strokes = strokes.map(x => ({...x, pts: x.pts.map(p => [...p])})); sk.meta = meta; sk.editId = editId; sk.cur = null; sk.redo = [];
+  sk.n0 = sk.strokes.length; sk.note0 = note; sk.moved = false;
   const cv = $('#skCanvas'); for (const c of [cv, skLayer, skTemp]){ c.width = src.width; c.height = src.height; }
-  skRebuildLayer(); skRedraw();
-  $('#skNote').value = note; $('#sketch').classList.add('open');
+  skView(1, 0, 0); skRebuildLayer(); skRedraw();
+  $('#skNote').value = note; $('#sketch').classList.add('open'); skFingerBtn();
 }
-function canvasPt(e){ const cv = $('#skCanvas'); const b = cv.getBoundingClientRect(); return [(e.clientX - b.left) * cv.width / b.width, (e.clientY - b.top) * cv.height / b.height]; }
+const skDirty = () => $('#sketch').classList.contains('open') && (sk.strokes.length !== sk.n0 || sk.moved || $('#skNote').value !== sk.note0);
+function skClose(force){ if (!force && skDirty() && !confirm('저장하지 않은 필기가 있어요. 저장하지 않고 닫을까요?')) return false; $('#sketch').classList.remove('open'); return true; }
+
+/* ---------- 보기(확대·이동) ---------- */
+// 캔버스 가운데를 기준으로 옮기고(t) 키운다(s). 그리는 좌표는 화면 위치에서 다시 계산하니 확대해도 어긋나지 않는다.
+sk.v = {s: 1, x: 0, y: 0};
+function skView(s, x, y){ sk.v = {s: Math.min(8, Math.max(0.4, s)), x, y}; const cv = $('#skCanvas'); cv.style.transform = sk.v.s === 1 && !x && !y ? '' : `translate(${sk.v.x}px, ${sk.v.y}px) scale(${sk.v.s})`; $('#skFit').hidden = !cv.style.transform; }
+function skZoomAt(px, py, s2){ const r = $('#skStage').getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2; const k = Math.min(8, Math.max(0.4, s2)) / sk.v.s; skView(sk.v.s * k, (px - cx) - k * ((px - cx) - sk.v.x), (py - cy) - k * ((py - cy) - sk.v.y)); }
+$('#skFit').onclick = () => skView(1, 0, 0);
+$('#skStage').addEventListener('wheel', e => { if (!$('#sketch').classList.contains('open')) return; e.preventDefault(); if (e.ctrlKey || e.metaKey) skZoomAt(e.clientX, e.clientY, sk.v.s * Math.exp(-e.deltaY * 0.01)); else skView(sk.v.s, sk.v.x - e.deltaX, sk.v.y - e.deltaY); }, {passive: false});
+
+/* ---------- 펜·손가락 ---------- */
+// 펜슬이 한 번이라도 보인 기기는 손가락으로 움직이고(확대·이동), 펜슬로만 그린다. 펜슬이 없는 기기는 손가락으로 그린다. 위 단추로 바꿀 수 있다.
+const skFingerDraws = () => { const v = store.get('lib.skFinger', null); return v === null ? !store.get('lib.penSeen', false) : v; };
+function skFingerBtn(){ const b = $('#skFinger'); b.classList.toggle('on', skFingerDraws()); b.title = skFingerDraws() ? '손가락으로 그려요 (누르면 손가락은 확대·이동만)' : '펜슬로만 그려요. 손가락은 확대·이동 (누르면 손가락으로도 그리기)'; }
+$('#skFinger').onclick = () => { store.set('lib.skFinger', !skFingerDraws()); skFingerBtn(); toast(skFingerDraws() ? '손가락으로도 그려요' : '펜슬로만 그려요. 손가락 두 개로 확대·이동, 두 손가락 톡 치면 되돌리기'); };
+const skTouch = new Map(); let skG = null, skSess = null;
+function canvasPt(e){ const cv = $('#skCanvas'); const b = cv.getBoundingClientRect(); const p = e.pointerType === 'pen' ? (e.pressure > 0 ? e.pressure : 0.5) : 0.5; return [(e.clientX - b.left) * cv.width / b.width, (e.clientY - b.top) * cv.height / b.height, p]; }
+const skGesture = () => { const t = [...skTouch.values()]; return {mx: t.reduce((q, p) => q + p.x, 0) / t.length, my: t.reduce((q, p) => q + p.y, 0) / t.length, d: t.length > 1 ? Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y) : 0}; };
+// 손가락 수가 바뀔 때마다 그때의 보기를 기준으로 다시 잡는다. 두 손가락 톡(짧게·거의 안 움직임)은 되돌리기
+function skGestureStart(){ if (!skSess) skSess = {t0: Date.now(), max: 0, move: 0}; skSess.max = Math.max(skSess.max, skTouch.size); skG = {...skGesture(), v: {...sk.v}}; }
+function skGestureMove(){
+  const g = skGesture(), r = $('#skStage').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, v0 = skG.v;
+  const s = skTouch.size > 1 && skG.d > 0 ? Math.min(8, Math.max(0.4, v0.s * g.d / skG.d)) : v0.s, k = s / v0.s;
+  skView(s, (skG.mx - cx) - k * ((skG.mx - cx) - v0.x) + (g.mx - skG.mx), (skG.my - cy) - k * ((skG.my - cy) - v0.y) + (g.my - skG.my));
+}
 $('#skCanvas').addEventListener('pointerdown', e => {
+  if (e.pointerType === 'pen'){ sk.penUntil = Date.now() + 1500; if (!store.get('lib.penSeen', false)){ store.set('lib.penSeen', true); skFingerBtn(); } }
+  if (e.pointerType === 'touch' && (!skFingerDraws() || Date.now() < (sk.penUntil || 0))){
+    e.preventDefault(); if (sk.cur || Date.now() < (sk.penUntil || 0)) return;   // 펜슬로 쓰는 동안 손바닥은 무시
+    try{ $('#skCanvas').setPointerCapture(e.pointerId); }catch{} skTouch.set(e.pointerId, {x: e.clientX, y: e.clientY}); skGestureStart(); return;
+  }
   if (!e.isPrimary || sk.cur) return;
-  e.preventDefault(); $('#skCanvas').setPointerCapture(e.pointerId);
+  e.preventDefault(); try{ $('#skCanvas').setPointerCapture(e.pointerId); }catch{}
   const cv = $('#skCanvas'); const k = cv.width / cv.getBoundingClientRect().width;
-  sk.cur = {tool: sk.tool, color: sk.color, size: sk.size * k * (sk.tool === 'hl' ? 3 : sk.tool === 'erase' ? 3 : 1), pts: [canvasPt(e)], pid: e.pointerId};
+  const pr = e.pointerType === 'pen' && sk.tool === 'pen';
+  sk.cur = {tool: sk.tool, color: sk.color, size: sk.size * k * (sk.tool === 'hl' ? 3 : sk.tool === 'erase' ? 3 : 1), pts: [canvasPt(e)], pid: e.pointerId, pr};
   sk.strokes.push(sk.cur); sk.redo = []; skRedraw();
 });
 $('#skCanvas').addEventListener('pointermove', e => {
+  if (skTouch.has(e.pointerId)){
+    const p = skTouch.get(e.pointerId); skSess.move += Math.abs(e.clientX - p.x) + Math.abs(e.clientY - p.y); p.x = e.clientX; p.y = e.clientY;
+    skGestureMove(); return;
+  }
   if (!sk.cur || e.pointerId !== sk.cur.pid) return;
-  for (const ev of (e.getCoalescedEvents?.() || [e])) sk.cur.pts.push(canvasPt(ev));
+  let last = sk.cur.pts.at(-1)[2];
+  for (const ev of (e.getCoalescedEvents?.() || [e])){ const pt = canvasPt(ev); if (sk.cur.pr){ pt[2] = last = last * 0.6 + pt[2] * 0.4; } sk.cur.pts.push(pt); }
   skRedraw();
 });
-const skEnd = e => { if (!sk.cur || e.pointerId !== sk.cur.pid) return; paintStroke(skLayer.getContext('2d'), sk.cur); sk.cur = null; skRedraw(); };
+const skEnd = e => {
+  if (skTouch.has(e.pointerId)){
+    skTouch.delete(e.pointerId);
+    if (skTouch.size){ skGestureStart(); return; }
+    if (skSess && skSess.max === 2 && Date.now() - skSess.t0 < 320 && skSess.move < 16) $('#skUndo').click();
+    skG = skSess = null; return;
+  }
+  if (!sk.cur || e.pointerId !== sk.cur.pid) return; paintStroke(skLayer.getContext('2d'), sk.cur); sk.cur = null; skRedraw();
+};
 $('#skCanvas').addEventListener('pointerup', skEnd);
 $('#skCanvas').addEventListener('pointercancel', skEnd);
-$$('#skTools button').forEach(b => b.onclick = () => { sk.tool = b.dataset.tool; $$('#skTools button').forEach(x => x.classList.toggle('on', x === b)); });
-$$('#skColors button').forEach(b => b.onclick = () => { sk.color = b.dataset.c; $$('#skColors button').forEach(x => x.classList.toggle('on', x === b)); if (sk.tool === 'erase') $('#skTools [data-tool=pen]').click(); });
-$('#skSize').oninput = () => sk.size = +$('#skSize').value;
+
+/* ---------- 도구·색·굵기 ---------- */
+const skPickTool = t => { sk.tool = t; $$('#skTools button').forEach(x => x.classList.toggle('on', x.dataset.tool === t)); };
+$$('#skTools button').forEach(b => b.onclick = () => skPickTool(b.dataset.tool));
+function skSetColor(c, remember){
+  sk.color = c; $$('#skColors button').forEach(x => x.classList.toggle('on', x.dataset.c.toLowerCase() === c.toLowerCase())); $('#skColorPick').value = c;
+  if (sk.tool === 'erase') skPickTool('pen');
+  if (remember && !$$('#skColors button').some(x => x.dataset.c.toLowerCase() === c.toLowerCase())){ const rc = [c, ...store.get('lib.skRecent', []).filter(x => x !== c)].slice(0, 6); store.set('lib.skRecent', rc); skRecent(); }
+}
+function skRecent(){ const box = $('#skRecent'); box.innerHTML = ''; for (const c of store.get('lib.skRecent', [])){ const b = document.createElement('button'); b.dataset.c = c; b.style.background = c; b.title = c; b.onclick = () => skSetColor(c); box.append(b); } }
+$$('#skColors button').forEach(b => b.onclick = () => skSetColor(b.dataset.c));
+$('#skColorPick').oninput = () => skSetColor($('#skColorPick').value);
+$('#skColorPick').onchange = () => skSetColor($('#skColorPick').value, true);
+$$('#skSizes button').forEach(b => b.onclick = () => { $('#skSize').value = b.dataset.z; $('#skSize').oninput(); });
+$('#skSize').oninput = () => { sk.size = +$('#skSize').value; $('#skSizeOut').textContent = sk.size; };
+skRecent();
 $('#skUndo').onclick = () => { const st = sk.strokes.pop(); if (st) (sk.redo ||= []).push(st); skRebuildLayer(); skRedraw(); };
 $('#skRedo').onclick = () => { const st = sk.redo?.pop(); if (st){ sk.strokes.push(st); skRebuildLayer(); skRedraw(); } };
 $('#skClear').onclick = () => { if (sk.strokes.length && !confirm('필기를 모두 지울까요?')) return; sk.redo = [...sk.strokes].reverse(); sk.strokes = []; skRebuildLayer(); skRedraw(); };
-$('#skCancel').onclick = () => $('#sketch').classList.remove('open');
+$('#skCancel').onclick = () => skClose();
+
+/* ---------- 굿노트·프로크리에이트로 보내고 받기 ---------- */
+// 지금 그린 그림을 파일로: 굿노트는 PDF(공유 시트 → 굿노트), 프로크리에이트는 PNG 또는 레이어가 있는 PSD(공유 시트 → 프로크리에이트)
+async function skFlat(){ await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); const c = document.createElement('canvas'); c.width = sk.img.width; c.height = sk.img.height; const g = c.getContext('2d'); g.drawImage(sk.img, 0, 0); g.drawImage(skLayer, 0, 0); return c; }
+const skMeta = () => ({workName: sk.meta?.workName || '그림', epName: sk.meta?.epName || '장면', note: $('#skNote').value});
+async function skToGoodnotes(){
+  const m = skMeta(); const flat = await skFlat(); const page = $('#gnPage')?.value || 'a4';
+  const pg = page === 'fit' ? flat : await scrapPage(m, flat);
+  const pdf = await canvasesToPdf([pg], `${safeName(m.workName)}_${safeName(m.epName)}.pdf`); if (pdf) shareFiles([pdf], '굿노트로', true);
+}
+async function skToProcreate(){
+  const m = skMeta(); const sc = sk.img; const ink = sk.strokes.length ? skLayer : null;
+  const f = await procreateFile(m, {scene: sc, ink}); shareFiles([f], '프로크리에이트로', true);
+}
+$('#skSend').onchange = async e => { const v = e.target.value; e.target.value = ''; ({gn: skToGoodnotes, pc: skToProcreate, file: async () => { const m = skMeta(); const flat = await skFlat(); const b = await new Promise(r => flat.toBlob(r, 'image/png')); shareFiles([new File([b], `${safeName(m.workName)}_${safeName(m.epName)}.png`, {type: 'image/png'})], '그림', true); }}[v])?.(); };
+// 바깥에서 그린 그림(굿노트·프로크리에이트에서 내보낸 PNG·JPG)을 이 노트의 바탕으로
+$('#skImportBtn').onclick = () => $('#skImportFile').click();
+$('#skImportFile').onchange = async () => {
+  const f = $('#skImportFile').files[0]; $('#skImportFile').value = ''; if (!f) return;
+  if (sk.strokes.length && !confirm('지금 필기는 사라지고 가져온 그림으로 바뀌어요. 계속할까요?')) return;
+  const im = await loadImgEl(f); const c = document.createElement('canvas'); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+  const meta = {...sk.meta, base: null}; const note = $('#skNote').value; await openSketch(c, meta, note, sk.editId, []); sk.moved = true; toast('가져온 그림 위에 이어서 그릴 수 있어요');
+};
+// 서재 옆 메모 칸에서 여러 장을 한꺼번에 장면 노트로
+async function importDrawings(files){
+  let n = 0;
+  for (const f of files){
+    try{
+      const im = await loadImgEl(f); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), thumb = await new Promise(r => tc.toBlob(r, 'image/jpeg', 0.8));
+      await idb.tx('readwrite', st => st.put({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), work: cur?.key || '', workName: cur?.name || '내 그림', epName: f.name.replace(/\.[^.]+$/, '') || '가져온 그림', where: {}, note: '', blob, thumb, base: null, strokes: null, t: Date.now()}), 'scraps'); n++;
+    }catch{}
+  }
+  if (n){ window.gdSoon?.(); renderScraps(); toast(`그림 ${n}장을 장면 노트로 가져왔어요`); } else toast('그림을 읽지 못했어요 (PNG·JPG만 가져와요)');
+}
+$('#noteImport').onclick = () => $('#noteImportFile').click();
+$('#noteImportFile').onchange = () => { const fs = [...$('#noteImportFile').files]; $('#noteImportFile').value = ''; if (fs.length) importDrawings(fs); };
 async function saveSketch(){
   const cv = $('#skCanvas');
   const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.88));
@@ -3083,6 +3248,7 @@ async function gdSync(interactive = false){
     localStorage.setItem('nv.gd.last', JSON.stringify(Date.now()));
     gdStatus(`마지막 동기화 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · 원고 올림 ${tx.up} · 받음 ${tx.down}${tx.conflict ? ` · 겹침 ${tx.conflict}` : ''} · 장면 올림 ${up} · 받음 ${down}`);
     applySettingsFromStore(); renderLib(); renderNotes(); renderScraps(); renderNaiHist();
+    window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js)
   }catch(e){
     const needLogin = e.message === 'auth' || /popup|access_denied|interaction|timeout/.test(e.message);
     gdStatus(e.message === 'setup' ? '설정이 필요해요' : needLogin ? '구글 로그인이 필요해요. 설정 탭에서 "연결"을 눌러 주세요' : '동기화하지 못했어요 (' + e.message + ')');
@@ -3230,7 +3396,7 @@ $('#wInOther').hidden = !store.get('wIn.other', '');
 $('#noteExport').onchange = e => { const v = e.target.value; e.target.value = ''; ({gn: () => $('#noteGN').click(), mood: () => $('#noteMood').click(), md: () => $('#noteMd').click(), claude: () => $('#noteClaude').click()})[v]?.(); };
 
 // 장면 노트 머리 단추
-$('#skX').onclick = () => $('#sketch').classList.remove('open');
+$('#skX').onclick = () => skClose();
 $('#skSave2').onclick = saveSketch;
 
 // 노벨AI → 그림 → 다시 뷰어로
@@ -3359,10 +3525,20 @@ function addIdea(text, from){
 $('#ideaAdd').onclick = () => addIdea();
 $('#ideaIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); addIdea(); } });
 $$('#ideaQuick [data-t]').forEach(b => b.onclick = () => { const el = $('#ideaIn'); const tag = '#' + b.dataset.t; if (!el.value.includes(tag)) el.value = (el.value.trim() + ' ' + tag).trim() + ' '; el.focus(); });
+// 새 종이: 흰 종이·격자·줄 노트·점 노트, 세로·가로·정사각
+const PAPER = {tall: [1240, 1754], wide: [1754, 1240], square: [1500, 1500]};
+function paperCanvas(kind, size){
+  const [w, h] = PAPER[size] || PAPER.tall; const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d8dde6'; g.fillStyle = '#c4cad6'; g.lineWidth = 1.5; const st = 56;
+  if (kind === 'grid'){ for (let x = st; x < w; x += st){ g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = st; y < h; y += st){ g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); } }
+  else if (kind === 'lined'){ for (let y = st * 1.5; y < h; y += st){ g.beginPath(); g.moveTo(60, y); g.lineTo(w - 60, y); g.stroke(); } }
+  else if (kind === 'dots'){ for (let x = st; x < w; x += st) for (let y = st; y < h; y += st){ g.beginPath(); g.arc(x, y, 2.4, 0, 7); g.fill(); } }
+  return c;
+}
+$('#ideaPaper').value = store.get('lib.paper', 'plain'); $('#ideaSize').value = store.get('lib.paperSize', 'tall');
 $('#ideaDraw').onclick = () => {
-  const c = document.createElement('canvas'); c.width = 1240; c.height = 1650;
-  const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
-  openSketch(c, {work: cur?.key || '', workName: '자유 그림', epName: new Date().toLocaleDateString('ko-KR'), where: {}});
+  store.set('lib.paper', $('#ideaPaper').value); store.set('lib.paperSize', $('#ideaSize').value);
+  openSketch(paperCanvas($('#ideaPaper').value, $('#ideaSize').value), {work: cur?.key || '', workName: '자유 그림', epName: new Date().toLocaleDateString('ko-KR'), where: {}});
 };
 /* ================= 원고 저장소 (IndexedDB 'texts') ================= */
 // 원고는 용량이 넉넉한 IndexedDB에 둔다. 메모리에 한 번 읽어 두고, 고치면 바로 기기에 쓴다.
@@ -4816,6 +4992,244 @@ setTimeout(loadAllSources, 600);
 /* 한글(hwpx) 빈 문서 틀 — python-hwpx 6.9.0(Copyright 2025-2026 airmang, Apache License 2.0)의 Skeleton.hwpx를 그대로 쓴다.
    미리보기 그림만 뺐다. 저작권·라이선스: THIRD_PARTY_NOTICES.md */
 const HWPX_SKELETON = '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';
+/* ================= 작품 동기화: 이 기기의 작품 파일을 구글 드라이브(앱 전용 칸)에 올려 다른 기기에서도 보게 한다 ================= */
+// 올리는 쪽: 불러온 작품을 파일 단위로 올린다. 웹툰·만화 회차의 이미지는 회차마다 묶어서(압축 없이) 한 파일로 올려 요청 수를 줄인다.
+// 받는 쪽: 목록(library.json)과 작품별 목록(LW-…)만 먼저 받고, 파일은 열 때 그 화만 받아 기기에 남긴다.
+// 이 기기에 원본(내 컴퓨터 폴더·불러온 파일)이 있는 작품은 원본을 쓴다. 올릴지 여부·제외 목록은 기기마다 따로 저장한다.
+const LS = {busy: false, cancel: false, files: null, idx: null, wj: new Map(), state: new Map(), inflight: new Map(), zips: new Map(), asked: false, timer: null};
+const h53 = (str, seed = 0) => {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (let i = 0; i < str.length; i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+};
+const libBytes = n => n >= 1073741824 ? (n / 1073741824).toFixed(1) + 'GB' : n >= 1048576 ? Math.round(n / 1048576) + 'MB' : Math.max(1, Math.round(n / 1024)) + 'KB';
+const IMG_MIME = {jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', bmp: 'image/bmp'};
+const workFiles = w => [w.cover, w.info, ...w.eps.flatMap(e => e.file ? [e.file] : e.files || [])].filter(Boolean);
+// 올리는 동안 원본이 바뀌어도 한 파일이 어긋나지 않게, 100MB 아래는 메모리로 복사해서 올린다
+const libSnap = async b => b.size <= 100e6 ? new Blob([await b.arrayBuffer()], {type: b.type}) : b;
+const libMine = w => !workFiles(w).some(f => f.remote);   // 드라이브 폴더·받아 온 작품은 올리지 않는다
+const libSize = w => workFiles(w).reduce((s, f) => s + (f.size || 0), 0);
+function libStatus(t){ LS.status = t; const el = $('#libSyncStat'); if (el) el.textContent = t; }
+
+// 작품 하나를 올릴 조각으로 나눈다: 파일 하나, 또는 같은 회차 이미지 묶음(약 40MB·120장씩)
+function libItems(w){
+  const out = [];
+  const mt = f => f.isLazy ? (f.lastModified || 0) : 0;   // 기기에 저장해 둔 파일은 다시 열 때마다 수정 시각이 바뀌어 비교에서 뺀다
+  const one = f => out.push({id: relPath(f), type: 'file', rels: [relPath(f)], size: f.size || 0, mt: mt(f), blob: async () => libSnap(await realBlob(f))});
+  if (w.cover) one(w.cover); if (w.info) one(w.info);
+  for (const e of w.eps){
+    if (e.file){ one(e.file); continue; }
+    let part = [], bytes = 0;
+    const flush = () => { if (!part.length) return; const fs = part; out.push({id: 'pack:' + relPath(fs[0]), type: 'pack', rels: fs.map(relPath), size: fs.reduce((s, f) => s + (f.size || 0), 0), mt: Math.max(...fs.map(mt)), blob: () => libPack(fs)}); part = []; bytes = 0; };
+    for (const f of e.files || []){ part.push(f); bytes += f.size || 0; if (bytes > 40e6 || part.length >= 120) flush(); }
+    flush();
+  }
+  return out;
+}
+const packEntry = (rel, i) => String(i).padStart(4, '0') + '_' + rel.split('/').pop();
+async function libPack(fs){
+  const zip = new JSZip(); let i = 0;
+  for (const f of fs) zip.file(packEntry(relPath(f), i++), await (await realBlob(f)).arrayBuffer(), {binary: true});
+  return await zip.generateAsync({type: 'blob', compression: 'STORE'});
+}
+
+/* ---------- 올리기 ---------- */
+async function libIdxSet(files, key, entry){
+  const cur = (await gdGet(files, 'library.json').catch(() => null)) || {v: 1, works: {}};
+  if (entry) cur.works[key] = entry; else delete cur.works[key];
+  await gdPut(files, 'library.json', new Blob([JSON.stringify(cur)], {type: 'application/json'}));
+  LS.idx = cur; return cur;
+}
+async function libRetry(fn){ let err; for (let i = 0; i < 3; i++){ try{ return await fn(); }catch(e){ err = e; if (e.message === 'auth' || e.message === 'scope') throw e; await new Promise(r => setTimeout(r, 1500 * (i + 1))); } } throw err; }
+async function libPushWork(files, w, idx){
+  const items = libItems(w); const sig = h53(items.map(i => `${i.id}:${i.size}:${i.mt}`).join('|'));
+  if (idx.works[w.key]?.sig === sig){ LS.state.set(w.key, 'done'); return; }
+  const fname = 'LW-' + h53(w.key);
+  let wj = LS.wj.get(w.key) || (idx.works[w.key] && files.has(fname) ? await gdGet(files, fname).catch(() => null) : null) || {v: 1, key: w.key, name: w.name, kind: w.kind, items: []};
+  const have = new Map(wj.items.map(i => [i.id, i]));
+  const todo = items.filter(it => { const o = have.get(it.id); return !(o && o.size === it.size && o.mt === it.mt && files.has(o.f)); });
+  const save = async complete => {
+    wj.t = Date.now(); wj.name = w.name; wj.kind = w.kind; wj.items = items.map(i => have.get(i.id)).filter(Boolean);
+    await libRetry(() => gdPut(files, fname, new Blob([JSON.stringify(wj)], {type: 'application/json'})));
+    const entry = {file: fname, t: wj.t, n: w.eps.length, bytes: wj.items.reduce((s, i) => s + i.size, 0), sig: complete ? sig : null, name: w.name};
+    idx.works[w.key] = entry; await libRetry(() => libIdxSet(files, w.key, entry)); LS.wj.set(w.key, wj);
+  };
+  LS.state.set(w.key, 'up'); let done = 0, since = 0, stop = null; const left = todo.reduce((s, i) => s + i.size, 0); let sent = 0;
+  const q = [...todo];
+  await Promise.all(Array.from({length: Math.min(3, q.length)}, async () => {
+    while (q.length && !LS.cancel && !stop){
+      const it = q.shift(); const f = 'LF-' + h53(w.key + '|' + it.id);
+      try{
+        const blob = await it.blob(); await libRetry(() => gdPut(files, f, blob));
+        have.set(it.id, {id: it.id, type: it.type, f, fid: files.get(f)?.id, size: it.size, mt: it.mt, rels: it.rels});
+        done++; since++; sent += it.size; libStatus(`작품 올리는 중 · ${w.name} ${done}/${todo.length} · ${libBytes(Math.max(0, left - sent))} 남음`);
+      }catch(e){ stop = e; }
+    }
+  }));
+  if (stop){ LS.state.set(w.key, 'err'); await save(false).catch(() => {}); throw stop; }
+  await save(!LS.cancel); LS.state.set(w.key, LS.cancel ? 'wait' : 'done');
+}
+async function libPush(files){
+  const idx = (await gdGet(files, 'library.json').catch(() => null)) || {v: 1, works: {}}; LS.idx = idx;
+  const ex = new Set(store.get('lib.exclude', []));
+  const list = works.filter(w => libMine(w) && !ex.has(w.key));
+  for (const w of list) if (!LS.state.has(w.key) || LS.state.get(w.key) !== 'done') LS.state.set(w.key, 'wait');
+  for (const w of list){ if (LS.cancel) break; await libPushWork(files, w, idx); }
+}
+
+/* ---------- 받기 ---------- */
+function libRefetch(name){ return gdList().then(m => { LS.files = m; return m.get(name)?.id; }); }
+async function libBlob(it){
+  try{ const c = await idb.tx('readonly', s => s.get('LF:' + it.f), 'dcache'); if (c && c.mtime === it.mt && c.size === it.size) return c.blob; }catch{}
+  if (LS.inflight.has(it.f)) return LS.inflight.get(it.f);
+  const p = (async () => {
+    let r; try{ r = await gdFetch(`${GD_API}/files/${it.fid}?alt=media`); }
+    catch(e){ if (!/404/.test(e.message)) throw e; const id = await libRefetch(it.f); if (!id) throw new Error('클라우드에 파일이 없어요'); r = await gdFetch(`${GD_API}/files/${id}?alt=media`); }
+    const b = await r.blob();
+    try{ await idb.tx('readwrite', s => s.put({id: 'LF:' + it.f, blob: b, mtime: it.mt, size: it.size}), 'dcache'); }catch{}
+    return b;
+  })().finally(() => LS.inflight.delete(it.f));
+  LS.inflight.set(it.f, p); return p;
+}
+async function libZip(it){
+  if (LS.zips.has(it.f)) return LS.zips.get(it.f);
+  const z = await JSZip.loadAsync(await libBlob(it)); LS.zips.set(it.f, z); while (LS.zips.size > 3) LS.zips.delete(LS.zips.keys().next().value); return z;
+}
+function libLazy(wj){
+  const out = [];
+  for (const it of wj.items){
+    if (it.type === 'file'){ out.push(Object.assign(new LazyFile({name: it.rels[0].split('/').pop(), size: it.size, rel: it.rels[0], mtime: it.mt, get: () => libBlob(it)}), {remote: true})); continue; }
+    it.rels.forEach((rel, i) => out.push(Object.assign(new LazyFile({name: rel.split('/').pop(), size: 0, rel, mtime: it.mt, get: async () => {
+      const f = (await libZip(it)).file(packEntry(rel, i)); if (!f) throw new Error('묶음 안에 없어요');
+      return new Blob([await f.async('arraybuffer')], {type: IMG_MIME[rel.split('.').pop().toLowerCase()] || ''});
+    }}), {remote: true})));
+  }
+  return out;
+}
+async function libWork(e, files){
+  try{ const c = await idb.tx('readonly', s => s.get('LW:' + e.file), 'dcache'); if (c && c.t === e.t) return c.wj; }catch{}
+  if (!files) return null;
+  const wj = await gdGet(files, e.file).catch(() => null); if (!wj) return null;
+  try{ await idb.tx('readwrite', s => s.put({id: 'LW:' + e.file, wj, t: e.t}), 'dcache'); }catch{}
+  return wj;
+}
+async function libBuild(idx, files){
+  const add = [], mark = [];
+  for (const [key, e] of Object.entries(idx.works || {})){
+    const have = works.find(w => w.key === key);
+    if (have && (!have.pulledT || have.pulledT >= e.t)) continue;   // 이 기기에 원본이 있거나 이미 최신이면 그대로
+    const wj = await libWork(e, files); if (!wj?.items?.length) continue;
+    add.push(...libLazy(wj)); mark.push([key, e.t]);
+  }
+  if (add.length){ await addFiles(add, {persist: false, quiet: true, fromLib: true}); for (const [k, t] of mark){ const w = works.find(x => x.key === k); if (w) w.pulledT = t; } }
+  // 클라우드에서 지워진 작품은 받아 둔 목록에서도 뺀다
+  const gone = works.filter(w => w.pulledT && !idx.works?.[w.key]); if (gone.length){ works = works.filter(w => !gone.includes(w)); renderLib(); }
+}
+async function libPull(files){
+  const idx = await gdGet(files, 'library.json').catch(() => null); if (!idx) return;
+  LS.idx = idx; try{ await idb.tx('readwrite', s => s.put({id: '__libidx', idx, t: Date.now()}), 'dcache'); }catch{}
+  await libBuild(idx, files);
+}
+async function libBuildCached(){ try{ const c = await idb.tx('readonly', s => s.get('__libidx'), 'dcache'); if (c?.idx){ LS.idx = c.idx; await libBuild(c.idx, null); renderLibSync(); } }catch{} }
+
+/* ---------- 돌리기 ---------- */
+async function libRun(files){
+  if (LS.busy || !gdReady()) return; LS.busy = true; LS.cancel = false; renderLibSync();
+  try{
+    files = files || await gdList(); LS.files = files;
+    await libPull(files);
+    if (store.get('lib.sync', false)) await libPush(files);
+    const n = Object.keys(LS.idx?.works || {}).length;
+    libStatus(LS.cancel ? '올리기를 멈췄어요' : `작품 ${n}개가 클라우드에 있어요 · ${new Date().toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'})}`);
+  }catch(e){
+    libStatus(/403/.test(e.message) ? '클라우드 저장 공간이 부족하거나 권한이 없어요 (구글 드라이브 용량을 확인해 주세요)' : /auth|scope|setup/.test(e.message) ? '구글 로그인이 필요해요. 설정 탭에서 연결을 눌러 주세요' : '작품 동기화가 멈췄어요 (' + e.message + ')');
+  }finally{ LS.busy = false; renderLibSync(); }
+}
+window.libAfterSync = files => { libRun(files); if (DESKTOP && store.get('lib.sync', null) === null && !LS.asked && works.some(libMine)){ LS.asked = true; setTimeout(() => libEnable(), 800); } };
+window.libSoon = () => { if (!gdReady() || !store.get('lib.sync', false)) return; clearTimeout(LS.timer); LS.timer = setTimeout(() => libRun(), 20000); };
+
+/* ---------- 화면 ---------- */
+async function libQuota(){ try{ const q = (await (await gdFetch(`${GD_API}/about?fields=storageQuota`)).json()).storageQuota; return q?.limit ? {free: +q.limit - +q.usage} : null; }catch{ return null; } }
+async function libEnable(){
+  const ex = new Set(store.get('lib.exclude', [])); const mine = works.filter(w => libMine(w) && !ex.has(w.key)); const total = mine.reduce((s, w) => s + libSize(w), 0);
+  if (!gdReady()) { toast('먼저 설정 탭에서 구글 드라이브 동기화를 연결해 주세요'); $('#libSyncOn').checked = false; return false; }
+  if (!mine.length){ store.set('lib.sync', true); toast('올릴 작품이 생기면 저절로 올려요'); renderLibSync(); return true; }
+  const q = await libQuota();
+  const ok = confirm(`작품 ${mine.length}개(${libBytes(total)})를 구글 드라이브의 앱 전용 칸에 올려요.\n다른 기기에서도 같은 작품이 보이고, 기기마다 열 때 그 화만 받아요.` + (q ? `\n\n드라이브 남은 공간: ${libBytes(Math.max(0, q.free))}` + (q.free < total ? '\n⚠ 남은 공간이 올릴 용량보다 적어요. 일부 작품만 골라 올리는 편이 좋아요.' : '') : '') + '\n\n올릴까요? (용량이 크면 몇 시간 걸려요. 컴퓨터를 켜 둔 채로 두면 이어서 올라가요)');
+  store.set('lib.sync', ok); $('#libSyncOn').checked = ok; renderLibSync(); if (ok) libRun(); return ok;
+}
+function renderLibSync(){
+  const on = $('#libSyncOn'); if (!on) return; on.checked = !!store.get('lib.sync', false);
+  $('#libSyncStop').hidden = !LS.busy; $('#libSyncNow').disabled = LS.busy;
+  if (!LS.status && !gdReady()) libStatus('설정 탭에서 구글 드라이브 동기화를 먼저 연결해 주세요');
+  const ex = new Set(store.get('lib.exclude', [])); const idx = LS.idx?.works || {}; const box = $('#libSyncList'); box.innerHTML = '';
+  const row = (w, mine) => {
+    const e = idx[w.key]; const st = LS.state.get(w.key); const d = document.createElement('div'); d.className = 'lsw';
+    const label = mine ? (e?.sig ? '올림' : st === 'up' ? '올리는 중' : e ? '일부 올림' : on.checked && !ex.has(w.key) ? '대기' : '올리지 않음') : '클라우드에서 받는 작품';
+    d.innerHTML = `${mine ? '<input type="checkbox">' : ''}<span class="n"></span><span class="s"></span><span class="b"></span>${e ? '<button data-a="del">클라우드에서 지우기</button>' : ''}`;
+    d.querySelector('.n').textContent = w.name; d.querySelector('.s').textContent = (mine ? libBytes(libSize(w)) + ' · ' : e ? libBytes(e.bytes || 0) + ' · ' : '') + label;
+    const cb = d.querySelector('input'); if (cb){ cb.checked = !ex.has(w.key); cb.onchange = () => { const s = new Set(store.get('lib.exclude', [])); cb.checked ? s.delete(w.key) : s.add(w.key); store.set('lib.exclude', [...s]); renderLibSync(); if (cb.checked) libSoon(); }; }
+    const del = d.querySelector('[data-a=del]'); if (del) del.onclick = () => libCloudDelete(w.key, w.name, mine);
+    box.append(d);
+  };
+  for (const w of works.filter(libMine)) row(w, true);
+  for (const w of works.filter(x => x.pulledT)) row(w, false);
+  if (!box.children.length) box.innerHTML = '<div class="hint">불러온 작품이 없어요.</div>';
+}
+async function libCloudDelete(key, name, mine){
+  if (LS.busy) return toast('지금 동기화 중이라 끝난 뒤에 지울 수 있어요');
+  if (!confirm(`'${name}'을 구글 드라이브(클라우드)에서 지울까요?\n이 기기의 원본 파일은 그대로 두고, 다른 기기의 목록에서 빠져요.` + (mine ? '\n다시 올리지 않도록 이 기기에서는 제외해 둘게요.' : ''))) return;
+  try{
+    const files = await gdList(); const idx = (await gdGet(files, 'library.json')) || {works: {}}; const e = idx.works[key];
+    if (e){ const wj = await gdGet(files, e.file).catch(() => null); for (const it of wj?.items || []) await gdDel(files, it.f); await gdDel(files, e.file); await libIdxSet(files, key, null); LS.wj.delete(key); }
+    if (mine){ const s = new Set(store.get('lib.exclude', [])); s.add(key); store.set('lib.exclude', [...s]); }
+    works = works.filter(w => !(w.pulledT && w.key === key)); renderLib(); toast('클라우드에서 지웠어요');
+  }catch(e){ toast('지우지 못했어요 (' + e.message + ')'); }
+  renderLibSync();
+}
+$('#libSyncOn').onchange = () => { if ($('#libSyncOn').checked) libEnable(); else { store.set('lib.sync', false); LS.cancel = true; renderLibSync(); } };
+$('#libSyncNow').onclick = () => { if (!gdReady()) return toast('먼저 설정 탭에서 구글 드라이브 동기화를 연결해 주세요'); libRun(); };
+$('#libSyncStop').onclick = () => { LS.cancel = true; libStatus('멈추는 중… (올리던 파일이 끝나면 멈춰요)'); };
+$('#btnLink').addEventListener('click', renderLibSync);
+setTimeout(libBuildCached, 700);
+/* ================= PSD(포토샵) 파일 만들기: 프로크리에이트가 레이어째 열 수 있게 ================= */
+// 8비트 RGB, 압축 없음. 레이어마다 RGBA, 맨 뒤에 합쳐진 그림(미리보기용)을 붙인다.
+function buildPsd(W, H, layers, flat){
+  const out = [];
+  const u16 = n => { const b = new Uint8Array(2); new DataView(b.buffer).setUint16(0, n); return b; };
+  const i16 = n => { const b = new Uint8Array(2); new DataView(b.buffer).setInt16(0, n); return b; };
+  const u32 = n => { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n); return b; };
+  const i32 = n => { const b = new Uint8Array(4); new DataView(b.buffer).setInt32(0, n); return b; };
+  const asc = s => new TextEncoder().encode(s);
+  const cat = list => { const n = list.reduce((s, a) => s + a.length, 0); const o = new Uint8Array(n); let p = 0; for (const a of list){ o.set(a, p); p += a.length; } return o; };
+  // 머리말: 시그니처, 버전 1, 채널 3(RGB), 높이, 너비, 8비트, 색 모드 3(RGB)
+  out.push(asc('8BPS'), u16(1), new Uint8Array(6), u16(3), u32(H), u32(W), u16(8), u16(3));
+  out.push(u32(0), u32(0));   // 색 모드 자료, 이미지 자원: 없음
+  // 레이어 기록
+  const recs = [], datas = [];
+  for (const L of layers){
+    const w = L.canvas.width, h = L.canvas.height; const px = L.canvas.getContext('2d').getImageData(0, 0, w, h).data;
+    const planes = [0, 1, 2, 3].map(() => new Uint8Array(w * h));
+    for (let i = 0, n = w * h; i < n; i++){ planes[0][i] = px[i*4 + 3]; planes[1][i] = px[i*4]; planes[2][i] = px[i*4 + 1]; planes[3][i] = px[i*4 + 2]; }   // 투명도, R, G, B 순
+    const ids = [-1, 0, 1, 2];
+    const asciiName = /^[\x20-\x7e]+$/.test(L.name) ? L.name : 'Layer';
+    let pas = cat([new Uint8Array([Math.min(255, asciiName.length)]), asc(asciiName.slice(0, 255))]); while (pas.length % 4) pas = cat([pas, new Uint8Array(1)]);
+    const uni = cat([u32(L.name.length), ...[...L.name].flatMap(ch => { const c = ch.charCodeAt(0); return [u16(c)]; })]);
+    const luni = cat([asc('8BIM'), asc('luni'), u32(uni.length + (uni.length % 2)), uni, new Uint8Array(uni.length % 2)]);
+    const extra = cat([u32(0), u32(0), pas, luni]);
+    recs.push(cat([i32(L.y), i32(L.x), i32(L.y + h), i32(L.x + w), u16(4), ...ids.map(id => cat([i16(id), u32(2 + w * h)])), asc('8BIM'), asc('norm'), new Uint8Array([255, 0, 0, 0]), u32(extra.length), extra]));
+    for (const p of planes) datas.push(u16(0), p);   // 압축 없음
+  }
+  let info = cat([i16(layers.length), ...recs, ...datas]); if (info.length % 2) info = cat([info, new Uint8Array(1)]);
+  out.push(u32(4 + info.length + 4), u32(info.length), info, u32(0));
+  // 합쳐진 그림
+  const fp = flat.getContext('2d').getImageData(0, 0, W, H).data; const n = W * H; const rgb = new Uint8Array(n * 3);
+  for (let i = 0; i < n; i++){ rgb[i] = fp[i*4]; rgb[n + i] = fp[i*4 + 1]; rgb[2*n + i] = fp[i*4 + 2]; }
+  out.push(u16(0), rgb);
+  return new Blob(out, {type: 'image/vnd.adobe.photoshop'});
+}
 </script>
 </body>
 </html>

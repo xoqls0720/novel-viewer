@@ -34,7 +34,7 @@ async function expandZips(list){
   return out;
 }
 
-async function addFiles(fileList, {persist = true, quiet = false} = {}){
+async function addFiles(fileList, {persist = true, quiet = false, fromLib = false} = {}){
   fileList = await expandZips(fileList);
   const own = fileList.filter(f => !f.isLazy);   // 연결한 폴더의 파일은 그 자리에서 읽으니 따로 저장하지 않는다
   if (persist && $('#keepLocal').checked && own.length){
@@ -85,6 +85,7 @@ async function addFiles(fileList, {persist = true, quiet = false} = {}){
   }
   works.sort((a,b)=>natural(a.top+a.name, b.top+b.name));
   renderLib(); if (!quiet) toast(`작품 ${added}개를 불러왔어요`);
+  if (!fromLib) window.libSoon?.();   // 새로 불러온 작품은 잠시 뒤 클라우드에도 올린다(켜 둔 경우)
 }
 
 // 폴더 이름을 한국어 분류로

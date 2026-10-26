@@ -22,19 +22,22 @@ async function getScraps(scope = $('#noteScope').value){
 }
 // 굿노트용: 장면 위, 손글씨 줄 칸 아래. 한글 글꼴 문제를 피하려고 쪽마다 그림으로 그려 PDF에 넣는다
 function wrapText(g, text, maxW){ const out = []; for (const para of String(text).split('\n')){ let line = ''; for (const ch of para){ if (g.measureText(line + ch).width > maxW){ out.push(line); line = ch; } else line += ch; } out.push(line); } return out; }
+const NW = 1240, NH = 1754, NM = 90;
+const notePage = () => { const c = document.createElement('canvas'); c.width = NW; c.height = NH; const g = c.getContext('2d'); g.fillStyle = '#fffefb'; g.fillRect(0,0,NW,NH); return [c, g]; };
+const noteRuled = (g, y0) => { g.strokeStyle = '#d9d4c7'; g.lineWidth = 2; for (let y = y0; y < NH - NM; y += 56){ g.beginPath(); g.moveTo(NM, y); g.lineTo(NW - NM, y); g.stroke(); } };
+const noteHead = (g, t, sub) => { g.fillStyle = '#a8834a'; g.font = '600 24px "Pretendard Variable", sans-serif'; g.fillText(sub, NM, NM); g.fillStyle = '#1c1b19'; g.font = '700 38px "Gowun Batang", serif'; g.fillText(t, NM, NM + 52); };
+// 장면(또는 그림) 한 장을 굿노트용 쪽으로: 위에 그림, 가운데 내 메모, 아래 손글씨 줄 칸
+async function scrapPage(x, im){
+  const [c, g] = notePage(); noteHead(g, x.epName, x.workName);
+  im = im || await loadImgEl(x.blob); const maxW = NW - NM*2, maxH = NH * 0.5; const k = Math.min(maxW / im.width, maxH / im.height);
+  const w = im.width * k, h = im.height * k; g.drawImage(im, NM + (maxW - w)/2, NM + 90, w, h);
+  let y = NM + 90 + h + 50;
+  if (x.note){ g.fillStyle = '#3b3833'; g.font = '28px "Noto Serif KR", serif'; for (const l of wrapText(g, x.note, maxW)){ g.fillText(l, NM, y); y += 44; } y += 20; }
+  noteRuled(g, Math.max(y, NM + 90 + h + 60)); return c;
+}
 async function notePages(){
-  const W = 1240, H = 1754, M = 90; const pages = [];
-  const page = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fffefb'; g.fillRect(0,0,W,H); return [c, g]; };
-  const ruled = (g, y0) => { g.strokeStyle = '#d9d4c7'; g.lineWidth = 2; for (let y = y0; y < H - M; y += 56){ g.beginPath(); g.moveTo(M, y); g.lineTo(W - M, y); g.stroke(); } };
-  const head = (g, t, sub) => { g.fillStyle = '#a8834a'; g.font = '600 24px "Pretendard Variable", sans-serif'; g.fillText(sub, M, M); g.fillStyle = '#1c1b19'; g.font = '700 38px "Gowun Batang", serif'; g.fillText(t, M, M + 52); };
-  for (const x of await getScraps()){
-    const [c, g] = page(); head(g, x.epName, x.workName);
-    const im = await loadImgEl(x.blob); const maxW = W - M*2, maxH = H * 0.5; const k = Math.min(maxW / im.width, maxH / im.height);
-    const w = im.width * k, h = im.height * k; g.drawImage(im, M + (maxW - w)/2, M + 90, w, h);
-    let y = M + 90 + h + 50;
-    if (x.note){ g.fillStyle = '#3b3833'; g.font = '28px "Noto Serif KR", serif'; for (const l of wrapText(g, x.note, maxW)){ g.fillText(l, M, y); y += 44; } y += 20; }
-    ruled(g, Math.max(y, M + 90 + h + 60)); pages.push(c);
-  }
+  const W = NW, H = NH, M = NM; const pages = []; const page = notePage, head = noteHead;
+  for (const x of await getScraps()) pages.push(await scrapPage(x));
   if (cur){
     const notes = getNotes().sort(noteSort);
     if (notes.length){
@@ -62,6 +65,12 @@ async function loadJsPDF(){
   await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; sc.onload = res; sc.onerror = rej; document.head.append(sc); });
   return (jsPDFLib = window.jspdf.jsPDF);
 }
+async function canvasesToPdf(pages, name){
+  let J; try{ J = await loadJsPDF(); }catch{ toast('PDF 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요'); return null; }
+  const doc = new J({unit: 'px', format: [pages[0].width, pages[0].height], hotfixes: ['px_scaling']});
+  pages.forEach((c, i) => { if (i) doc.addPage([c.width, c.height]); doc.addImage(c.toDataURL('image/jpeg', 0.88), 'JPEG', 0, 0, c.width, c.height); });
+  return new File([doc.output('blob')], name, {type: 'application/pdf'});
+}
 async function exportNotesPDF(){
   const pages = await notePages(); if (!pages.length) return toast('담은 장면이나 형광펜이 없어요');
   toast('PDF 만드는 중…');
@@ -72,13 +81,24 @@ async function exportNotesPDF(){
   await shareFiles([new File([doc.output('blob')], name, {type:'application/pdf'})], name);
 }
 // 프로크리에이트용: 아이패드 화면 크기 캔버스 가운데에 장면을 놓은 PNG
-async function procreateFile(x){
-  const W = 2048, H = 2732; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
-  g.fillStyle = '#ffffff'; g.fillRect(0,0,W,H);
-  const im = await loadImgEl(x.base || x.blob); const k = Math.min((W - 160) / im.width, (H - 160) / im.height); const w = im.width * k, h = im.height * k;
-  g.drawImage(im, (W - w)/2, (H - h)/2, w, h);
+const PC_SIZE = {tall: [2048, 2732], wide: [2732, 2048], square: [2732, 2732]};
+const pcDims = () => PC_SIZE[$('#pcSize')?.value] || PC_SIZE.tall;
+// 장면 그림(scene)과 필기(ink, 없을 수 있음)를 캔버스 가운데에 놓는다. 'psd'면 장면·필기를 따로 둔 레이어 파일, 아니면 한 장짜리 PNG
+async function procreateFile(x, {scene, ink} = {}){
+  const [W, H] = pcDims(); const fmt = $('#pcFormat')?.value || 'png';
+  scene = scene || await loadImgEl(x.base || x.blob);
+  const k = Math.min((W - 160) / scene.width, (H - 160) / scene.height); const w = Math.round(scene.width * k), h = Math.round(scene.height * k), ox = Math.round((W - w) / 2), oy = Math.round((H - h) / 2);
+  const name = `${safeName(x.workName)}_${safeName(x.epName)}_캔버스`;
+  const layer = src => { const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(src, 0, 0, w, h); return c; };
+  if (fmt === 'psd'){
+    const layers = [{name: '장면', x: ox, y: oy, canvas: layer(scene)}]; if (ink) layers.push({name: '필기', x: ox, y: oy, canvas: layer(ink)});
+    const flat = document.createElement('canvas'); flat.width = W; flat.height = H; const fg = flat.getContext('2d'); fg.fillStyle = '#fff'; fg.fillRect(0, 0, W, H); for (const l of layers) fg.drawImage(l.canvas, l.x, l.y);
+    return new File([buildPsd(W, H, layers, flat)], name + '.psd', {type: 'image/vnd.adobe.photoshop'});
+  }
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+  g.drawImage(scene, ox, oy, w, h); if (ink) g.drawImage(ink, ox, oy, w, h);
   const blob = await new Promise(res => c.toBlob(res, 'image/png'));
-  return new File([blob], `${safeName(x.workName)}_${safeName(x.epName)}_캔버스.png`, {type:'image/png'});
+  return new File([blob], name + '.png', {type: 'image/png'});
 }
 async function moodboard(){
   const xs = await getScraps(); if (!xs.length) return toast('담은 장면이 없어요');
@@ -159,9 +179,19 @@ function strokePath(g, pts){
   for (let i = 1; i < pts.length; i++){ const [x0,y0] = pts[i-1], [x1,y1] = pts[i]; g.quadraticCurveTo(x0, y0, (x0+x1)/2, (y0+y1)/2); }
   if (pts.length === 1) g.lineTo(pts[0][0] + 0.1, pts[0][1]); else g.lineTo(pts[pts.length-1][0], pts[pts.length-1][1]);
 }
+// 애플 펜슬의 힘(필압)에 따라 굵기가 달라지게: 점마다 힘 값(p)을 갖고, 마디마다 굵기를 바꿔 이어 그린다
+function paintPressure(g, st){
+  const P = st.pts, n = P.length, mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  for (let i = 1; i < n; i++){
+    const a = P[i-1], b = P[i]; const from = i > 1 ? mid(P[i-2], a) : a, to = i < n - 1 ? mid(a, b) : b;
+    g.lineWidth = st.size * (0.25 + 1.05 * (((a[2] ?? 0.5) + (b[2] ?? 0.5)) / 2));
+    g.beginPath(); g.moveTo(from[0], from[1]); g.quadraticCurveTo(a[0], a[1], to[0], to[1]); g.stroke();
+  }
+}
 function paintStroke(g, st){
   if (!st.pts.length) return;
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = st.size;
+  if (st.pr && st.tool === 'pen' && st.pts.length > 1){ g.strokeStyle = st.color; paintPressure(g, st); g.restore(); return; }
   if (st.tool === 'erase'){ g.globalCompositeOperation = 'destination-out'; g.strokeStyle = '#000'; }
   else { g.strokeStyle = st.color; g.globalAlpha = st.tool === 'hl' ? 0.38 : 1; }
   strokePath(g, st.pts); g.stroke(); g.restore();
@@ -186,34 +216,130 @@ function skRedraw(){
   });
 }
 async function openSketch(src, meta, note = '', editId = null, strokes = []){
-  sk.img = src; sk.strokes = strokes.map(x => ({...x, pts: x.pts.map(p => [...p])})); sk.meta = meta; sk.editId = editId; sk.cur = null;
+  sk.img = src; sk.strokes = strokes.map(x => ({...x, pts: x.pts.map(p => [...p])})); sk.meta = meta; sk.editId = editId; sk.cur = null; sk.redo = [];
+  sk.n0 = sk.strokes.length; sk.note0 = note; sk.moved = false;
   const cv = $('#skCanvas'); for (const c of [cv, skLayer, skTemp]){ c.width = src.width; c.height = src.height; }
-  skRebuildLayer(); skRedraw();
-  $('#skNote').value = note; $('#sketch').classList.add('open');
+  skView(1, 0, 0); skRebuildLayer(); skRedraw();
+  $('#skNote').value = note; $('#sketch').classList.add('open'); skFingerBtn();
 }
-function canvasPt(e){ const cv = $('#skCanvas'); const b = cv.getBoundingClientRect(); return [(e.clientX - b.left) * cv.width / b.width, (e.clientY - b.top) * cv.height / b.height]; }
+const skDirty = () => $('#sketch').classList.contains('open') && (sk.strokes.length !== sk.n0 || sk.moved || $('#skNote').value !== sk.note0);
+function skClose(force){ if (!force && skDirty() && !confirm('저장하지 않은 필기가 있어요. 저장하지 않고 닫을까요?')) return false; $('#sketch').classList.remove('open'); return true; }
+
+/* ---------- 보기(확대·이동) ---------- */
+// 캔버스 가운데를 기준으로 옮기고(t) 키운다(s). 그리는 좌표는 화면 위치에서 다시 계산하니 확대해도 어긋나지 않는다.
+sk.v = {s: 1, x: 0, y: 0};
+function skView(s, x, y){ sk.v = {s: Math.min(8, Math.max(0.4, s)), x, y}; const cv = $('#skCanvas'); cv.style.transform = sk.v.s === 1 && !x && !y ? '' : `translate(${sk.v.x}px, ${sk.v.y}px) scale(${sk.v.s})`; $('#skFit').hidden = !cv.style.transform; }
+function skZoomAt(px, py, s2){ const r = $('#skStage').getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2; const k = Math.min(8, Math.max(0.4, s2)) / sk.v.s; skView(sk.v.s * k, (px - cx) - k * ((px - cx) - sk.v.x), (py - cy) - k * ((py - cy) - sk.v.y)); }
+$('#skFit').onclick = () => skView(1, 0, 0);
+$('#skStage').addEventListener('wheel', e => { if (!$('#sketch').classList.contains('open')) return; e.preventDefault(); if (e.ctrlKey || e.metaKey) skZoomAt(e.clientX, e.clientY, sk.v.s * Math.exp(-e.deltaY * 0.01)); else skView(sk.v.s, sk.v.x - e.deltaX, sk.v.y - e.deltaY); }, {passive: false});
+
+/* ---------- 펜·손가락 ---------- */
+// 펜슬이 한 번이라도 보인 기기는 손가락으로 움직이고(확대·이동), 펜슬로만 그린다. 펜슬이 없는 기기는 손가락으로 그린다. 위 단추로 바꿀 수 있다.
+const skFingerDraws = () => { const v = store.get('lib.skFinger', null); return v === null ? !store.get('lib.penSeen', false) : v; };
+function skFingerBtn(){ const b = $('#skFinger'); b.classList.toggle('on', skFingerDraws()); b.title = skFingerDraws() ? '손가락으로 그려요 (누르면 손가락은 확대·이동만)' : '펜슬로만 그려요. 손가락은 확대·이동 (누르면 손가락으로도 그리기)'; }
+$('#skFinger').onclick = () => { store.set('lib.skFinger', !skFingerDraws()); skFingerBtn(); toast(skFingerDraws() ? '손가락으로도 그려요' : '펜슬로만 그려요. 손가락 두 개로 확대·이동, 두 손가락 톡 치면 되돌리기'); };
+const skTouch = new Map(); let skG = null, skSess = null;
+function canvasPt(e){ const cv = $('#skCanvas'); const b = cv.getBoundingClientRect(); const p = e.pointerType === 'pen' ? (e.pressure > 0 ? e.pressure : 0.5) : 0.5; return [(e.clientX - b.left) * cv.width / b.width, (e.clientY - b.top) * cv.height / b.height, p]; }
+const skGesture = () => { const t = [...skTouch.values()]; return {mx: t.reduce((q, p) => q + p.x, 0) / t.length, my: t.reduce((q, p) => q + p.y, 0) / t.length, d: t.length > 1 ? Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y) : 0}; };
+// 손가락 수가 바뀔 때마다 그때의 보기를 기준으로 다시 잡는다. 두 손가락 톡(짧게·거의 안 움직임)은 되돌리기
+function skGestureStart(){ if (!skSess) skSess = {t0: Date.now(), max: 0, move: 0}; skSess.max = Math.max(skSess.max, skTouch.size); skG = {...skGesture(), v: {...sk.v}}; }
+function skGestureMove(){
+  const g = skGesture(), r = $('#skStage').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, v0 = skG.v;
+  const s = skTouch.size > 1 && skG.d > 0 ? Math.min(8, Math.max(0.4, v0.s * g.d / skG.d)) : v0.s, k = s / v0.s;
+  skView(s, (skG.mx - cx) - k * ((skG.mx - cx) - v0.x) + (g.mx - skG.mx), (skG.my - cy) - k * ((skG.my - cy) - v0.y) + (g.my - skG.my));
+}
 $('#skCanvas').addEventListener('pointerdown', e => {
+  if (e.pointerType === 'pen'){ sk.penUntil = Date.now() + 1500; if (!store.get('lib.penSeen', false)){ store.set('lib.penSeen', true); skFingerBtn(); } }
+  if (e.pointerType === 'touch' && (!skFingerDraws() || Date.now() < (sk.penUntil || 0))){
+    e.preventDefault(); if (sk.cur || Date.now() < (sk.penUntil || 0)) return;   // 펜슬로 쓰는 동안 손바닥은 무시
+    try{ $('#skCanvas').setPointerCapture(e.pointerId); }catch{} skTouch.set(e.pointerId, {x: e.clientX, y: e.clientY}); skGestureStart(); return;
+  }
   if (!e.isPrimary || sk.cur) return;
-  e.preventDefault(); $('#skCanvas').setPointerCapture(e.pointerId);
+  e.preventDefault(); try{ $('#skCanvas').setPointerCapture(e.pointerId); }catch{}
   const cv = $('#skCanvas'); const k = cv.width / cv.getBoundingClientRect().width;
-  sk.cur = {tool: sk.tool, color: sk.color, size: sk.size * k * (sk.tool === 'hl' ? 3 : sk.tool === 'erase' ? 3 : 1), pts: [canvasPt(e)], pid: e.pointerId};
+  const pr = e.pointerType === 'pen' && sk.tool === 'pen';
+  sk.cur = {tool: sk.tool, color: sk.color, size: sk.size * k * (sk.tool === 'hl' ? 3 : sk.tool === 'erase' ? 3 : 1), pts: [canvasPt(e)], pid: e.pointerId, pr};
   sk.strokes.push(sk.cur); sk.redo = []; skRedraw();
 });
 $('#skCanvas').addEventListener('pointermove', e => {
+  if (skTouch.has(e.pointerId)){
+    const p = skTouch.get(e.pointerId); skSess.move += Math.abs(e.clientX - p.x) + Math.abs(e.clientY - p.y); p.x = e.clientX; p.y = e.clientY;
+    skGestureMove(); return;
+  }
   if (!sk.cur || e.pointerId !== sk.cur.pid) return;
-  for (const ev of (e.getCoalescedEvents?.() || [e])) sk.cur.pts.push(canvasPt(ev));
+  let last = sk.cur.pts.at(-1)[2];
+  for (const ev of (e.getCoalescedEvents?.() || [e])){ const pt = canvasPt(ev); if (sk.cur.pr){ pt[2] = last = last * 0.6 + pt[2] * 0.4; } sk.cur.pts.push(pt); }
   skRedraw();
 });
-const skEnd = e => { if (!sk.cur || e.pointerId !== sk.cur.pid) return; paintStroke(skLayer.getContext('2d'), sk.cur); sk.cur = null; skRedraw(); };
+const skEnd = e => {
+  if (skTouch.has(e.pointerId)){
+    skTouch.delete(e.pointerId);
+    if (skTouch.size){ skGestureStart(); return; }
+    if (skSess && skSess.max === 2 && Date.now() - skSess.t0 < 320 && skSess.move < 16) $('#skUndo').click();
+    skG = skSess = null; return;
+  }
+  if (!sk.cur || e.pointerId !== sk.cur.pid) return; paintStroke(skLayer.getContext('2d'), sk.cur); sk.cur = null; skRedraw();
+};
 $('#skCanvas').addEventListener('pointerup', skEnd);
 $('#skCanvas').addEventListener('pointercancel', skEnd);
-$$('#skTools button').forEach(b => b.onclick = () => { sk.tool = b.dataset.tool; $$('#skTools button').forEach(x => x.classList.toggle('on', x === b)); });
-$$('#skColors button').forEach(b => b.onclick = () => { sk.color = b.dataset.c; $$('#skColors button').forEach(x => x.classList.toggle('on', x === b)); if (sk.tool === 'erase') $('#skTools [data-tool=pen]').click(); });
-$('#skSize').oninput = () => sk.size = +$('#skSize').value;
+
+/* ---------- 도구·색·굵기 ---------- */
+const skPickTool = t => { sk.tool = t; $$('#skTools button').forEach(x => x.classList.toggle('on', x.dataset.tool === t)); };
+$$('#skTools button').forEach(b => b.onclick = () => skPickTool(b.dataset.tool));
+function skSetColor(c, remember){
+  sk.color = c; $$('#skColors button').forEach(x => x.classList.toggle('on', x.dataset.c.toLowerCase() === c.toLowerCase())); $('#skColorPick').value = c;
+  if (sk.tool === 'erase') skPickTool('pen');
+  if (remember && !$$('#skColors button').some(x => x.dataset.c.toLowerCase() === c.toLowerCase())){ const rc = [c, ...store.get('lib.skRecent', []).filter(x => x !== c)].slice(0, 6); store.set('lib.skRecent', rc); skRecent(); }
+}
+function skRecent(){ const box = $('#skRecent'); box.innerHTML = ''; for (const c of store.get('lib.skRecent', [])){ const b = document.createElement('button'); b.dataset.c = c; b.style.background = c; b.title = c; b.onclick = () => skSetColor(c); box.append(b); } }
+$$('#skColors button').forEach(b => b.onclick = () => skSetColor(b.dataset.c));
+$('#skColorPick').oninput = () => skSetColor($('#skColorPick').value);
+$('#skColorPick').onchange = () => skSetColor($('#skColorPick').value, true);
+$$('#skSizes button').forEach(b => b.onclick = () => { $('#skSize').value = b.dataset.z; $('#skSize').oninput(); });
+$('#skSize').oninput = () => { sk.size = +$('#skSize').value; $('#skSizeOut').textContent = sk.size; };
+skRecent();
 $('#skUndo').onclick = () => { const st = sk.strokes.pop(); if (st) (sk.redo ||= []).push(st); skRebuildLayer(); skRedraw(); };
 $('#skRedo').onclick = () => { const st = sk.redo?.pop(); if (st){ sk.strokes.push(st); skRebuildLayer(); skRedraw(); } };
 $('#skClear').onclick = () => { if (sk.strokes.length && !confirm('필기를 모두 지울까요?')) return; sk.redo = [...sk.strokes].reverse(); sk.strokes = []; skRebuildLayer(); skRedraw(); };
-$('#skCancel').onclick = () => $('#sketch').classList.remove('open');
+$('#skCancel').onclick = () => skClose();
+
+/* ---------- 굿노트·프로크리에이트로 보내고 받기 ---------- */
+// 지금 그린 그림을 파일로: 굿노트는 PDF(공유 시트 → 굿노트), 프로크리에이트는 PNG 또는 레이어가 있는 PSD(공유 시트 → 프로크리에이트)
+async function skFlat(){ await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); const c = document.createElement('canvas'); c.width = sk.img.width; c.height = sk.img.height; const g = c.getContext('2d'); g.drawImage(sk.img, 0, 0); g.drawImage(skLayer, 0, 0); return c; }
+const skMeta = () => ({workName: sk.meta?.workName || '그림', epName: sk.meta?.epName || '장면', note: $('#skNote').value});
+async function skToGoodnotes(){
+  const m = skMeta(); const flat = await skFlat(); const page = $('#gnPage')?.value || 'a4';
+  const pg = page === 'fit' ? flat : await scrapPage(m, flat);
+  const pdf = await canvasesToPdf([pg], `${safeName(m.workName)}_${safeName(m.epName)}.pdf`); if (pdf) shareFiles([pdf], '굿노트로', true);
+}
+async function skToProcreate(){
+  const m = skMeta(); const sc = sk.img; const ink = sk.strokes.length ? skLayer : null;
+  const f = await procreateFile(m, {scene: sc, ink}); shareFiles([f], '프로크리에이트로', true);
+}
+$('#skSend').onchange = async e => { const v = e.target.value; e.target.value = ''; ({gn: skToGoodnotes, pc: skToProcreate, file: async () => { const m = skMeta(); const flat = await skFlat(); const b = await new Promise(r => flat.toBlob(r, 'image/png')); shareFiles([new File([b], `${safeName(m.workName)}_${safeName(m.epName)}.png`, {type: 'image/png'})], '그림', true); }}[v])?.(); };
+// 바깥에서 그린 그림(굿노트·프로크리에이트에서 내보낸 PNG·JPG)을 이 노트의 바탕으로
+$('#skImportBtn').onclick = () => $('#skImportFile').click();
+$('#skImportFile').onchange = async () => {
+  const f = $('#skImportFile').files[0]; $('#skImportFile').value = ''; if (!f) return;
+  if (sk.strokes.length && !confirm('지금 필기는 사라지고 가져온 그림으로 바뀌어요. 계속할까요?')) return;
+  const im = await loadImgEl(f); const c = document.createElement('canvas'); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+  const meta = {...sk.meta, base: null}; const note = $('#skNote').value; await openSketch(c, meta, note, sk.editId, []); sk.moved = true; toast('가져온 그림 위에 이어서 그릴 수 있어요');
+};
+// 서재 옆 메모 칸에서 여러 장을 한꺼번에 장면 노트로
+async function importDrawings(files){
+  let n = 0;
+  for (const f of files){
+    try{
+      const im = await loadImgEl(f); const k = Math.min(1, 3000 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), thumb = await new Promise(r => tc.toBlob(r, 'image/jpeg', 0.8));
+      await idb.tx('readwrite', st => st.put({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), work: cur?.key || '', workName: cur?.name || '내 그림', epName: f.name.replace(/\.[^.]+$/, '') || '가져온 그림', where: {}, note: '', blob, thumb, base: null, strokes: null, t: Date.now()}), 'scraps'); n++;
+    }catch{}
+  }
+  if (n){ window.gdSoon?.(); renderScraps(); toast(`그림 ${n}장을 장면 노트로 가져왔어요`); } else toast('그림을 읽지 못했어요 (PNG·JPG만 가져와요)');
+}
+$('#noteImport').onclick = () => $('#noteImportFile').click();
+$('#noteImportFile').onchange = () => { const fs = [...$('#noteImportFile').files]; $('#noteImportFile').value = ''; if (fs.length) importDrawings(fs); };
 async function saveSketch(){
   const cv = $('#skCanvas');
   const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.88));

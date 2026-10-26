@@ -420,3 +420,19 @@ details.fold summary .chev{margin-left:auto}
 .idea-tags button{padding:3px 10px;font-size:12px;border-radius:99px;box-shadow:none}
 .idea-tags button.on{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:600}
 #ideaList .tg{color:var(--brass);font-weight:600}
+
+#linkSheet .lsl{margin-top:6px}
+#linkSheet .lsw{display:flex;gap:8px;align-items:center;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13px}
+#linkSheet .lsw .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#linkSheet .lsw .s{font-size:11px;color:var(--faint);white-space:nowrap}
+#linkSheet .lsw button{font-size:11px;padding:3px 8px}
+
+.sk-top{row-gap:8px}
+#skRecent{gap:5px}
+#skRecent button{width:22px;height:22px}
+#skColorPick{width:34px;height:30px;padding:0;border:2px solid var(--line);border-radius:50%;background:none;overflow:hidden;cursor:pointer}
+#skSizeOut{font-size:12px;color:var(--faint);min-width:20px;text-align:right}
+#skFinger.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sk-stage{overflow:hidden;position:relative;touch-action:none}
+.sk-stage canvas{transform-origin:center;will-change:transform}
+@media (pointer:coarse){ #skColorPick{width:40px;height:40px} #skSizes button{min-height:36px} }
