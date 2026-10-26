@@ -7,8 +7,8 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem('nv.'+k); return v===null ? d : JSON.parse(v); }catch{ return d; } },
   set(k, v){
     try{ localStorage.setItem('nv.'+k, JSON.stringify(v)); }catch{ toast('브라우저 저장 공간이 꽉 찼어요. 설정 탭에서 백업 후 정리해 주세요.'); return; }
-    if (/^(apiKey|gemKey|grKey)$/.test(k)){ const kt = this.get('__kts', {}); kt[k] = Date.now(); try{ localStorage.setItem('nv.__kts', JSON.stringify(kt)); }catch{} window.gdSoon?.(); }   // API 키는 따로(keys.json) 맞춘다
-    if (!k.startsWith('__') && !/^(apiKey|gemKey|grKey|olOk)$/.test(k) && !k.startsWith('gd.')){ const ts = this.get('__ts', {}); ts[k] = Date.now(); try{ localStorage.setItem('nv.__ts', JSON.stringify(ts)); }catch{} window.gdSoon?.(); }
+    if (/^(apiKey|gemKey|grKey|naiKey)$/.test(k)){ const kt = this.get('__kts', {}); kt[k] = Date.now(); try{ localStorage.setItem('nv.__kts', JSON.stringify(kt)); }catch{} window.gdSoon?.(); }   // API 키는 따로(keys.json) 맞춘다
+    if (!k.startsWith('__') && !/^(apiKey|gemKey|grKey|naiKey|olOk)$/.test(k) && !k.startsWith('gd.')){ const ts = this.get('__ts', {}); ts[k] = Date.now(); try{ localStorage.setItem('nv.__ts', JSON.stringify(ts)); }catch{} window.gdSoon?.(); }
   }
 };
 function tomb(kind, id){ const t = store.get('__tomb', {notes:[], scraps:[]}); t[kind] = [...new Set([...(t[kind]||[]), id])].slice(-2000); store.set('__tomb', t); window.gdSoon?.(); }

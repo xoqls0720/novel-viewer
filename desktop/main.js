@@ -105,6 +105,75 @@ ipcMain.handle('lib-scan', async (_e, root) => {
   }
   await walk(root, base); return out;
 });
+/* ---------- 노벨AI 그림 만들기 ----------
+   브라우저에서는 막혀 있어서(CORS) 프로그램이 대신 보낸다.
+   V4 이상 모델은 .../generate-image-stream 으로 보내고, 답이 '길이(4바이트) + msgpack' 덩어리로 줄줄이 온다.
+   그중 다 그린 것(final)만 골라 PNG 로 돌려준다. */
+function msgpackFinals(buf){
+  const out = []; let at = 0;
+  const dec = new TextDecoder();
+  function read(b, p){   // [값, 다음 위치]
+    const t = b[p];
+    if (t < 0x80) return [t, p + 1];                                  // 작은 양수
+    if (t >= 0xe0) return [t - 256, p + 1];                           // 작은 음수
+    if (t >= 0x80 && t <= 0x8f) return map(b, p + 1, t - 0x80);
+    if (t >= 0x90 && t <= 0x9f) return arr(b, p + 1, t - 0x90);
+    if (t >= 0xa0 && t <= 0xbf) return str(b, p + 1, t - 0xa0);
+    switch (t){
+      case 0xc0: return [null, p + 1];
+      case 0xc2: return [false, p + 1];
+      case 0xc3: return [true, p + 1];
+      case 0xc4: return bin(b, p + 2, b[p + 1]);
+      case 0xc5: return bin(b, p + 3, b.readUInt16BE(p + 1));
+      case 0xc6: return bin(b, p + 5, b.readUInt32BE(p + 1));
+      case 0xca: return [b.readFloatBE(p + 1), p + 5];
+      case 0xcb: return [b.readDoubleBE(p + 1), p + 9];
+      case 0xcc: return [b[p + 1], p + 2];
+      case 0xcd: return [b.readUInt16BE(p + 1), p + 3];
+      case 0xce: return [b.readUInt32BE(p + 1), p + 5];
+      case 0xcf: return [Number(b.readBigUInt64BE(p + 1)), p + 9];
+      case 0xd0: return [b.readInt8(p + 1), p + 2];
+      case 0xd1: return [b.readInt16BE(p + 1), p + 3];
+      case 0xd2: return [b.readInt32BE(p + 1), p + 5];
+      case 0xd3: return [Number(b.readBigInt64BE(p + 1)), p + 9];
+      case 0xd9: return str(b, p + 2, b[p + 1]);
+      case 0xda: return str(b, p + 3, b.readUInt16BE(p + 1));
+      case 0xdb: return str(b, p + 5, b.readUInt32BE(p + 1));
+      case 0xdc: return arr(b, p + 3, b.readUInt16BE(p + 1));
+      case 0xdd: return arr(b, p + 5, b.readUInt32BE(p + 1));
+      case 0xde: return map(b, p + 3, b.readUInt16BE(p + 1));
+      case 0xdf: return map(b, p + 5, b.readUInt32BE(p + 1));
+    }
+    throw new Error('msgpack 0x' + t.toString(16));
+  }
+  function str(b, p, n){ return [dec.decode(b.subarray(p, p + n)), p + n]; }
+  function bin(b, p, n){ return [b.subarray(p, p + n), p + n]; }
+  function arr(b, p, n){ const o = []; for (let i = 0; i < n; i++){ const [v, q] = read(b, p); o.push(v); p = q; } return [o, p]; }
+  function map(b, p, n){ const o = {}; for (let i = 0; i < n; i++){ const [k, q] = read(b, p); const [v, r] = read(b, q); o[k] = v; p = r; } return [o, p]; }
+  while (at + 4 <= buf.length){
+    const len = buf.readUInt32BE(at); at += 4;
+    if (!len || at + len > buf.length) break;
+    try{ const [obj] = read(buf.subarray(at, at + len), 0); if (obj && obj.event_type === 'final' && obj.image) out.push(Buffer.from(obj.image).toString('base64')); }catch{}
+    at += len;
+  }
+  return out;
+}
+ipcMain.handle('nai-gen', async (_e, token, body) => {
+  const stream = /nai-diffusion-(?:[4-9]|\d\d)/.test(String(body?.model || ''));
+  const url = 'https://image.novelai.net/ai/generate-image' + (stream ? '-stream' : '');
+  if (stream) body.parameters = { ...body.parameters, stream: 'msgpack' };
+  let r;
+  try{
+    r = await fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Accept: stream ? 'application/x-msgpack' : 'application/zip' }, body: JSON.stringify(body) });
+  }catch(err){ return { ok: false, status: 0, text: err.message }; }
+  const raw = Buffer.from(await r.arrayBuffer());
+  if (!r.ok) return { ok: false, status: r.status, text: raw.toString('utf8').slice(0, 400) };
+  if (stream){
+    const imgs = msgpackFinals(raw);
+    return imgs.length ? { ok: true, images: imgs } : { ok: false, status: r.status, text: '그림을 받지 못했어요 (' + raw.length + '바이트)' };
+  }
+  return { ok: true, zip: raw.toString('base64') };   // 옛 모델(V3)은 zip 으로 온다
+});
 ipcMain.handle('open-data-folder', () => shell.openPath(app.getPath('userData')));
 ipcMain.handle('gd-logout', () => { try{ fs.unlinkSync(TOK()); }catch{} return true; });
 ipcMain.handle('gd-token', async (_e, id, secret) => {

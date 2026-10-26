@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('nvDesktop', {
   libScan: p => ipcRenderer.invoke('lib-scan', p),
   gdLogout: () => ipcRenderer.invoke('gd-logout'),
   openFolder: () => ipcRenderer.invoke('open-data-folder'),
+  naiGen: (token, body) => ipcRenderer.invoke('nai-gen', token, body),
 });

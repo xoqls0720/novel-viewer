@@ -452,3 +452,5 @@ details.fold summary .chev{margin-left:auto}
 .sk-ctx{display:flex;align-items:center;gap:10px;min-height:44px;height:44px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
 .sk-ctx::-webkit-scrollbar{display:none}
 .sk-ctx>*{flex:none}
+
+#pane-nai.ngbusy #ngList,#pane-nai.ngbusy #ngModel{opacity:.6;pointer-events:none}

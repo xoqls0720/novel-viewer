@@ -256,6 +256,20 @@
       <div class="row"><label><input type="checkbox" id="naiImg"> 지금 보는 그림 참고</label></div>
       <div class="row"><button id="naiGo" class="primary idle-only">프롬프트 만들기</button><button id="naiStop" class="busy-only">멈추기</button></div>
       <div id="naiOut"></div>
+      <h3>그림 바로 만들기 <span class="hint">· 프로그램에서 노벨AI로</span></h3>
+      <div class="hint" id="ngWeb" hidden>그림을 앱 안에서 바로 뽑는 건 윈도우 프로그램에서만 돼요(브라우저는 노벨AI가 막아 둬요). 아이패드·폰에서는 아래 '노벨AI에서 만들기'로 프롬프트를 복사해 쓰고, 만든 그림은 컴퓨터에서 동기화돼요.</div>
+      <div class="nai-desktop" hidden>
+        <div class="krow"><input type="password" id="naiKey" placeholder="노벨AI 토큰 (설정 → Account → Get Persistent API Token)" autocomplete="off"><button id="ngSave">저장</button><button id="ngDel">지우기</button></div>
+        <div class="hint">노벨AI 사이트 → 톱니(User Settings) → Account → <b>Get Persistent API Token</b> 을 눌러 나온 긴 글자를 넣으세요. 비밀번호가 아니에요.</div>
+        <textarea id="ngList" style="min-height:76px" placeholder="한 줄에 한 장면씩 (비워 두면 방금 만든 프롬프트로 그려요)&#10;카엘이 눈 내리는 성 앞에서 뒤돌아본다&#10;레비안이 새벽 얼음 호수에서 혼자 검을 휘두른다"></textarea>
+        <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-4-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-4-5-full"><option value="nai-diffusion-4-5-curated"><option value="nai-diffusion-4-full"></datalist></div>
+        <div class="row tight"><label>크기</label><select id="ngSize"><option value="portrait">세로 832×1216</option><option value="landscape">가로 1216×832</option><option value="square">정사각 1024×1024</option></select>
+          <label>스텝</label><input type="number" id="ngSteps" value="28" min="1" max="50" style="width:64px">
+          <label>가이드</label><input type="number" id="ngScale" value="5" min="1" max="10" step="0.5" style="width:60px">
+          <label>장면당</label><input type="number" id="ngEach" value="1" min="1" max="8" style="width:56px">장</div>
+        <div class="row"><button id="ngGo" class="primary">그림 만들기</button><button id="ngStop" hidden>멈추기</button><span class="hint grow" id="ngStat"></span></div>
+        <div class="hint">만든 그림은 <b>장면 노트</b>에 저장되고 동기화돼요. 무료 생성 기준은 832×1216·28스텝이에요.</div>
+      </div>
       <h3>그림으로 이어 가기</h3>
       <div class="row"><button id="naiOpen">노벨AI에서 만들기</button><button id="naiImport">만든 그림 가져오기</button><button id="naiSketch">구도 스케치</button></div>
       <div class="hint">노벨AI는 다른 사이트에서 바로 그림을 요청할 수 없어요. '노벨AI에서 만들기'를 누르면 프롬프트가 복사되고 노벨AI가 열려요. 만든 그림을 가져오면 장면 노트로 보관되고, 거기서 프로크리에이트로 보내 고쳐 그릴 수 있어요.</div>

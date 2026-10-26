@@ -14,7 +14,7 @@ function gemModelName(){
   if (!/^[a-z0-9][a-z0-9._-]*$/.test(m)){ if (m && !gemModelName.warned){ gemModelName.warned = true; toast(`Gemini 모델 이름이 올바르지 않아 ${GEM_DEFAULT}로 보냈어요. 설정 탭에서 확인해 주세요`); } return GEM_DEFAULT; }
   return m;
 }
-const KEY_IDS = ['apiKey','gemKey','grKey'];
+const KEY_IDS = ['apiKey','gemKey','grKey','naiKey'];
 function provOf(sel){ let v = sel ? $(sel)?.value : 'default'; if (!v || v === 'default') v = $('#provider').value; return PROV[v] ? v : 'claude'; }
 function olBase(){ return ($('#olUrl').value.trim() || 'http://localhost:11434').replace(/\/+$/, ''); }
 async function client(sel){

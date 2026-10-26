@@ -472,6 +472,8 @@ details.fold summary .chev{margin-left:auto}
 .sk-ctx{display:flex;align-items:center;gap:10px;min-height:44px;height:44px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
 .sk-ctx::-webkit-scrollbar{display:none}
 .sk-ctx>*{flex:none}
+
+#pane-nai.ngbusy #ngList,#pane-nai.ngbusy #ngModel{opacity:.6;pointer-events:none}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -991,6 +993,20 @@ details.fold summary .chev{margin-left:auto}
       <div class="row"><label><input type="checkbox" id="naiImg"> 지금 보는 그림 참고</label></div>
       <div class="row"><button id="naiGo" class="primary idle-only">프롬프트 만들기</button><button id="naiStop" class="busy-only">멈추기</button></div>
       <div id="naiOut"></div>
+      <h3>그림 바로 만들기 <span class="hint">· 프로그램에서 노벨AI로</span></h3>
+      <div class="hint" id="ngWeb" hidden>그림을 앱 안에서 바로 뽑는 건 윈도우 프로그램에서만 돼요(브라우저는 노벨AI가 막아 둬요). 아이패드·폰에서는 아래 '노벨AI에서 만들기'로 프롬프트를 복사해 쓰고, 만든 그림은 컴퓨터에서 동기화돼요.</div>
+      <div class="nai-desktop" hidden>
+        <div class="krow"><input type="password" id="naiKey" placeholder="노벨AI 토큰 (설정 → Account → Get Persistent API Token)" autocomplete="off"><button id="ngSave">저장</button><button id="ngDel">지우기</button></div>
+        <div class="hint">노벨AI 사이트 → 톱니(User Settings) → Account → <b>Get Persistent API Token</b> 을 눌러 나온 긴 글자를 넣으세요. 비밀번호가 아니에요.</div>
+        <textarea id="ngList" style="min-height:76px" placeholder="한 줄에 한 장면씩 (비워 두면 방금 만든 프롬프트로 그려요)&#10;카엘이 눈 내리는 성 앞에서 뒤돌아본다&#10;레비안이 새벽 얼음 호수에서 혼자 검을 휘두른다"></textarea>
+        <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-4-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-4-5-full"><option value="nai-diffusion-4-5-curated"><option value="nai-diffusion-4-full"></datalist></div>
+        <div class="row tight"><label>크기</label><select id="ngSize"><option value="portrait">세로 832×1216</option><option value="landscape">가로 1216×832</option><option value="square">정사각 1024×1024</option></select>
+          <label>스텝</label><input type="number" id="ngSteps" value="28" min="1" max="50" style="width:64px">
+          <label>가이드</label><input type="number" id="ngScale" value="5" min="1" max="10" step="0.5" style="width:60px">
+          <label>장면당</label><input type="number" id="ngEach" value="1" min="1" max="8" style="width:56px">장</div>
+        <div class="row"><button id="ngGo" class="primary">그림 만들기</button><button id="ngStop" hidden>멈추기</button><span class="hint grow" id="ngStat"></span></div>
+        <div class="hint">만든 그림은 <b>장면 노트</b>에 저장되고 동기화돼요. 무료 생성 기준은 832×1216·28스텝이에요.</div>
+      </div>
       <h3>그림으로 이어 가기</h3>
       <div class="row"><button id="naiOpen">노벨AI에서 만들기</button><button id="naiImport">만든 그림 가져오기</button><button id="naiSketch">구도 스케치</button></div>
       <div class="hint">노벨AI는 다른 사이트에서 바로 그림을 요청할 수 없어요. '노벨AI에서 만들기'를 누르면 프롬프트가 복사되고 노벨AI가 열려요. 만든 그림을 가져오면 장면 노트로 보관되고, 거기서 프로크리에이트로 보내 고쳐 그릴 수 있어요.</div>
@@ -1285,8 +1301,8 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem('nv.'+k); return v===null ? d : JSON.parse(v); }catch{ return d; } },
   set(k, v){
     try{ localStorage.setItem('nv.'+k, JSON.stringify(v)); }catch{ toast('브라우저 저장 공간이 꽉 찼어요. 설정 탭에서 백업 후 정리해 주세요.'); return; }
-    if (/^(apiKey|gemKey|grKey)$/.test(k)){ const kt = this.get('__kts', {}); kt[k] = Date.now(); try{ localStorage.setItem('nv.__kts', JSON.stringify(kt)); }catch{} window.gdSoon?.(); }   // API 키는 따로(keys.json) 맞춘다
-    if (!k.startsWith('__') && !/^(apiKey|gemKey|grKey|olOk)$/.test(k) && !k.startsWith('gd.')){ const ts = this.get('__ts', {}); ts[k] = Date.now(); try{ localStorage.setItem('nv.__ts', JSON.stringify(ts)); }catch{} window.gdSoon?.(); }
+    if (/^(apiKey|gemKey|grKey|naiKey)$/.test(k)){ const kt = this.get('__kts', {}); kt[k] = Date.now(); try{ localStorage.setItem('nv.__kts', JSON.stringify(kt)); }catch{} window.gdSoon?.(); }   // API 키는 따로(keys.json) 맞춘다
+    if (!k.startsWith('__') && !/^(apiKey|gemKey|grKey|naiKey|olOk)$/.test(k) && !k.startsWith('gd.')){ const ts = this.get('__ts', {}); ts[k] = Date.now(); try{ localStorage.setItem('nv.__ts', JSON.stringify(ts)); }catch{} window.gdSoon?.(); }
   }
 };
 function tomb(kind, id){ const t = store.get('__tomb', {notes:[], scraps:[]}); t[kind] = [...new Set([...(t[kind]||[]), id])].slice(-2000); store.set('__tomb', t); window.gdSoon?.(); }
@@ -2091,7 +2107,7 @@ function gemModelName(){
   if (!/^[a-z0-9][a-z0-9._-]*$/.test(m)){ if (m && !gemModelName.warned){ gemModelName.warned = true; toast(`Gemini 모델 이름이 올바르지 않아 ${GEM_DEFAULT}로 보냈어요. 설정 탭에서 확인해 주세요`); } return GEM_DEFAULT; }
   return m;
 }
-const KEY_IDS = ['apiKey','gemKey','grKey'];
+const KEY_IDS = ['apiKey','gemKey','grKey','naiKey'];
 function provOf(sel){ let v = sel ? $(sel)?.value : 'default'; if (!v || v === 'default') v = $('#provider').value; return PROV[v] ? v : 'claude'; }
 function olBase(){ return ($('#olUrl').value.trim() || 'http://localhost:11434').replace(/\/+$/, ''); }
 async function client(sel){
@@ -2569,7 +2585,7 @@ function aiHint(){
     el.textContent = ready ? `${P.name} · ${P.model()}${extra}` : `설정 탭에 ${P.name} API 키를 넣으면 쓸 수 있어요.`;
   });
 }
-function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'AIza...', grKey:'gsk_...'})[id]; }
+function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'AIza...', grKey:'gsk_...', naiKey:'노벨AI 토큰'})[id]; }
 function saveKey(id){ const v = $('#'+id).value.trim(); if (!v) return; store.set(id, v); $('#'+id).value=''; keySaved(id); aiHint(); toast('API 키를 저장했어요'); }
 function delKey(id){ store.set(id, ''); keySaved(id); aiHint(); toast('API 키를 지웠어요'); }
 $('#keySave').onclick = () => saveKey('apiKey');
@@ -2594,11 +2610,11 @@ $('#olTest').onclick = async () => {
 $('#spentReset').onclick = () => { store.set('spent', {in:0,out:0,cache:0,n:0}); showSpent(); };
 $('#storeClear').onclick = async () => { if (!confirm('이 기기에 저장한 작품 파일을 모두 지울까요? (메모·진도·설정은 남아요)')) return; await idb.clear(); showStore(); toast('지웠어요'); };
 $('#bkOut').onclick = () => {
-  const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|gd\.secret)$/.test(k)) data[k] = localStorage.getItem(k); }
+  const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret)$/.test(k)) data[k] = localStorage.getItem(k); }
   download('Novelist_백업.json', JSON.stringify(data), 'application/json');
 };
 $('#bkIn').onclick = () => $('#bkFile').click();
-$('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|gd\.secret)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
+$('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
 
 function openTool(tab){
   const a = $('#app');
@@ -3343,7 +3359,7 @@ async function gdPut(files, name, blob){
 }
 async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
 async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|olOk|__ts|__kts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|naiKey|olOk|__ts|__kts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -3377,7 +3393,7 @@ async function gdSyncTexts(files, rIdx, dead){
   return {...res, index: Object.fromEntries([...TXT.cache].map(([k, r]) => [k, r.syncedT || r.t]))};
 }
 // API 키 맞추기: 키마다 마지막으로 바꾼 시각이 늦은 쪽을 따른다(지운 것도 빈 값으로 전해진다)
-const SYNC_KEYS = ['apiKey', 'gemKey', 'grKey'];
+const SYNC_KEYS = ['apiKey', 'gemKey', 'grKey', 'naiKey'];
 async function gdSyncKeys(files){
   const remote = (await gdGet(files, 'keys.json').catch(() => null)) || {v: 1, keys: {}, ts: {}};
   const lt = store.get('__kts', {}); let up = false, down = 0;
@@ -5475,6 +5491,109 @@ async function psdComposite(file){
   g.putImageData(im, 0, 0);
   const o = document.createElement('canvas'); o.width = W; o.height = H; const og = o.getContext('2d'); og.fillStyle = '#fff'; og.fillRect(0, 0, W, H); og.drawImage(c, 0, 0); return o;
 }
+/* ================= 노벨AI로 그림 바로 만들기 (윈도우 프로그램 전용) =================
+   브라우저는 노벨AI에 바로 요청할 수 없어서(CORS) 프로그램이 대신 보낸다(desktop/main.js의 nai-gen).
+   장면 목록을 넣으면 ① AI가 프롬프트를 만들고 ② 노벨AI가 그려서 ③ 장면 노트에 저장한다. 사이트에 일일이 넣지 않아도 된다. */
+const NAI_SIZE = {portrait: [832, 1216], landscape: [1216, 832], square: [1024, 1024]};
+const NG = {run: false, stop: false, done: 0, fail: 0};
+const naiToken = () => store.get('naiKey', '');
+function ngStat(t){ const el = $('#ngStat'); if (el) el.textContent = t; }
+function ngBusy(on){ NG.run = on; $('#pane-nai')?.classList.toggle('ngbusy', on); $('#ngGo').disabled = on; $('#ngStop').hidden = !on; }
+
+// 프롬프트 묶음 → 노벨AI 요청 본문. V4 이상은 인물마다 칸이 따로 있다.
+function naiBody(p, seed){
+  const [w, h] = NAI_SIZE[$('#ngSize').value] || NAI_SIZE.portrait;
+  const model = $('#ngModel').value.trim() || 'nai-diffusion-4-5-full';
+  const steps = Math.max(1, Math.min(50, +$('#ngSteps').value || 28));
+  const chars = (p.chars || []).slice(0, 6);
+  const pos = c => { const m = /^(\d)[,:](\d)$/.exec(String(c.position || '').trim()); return m ? {x: +m[1] / 5 + 0.1, y: +m[2] / 5 + 0.1} : {x: 0.5, y: 0.5}; };
+  const cp = chars.map(c => ({prompt: c.prompt, uc: c.negative || '', center: pos(c), enabled: true}));
+  return {
+    input: p.base, model, action: 'generate',
+    parameters: {
+      params_version: 3, width: w, height: h, scale: +$('#ngScale').value || 5,
+      sampler: 'k_euler_ancestral', steps, n_samples: 1, ucPreset: 0, qualityToggle: true,
+      autoSmea: false, dynamic_thresholding: false, controlnet_strength: 1, legacy: false,
+      add_original_image: true, cfg_rescale: 0, noise_schedule: 'karras', legacy_v3_extend: false,
+      skip_cfg_above_sigma: null, use_coords: cp.some(c => c.center.x !== 0.5 || c.center.y !== 0.5),
+      legacy_uc: false, normalize_reference_strength_multiple: true,
+      seed: seed ?? Math.floor(Math.random() * 4294967295),
+      characterPrompts: cp,
+      v4_prompt: {caption: {base_caption: p.base, char_captions: cp.map(c => ({char_caption: c.prompt, centers: [c.center]}))}, use_coords: cp.some(c => c.center.x !== 0.5 || c.center.y !== 0.5), use_order: true},
+      v4_negative_prompt: {caption: {base_caption: p.neg, char_captions: cp.map(c => ({char_caption: c.uc, centers: [c.center]}))}, legacy_uc: false},
+      negative_prompt: p.neg, deliberate_euler_ancestral_bug: false, prefer_brownian: true,
+    },
+  };
+}
+// 한 장 그려서 장면 노트에 저장
+async function naiOne(p, desc){
+  const r = await window.nvDesktop.naiGen(naiToken(), naiBody(p));
+  if (!r?.ok) throw new Error(r?.status === 401 ? '토큰이 맞지 않아요 (노벨AI 토큰을 다시 넣어 주세요)' : r?.status === 402 ? '남은 생성 수가 없어요' : r?.status === 429 ? '너무 자주 보냈어요. 잠시 뒤 다시 해 주세요' : (r?.text || '실패'));
+  let blob;
+  if (r.images?.length) blob = new Blob([Uint8Array.from(atob(r.images[0]), c => c.charCodeAt(0))], {type: 'image/png'});
+  else { const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); blob = new Blob([await f.async('arraybuffer')], {type: 'image/png'}); }
+  const im = await loadImgEl(blob);
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);
+  const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
+  const rec = {id: uid(), work: cur?.key || '', workName: cur?.name || '노벨AI', epName: (desc || '그림').slice(0, 40), where: {}, note: desc || '',
+    blob: await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92)), thumb: await new Promise(res => tc.toBlob(res, 'image/jpeg', 0.8)), base: null, strokes: null, t: Date.now()};
+  await idb.tx('readwrite', s => s.put(rec), 'scraps'); window.gdSoon?.(); renderScraps();
+  return rec;
+}
+// 장면 설명 → 프롬프트(AI). naiGo 와 같은 길을 쓴다.
+async function naiPromptFor(desc){
+  const rating = $('#naiRating').value, dict = naiCharsDict();
+  const c = await client('#naiProv'); if (!c) throw new Error('AI 설정이 필요해요');
+  const content = [{type: 'text', text:
+`용도: ${$('#naiUse').selectedOptions[0].text}
+등급: ${rating === 'nsfw' ? '성인(nsfw). 성인 플랫폼용이고 모든 인물은 성인이다. 각 인물 prompt에 adult를 넣는다.' : '일반(safe). 노출·성적 요소 없이.'}
+인물 사전:
+${dict.length ? dict.join('\n') : '(없음 — 장면 설명에서 외형을 정해 태그로 쓴다)'}
+
+장면:
+${desc}`}];
+  const res = await stream(c, {messages: [{role: 'user', content}], system: SYSTEM_NAI, format: {type: 'json_schema', schema: NAI_SCHEMA}});
+  if (!res.ok) throw new Error((res.note || '프롬프트 실패').trim().slice(0, 80));
+  const p = naiPack(parseJSON(res.text));
+  if (rating === 'nsfw' && MINOR_RE.test([p.base, ...p.chars.map(x => x.prompt)].join(' '))) throw new Error('미성년을 떠올리게 하는 태그가 섞여서 건너뛰었어요');
+  return p;
+}
+
+/* ---------- 묶음 돌리기 ---------- */
+$('#ngGo').onclick = async () => {
+  if (NG.run) return;
+  if (!DESKTOP) return toast('그림 바로 만들기는 윈도우 프로그램에서만 돼요');
+  if (!naiToken()) { openTool('nai'); return toast('노벨AI 토큰을 먼저 넣어 주세요'); }
+  const lines = $('#ngList').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const each = Math.max(1, Math.min(8, +$('#ngEach').value || 1));
+  const useLast = !lines.length;
+  if (useLast && !naiState.last) return toast('장면을 한 줄에 하나씩 적거나, 먼저 프롬프트를 하나 만들어 주세요');
+  if ($('#naiRating').value === 'nsfw' && !adultGuard(lines.join('\n') + '\n' + naiCharsDict().join('\n'), 'adult')) return;
+  const jobs = useLast ? [{desc: $('#naiIn').value.trim() || '방금 만든 프롬프트', p: naiState.last}] : lines.map(desc => ({desc, p: null}));
+  NG.stop = false; NG.done = 0; NG.fail = 0; ngBusy(true);
+  const total = jobs.length * each;
+  for (const job of jobs){
+    if (NG.stop) break;
+    try{
+      if (!job.p){ ngStat(`프롬프트 만드는 중… ${esc(job.desc).slice(0, 24)}`); job.p = await naiPromptFor(job.desc); renderNai(job.p); const h = store.get('naiHist', []); h.unshift({t: Date.now(), desc: job.desc, p: job.p}); store.set('naiHist', h.slice(0, 30)); renderNaiHist(); }
+      for (let i = 0; i < each; i++){
+        if (NG.stop) break;
+        ngStat(`그리는 중 ${NG.done + NG.fail + 1}/${total} · ${job.desc.slice(0, 24)}`);
+        try{ await naiOne(job.p, job.desc); NG.done++; }
+        catch(e){ NG.fail++; ngStat('멈췄어요: ' + e.message); if (/토큰|생성 수/.test(e.message)){ NG.stop = true; break; } }
+        if (!NG.stop && NG.done + NG.fail < total) await new Promise(r => setTimeout(r, 1200));   // 너무 빨리 보내지 않는다
+      }
+    }catch(e){ NG.fail++; ngStat('건너뜀: ' + e.message); }
+  }
+  ngBusy(false);
+  ngStat(`끝났어요 · 만든 그림 ${NG.done}장${NG.fail ? ` · 실패 ${NG.fail}` : ''}${NG.stop ? ' · 멈춤' : ''}`);
+  if (NG.done) toast(`그림 ${NG.done}장을 장면 노트에 저장했어요`);
+};
+$('#ngStop').onclick = () => { NG.stop = true; ngStat('멈추는 중… (그리던 한 장은 끝나요)'); };
+$('#naiKey').value = ''; keySaved('naiKey');
+$('#ngSave').onclick = () => saveKey('naiKey');
+$('#ngDel').onclick = () => delKey('naiKey');
+if (DESKTOP) $$('.nai-desktop').forEach(el => el.hidden = false); else $('#ngWeb').hidden = false;
 </script>
 </body>
 </html>
