@@ -79,11 +79,16 @@
         <div class="hint" style="margin:8px 0 4px"><b>말투</b> — 대사를 쓸 때 쓰는 한국어 설명</div>
         <textarea id="wtVoice" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 말투&#10;카엘: 낮은 반말, 짧고 명령적. 감정은 말끝을 흐리는 걸로만 드러낸다&#10;레비안: 짧은 존대, 과묵. 형을 '형님'이라 부른다"></textarea>
       </details>
+      <div class="row tight"><label>그림 모델</label><select id="wtModel" class="grow"><option value="nai-diffusion-5-full">V5 Full · 성인 가능 (권장)</option><option value="nai-diffusion-5-curated">V5 Curated · 일반만</option><option value="nai-diffusion-4-5-full">V4.5 Full</option></select></div>
+      <div class="hint" id="wtModelHint"></div>
       <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="custom">직접 쓰기</option></select></div>
       <div class="row tight" id="wtMonoRow" hidden><label>단색</label><select id="wtMono"><option value="cold blue">cold blue · 7년 전 가이드</option><option value="red">red · 명부</option><option value="gold">gold · 흑요룡</option><option value="white and grey">white and grey · 날개</option><option value="teal">teal · 인어</option><option value="amber">amber · 성녀</option><option value="magenta">magenta · 아이돌</option><option value="dusty orange">dusty orange · 백신</option><option value="moonlight blue">moonlight blue · 늑대</option><option value="warm sepia">warm sepia · 캠퍼스</option></select></div>
       <div class="row tight" id="wtFrameRow" hidden><label>액자</label><select id="wtFrame"><option value="mirror">거울 너머</option><option value="photo">젖은 사진 너머</option><option value="tank">수조 유리 너머</option><option value="shutter">셔터 틈 너머</option><option value="fence">철조망 너머</option><option value="booth">녹음 부스 유리 너머</option><option value="none">쓰지 않기</option></select></div>
       <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
-      <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요. 등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
+      <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요.</div>
+      <div class="row tight"><label>등급</label><select id="wtRating"><option value="safe">일반</option><option value="nsfw">성인 (19금)</option></select>
+        <label>수위</label><select id="wtHeat"><option value="tease">은근하게 · 분위기와 암시</option><option value="mid" selected>보통 · 직접적이되 절제</option><option value="hard">직접적으로 · 노골적인 묘사</option></select></div>
+      <div class="hint" id="wtRatingHint">성인으로 두면 줄거리와 대사, 컷 지시가 전부 성인 기준으로 나와요. 모든 인물은 성인이어야 해요.</div>
       <div class="row tight"><label>줄거리 분량</label><select id="wtSynLen"><option value="short">짧게 · 3~6문장</option><option value="mid" selected>보통 · 10문장 안팎</option><option value="long">길게 · 장면마다 한 줄씩</option><option value="arc">아주 길게 · 화 나누기까지</option></select></div>
       <div class="row"><button id="wtSynGo" class="grow">줄거리 길게 쓰기</button><button id="wtSynMore">이어서 더 쓰기</button><button id="wtSynStop" hidden>멈추기</button></div>
       <div class="hint">줄거리만 먼저 늘려 보고, 마음에 들면 아래에서 대본으로 넘기면 돼요.</div>

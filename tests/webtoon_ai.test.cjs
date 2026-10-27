@@ -63,6 +63,22 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   const nb = nreq[0].parameters;
   console.log('dark style:', nb.v4_prompt.caption.base_caption.includes('1.2::red monochrome ::') && nb.v4_prompt.caption.base_caption.includes('1.15::seen through a mirror ::'), '| film grain kept:', /film grain/.test(nb.v4_prompt.caption.base_caption) && !/film grain/.test(nb.negative_prompt), '| neg bishounen:', nb.negative_prompt.includes('bishounen'));
   console.log('fixed gen:', nreq[0].model, nb.width + 'x' + nb.height, nb.steps, nb.scale, nb.sampler, nb.noise_schedule, nb.cfg_rescale, nb.ucPreset, nb.prefer_brownian);
+  // 성인 등급: 입 다물기·웃음 금지가 풀리고 검열 방지와 수위 태그가 들어간다
+  await p.evaluate(() => { window.__nai = []; document.querySelector('#wtAuto').click(); });
+  await p.waitForTimeout(200);
+  await p.selectOption('#wtRating', 'nsfw'); await p.selectOption('#wtHeat', 'hard'); await p.waitForTimeout(150);
+  console.log('model hint nsfw:', (await p.textContent('#wtModelHint')).slice(0, 10), '| model:', await p.$eval('#wtModel', e => e.value), '| shared:', await p.$eval('#ngModel', e => e.value));
+  await p.selectOption('#wtModel', 'nai-diffusion-5-curated'); await p.waitForTimeout(150);
+  console.log('curated warn:', (await p.textContent('#wtModelHint')).startsWith('⚠'));
+  await p.selectOption('#wtModel', 'nai-diffusion-5-full'); await p.waitForTimeout(150);
+  await p.evaluate(() => document.querySelector('#wtAutoX').click());
+  await p.mouse.click(bx.x + bx.w * 0.5, bx.y + bx.h * 0.25); await p.waitForTimeout(200);
+  await p.click('#wtImgGen'); await p.waitForTimeout(1800);
+  const ad = (await p.evaluate(() => window.__nai))[0].parameters;
+  const ab = ad.v4_prompt.caption.base_caption, an = ad.negative_prompt;
+  console.log('adult pos:', /\bnsfw\b/.test(ab) && /uncensored/.test(ab) && /open mouth/.test(ab) && !/closed mouth/.test(ab));
+  console.log('adult neg:', !/(^|,\s)(smile|teeth|open mouth)(,|$)/.test(an) && /mosaic censoring/.test(an) && !/\bnsfw\b/.test(an));
+  console.log('adult char tag:', ad.characterPrompts.every(c => /\badult\b/.test(c.prompt)), '| model:', (await p.evaluate(() => window.__nai))[0].model);
   console.log('ERRORS:', errs.length ? errs : 'none');
   await b.close();
 })();
