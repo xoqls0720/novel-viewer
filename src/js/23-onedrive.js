@@ -2,13 +2,13 @@
 // 로그인은 마이크로소프트 계정(PKCE, 비밀번호 없음). 웹·아이패드는 이 페이지로 돌아오는 방식, 윈도우 프로그램은 기본 브라우저 + localhost.
 // 맞추기 파일은 OneDrive '앱/Novelist' 폴더(approot)에만 쓰고, 작품 폴더는 읽기만 한다.
 // 다시 쓰는 토큰(refresh token)은 'nv.' 밖에 둬서 백업·동기화 파일에 섞이지 않게 한다.
-const OD_CLIENT_ID = '';   // 앱 등록 후 여기에 넣으면 기기마다 ID를 넣지 않아도 된다(비밀 값이 아니다)
+const OD_CLIENT_ID = 'ff9f05a4-fea1-4696-b178-4978ba3d2a01';   // 앱 등록 후 여기에 넣으면 기기마다 ID를 넣지 않아도 된다(비밀 값이 아니다)
 var OD = {token: null, exp: 0, warned: false};
 function odClient(){ return store.get('od.client', '') || OD_CLIENT_ID; }
 function odAuthBase(){ return 'https://login.microsoftonline.com/consumers/oauth2/v2.0'; }
 function odGraph(){ return 'https://graph.microsoft.com/v1.0'; }
 function odScope(){ return 'Files.Read Files.ReadWrite.AppFolder offline_access'; }
-function odRedirect(){ return location.origin + location.pathname; }
+function odRedirect(){ return location.origin + location.pathname.replace(/index\.html$/, ''); }   // 앱 등록에는 폴더 주소(…/novel-viewer/) 하나만 넣으면 되게
 function odWebOk(){ return location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname); }
 function odReady(){ return !!odClient() && (DESKTOP || odWebOk()); }
 function SYNC_OD(){ return store.get('sync.backend', '') === 'od'; }
