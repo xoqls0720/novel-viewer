@@ -1418,11 +1418,14 @@ body:not(.is-desktop) .nai-only{display:none!important}
       <div class="row tight" id="wtFrameRow" hidden><label>액자</label><select id="wtFrame"><option value="mirror">거울 너머</option><option value="photo">젖은 사진 너머</option><option value="tank">수조 유리 너머</option><option value="shutter">셔터 틈 너머</option><option value="fence">철조망 너머</option><option value="booth">녹음 부스 유리 너머</option><option value="none">쓰지 않기</option></select></div>
       <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
       <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요. 등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
+      <div class="row tight"><label>줄거리 분량</label><select id="wtSynLen"><option value="short">짧게 · 3~6문장</option><option value="mid" selected>보통 · 10문장 안팎</option><option value="long">길게 · 장면마다 한 줄씩</option><option value="arc">아주 길게 · 화 나누기까지</option></select></div>
+      <div class="row"><button id="wtSynGo" class="grow">줄거리 길게 쓰기</button><button id="wtSynMore">이어서 더 쓰기</button><button id="wtSynStop" hidden>멈추기</button></div>
+      <div class="hint">줄거리만 먼저 늘려 보고, 마음에 들면 아래에서 대본으로 넘기면 돼요.</div>
       <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
       <div id="wtSynBox" hidden>
-        <div class="hint" style="margin:4px 0 4px"><b>AI가 채운 줄거리</b> — 고쳐서 다시 만들어도 돼요</div>
+        <div class="hint" style="margin:4px 0 4px"><b>줄거리</b> — 고쳐 쓰거나 이어서 더 늘려도 돼요</div>
         <textarea id="wtSyn" style="min-height:84px"></textarea>
-        <div class="row tight"><button id="wtSynUse">이 줄거리로 다시 만들기</button></div>
+        <div class="row tight"><button id="wtSynUse">이 줄거리로 대본 만들기</button><span class="hint grow" id="wtSynLenOut"></span></div>
       </div>
       <div class="hint" id="wtAutoStat"></div>
       <div class="row nai-only"><button id="wtGenAll" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
@@ -6475,11 +6478,12 @@ function wtMergeCast(cast){
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
 let wtAbort = null;
-$('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); $('#wtSyn').value = WT.proj.synopsis || ''; $('#wtSynBox').hidden = !WT.proj.synopsis; };
+$('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); $('#wtSyn').value = WT.proj.synopsis || ''; $('#wtSynBox').hidden = !WT.proj.synopsis; wtSynStat(); };
 $('#wtAutoX').onclick = () => { $('#wtAutoBox').hidden = true; };
 $('#wtAutoStop').onclick = () => wtAbort?.abort();
 $('#wtAutoGo').onclick = async () => {
-  const story = $('#wtStory').value.trim(); if (!story) return toast('줄거리를 적어 주세요');
+  const story = ($('#wtSyn').value.trim() && !$('#wtSynBox').hidden) ? $('#wtSyn').value.trim() : $('#wtStory').value.trim();
+  if (!story) return toast('줄거리를 적어 주세요');
   if (wtAbort) return;
   const rating = $('#naiRating').value, dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(story + '\n' + dict.join('\n'), 'adult')) return;
@@ -6494,7 +6498,8 @@ $('#wtAutoGo').onclick = async () => {
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
   let sc; try{ sc = parseJSON(res.text); }catch{ return wtAutoStat('대본을 읽지 못했어요. 다시 눌러 주세요.'); }
   const newCast = wtMergeCast(sc.cast); wtMergeVoice(sc.cast);
-  if (sc.synopsis){ WT.proj.synopsis = String(sc.synopsis).slice(0, 2000); $('#wtSyn').value = WT.proj.synopsis; $('#wtSynBox').hidden = false; }
+  // 길게 써 둔 줄거리가 있으면 대본이 만든 짧은 줄거리로 덮지 않는다
+  if (sc.synopsis && !$('#wtSyn').value.trim()){ WT.proj.synopsis = String(sc.synopsis).slice(0, 4000); $('#wtSyn').value = WT.proj.synopsis; $('#wtSynBox').hidden = false; wtSynStat(); }
   const added = wtBuildFromScript(sc); if (!added.length) return wtAutoStat('쪽이 비어 있어요. 줄거리를 조금 더 구체적으로 적어 주세요.');
   if (wtBlank()){ WT.proj.pages = added; WT.pi = 0; } else { WT.proj.pages.push(...added); WT.pi = WT.proj.pages.length - added.length; }
   if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
@@ -6550,8 +6555,82 @@ $('#wtVoice').value = store.get('set.wtVoice', '');
 $('#wtVoice').oninput = () => { clearTimeout(WT.vcT); WT.vcT = setTimeout(() => store.set('set.wtVoice', $('#wtVoice').value), 500); };
 $('#wtAuto').addEventListener('click', () => { $('#wtChars').value = $('#naiChars').value; $('#wtVoice').value = store.get('set.wtVoice', ''); });
 
-$('#wtSynUse').onclick = () => { const v = $('#wtSyn').value.trim(); if (!v) return; $('#wtStory').value = v; WT.proj.synopsis = v; $('#wtAutoGo').click(); };
+$('#wtSynUse').onclick = () => { const v = $('#wtSyn').value.trim(); if (!v) return toast('줄거리가 비어 있어요'); WT.proj.synopsis = v; $('#wtAutoGo').click(); };
 $('#wtSyn').oninput = () => { if (WT.proj) WT.proj.synopsis = $('#wtSyn').value; };
+
+/* ================= 줄거리 길게 쓰기 ================= */
+const WT_SYN_LEN = {
+  short: {n: '3~6문장', beats: 0, say: '짧게. 한 장면의 흐름만.'},
+  mid:   {n: '10문장 안팎', beats: 5, say: '보통. 들어가는 장면, 사건, 감정이 꺾이는 곳, 끝.'},
+  long:  {n: '18~25문장', beats: 10, say: '길게. 장면마다 한 줄씩 적어 컷으로 바로 옮길 수 있게.'},
+  arc:   {n: '30문장 이상', beats: 14, say: '아주 길게. 화로 나누고, 화마다 어디서 끊어 다음 화를 보고 싶게 할지까지.'},
+};
+const WT_SYN_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['title', 'logline', 'synopsis', 'beats', 'cast'],
+  properties: {
+    title: {type: 'string', description: '이번 화(또는 이 이야기) 제목'},
+    logline: {type: 'string', description: '한 줄 소개. 20~40자'},
+    synopsis: {type: 'string', description: '줄거리 본문. 한국어 줄글. 요청한 분량을 채운다'},
+    beats: {type: 'array', description: '장면(또는 화) 차례. 비워도 된다', items: {type: 'object', additionalProperties: false, required: ['t', 'c'],
+      properties: {t: {type: 'string', description: '장면 이름 또는 N화'}, c: {type: 'string', description: '그 장면에서 벌어지는 일 1~3문장'}}}},
+    cast: {type: 'array', description: '사전에 없던 인물만', items: {type: 'object', additionalProperties: false, required: ['name', 'tags', 'voice'],
+      properties: {name: {type: 'string'}, tags: {type: 'string'}, voice: {type: 'string'}}}},
+  }
+};
+const SYSTEM_SYN = `너는 한국 웹툰·웹소설 기획자다. 거칠게 적힌 이야기를 쓸 수 있는 줄거리로 늘린다. 모두 한국어.
+- 받은 내용은 바꾸지 않고, 비어 있는 곳만 채운다: 어디서 언제, 둘 사이에 무슨 일이 있었는지, 왜 지금 이 장면인지, 감정이 꺾이는 지점, 끝.
+- 장면이 눈에 보이게 쓴다. 설명하지 말고 무엇을 하는지 쓴다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
+- 인물은 받은 이름을 쓰고, 새 인물이 필요하면 이름을 지어 cast 에 외형 영어 태그와 한국어 말투를 적는다. 모든 인물은 성인이다.
+- beats 는 장면(또는 화) 차례다. 요청한 개수만큼 쓰고, 각 항목은 그 장면에서 실제로 벌어지는 일을 적는다.
+- 밝고 가벼운 분위기로 흐르지 않게 한다. 빛과 그림자, 침묵과 거리로 감정을 만든다.
+출력은 JSON 하나만.`;
+function wtSynText(sc){
+  const parts = [];
+  if (sc.logline) parts.push(String(sc.logline).trim());
+  if (sc.synopsis) parts.push(String(sc.synopsis).trim());
+  for (const b of sc.beats || []) if (b?.c) parts.push(`[${String(b.t || '').trim()}] ${String(b.c).trim()}`);
+  return parts.filter(Boolean).join('\n\n');
+}
+function wtSynStat(){ const v = $('#wtSyn').value.trim(); $('#wtSynLenOut').textContent = v ? `${v.replace(/\s/g, '').length}자` : ''; }
+let wtSynAbort = null;
+function wtSynBusy(on){ $('#wtSynGo').disabled = on; $('#wtSynMore').disabled = on; $('#wtAutoGo').disabled = on; $('#wtSynStop').hidden = !on; }
+async function wtSynRun(more){
+  const seed = (more ? $('#wtSyn').value : ($('#wtSyn').value.trim() || $('#wtStory').value)).trim();
+  if (!seed) return toast('줄거리를 한 줄이라도 적어 주세요');
+  if (wtSynAbort) return;
+  const rating = $('#naiRating').value, dict = naiCharsDict();
+  if (rating === 'nsfw' && !adultGuard(seed + '\n' + dict.join('\n'), 'adult')) return;
+  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
+  const L = WT_SYN_LEN[$('#wtSynLen').value] || WT_SYN_LEN.mid;
+  const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
+  wtSynAbort = new AbortController(); wtSynBusy(true); wtAutoStat(more ? '줄거리를 이어서 쓰는 중…' : '줄거리를 늘리는 중…');
+  const text = `분량: ${L.n} — ${L.say}
+장면(또는 화) 차례 개수: ${L.beats || '없이'}
+등급: ${rating === 'nsfw' ? '성인(nsfw). 모든 인물은 성인이다.' : '일반(safe).'}
+나오는 인물: ${cast.length ? cast.join(', ') : '(알아서 정한다)'}
+인물 사전: ${dict.length ? dict.map(l => l.split(':')[0].trim()).join(', ') : '(없음)'}
+말투: ${wtVoiceDict().join(' / ') || '(없음)'}
+
+${more ? '아래 줄거리를 그대로 두고 그 뒤를 이어서 더 쓴다. 이미 쓴 부분은 다시 쓰지 않는다.' : '아래를 바탕으로 늘려 쓴다.'}
+
+${seed}`;
+  let res; try{ res = await stream(c, {messages: [{role: 'user', content: [{type: 'text', text}]}], system: SYSTEM_SYN, signal: wtSynAbort.signal, format: {type: 'json_schema', schema: WT_SYN_SCHEMA}}); }
+  finally { wtSynAbort = null; wtSynBusy(false); }
+  if (!res.ok) return wtAutoStat((res.note || '줄거리를 못 만들었어요').trim());
+  let sc; try{ sc = parseJSON(res.text); }catch{ return wtAutoStat('줄거리를 읽지 못했어요. 다시 눌러 주세요.'); }
+  const body = wtSynText(sc); if (!body) return wtAutoStat('받은 줄거리가 비어 있어요.');
+  $('#wtSyn').value = more ? ($('#wtSyn').value.trim() + '\n\n' + body) : body;
+  $('#wtSynBox').hidden = false; WT.proj.synopsis = $('#wtSyn').value; wtSynStat(); wtSaveSoon();
+  const n = wtMergeCast(sc.cast); wtMergeVoice(sc.cast);
+  if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
+  wtAutoStat(`줄거리를 ${more ? '이어서 ' : ''}썼어요 · ${$('#wtSyn').value.replace(/\s/g, '').length}자${n ? ` · 새 인물 ${n}명` : ''}. 고쳐 쓰고 '이 줄거리로 대본 만들기'를 누르세요.`);
+}
+$('#wtSynGo').onclick = () => wtSynRun(false);
+$('#wtSynMore').onclick = () => wtSynRun(true);
+$('#wtSynStop').onclick = () => wtSynAbort?.abort();
+$('#wtSyn').addEventListener('input', wtSynStat);
+$('#wtSynLen').value = store.get('set.wtSynLen', 'mid');
+$('#wtSynLen').onchange = () => store.set('set.wtSynLen', $('#wtSynLen').value);
 </script>
 </body>
 </html>
