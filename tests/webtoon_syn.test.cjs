@@ -13,7 +13,7 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   await p.goto(APP); await p.waitForTimeout(700);
   await p.evaluate(() => { localStorage.setItem('nv.set.stStart', 'false'); localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); localStorage.setItem('nv.provider', '"gemini"'); localStorage.setItem('nv.set.provider', '"gemini"'); localStorage.setItem('nv.set.naiChars', JSON.stringify('카엘: 1boy, adult, black hair')); });
   await p.reload(); await p.waitForTimeout(800);
-  await p.click('#btnWebtoon'); await p.click('#wtNew'); await p.waitForTimeout(400); await p.click('#wtAuto'); await p.waitForTimeout(200);
+  await p.click('#gnav [data-g=toon]'); await p.click('#wtNew'); await p.waitForTimeout(400); await p.click('#wtAuto'); await p.waitForTimeout(200);
   await p.fill('#wtStory', '카엘이 눈 오는 날 신부를 맞이함');
   // 기본은 일반 등급: 성인 지침이 가지 않는다
   await p.click('#wtSynGo'); for (let i = 0; i < 20; i++){ if (sent.length) break; await p.waitForTimeout(200); }
@@ -45,7 +45,7 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   console.log('script adult too:', /등급은 성인\(19금\)/.test(sent[2]) && /노골적으로, 끝까지/.test(sent[2]));
   // 다시 열어도 줄거리가 남아 있다
   await p.click('#wtAutoX'); await p.waitForTimeout(1200); await p.click('#wtClose'); await p.waitForTimeout(300);
-  await p.reload(); await p.waitForTimeout(700); await p.click('#btnWebtoon'); await p.waitForTimeout(300); await p.click('#wtList .it'); await p.waitForTimeout(600); await p.click('#wtAuto'); await p.waitForTimeout(200);
+  await p.reload(); await p.waitForTimeout(700); await p.click('#gnav [data-g=toon]'); await p.waitForTimeout(300); await p.click('#wtList .it'); await p.waitForTimeout(600); await p.click('#wtAuto'); await p.waitForTimeout(200);
   console.log('kept after reload:', (await p.inputValue('#wtSyn')).includes('[3장]'));
   console.log('ERRORS:', errs.length ? errs : 'none');
   await b.close();

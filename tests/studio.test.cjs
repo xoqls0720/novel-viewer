@@ -13,7 +13,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   });
   await p.goto(APP); await p.waitForTimeout(1000);
   await p.evaluate(() => localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')));
-  await p.click('#btnStudio'); await p.waitForTimeout(500);
+  await p.click('#gnav [data-g=write]'); await p.waitForTimeout(500);
   await p.fill('#stTitle', '1화 검을 뽑다');
   await p.click('#stText'); await p.keyboard.type('“거기 서라.”\n\n청명이 돌아섰다. 바람이 불었다. 청명은 웃었다.\n\n', {delay:1});
   await p.waitForTimeout(900);
@@ -53,10 +53,12 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   await p.click('#stProjInfo'); await p.fill('#stPLog', '천하제일검이 막내로 깨어난다'); await p.press('#stPLog', 'Tab'); await p.waitForTimeout(100); console.log('meta:', await p.textContent('#stProjMeta'));
   // 판 기록
   await p.click('.st-rail [data-view=write]'); await p.keyboard.press('Control+s'); await p.waitForTimeout(400); await p.click('[data-itab=snap]'); console.log('snaps:', await p.$$eval('#stSnaps .it', e => e.length));
-  // 다시 열면 집필실부터
+  // 다시 열면 홈(오늘의 책상)부터, '집필실부터' 를 켜 두면 집필실부터
+  await p.reload(); await p.waitForTimeout(1200); console.log('home first:', await p.isVisible('#home'), !(await p.isVisible('#studio')), '| desk:', await p.textContent('#hDesk h2'));
+  await p.evaluate(() => localStorage.setItem('nv.set.stStart', 'true'));
   await p.reload(); await p.waitForTimeout(1200); console.log('auto studio:', await p.isVisible('#studio'));
-  await p.click('#stToLib'); console.log('to library:', !(await p.isVisible('#studio')));
-  await p.click('#btnStudio'); await p.waitForTimeout(300);
+  await p.click('#gnav [data-g=lib]'); console.log('to library:', !(await p.isVisible('#studio')));
+  await p.click('#gnav [data-g=write]'); await p.waitForTimeout(300);
   await p.setViewportSize({width:390, height:844}); await p.waitForTimeout(400); await p.screenshot({path: path.join(OUT, 'v7_phone.png')});
   await p.click('#stSideTg'); await p.waitForTimeout(200); await p.screenshot({path: path.join(OUT, 'v7_phone_side.png')});
   console.log('ERRORS:', errs.length ? errs : 'none');

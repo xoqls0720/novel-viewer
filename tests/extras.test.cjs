@@ -11,9 +11,9 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   console.log('title:', await p.title(), '| brand:', await p.textContent('.brand h1'));
   // 아이패드 세로(1024px): 서재·도구 덮개가 열리는지
   console.log('mobile css@1024:', await p.evaluate(() => matchMedia('(max-width:1100px)').matches));
-  await p.click('#tgSide'); await p.waitForTimeout(200); console.log('side open:', await p.evaluate(() => getComputedStyle(document.querySelector('aside')).display) !== 'none');
+  await p.click('#gnav [data-g=lib]'); await p.waitForTimeout(200); console.log('side open:', await p.isVisible('#libPage'));   // 서재는 이제 옆 칸이 아니라 한 판
   await p.setInputFiles('#pickFolder', path.join(DATA,'vt2')); await p.waitForTimeout(900);
-  await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(900); await p.click('#coachOk').catch(()=>{});
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(900); await p.click('#coachOk').catch(()=>{});
   await p.click('#tgTool'); await p.waitForTimeout(300); console.log('tool open@1024:', await p.evaluate(() => getComputedStyle(document.querySelector('.tool')).display) !== 'none');
   await p.screenshot({path:'ux/ipad_tool.png'});
   // 떠오른 문장
@@ -26,7 +26,7 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   await p.click('#aiCraft'); await p.waitForTimeout(300); console.log('no project toast ok');
   await p.click('#toolClose').catch(()=>{});
   await p.evaluate(() => document.querySelector('#btnStudio').click()); await p.waitForTimeout(600);   // 첫 작품 자동 생성
-  await p.click('#stToLib'); await p.waitForTimeout(300);
+  await p.click('#gnav [data-g=lib]'); await p.waitForTimeout(300);
   await p.evaluate(() => document.querySelector('#app').classList.remove('show-side'));
   await p.click('#tgTool'); await p.click('.tabs button[data-tab=ai]'); await p.click('#aiCraft'); await p.waitForTimeout(300);
   console.log('craft saved:', await p.evaluate(() => { const ps = JSON.parse(localStorage.getItem('nv.st.projects')); const b = JSON.parse(localStorage.getItem('nv.st.bible.' + ps[0].id) || '[]'); return b.map(x => x.kind + ':' + x.title); }));

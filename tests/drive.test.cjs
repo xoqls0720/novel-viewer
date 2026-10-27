@@ -35,12 +35,12 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   console.log('sources:', await p.$$eval('#srcList .src b', e => e.map(x => x.textContent)), '| status:', await p.textContent('#srcList .st'));
   await p.keyboard.press('Escape');
   console.log('works:', await p.$$eval('.grid .card .t', e => e.map(x => x.textContent)));
-  await p.click('.grid .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
   console.log('ep text:', (await p.textContent('#reader .novel')).includes('드라이브에서 온 1화'), '| media hits:', mediaHits);
   // 다시 켜면(인터넷 없이) 목록·받은 화가 그대로
   online = false; await p.reload(); await p.waitForTimeout(1800);
   console.log('offline works:', await p.$$eval('.grid .card .t', e => e.map(x => x.textContent)));
-  await p.click('.grid .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
   console.log('offline ep text:', (await p.textContent('#reader .novel')).includes('드라이브에서 온 1화'));
   console.log('sync keeps lib out:', await p.evaluate(() => !/^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.)/.test('lib.sources') ? 'no' : 'yes'));
   console.log('ERRORS:', errs.length ? errs : 'none'); await b.close();

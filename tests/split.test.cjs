@@ -7,7 +7,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   await p.goto(APP); await p.waitForTimeout(800);
   await p.evaluate(() => localStorage.setItem('nv.set.stStart','false')); await p.reload(); await p.waitForTimeout(800);
   await p.setInputFiles('#pickFolder', path.join(DATA,'vt2')); await p.waitForTimeout(900);
-  await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(900); await p.click('#coachOk').catch(()=>{});
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(900); await p.click('#coachOk').catch(()=>{});
   // 떠오른 문장 태그
   await p.click('#tgTool').catch(()=>{}); await p.click('.tabs button[data-tab=notes]');
   await p.fill('#ideaIn', '너는 왜 웃어'); await p.click('#ideaQuick [data-t=대사]'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);

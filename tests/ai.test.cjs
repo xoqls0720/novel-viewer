@@ -27,7 +27,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   await p.goto(APP); await p.waitForTimeout(1200);
   await p.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await p.waitForTimeout(800);
   console.log('placeholder hue:', await p.$$eval('.card .ph', e => e.slice(0,3).map(x => x.style.getPropertyValue('--h'))));
-  await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(800);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(800);
   console.log('coach shown:', !(await p.$eval('#coach', c => c.hidden))); await p.click('#coachOk');
   console.log('mini:', await p.textContent('#mini'), '| app classes:', await p.$eval('#app', a => a.className));
   // 책갈피

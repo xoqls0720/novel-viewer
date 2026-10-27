@@ -25,7 +25,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   await p.evaluate(() => { localStorage.setItem('nv.set.stStart', 'false'); localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); localStorage.setItem('nv.provider', '"gemini"'); localStorage.setItem('nv.set.provider', '"gemini"'); localStorage.setItem('nv.naiKey', JSON.stringify('nai-token-x'));
     localStorage.setItem('nv.set.naiChars', JSON.stringify('카엘: 1boy, adult, black hair, golden eyes, black coat\n레비안: 1boy, adult, short silver hair, grey eyes, black armor')); localStorage.setItem('nv.set.naiStyle', JSON.stringify('masterpiece, korean webtoon style')); localStorage.setItem('nv.set.wtVoice', JSON.stringify('카엘: 낮은 반말, 짧고 명령적')); });
   await p.reload(); await p.waitForTimeout(800);
-  await p.click('#btnWebtoon'); await p.click('#wtNew'); await p.waitForTimeout(400);
+  await p.click('#gnav [data-g=toon]'); await p.click('#wtNew'); await p.waitForTimeout(400);
   await p.click('#wtAuto'); await p.fill('#wtStory', '카엘이 눈 내리는 성문 앞에서 돌아온 신부를 맞이한다.'); await p.fill('#wtPagesN', '2'); await p.fill('#wtCast', '카엘, 이든'); await p.selectOption('#wtAI', 'gemini');
   await p.click('#wtAutoGo'); for (let i = 0; i < 30; i++){ if (/만들었어요/.test(await p.textContent('#wtAutoStat'))) break; await p.waitForTimeout(300); }
   console.log('auto stat:', await p.textContent('#wtAutoStat'));

@@ -19,7 +19,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   const quick = async (fn) => { await p.click('#btnQuick'); await p.waitForTimeout(150); await fn(); await p.keyboard.press('Escape'); await p.waitForTimeout(150); };
   await p.goto(APP); await p.waitForTimeout(1500);
   await p.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await p.waitForTimeout(800);
-  await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(800);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(800);
   console.log('epTitle:', await p.textContent('#epTitle'), '| pageInd:', await p.textContent('#pageInd'));
   // 회차 목록
   await p.click('#epBtn'); await p.waitForTimeout(200); console.log('eplist:', await p.$$eval('#epList .it', e=>e.length)); await p.click('#epList .it >> nth=2'); await p.waitForTimeout(600); console.log('after pick:', await p.textContent('#epTitle'));
@@ -52,12 +52,12 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   const [dl2] = await Promise.all([p.waitForEvent('download', {timeout: 30000}), p.selectOption('#noteExport','mood')]); console.log('mood:', dl2.suggestedFilename());
   const [dl3] = await Promise.all([p.waitForEvent('download', {timeout: 30000}), p.click('#scrapList [data-a=pc]')]); console.log('procreate:', dl3.suggestedFilename());
   // 만화 장면 담기
-  await p.click('.grid .card:has-text("deathnote")'); await p.waitForTimeout(3000);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("deathnote")'); await p.waitForTimeout(3000);
   for (let k=0;k<2;k++){ await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(500); }
   console.log('manga pageInd:', await p.textContent('#pageInd'));
   await p.click('#btnScrap'); await p.waitForTimeout(800); console.log('manga sketch size:', await p.$eval('#skCanvas', c=>c.width+'x'+c.height)); await p.click('#skCancel');
   // 웹툰
-  await p.click('.grid .card:has-text("misaeng")'); await p.waitForTimeout(1500);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("misaeng")'); await p.waitForTimeout(1500);
   await p.$eval('#reader', r => r.scrollTop = 3000); await p.waitForTimeout(800);
   await p.click('#btnScrap').catch(e=>console.log('scrap btn hidden?')); await p.waitForTimeout(800); console.log('webtoon sketch:', await p.isVisible('#sketch'), await p.$eval('#skCanvas', c=>c.width+'x'+c.height)); await p.click('#skCancel').catch(()=>{});
   console.log('immersive after scroll:', await p.$eval('#app', a=>a.classList.contains('immersive')));

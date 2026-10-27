@@ -15,7 +15,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   await p.goto(APP); await p.waitForTimeout(600);
   await p.evaluate(() => localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')));
   await p.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await p.waitForTimeout(800);
-  await p.click('#btnStudio'); await p.waitForTimeout(500);
+  await p.click('#gnav [data-g=write]'); await p.waitForTimeout(500);
   const draft = '그는 갑자기 일어섰다. 그는 갑자기 걸었다. 그는 문을 열었다. 그녀는 정말 너무 놀랐다.\n\n그리고 그는 웃었다. 그것은 이상한 일이었던 것이다. 갑자기 바람이 불었다. 갑자기 비가 왔다.\n\n'.repeat(4);
   await p.evaluate(t => { const ta = document.querySelector('#stText'); ta.value = t; ta.dispatchEvent(new Event('input')); }, draft); await p.waitForTimeout(900);
   // 1) 문장 다듬기 + 이유

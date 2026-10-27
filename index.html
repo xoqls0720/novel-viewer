@@ -569,6 +569,14 @@ details.fold summary .chev{margin-left:auto}
 .od-setup li{margin:3px 0}
 .od-setup code{font-size:11.5px;background:var(--panel-2);padding:1px 5px;border-radius:5px;word-break:break-all}
 .gd-box{margin-top:12px}
+/* 도구 창 탭: 한 줄로 두고 넘치면 옆으로 민다(설정 탭이 혼자 아랫줄로 떨어지지 않게) */
+.tabs{flex-wrap:nowrap;overflow-x:auto;gap:2px;padding-right:8px;mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.tabs button{padding:6px 10px;flex:none}
+@media (max-width:1100px){ .tabs{mask-image:none;-webkit-mask-image:none} }
+.spark{border:1px solid var(--hairline)}
+table.ep td:first-child{font-family:var(--display)}
+a{color:var(--accent);text-underline-offset:2px;text-decoration-color:color-mix(in srgb, var(--accent) 45%, transparent)}
+a:hover{text-decoration-color:currentColor}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -790,9 +798,9 @@ details.fold summary .chev{margin-left:auto}
 .st-hb button{padding:2px 8px;font-size:11px}
 .st-hb .tp{font-size:12px;color:var(--sub);line-height:1.6;margin-top:4px}
 .st-hb .ws{font-size:12px;color:var(--warn);margin-top:3px}
-.spark{width:60px;height:18px;flex:none}
-.spark polyline{fill:none;stroke:var(--faint);stroke-width:1.5}
-.spark.down polyline{stroke:var(--ok)}.spark.up polyline{stroke:var(--warn)}
+#studio .spark{width:60px;height:18px;flex:none;display:inline-block;background:none;border-radius:0}   /* 읽기 화면 작품 탭의 큰 그래프(.spark)와 겹치지 않게 집필실 안으로만 */
+#studio .spark polyline{fill:none;stroke:var(--faint);stroke-width:1.5}
+#studio .spark.down polyline{stroke:var(--ok)}#studio .spark.up polyline{stroke:var(--warn)}
 #stHl mark.hb{background:transparent;border-bottom:2.5px solid var(--warn);border-radius:0}
 .st-rev>div{margin:0 0 10px}
 .st-rev small{display:block;font-size:11px;color:var(--faint);margin-bottom:4px}
@@ -828,6 +836,14 @@ details.fold summary .chev{margin-left:auto}
   #studio.split .st-center{display:flex}
   .st-refpane{position:fixed;left:0;right:0;bottom:0;height:46vh;z-index:4;border-left:0;border-top:1px solid var(--line);box-shadow:var(--shadow-l);border-radius:16px 16px 0 0;overflow:hidden}
 }
+/* 집필실 다듬기: 오른쪽 칸 제목은 금빛 작은 머리글, 칸 사이 숨 고르기, 원고 종이 결 */
+.st-ipane h3{color:var(--brass);font-weight:700;letter-spacing:.06em;margin:20px 0 8px;display:flex;align-items:center;gap:8px}
+.st-ipane h3::after{content:"";flex:1;height:1px;background:var(--hairline)}
+.st-ipane textarea,.st-ipane input[type=text]{background:color-mix(in srgb, var(--panel-2) 35%, var(--panel))}
+.st-page{border-radius:4px;box-shadow:0 1px 1px rgb(0 0 0 / 4%),0 2px 6px rgb(0 0 0 / 4%),0 18px 50px rgb(40 30 10 / 10%)}
+.st-page::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:4px 0 0 4px;background:linear-gradient(180deg, color-mix(in srgb, var(--brass) 45%, transparent), transparent 40%)}
+#studio.focus .st-page::before{display:none}
+.st-pagehead .t{font-size:12.5px;color:var(--sub)}
 /* ---------- 웹툰 만들기 ---------- */
 #wt{position:fixed;inset:0;z-index:36;background:color-mix(in srgb,var(--panel-2) 70%,var(--bg));display:flex;flex-direction:column;font-family:var(--ui)}
 #wt[hidden]{display:none}
@@ -870,6 +886,211 @@ body:not(.is-desktop) .nai-only{display:none!important}
   .wt-side{grid-column:1 / -1;border-left:0;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.08)}
   .wt-pages .pg{width:76px}
 }
+
+/* ================= 새 틀 =================
+   원칙: 길은 메뉴 하나, 한 번에 한 판, 글이 주인공. 색은 상아 종이·먹·놋쇠, 장식은 선 하나와 그림자 하나까지만.
+   이 파일은 맨 뒤에 붙어 앞 스타일을 덮는다. */
+:root{
+  --gw:68px;
+  --bg:#f4f1ea; --panel:#fcfbf8; --panel-2:#efeae0; --ink:#1c1a16; --sub:#6b665c; --faint:#9a9488; --line:#e4ded2; --hairline:#ebe6db;
+  --accent:#23294a; --accent-ink:#fff; --brass:#9c7636; --reader-bg:#fbfaf6;
+  --rail:#151417; --rail-ink:#8e887d; --rail-on:#f1e6cf;
+  --serif:"Gowun Batang","Noto Serif KR",serif;
+  --r:16px; --e1:0 1px 2px rgb(30 24 12 / 5%), 0 8px 24px rgb(30 24 12 / 6%);
+}
+:root[data-theme="sepia"]{--bg:#ece2cd; --panel:#f6eedc; --line:#dccfb1; --hairline:#e3d8bf; --rail:#271f15; --rail-ink:#a8987a}
+:root[data-theme="dark"]{--bg:#111114; --panel:#18181c; --panel-2:#202026; --line:#2a2a31; --hairline:#232329; --rail:#0a0a0c; --rail-ink:#77726a; --rail-on:#e9dbbd; --e1:0 1px 2px rgb(0 0 0 / 40%)}
+:root[data-theme="black"]{--bg:#000; --panel:#0d0d0f; --line:#222226; --hairline:#1a1a1d; --rail:#000; --rail-ink:#6d6962; --rail-on:#e9dbbd; --e1:0 0 0 1px #1c1c20}
+body{background:var(--bg)}
+button{border-radius:12px;box-shadow:none;border-color:var(--line);background:var(--panel)}
+button:hover{background:var(--panel-2)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:none;font-weight:600}
+button.primary:hover{filter:none;background:color-mix(in srgb, var(--accent) 88%, #fff)}
+:root[data-theme="dark"] button.primary,:root[data-theme="black"] button.primary{background:var(--rail-on);border-color:var(--rail-on);color:#141210}
+input[type=text],input[type=search],select,textarea{box-shadow:none;border-color:var(--line);background:var(--panel)}
+
+/* ---------- 메뉴 ---------- */
+#gnav{position:fixed;left:0;top:0;bottom:0;width:var(--gw);z-index:35;background:var(--rail);display:flex;flex-direction:column;align-items:center;gap:2px;padding:calc(16px + var(--sat)) 6px calc(14px + var(--sab));padding-left:calc(6px + var(--sal))}
+#gnav .g-brand{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;margin:0 0 20px;cursor:pointer;background:#c4a467}
+#gnav .g-brand span{font:700 17px/1 var(--serif);color:#17140f}
+#gnav button{all:unset;box-sizing:border-box;width:56px;padding:10px 0 8px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--rail-ink);cursor:pointer;position:relative;transition:color .15s,background .15s}
+#gnav button span{font:600 10.5px/1 var(--ui)}
+#gnav button svg{width:21px;height:21px;stroke-width:1.6}
+#gnav button:hover{color:#e8e2d6}
+#gnav button.on{color:var(--rail-on);background:rgb(255 255 255 / 7%)}
+#gnav button:focus-visible{outline:2px solid var(--rail-on);outline-offset:1px}
+#gnav .g-sp{flex:1}
+#gnav .g-dot{position:absolute;top:8px;right:14px;width:6px;height:6px;border-radius:50%;background:transparent}
+#gnav .g-sync.ok .g-dot{background:#7bc79a}
+
+/* 메뉴 자리만큼 비켜 앉고, 옆 서재 칸은 쓰지 않는다 */
+.app{padding-left:calc(var(--gw) + var(--sal))}
+.app>aside{display:none!important}
+@media (min-width:1101px){ .app,.app.hide-side,.app.hide-tool,.app.hide-side.hide-tool{grid-template-columns:0 1fr 0} .app:not(.hide-tool){grid-template-columns:0 1fr 400px} }
+#studio,#wt{left:var(--gw)!important}
+#studio .st-rail .logo,#stToLib,#stToSet{display:none}
+.tool{background:var(--panel);border-left:1px solid var(--hairline)}
+
+/* ---------- 판(홈·서재) 공통 ---------- */
+.page{position:absolute;inset:0;z-index:4;overflow:auto;background:var(--bg);display:none;-webkit-overflow-scrolling:touch}
+.at-home .home,.at-lib .libpage{display:block}
+.at-home .bar,.at-lib .bar,.at-home .botbar,.at-lib .botbar,.at-home #mini,.at-lib #mini,.at-home #wmap,.at-lib #wmap,.at-home #coach,.at-lib #coach,.at-home .aschip,.at-lib .aschip{display:none!important}
+.pg-wrap{max-width:960px;margin:0 auto;padding:calc(56px + var(--sat)) 48px calc(56px + var(--sab))}
+.pg-head{margin:0 0 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pg-head h1{font:700 32px/1.25 var(--serif);letter-spacing:-0.03em;margin:6px 0 0;color:var(--ink)}
+.h-date{font-size:13px;color:var(--faint);font-weight:500}
+.pg-sub{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 12px}
+.pg-sub h2{font:700 15px/1 var(--ui);margin:0;color:var(--sub);letter-spacing:-0.01em}
+.h-link{border:0;background:none;color:var(--sub);font-size:13px;padding:4px 2px}
+.h-link:hover{background:none;color:var(--ink)}
+
+/* ---------- 홈 ---------- */
+.h-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.h-card{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r);padding:24px;box-shadow:var(--e1);display:flex;flex-direction:column;min-width:0}
+.h-k{font-size:12px;font-weight:700;color:var(--brass);letter-spacing:.04em;margin-bottom:16px}
+.h-pt{display:flex;gap:14px;align-items:center}
+.h-ptx{min-width:0}
+.h-pt h2{font:700 21px/1.3 var(--serif);margin:0;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-sub{font-size:13px;color:var(--sub);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-pcv{flex:0 0 46px;height:64px;border-radius:2px 5px 5px 2px;display:grid;place-items:center;padding:5px;text-align:center;font:700 11px/1.3 var(--serif);color:hsl(var(--h,30) 40% 92%);background:linear-gradient(90deg, rgb(0 0 0 / 20%), transparent 14%), hsl(var(--h,30) 30% 34%);background-size:cover;background-position:center;word-break:keep-all;box-shadow:0 3px 10px rgb(0 0 0 / 14%)}
+.h-today{display:flex;align-items:center;gap:14px;margin:22px 0;padding:14px 0;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.h-ring{width:52px;height:52px;flex:none}
+.h-ring circle{fill:none;stroke-width:6}
+.h-ring .bg{stroke:var(--line)}
+.h-ring .fg{stroke:var(--brass);stroke-linecap:round}
+.h-today b{font:700 22px/1 var(--serif);font-variant-numeric:tabular-nums}
+.h-today span{font-size:13px;color:var(--sub)}
+.h-today small{display:block;font-size:12px;color:var(--faint);margin-top:6px}
+.h-go{margin-top:auto;justify-content:space-between;padding:12px 16px;font-size:14px}
+.h-go span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-empty-t{font:700 19px/1.4 var(--serif);margin:0 0 6px}
+.h-empty-p{font-size:13px;color:var(--sub);margin:0 0 20px;line-height:1.7}
+.h-read .w-resume{all:unset;display:flex;flex-direction:column;gap:14px;cursor:pointer;flex:1}
+.h-read .w-resume[hidden]{display:none}
+.h-read .w-resume .cv{width:96px;height:132px;flex:none;border-radius:2px 6px 6px 2px;overflow:hidden;position:relative;box-shadow:0 8px 20px rgb(30 24 12 / 18%)}
+.h-read .w-resume .cv img{width:100%;height:100%;object-fit:cover}
+.h-read .w-resume .cv .ph{position:absolute;inset:0;background:linear-gradient(90deg, rgb(0 0 0 / 20%), transparent 14%), hsl(var(--h) 30% 34%)}
+.h-read .w-resume .k{display:none}
+.h-read .w-resume .n{font:700 19px/1.3 var(--serif);margin:0}
+.h-read .w-resume .e{font-size:13px;color:var(--sub);margin-top:4px}
+.h-read .w-resume .bar2{height:3px;background:var(--line);border-radius:2px;margin-top:12px;overflow:hidden}
+.h-read .w-resume .bar2 i{display:block;height:100%;background:var(--brass)}
+.h-read .w-resume>svg{display:none}
+.h-read .w-resume:hover .n{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.h-none{font-size:13.5px;color:var(--sub);line-height:1.8;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.h-none[hidden]{display:none}
+.h-memo{display:flex;gap:8px;margin:16px 0 0;padding:6px 6px 6px 18px;background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r);box-shadow:var(--e1);align-items:center}
+.h-memo input{flex:1;min-width:0;border:0;background:none;padding:10px 0;font:400 15px/1.4 var(--serif)}
+.h-memo input:focus{box-shadow:none}
+.h-memo button{border:0;background:none;color:var(--brass);font-weight:700}
+.h-ideas{margin:6px 0 0}
+.h-it{display:flex;align-items:baseline;gap:12px;padding:10px 18px}
+.h-it p{flex:1;margin:0;font:400 14.5px/1.6 var(--serif);color:var(--ink)}
+.h-it p em{font:600 12px var(--ui);font-style:normal;color:var(--brass)}
+.h-it span{font-size:11.5px;color:var(--faint);flex:none}
+.h-projs-wrap{margin-top:36px}
+.h-projs-wrap[hidden]{display:none}
+.h-projs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.h-pj{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;transition:background .15s}
+.h-pj:hover{background:var(--panel)}
+.h-pj .h-pcv{flex-basis:34px;height:48px;font-size:9px}
+.h-pj .tx{display:flex;flex-direction:column;min-width:0}
+.h-pj b{font:700 14.5px/1.3 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-pj span{font-size:12px;color:var(--faint);margin-top:2px}
+
+/* ---------- 서재 판 ---------- */
+.lp-acts{display:flex;gap:8px;flex-wrap:wrap}
+.lp-acts button{padding:8px 14px;font-size:13px}
+#lpBody .side-head{position:static;background:none;border:0;padding:0;margin:0 0 8px;display:block}
+#lpBody .brand,#lpBody #drop,#lpBody .studio-row,#lpBody .side-head>.row.tight:first-of-type{display:none}
+#lpBody .side-head>.row.tight:last-child{display:flex;gap:8px;max-width:420px}
+#lpBody #libSearch{flex:1}
+#lpBody .lib{padding:0}
+#lpBody .lib h4{font:700 13px/1 var(--ui);color:var(--sub);letter-spacing:0;margin:34px 0 16px}
+#lpBody .lib h4::after{display:none}
+#lpBody .grid{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:28px 22px}
+#lpBody .cont{gap:22px;padding-bottom:8px}
+#lpBody .cont .card{flex:0 0 112px}
+
+/* 표지: 꾸밈을 덜고 책답게 — 얇은 등 그림자와 제목만 */
+.card .cv,.card .cv::after{border-radius:2px 6px 6px 2px}
+.card .cv{box-shadow:0 1px 2px rgb(30 24 12 / 10%), 0 8px 18px rgb(30 24 12 / 12%)}
+.card:hover .cv{transform:translateY(-2px);box-shadow:0 2px 4px rgb(30 24 12 / 12%), 0 14px 28px rgb(30 24 12 / 16%)}
+.card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 20%), rgb(0 0 0 / 4%) 6%, transparent 12%), hsl(var(--h) 30% 34%);color:hsl(var(--h) 40% 92%);padding:14px 12px 14px 16px;font:700 14px/1.45 var(--serif);text-shadow:none}
+.card .cv .ph::before,.card .cv .ph::after{display:none}
+:root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 30%), transparent 12%), hsl(var(--h) 22% 24%)}
+.card .cv .kind{display:none}
+.card .t{font:700 13.5px/1.4 var(--serif);margin-top:10px}
+.card .m{font-size:12px}
+
+/* ---------- 읽는 화면: 위 막대는 ← · 제목 · 꼭 필요한 단추만 ---------- */
+.bar{background:color-mix(in srgb, var(--reader-bg) 88%, transparent);border-bottom-color:transparent}
+.botbar{background:color-mix(in srgb, var(--reader-bg) 88%, transparent);border-top-color:transparent}
+.bar .icon,.botbar .icon{color:var(--sub)}
+.bar .icon:hover,.botbar .icon:hover{color:var(--ink);background:var(--panel-2)}
+.epbtn .w{font-size:11.5px;color:var(--faint)}
+.epbtn .e{font:700 15px/1.3 var(--serif)}
+#quick{background:var(--panel);border-color:var(--hairline);box-shadow:0 20px 60px rgb(30 24 12 / 18%)}
+.q-sec{background:none;border:0;box-shadow:none;padding:6px 4px 14px;border-bottom:1px solid var(--hairline);border-radius:0;margin:0 0 10px}
+.q-sec:last-child{border-bottom:0}
+.q-sec>.lab{color:var(--faint);letter-spacing:.02em;font-size:12px}
+
+/* 도구 창: 탭은 차분하게 */
+.tabs{background:var(--panel);border-bottom-color:var(--hairline)}
+.tabs button.on{background:none;color:var(--ink);box-shadow:inset 0 -2px 0 var(--brass);border-radius:0}
+.tabs button{border-radius:0}
+
+/* ---------- 태블릿 (701~1100) ---------- */
+@media (max-width:1100px){
+  .pg-wrap{padding-left:28px;padding-right:28px}
+}
+/* ---------- 폰 (700 이하): 메뉴는 아래 탭, 책을 읽을 때·집필실에서는 숨긴다 ---------- */
+@media (max-width:700px){
+  :root{--gw:0px}
+  #gnav{top:auto;left:0;right:0;width:auto;height:calc(60px + var(--sab));flex-direction:row;justify-content:space-around;padding:6px 4px calc(6px + var(--sab))}
+  #gnav .g-brand,#gnav .g-sp{display:none}
+  #gnav button{width:auto;flex:1;padding:6px 0}
+  #gnav button.on{background:none}
+  body:has(.app:not(.at-home):not(.at-lib)) #gnav,body:has(#studio:not([hidden])) #gnav,body:has(#wt:not([hidden])) #gnav,body:has(.sketch.open) #gnav{display:none}
+  .pg-wrap{padding:calc(36px + var(--sat)) 18px calc(96px + var(--sab))}
+  .pg-head h1{font-size:26px}
+  .h-two{grid-template-columns:1fr}
+  .lp-acts{width:100%} .lp-acts button{flex:1}
+  #lpBody .grid{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:22px 14px}
+}
+.home .pg-head{display:block}
+.lp-acts button{white-space:nowrap}
+
+/* ---------- 쓰기(집필실): 메뉴·목록·종이가 한 결로 ---------- */
+#studio{--desk:var(--bg)}
+.st-rail{background:var(--bg);border-right:0;padding-top:calc(16px + var(--sat))}
+.st-rail button{color:var(--faint)}
+.st-rail button:hover{background:var(--panel-2);color:var(--ink)}
+.st-rail button.on{background:var(--panel);color:var(--ink);box-shadow:var(--e1)}
+.st-binder{background:var(--bg);border-right:1px solid var(--hairline)}
+.st-insp{background:var(--panel);border-left:1px solid var(--hairline)}
+.st-card{background:none;border:1px solid var(--hairline);border-radius:12px;color:var(--sub)}
+.st-bar{height:3px;background:var(--line)}
+.st-bar i{background:var(--brass)}
+.st-bhead b{letter-spacing:.02em;font-size:12px;color:var(--sub)}
+.st-it{border-radius:10px;font-family:var(--serif);font-size:14px}
+.st-it.on{background:var(--panel);color:var(--ink);box-shadow:var(--e1);font-weight:700}
+.st-page{box-shadow:0 1px 2px rgb(30 24 12 / 5%), 0 12px 40px rgb(30 24 12 / 8%);border-radius:6px}
+.st-page::before{display:none}
+.st-ipane h3{color:var(--sub);font-weight:700;letter-spacing:0;font-size:12px}
+.st-ipane h3::after{display:none}
+.st-ipane button{padding:6px 11px;font-size:12.5px}
+#stStats a{color:var(--sub)}
+.st-bar i.ok{background:var(--brass)}
+/* 홈·서재에서도 도구 창(노트·분석·그림 프롬프트)은 열 수 있게 오른쪽 위 단추 하나만 남긴다 */
+.at-home .bar,.at-lib .bar{display:flex!important;background:transparent;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
+.at-home .bar>*,.at-lib .bar>*{visibility:hidden}
+.at-home .bar #tgTool,.at-lib .bar #tgTool{visibility:visible;pointer-events:auto;margin-left:auto}
+/* 태블릿: 집필실의 덮개 칸 — 원고 목록은 메뉴 옆에서, 오른쪽 칸은 오른쪽에서 연다 (읽기 화면의 aside 규칙이 새지 않게) */
+@media (max-width:1100px){
+  #studio .st-binder{left:0!important;right:auto!important}
+  #studio .st-insp{left:auto!important;right:0!important}
+}
 </style>
 </head>
 <body>
@@ -899,9 +1120,21 @@ body:not(.is-desktop) .nai-only{display:none!important}
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
   <symbol id="i-type" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="10" rx="2"/><path d="M7 5h10M7 13h1M11 13h1M15 13h1M8 16h8"/></symbol>
   <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6 9.5V19a1 1 0 0 0 1 1h3.5v-5h3v5H17a1 1 0 0 0 1-1V9.5"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.6 9.1 4.5 4.5 0 0 0 7 18z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-focus" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></symbol>
 </svg>
-<div class="app hide-tool nowork" id="app">
+<nav id="gnav" aria-label="메뉴">
+  <div class="g-brand" title="Novelist"><span>書</span></div>
+  <button data-g="home" title="홈"><svg class="i"><use href="#i-home"/></svg><span>홈</span></button>
+  <button data-g="lib" title="읽기 · 서재"><svg class="i"><use href="#i-book"/></svg><span>읽기</span></button>
+  <button data-g="write" title="쓰기 · 집필실"><svg class="i"><use href="#i-pen"/></svg><span>쓰기</span></button>
+  <button data-g="toon" title="웹툰 만들기"><svg class="i"><use href="#i-cards"/></svg><span>웹툰</span></button>
+  <div class="g-sp"></div>
+  <button data-g="set" class="g-sync" title="설정 · 동기화"><svg class="i"><use href="#i-gear"/></svg><span>설정</span><i class="g-dot"></i></button>
+</nav>
+<div class="app hide-tool hide-side nowork at-lib" id="app">
   <aside>
     <div class="side-head">
       <div class="brand"><h1><span class="dot"></span>Novelist</h1><button class="icon mobile-only" id="sideClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
@@ -921,20 +1154,26 @@ body:not(.is-desktop) .nai-only{display:none!important}
   </aside>
 
   <main>
-    <div class="reader" id="reader"><div class="welcome"><div class="box">
-      <div class="logo"><svg class="i"><use href="#i-book"/></svg></div>
-      <h2>Novelist</h2>
-      <div class="w-resume" id="wResume" hidden></div>
-      <p>소설·웹툰·만화를 한곳에서 읽고,<br>좋은 장면은 표시하고, 바로 분석하고, 내 글로 옮겨요.</p>
-      <div class="row" style="justify-content:center"><button class="primary" id="wFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button><button id="wFiles"><svg class="i"><use href="#i-file"/></svg>파일·zip 열기</button><button id="wStudio"><svg class="i"><use href="#i-pen"/></svg>집필실</button></div>
-      <div class="tiles">
-        <div class="tile"><svg class="i"><use href="#i-book"/></svg><b>읽기</b><span>소설은 스크롤·쪽 넘김, 웹툰은 세로, 만화는 두 쪽 펼침</span></div>
-        <div class="tile"><svg class="i"><use href="#i-pen"/></svg><b>표시하기</b><span>문장 형광펜, 장면을 담아 그 위에 필기</span></div>
-        <div class="tile"><svg class="i"><use href="#i-chart"/></svg><b>분석·쓰기</b><span>회차 수치, Claude 분석, 글쓰기, 노벨AI 프롬프트</span></div>
+    <div class="reader" id="reader"><div class="welcome"></div></div>
+    <section class="page home" id="home" aria-label="홈">
+      <div class="pg-wrap">
+        <header class="pg-head"><div class="h-date" id="hDate"></div><h1 id="hHello">오늘도 한 줄부터.</h1></header>
+        <div class="h-two">
+          <section class="h-card h-write" id="hDesk"></section>
+          <section class="h-card h-read"><div class="h-k">이어 읽기</div><div class="w-resume" id="wResume" hidden></div><div class="h-none" id="hReadNone">아직 읽은 작품이 없어요.<button class="h-link" id="hLibAll">서재로 가기 →</button></div></section>
+        </div>
+        <section class="h-memo"><input type="text" id="hIdeaIn" placeholder="떠오른 문장을 한 줄 남겨 두세요" autocomplete="off"><button id="hIdeaAdd">남기기</button></section>
+        <div class="h-ideas" id="hIdeas"></div>
+        <section class="h-projs-wrap"><div class="pg-sub"><h2>내 작품</h2><button class="h-link" id="wStudio">집필실 열기</button></div><div class="h-projs" id="hProjs"></div></section>
+        <div class="h-hidden" hidden><button id="wFolder"></button><button id="wFiles"></button><span id="hOdT"></span><button id="hOd"></button><button id="hIdeaAll"></button><div id="hShelf"></div><span id="hLibN"></span></div>
       </div>
-      <div class="keys desk-only"><kbd>[</kbd> <kbd>]</kbd> 이전·다음 화 · <kbd>←</kbd> <kbd>→</kbd> 쪽 넘기기 · <kbd>Space</kbd> 자동 스크롤(<kbd>↑</kbd><kbd>↓</kbd> 속도) · <kbd>+</kbd> <kbd>−</kbd> 글자 크기 · <kbd>P</kbd> 폰 화면 · <kbd>T</kbd> 읽어 주기 · <kbd>A</kbd> 도구 · <kbd>/</kbd> 검색 · <kbd>F</kbd> 막대 숨기기</div>
-      <div class="keys mobile-only" style="display:block">화면 가운데를 누르면 막대가 숨고 다시 나와요. 문장을 길게 누르면 형광펜이 떠요.</div>
-    </div></div></div>
+    </section>
+    <section class="page libpage" id="libPage" aria-label="서재">
+      <div class="pg-wrap">
+        <header class="pg-head lp-head"><div><div class="h-date">서재</div><h1>읽을 책</h1></div><div class="lp-acts" id="lpActs"></div></header>
+        <div id="lpBody"></div>
+      </div>
+    </section>
     <div id="dim"></div><div id="warm"></div>
     <div class="mini" id="mini"></div>
     <div class="aschip" id="asChip" hidden><span id="asTxt"></span><button id="asSlow" title="느리게 (↓)">−</button><button id="asFast" title="빠르게 (↑)">+</button><button id="asStop" title="멈추기 (Space)">멈춤</button></div>
@@ -942,7 +1181,7 @@ body:not(.is-desktop) .nai-only{display:none!important}
     <div id="wmap" title="문단 지도: 진한 색=대사, 주황=긴 문단. 누르면 그 자리로"><canvas></canvas><i></i></div>
 
     <div class="bar">
-      <button class="icon" id="tgSide" title="서재"><svg class="i"><use href="#i-menu"/></svg></button>
+      <button class="icon" id="tgSide" title="서재로"><svg class="i"><use href="#i-left"/></svg></button>
       <button class="epbtn" id="epBtn" title="회차 목록"><span class="w" id="title">작품을 골라 주세요</span><span class="e"><span id="epTitle"></span><svg class="i" style="width:16px;height:16px"><use href="#i-down"/></svg></span></button>
       <select id="epSel" hidden></select>
       <button class="icon" id="btnBm" title="책갈피 (B)"><svg class="i"><use href="#i-bm"/></svg></button>
@@ -1386,7 +1625,7 @@ body:not(.is-desktop) .nai-only{display:none!important}
         <div><label>문체</label><select id="stPStyle"><option value="commercial">상업 웹소설</option><option value="ct">캐릭터톡</option><option value="mine">내 글의 결</option></select></div>
         <div><label>표지</label><div class="row tight"><button id="stPCover">표지 그림 고르기</button><button id="stPCoverDel">지우기</button></div><input type="file" id="stPCoverFile" accept="image/*" hidden></div>
         <div><label>참고 작품 (자료실의 소설)</label><select id="stRefWork"></select><div class="hint" id="stRefHint"></div></div>
-        <div class="full"><label><input type="checkbox" id="stStartHere"> 앱을 열면 집필실부터 보여 주기</label></div>
+        <div class="full"><label><input type="checkbox" id="stStartHere"> 앱을 열면 홈 대신 집필실부터 보여 주기</label></div>
       </div></div>
       <div class="st-sec"><h3>자동 백업</h3><div class="hint" id="stBkStat" style="margin-bottom:8px"></div><div class="row tight"><button id="stBkDir">백업 폴더 정하기</button></div></div>
       <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpDocxAll">작품 전체 docx</button><button id="stExpHwpxAll">작품 전체 hwpx</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
@@ -4445,7 +4684,7 @@ function stRenderInfo(){
   $('#stPMin').value = p.min; $('#stPMax').value = p.max; $('#stPDaily').value = p.daily;
   $('#stPRating').value = p.rating || '15'; $('#stPStyle').value = p.style || 'commercial';
   $('#stPDays').innerHTML = DAYS.map((d, i) => `<label><input type="checkbox" value="${i}"${(p.days || []).includes(i) ? ' checked' : ''}>${d}</label>`).join('');
-  $('#stStartHere').checked = store.get('set.stStart', true);
+  $('#stStartHere').checked = store.get('set.stStart', false);
   stRenderRefSel();
 }
 function stInfoFormSave(){
@@ -4639,7 +4878,7 @@ $('#stToSyn').onclick = () => { const v = stOutText(); if (!v) return; stPatchEp
 $('#btnStudio').onclick = () => stOpen();
 $('#wStudio') && ($('#wStudio').onclick = () => stOpen());
 window.stRefresh = () => { if ($('#studio').hidden) return; if (document.activeElement !== $('#stText') && !ST.saveT){ const v = txtGet(ST.pid, ST.eid); if (v !== $('#stText').value){ $('#stText').value = v; ST.lastText = v; stMeter(); } } stRenderSide(); stRenderEditorInfo(); $('#stOtherBox').hidden = !txtOther(ST.pid, ST.eid); if (ST.view !== 'write') stSetView(ST.view); };
-if (location.hash === '#studio' || (store.get('set.stStart', true) && stProjects().some(p => stEps(p.id).some(e => e.chars > 0)))) stOpen();
+if (location.hash === '#studio' || (store.get('set.stStart', false) && stProjects().some(p => stEps(p.id).some(e => e.chars > 0)))) stOpen();
 
 
 /* ================= 되돌리기(Ctrl+Z)가 살아 있는 원고 고치기 ================= */
@@ -7296,6 +7535,124 @@ $('#odUse').onchange = () => { store.set('sync.backend', $('#odUse').checked ? '
 $('#srcOd').onclick = () => odBrowseOpen();
 odUI();
 odHandleReturn();
+/* ================= 전역 메뉴 · 홈 · 서재 판 ================= */
+// 길은 하나: 왼쪽(폰은 아래) 메뉴 다섯 칸 — 홈 · 읽기 · 쓰기 · 웹툰 · 설정.
+// 홈과 서재는 읽는 화면 위에 덮는 판이라, 읽던 자리는 그대로 남는다. 책을 열면 판이 걷히고 글만 남는다.
+const atHome = () => $('#app').classList.contains('at-home');
+const atLib = () => $('#app').classList.contains('at-lib');
+function closeOverlays(){ if (!$('#studio').hidden) stClose(); if (!$('#wt').hidden) wtClose(); }
+function showPage(k){
+  closeOverlays(); closeSheets(); asStop();
+  const a = $('#app'); a.classList.toggle('at-home', k === 'home'); a.classList.toggle('at-lib', k === 'lib'); a.classList.remove('show-side', 'show-tool', 'immersive');
+  if (k === 'home') renderHome();
+  (k === 'home' ? $('#home') : $('#libPage')).scrollTop = 0;
+  gnavSync();
+}
+function leavePages(){ if (!atHome() && !atLib()) return; $('#app').classList.remove('at-home', 'at-lib'); gnavSync(); }
+// 작품·회차를 열면(읽는 화면이 바뀌면) 판을 걷는다
+new MutationObserver(() => { if (cur) leavePages(); }).observe($('#reader'), {childList: true});
+
+function gnavSync(){
+  const k = !$('#studio').hidden ? 'write' : !$('#wt').hidden ? 'toon' : atHome() ? 'home' : 'lib';
+  $$('#gnav [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === k));
+  const on = SYNC_OD() ? odLinked() : (gdReady() && !!store.get('gd.last', 0));
+  $('#gnav .g-sync').classList.toggle('ok', !!on);
+  $('#gnav .g-sync').title = on ? `설정 · ${SYNC_OD() ? 'OneDrive' : '구글 드라이브'}로 맞추는 중` : '설정 · 기기끼리 맞추기는 아직 연결 전';
+}
+for (const el of ['#studio', '#wt']) new MutationObserver(gnavSync).observe($(el), {attributes: true, attributeFilter: ['hidden']});
+
+const GO = {
+  home: () => showPage('home'),
+  lib: () => showPage('lib'),
+  write(){ if (!$('#wt').hidden) wtClose(); if ($('#studio').hidden) stOpen(); },
+  toon(){ if (!$('#studio').hidden) stClose(); if ($('#wt').hidden) $('#btnWebtoon').click(); },
+  set(){ closeOverlays(); openTool('set'); },
+};
+window.nvGo = k => GO[k]();   // 시험·단축용
+$$('#gnav [data-g]').forEach(b => b.onclick = () => GO[b.dataset.g]());
+$('#gnav .g-brand').onclick = GO.home;
+$('#tgSide').onclick = GO.lib;   // 읽는 화면 왼쪽 위 ← 는 서재로
+$('#stToLib').onclick = () => { stClose(); if (!cur) GO.lib(); };
+
+// 서재(머리 단추·작품 목록)는 서재 판에 늘 놓는다. 옆 칸은 쓰지 않는다.
+$('#lpBody').append($('.side-head'), $('#lib'));
+$('#lpActs').append($('#btnFolder'), $('#btnFiles'), $('#btnLink'));
+$('#btnFolder').innerHTML = '<svg class="i"><use href="#i-folder"/></svg>폴더 열기'; $('#btnFiles').innerHTML = '<svg class="i"><use href="#i-file"/></svg>파일';
+$('#btnLink').innerHTML = '<svg class="i"><use href="#i-cloud"/></svg>폴더 연결 · OneDrive';
+$('#btnLink').className = '';
+
+/* ---------- 홈 ---------- */
+function hHello(t, goal){
+  const h = new Date().getHours();
+  if (goal && t >= goal) return '오늘 목표를 채웠어요.';
+  if (h < 5) return '고요한 새벽, 한 줄만 더.';
+  if (h < 11) return '오늘의 첫 문장부터.';
+  if (h < 17) return '오후의 원고, 이어 가 볼까요.';
+  if (h < 21) return '오늘 쓴 만큼이 쌓여요.';
+  return '하루의 끝에 한 장면.';
+}
+function hRing(pct){
+  const r = 26, c = 2 * Math.PI * r, v = Math.min(1, pct / 100);
+  return `<svg class="h-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" class="bg"/><circle cx="32" cy="32" r="${r}" class="fg" stroke-dasharray="${(c * v).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 32 32)"/></svg>`;
+}
+function hProjCover(p){ return `<div class="h-pcv" style="--h:${hueOfName(p.name)};${p.cover ? `background-image:url('${p.cover}')` : ''}">${p.cover ? '' : esc(p.name.slice(0, 6))}</div>`; }
+function renderDesk(){
+  const box = $('#hDesk'); const ps = [...stProjects()].sort((a, b) => (b.t || 0) - (a.t || 0));
+  const dl = store.get('st.daily', {}); const t = dl[today()] || 0;
+  if (!ps.length){
+    box.innerHTML = `<div class="h-k">이어 쓰기</div><h2 class="h-empty-t">아직 쓰고 있는 작품이 없어요</h2><p class="h-empty-p">작품을 만들면 오늘 쓴 글자와 다음 연재일이 여기 모여요.</p><button class="primary h-go" id="hStart">첫 작품 시작하기</button>`;
+    $('#hStart').onclick = () => stOpen('write'); $('#hHello').textContent = hHello(0, 0); return;
+  }
+  const last = store.get('st.cur', null); const p = ps.find(x => x.id === last?.pid) || ps[0];
+  const eps = stEps(p.id); const goal = p.daily || 3000; const pct = Math.round(t / goal * 100);
+  const reserve = eps.filter(e => e.status === 'done').length; const nd = nextPostDay(p.days);
+  const ep = eps.find(e => e.id === last?.eid) || eps.at(-1);
+  const facts = [`연속 ${stStreak(dl, goal)}일`, `비축 ${reserve}화`, nd ? `다음 연재 ${nd}` : ''].filter(Boolean).join(' · ');
+  box.innerHTML = `
+    <div class="h-k">이어 쓰기</div>
+    <div class="h-pt">${hProjCover(p)}<div class="h-ptx"><h2></h2><div class="h-sub"></div></div></div>
+    <div class="h-today">${hRing(pct)}<div><b>${t.toLocaleString()}</b><span> / ${goal.toLocaleString()}자 오늘</span><small>${facts}</small></div></div>
+    <button class="primary h-go" id="hWrite"><span></span><svg class="i"><use href="#i-right"/></svg></button>`;
+  box.querySelector('h2').textContent = p.name;
+  box.querySelector('.h-sub').textContent = ep ? `${ep.title || '제목 없는 회차'} · ${(ep.chars || 0).toLocaleString()}자` : '첫 회차를 시작해 보세요';
+  box.querySelector('#hWrite span').textContent = ep ? `${ep.title || '이 회차'} 이어 쓰기` : '첫 회차 쓰기';
+  $('#hWrite').onclick = () => { store.set('st.cur', {pid: p.id, eid: ep?.id || null}); stOpen('write'); };
+  $('#hHello').textContent = hHello(t, goal);
+}
+function renderProjs(){
+  const box = $('#hProjs'); const ps = [...stProjects()].sort((a, b) => (b.t || 0) - (a.t || 0));
+  $('.h-projs-wrap').hidden = ps.length < 2;   // 작품이 하나뿐이면 위 카드로 충분하다
+  box.innerHTML = '';
+  for (const p of ps){
+    const eps = stEps(p.id); const total = eps.reduce((s, e) => s + (e.chars || 0), 0);
+    const d = document.createElement('button'); d.className = 'h-pj';
+    d.innerHTML = `${hProjCover(p)}<div class="tx"><b></b><span>${eps.length}화 · ${total.toLocaleString()}자</span></div>`;
+    d.querySelector('b').textContent = p.name;
+    d.onclick = () => { store.set('st.cur', {pid: p.id, eid: eps.at(-1)?.id || null}); stOpen('write'); };
+    box.append(d);
+  }
+}
+function renderHomeIdeas(){
+  const box = $('#hIdeas'); const all = store.get('ideas', []).slice(0, 3);
+  box.innerHTML = '';
+  for (const it of all){ const d = document.createElement('div'); d.className = 'h-it'; d.innerHTML = `<p></p><span>${new Date(it.t).toLocaleDateString('ko-KR', {month: 'numeric', day: 'numeric'})}</span>`; d.querySelector('p').innerHTML = esc(it.text).replace(/#([^\s#]{1,12})/g, '<em>#$1</em>'); box.append(d); }
+}
+function renderHome(){
+  if (!$('#home')) return;
+  $('#hDate').textContent = new Date().toLocaleDateString('ko-KR', {month: 'long', day: 'numeric', weekday: 'long'});
+  try{ renderDesk(); renderProjs(); }catch(e){ console.warn(e); }
+  renderHomeIdeas(); renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden;
+  gnavSync();
+}
+const hIdea = () => { const v = $('#hIdeaIn').value.trim(); if (!v) return; addIdea(v, cur ? cur.name : '홈'); $('#hIdeaIn').value = ''; renderHomeIdeas(); };
+$('#hIdeaAdd').onclick = hIdea;
+$('#hIdeaIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); hIdea(); } });
+$('#hLibAll').onclick = GO.lib;
+// 작품을 불러오면 '이어 읽기'도, 집필실을 닫으면 책상도 새로
+new MutationObserver(() => { if (atHome()){ renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden; } }).observe($('#lib'), {childList: true});
+new MutationObserver(() => { if ($('#studio').hidden && atHome()) renderHome(); }).observe($('#studio'), {attributes: true, attributeFilter: ['hidden']});
+// 처음엔: 쓰거나 읽던 게 있으면 홈, 없으면 책을 들이는 서재부터
+{ const used = stProjects().some(p => stEps(p.id).length) || Object.keys(localStorage).some(k => k.startsWith('nv.pos.')); showPage(used ? 'home' : 'lib'); }
 </script>
 </body>
 </html>

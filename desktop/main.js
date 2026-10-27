@@ -111,11 +111,14 @@ ipcMain.handle('lib-info', async (_e, root) => {
   try{ const ents = await fs.promises.readdir(root, { withFileTypes: true }); return {exists: true, dirs: ents.filter(d => d.isDirectory() && !d.name.startsWith('.')).map(d => d.name)}; }
   catch{ return {exists: false, dirs: []}; }
 });
-// 폴더가 옮겨졌으면(예: 바탕 화면 → OneDrive) 같은 이름의 폴더를 찾아 새로 연결한다. OneDrive·문서·바탕 화면 아래 네 단계까지만 본다.
+// 폴더가 옮겨졌으면(예: 바탕 화면 → OneDrive → D:) 같은 이름의 폴더를 찾아 새로 연결한다.
+// OneDrive·문서·바탕 화면, 다른 드라이브(D: 등)의 맨 위, 구글 드라이브(G:\내 드라이브) 아래 네 단계까지만 본다.
 ipcMain.handle('lib-find', async (_e, oldPath) => {
   const old = path.normalize(oldPath || ''); const name = path.basename(old); if (!name) return null;
   const home = os.homedir();
-  const bases = [...new Set([process.env.OneDrive, process.env.OneDriveConsumer, path.join(home, 'OneDrive'), path.join(home, 'Documents'), path.join(home, 'Desktop')].filter(Boolean).map(p => path.normalize(p)))];
+  const drives = process.platform === 'win32' ? 'DEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l => l + ':\\').filter(d => { try{ return fs.existsSync(d); }catch{ return false; } }) : [];
+  const gdrive = drives.flatMap(d => ['내 드라이브', 'My Drive'].map(n => path.join(d, n))).filter(p => fs.existsSync(p));
+  const bases = [...new Set([process.env.OneDrive, process.env.OneDriveConsumer, path.join(home, 'OneDrive'), path.join(home, 'Documents'), path.join(home, 'Desktop'), ...gdrive, ...drives].filter(Boolean).map(p => path.normalize(p)))];
   const skip = /^(\.|node_modules$|AppData$|\$)/;
   // 얕은 곳부터 넓게 본다(만화 회차 폴더 깊숙이 들어가지 않게). 폴더 3,000개까지만 연다.
   async function look(base){

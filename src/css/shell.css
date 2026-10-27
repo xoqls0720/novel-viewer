@@ -1,0 +1,205 @@
+
+/* ================= 새 틀 =================
+   원칙: 길은 메뉴 하나, 한 번에 한 판, 글이 주인공. 색은 상아 종이·먹·놋쇠, 장식은 선 하나와 그림자 하나까지만.
+   이 파일은 맨 뒤에 붙어 앞 스타일을 덮는다. */
+:root{
+  --gw:68px;
+  --bg:#f4f1ea; --panel:#fcfbf8; --panel-2:#efeae0; --ink:#1c1a16; --sub:#6b665c; --faint:#9a9488; --line:#e4ded2; --hairline:#ebe6db;
+  --accent:#23294a; --accent-ink:#fff; --brass:#9c7636; --reader-bg:#fbfaf6;
+  --rail:#151417; --rail-ink:#8e887d; --rail-on:#f1e6cf;
+  --serif:"Gowun Batang","Noto Serif KR",serif;
+  --r:16px; --e1:0 1px 2px rgb(30 24 12 / 5%), 0 8px 24px rgb(30 24 12 / 6%);
+}
+:root[data-theme="sepia"]{--bg:#ece2cd; --panel:#f6eedc; --line:#dccfb1; --hairline:#e3d8bf; --rail:#271f15; --rail-ink:#a8987a}
+:root[data-theme="dark"]{--bg:#111114; --panel:#18181c; --panel-2:#202026; --line:#2a2a31; --hairline:#232329; --rail:#0a0a0c; --rail-ink:#77726a; --rail-on:#e9dbbd; --e1:0 1px 2px rgb(0 0 0 / 40%)}
+:root[data-theme="black"]{--bg:#000; --panel:#0d0d0f; --line:#222226; --hairline:#1a1a1d; --rail:#000; --rail-ink:#6d6962; --rail-on:#e9dbbd; --e1:0 0 0 1px #1c1c20}
+body{background:var(--bg)}
+button{border-radius:12px;box-shadow:none;border-color:var(--line);background:var(--panel)}
+button:hover{background:var(--panel-2)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:none;font-weight:600}
+button.primary:hover{filter:none;background:color-mix(in srgb, var(--accent) 88%, #fff)}
+:root[data-theme="dark"] button.primary,:root[data-theme="black"] button.primary{background:var(--rail-on);border-color:var(--rail-on);color:#141210}
+input[type=text],input[type=search],select,textarea{box-shadow:none;border-color:var(--line);background:var(--panel)}
+
+/* ---------- 메뉴 ---------- */
+#gnav{position:fixed;left:0;top:0;bottom:0;width:var(--gw);z-index:35;background:var(--rail);display:flex;flex-direction:column;align-items:center;gap:2px;padding:calc(16px + var(--sat)) 6px calc(14px + var(--sab));padding-left:calc(6px + var(--sal))}
+#gnav .g-brand{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;margin:0 0 20px;cursor:pointer;background:#c4a467}
+#gnav .g-brand span{font:700 17px/1 var(--serif);color:#17140f}
+#gnav button{all:unset;box-sizing:border-box;width:56px;padding:10px 0 8px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--rail-ink);cursor:pointer;position:relative;transition:color .15s,background .15s}
+#gnav button span{font:600 10.5px/1 var(--ui)}
+#gnav button svg{width:21px;height:21px;stroke-width:1.6}
+#gnav button:hover{color:#e8e2d6}
+#gnav button.on{color:var(--rail-on);background:rgb(255 255 255 / 7%)}
+#gnav button:focus-visible{outline:2px solid var(--rail-on);outline-offset:1px}
+#gnav .g-sp{flex:1}
+#gnav .g-dot{position:absolute;top:8px;right:14px;width:6px;height:6px;border-radius:50%;background:transparent}
+#gnav .g-sync.ok .g-dot{background:#7bc79a}
+
+/* 메뉴 자리만큼 비켜 앉고, 옆 서재 칸은 쓰지 않는다 */
+.app{padding-left:calc(var(--gw) + var(--sal))}
+.app>aside{display:none!important}
+@media (min-width:1101px){ .app,.app.hide-side,.app.hide-tool,.app.hide-side.hide-tool{grid-template-columns:0 1fr 0} .app:not(.hide-tool){grid-template-columns:0 1fr 400px} }
+#studio,#wt{left:var(--gw)!important}
+#studio .st-rail .logo,#stToLib,#stToSet{display:none}
+.tool{background:var(--panel);border-left:1px solid var(--hairline)}
+
+/* ---------- 판(홈·서재) 공통 ---------- */
+.page{position:absolute;inset:0;z-index:4;overflow:auto;background:var(--bg);display:none;-webkit-overflow-scrolling:touch}
+.at-home .home,.at-lib .libpage{display:block}
+.at-home .bar,.at-lib .bar,.at-home .botbar,.at-lib .botbar,.at-home #mini,.at-lib #mini,.at-home #wmap,.at-lib #wmap,.at-home #coach,.at-lib #coach,.at-home .aschip,.at-lib .aschip{display:none!important}
+.pg-wrap{max-width:960px;margin:0 auto;padding:calc(56px + var(--sat)) 48px calc(56px + var(--sab))}
+.pg-head{margin:0 0 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pg-head h1{font:700 32px/1.25 var(--serif);letter-spacing:-0.03em;margin:6px 0 0;color:var(--ink)}
+.h-date{font-size:13px;color:var(--faint);font-weight:500}
+.pg-sub{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 12px}
+.pg-sub h2{font:700 15px/1 var(--ui);margin:0;color:var(--sub);letter-spacing:-0.01em}
+.h-link{border:0;background:none;color:var(--sub);font-size:13px;padding:4px 2px}
+.h-link:hover{background:none;color:var(--ink)}
+
+/* ---------- 홈 ---------- */
+.h-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.h-card{background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r);padding:24px;box-shadow:var(--e1);display:flex;flex-direction:column;min-width:0}
+.h-k{font-size:12px;font-weight:700;color:var(--brass);letter-spacing:.04em;margin-bottom:16px}
+.h-pt{display:flex;gap:14px;align-items:center}
+.h-ptx{min-width:0}
+.h-pt h2{font:700 21px/1.3 var(--serif);margin:0;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-sub{font-size:13px;color:var(--sub);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-pcv{flex:0 0 46px;height:64px;border-radius:2px 5px 5px 2px;display:grid;place-items:center;padding:5px;text-align:center;font:700 11px/1.3 var(--serif);color:hsl(var(--h,30) 40% 92%);background:linear-gradient(90deg, rgb(0 0 0 / 20%), transparent 14%), hsl(var(--h,30) 30% 34%);background-size:cover;background-position:center;word-break:keep-all;box-shadow:0 3px 10px rgb(0 0 0 / 14%)}
+.h-today{display:flex;align-items:center;gap:14px;margin:22px 0;padding:14px 0;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.h-ring{width:52px;height:52px;flex:none}
+.h-ring circle{fill:none;stroke-width:6}
+.h-ring .bg{stroke:var(--line)}
+.h-ring .fg{stroke:var(--brass);stroke-linecap:round}
+.h-today b{font:700 22px/1 var(--serif);font-variant-numeric:tabular-nums}
+.h-today span{font-size:13px;color:var(--sub)}
+.h-today small{display:block;font-size:12px;color:var(--faint);margin-top:6px}
+.h-go{margin-top:auto;justify-content:space-between;padding:12px 16px;font-size:14px}
+.h-go span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-empty-t{font:700 19px/1.4 var(--serif);margin:0 0 6px}
+.h-empty-p{font-size:13px;color:var(--sub);margin:0 0 20px;line-height:1.7}
+.h-read .w-resume{all:unset;display:flex;flex-direction:column;gap:14px;cursor:pointer;flex:1}
+.h-read .w-resume[hidden]{display:none}
+.h-read .w-resume .cv{width:96px;height:132px;flex:none;border-radius:2px 6px 6px 2px;overflow:hidden;position:relative;box-shadow:0 8px 20px rgb(30 24 12 / 18%)}
+.h-read .w-resume .cv img{width:100%;height:100%;object-fit:cover}
+.h-read .w-resume .cv .ph{position:absolute;inset:0;background:linear-gradient(90deg, rgb(0 0 0 / 20%), transparent 14%), hsl(var(--h) 30% 34%)}
+.h-read .w-resume .k{display:none}
+.h-read .w-resume .n{font:700 19px/1.3 var(--serif);margin:0}
+.h-read .w-resume .e{font-size:13px;color:var(--sub);margin-top:4px}
+.h-read .w-resume .bar2{height:3px;background:var(--line);border-radius:2px;margin-top:12px;overflow:hidden}
+.h-read .w-resume .bar2 i{display:block;height:100%;background:var(--brass)}
+.h-read .w-resume>svg{display:none}
+.h-read .w-resume:hover .n{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.h-none{font-size:13.5px;color:var(--sub);line-height:1.8;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.h-none[hidden]{display:none}
+.h-memo{display:flex;gap:8px;margin:16px 0 0;padding:6px 6px 6px 18px;background:var(--panel);border:1px solid var(--hairline);border-radius:var(--r);box-shadow:var(--e1);align-items:center}
+.h-memo input{flex:1;min-width:0;border:0;background:none;padding:10px 0;font:400 15px/1.4 var(--serif)}
+.h-memo input:focus{box-shadow:none}
+.h-memo button{border:0;background:none;color:var(--brass);font-weight:700}
+.h-ideas{margin:6px 0 0}
+.h-it{display:flex;align-items:baseline;gap:12px;padding:10px 18px}
+.h-it p{flex:1;margin:0;font:400 14.5px/1.6 var(--serif);color:var(--ink)}
+.h-it p em{font:600 12px var(--ui);font-style:normal;color:var(--brass)}
+.h-it span{font-size:11.5px;color:var(--faint);flex:none}
+.h-projs-wrap{margin-top:36px}
+.h-projs-wrap[hidden]{display:none}
+.h-projs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.h-pj{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;transition:background .15s}
+.h-pj:hover{background:var(--panel)}
+.h-pj .h-pcv{flex-basis:34px;height:48px;font-size:9px}
+.h-pj .tx{display:flex;flex-direction:column;min-width:0}
+.h-pj b{font:700 14.5px/1.3 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-pj span{font-size:12px;color:var(--faint);margin-top:2px}
+
+/* ---------- 서재 판 ---------- */
+.lp-acts{display:flex;gap:8px;flex-wrap:wrap}
+.lp-acts button{padding:8px 14px;font-size:13px}
+#lpBody .side-head{position:static;background:none;border:0;padding:0;margin:0 0 8px;display:block}
+#lpBody .brand,#lpBody #drop,#lpBody .studio-row,#lpBody .side-head>.row.tight:first-of-type{display:none}
+#lpBody .side-head>.row.tight:last-child{display:flex;gap:8px;max-width:420px}
+#lpBody #libSearch{flex:1}
+#lpBody .lib{padding:0}
+#lpBody .lib h4{font:700 13px/1 var(--ui);color:var(--sub);letter-spacing:0;margin:34px 0 16px}
+#lpBody .lib h4::after{display:none}
+#lpBody .grid{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:28px 22px}
+#lpBody .cont{gap:22px;padding-bottom:8px}
+#lpBody .cont .card{flex:0 0 112px}
+
+/* 표지: 꾸밈을 덜고 책답게 — 얇은 등 그림자와 제목만 */
+.card .cv,.card .cv::after{border-radius:2px 6px 6px 2px}
+.card .cv{box-shadow:0 1px 2px rgb(30 24 12 / 10%), 0 8px 18px rgb(30 24 12 / 12%)}
+.card:hover .cv{transform:translateY(-2px);box-shadow:0 2px 4px rgb(30 24 12 / 12%), 0 14px 28px rgb(30 24 12 / 16%)}
+.card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 20%), rgb(0 0 0 / 4%) 6%, transparent 12%), hsl(var(--h) 30% 34%);color:hsl(var(--h) 40% 92%);padding:14px 12px 14px 16px;font:700 14px/1.45 var(--serif);text-shadow:none}
+.card .cv .ph::before,.card .cv .ph::after{display:none}
+:root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 30%), transparent 12%), hsl(var(--h) 22% 24%)}
+.card .cv .kind{display:none}
+.card .t{font:700 13.5px/1.4 var(--serif);margin-top:10px}
+.card .m{font-size:12px}
+
+/* ---------- 읽는 화면: 위 막대는 ← · 제목 · 꼭 필요한 단추만 ---------- */
+.bar{background:color-mix(in srgb, var(--reader-bg) 88%, transparent);border-bottom-color:transparent}
+.botbar{background:color-mix(in srgb, var(--reader-bg) 88%, transparent);border-top-color:transparent}
+.bar .icon,.botbar .icon{color:var(--sub)}
+.bar .icon:hover,.botbar .icon:hover{color:var(--ink);background:var(--panel-2)}
+.epbtn .w{font-size:11.5px;color:var(--faint)}
+.epbtn .e{font:700 15px/1.3 var(--serif)}
+#quick{background:var(--panel);border-color:var(--hairline);box-shadow:0 20px 60px rgb(30 24 12 / 18%)}
+.q-sec{background:none;border:0;box-shadow:none;padding:6px 4px 14px;border-bottom:1px solid var(--hairline);border-radius:0;margin:0 0 10px}
+.q-sec:last-child{border-bottom:0}
+.q-sec>.lab{color:var(--faint);letter-spacing:.02em;font-size:12px}
+
+/* 도구 창: 탭은 차분하게 */
+.tabs{background:var(--panel);border-bottom-color:var(--hairline)}
+.tabs button.on{background:none;color:var(--ink);box-shadow:inset 0 -2px 0 var(--brass);border-radius:0}
+.tabs button{border-radius:0}
+
+/* ---------- 태블릿 (701~1100) ---------- */
+@media (max-width:1100px){
+  .pg-wrap{padding-left:28px;padding-right:28px}
+}
+/* ---------- 폰 (700 이하): 메뉴는 아래 탭, 책을 읽을 때·집필실에서는 숨긴다 ---------- */
+@media (max-width:700px){
+  :root{--gw:0px}
+  #gnav{top:auto;left:0;right:0;width:auto;height:calc(60px + var(--sab));flex-direction:row;justify-content:space-around;padding:6px 4px calc(6px + var(--sab))}
+  #gnav .g-brand,#gnav .g-sp{display:none}
+  #gnav button{width:auto;flex:1;padding:6px 0}
+  #gnav button.on{background:none}
+  body:has(.app:not(.at-home):not(.at-lib)) #gnav,body:has(#studio:not([hidden])) #gnav,body:has(#wt:not([hidden])) #gnav,body:has(.sketch.open) #gnav{display:none}
+  .pg-wrap{padding:calc(36px + var(--sat)) 18px calc(96px + var(--sab))}
+  .pg-head h1{font-size:26px}
+  .h-two{grid-template-columns:1fr}
+  .lp-acts{width:100%} .lp-acts button{flex:1}
+  #lpBody .grid{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:22px 14px}
+}
+.home .pg-head{display:block}
+.lp-acts button{white-space:nowrap}
+
+/* ---------- 쓰기(집필실): 메뉴·목록·종이가 한 결로 ---------- */
+#studio{--desk:var(--bg)}
+.st-rail{background:var(--bg);border-right:0;padding-top:calc(16px + var(--sat))}
+.st-rail button{color:var(--faint)}
+.st-rail button:hover{background:var(--panel-2);color:var(--ink)}
+.st-rail button.on{background:var(--panel);color:var(--ink);box-shadow:var(--e1)}
+.st-binder{background:var(--bg);border-right:1px solid var(--hairline)}
+.st-insp{background:var(--panel);border-left:1px solid var(--hairline)}
+.st-card{background:none;border:1px solid var(--hairline);border-radius:12px;color:var(--sub)}
+.st-bar{height:3px;background:var(--line)}
+.st-bar i{background:var(--brass)}
+.st-bhead b{letter-spacing:.02em;font-size:12px;color:var(--sub)}
+.st-it{border-radius:10px;font-family:var(--serif);font-size:14px}
+.st-it.on{background:var(--panel);color:var(--ink);box-shadow:var(--e1);font-weight:700}
+.st-page{box-shadow:0 1px 2px rgb(30 24 12 / 5%), 0 12px 40px rgb(30 24 12 / 8%);border-radius:6px}
+.st-page::before{display:none}
+.st-ipane h3{color:var(--sub);font-weight:700;letter-spacing:0;font-size:12px}
+.st-ipane h3::after{display:none}
+.st-ipane button{padding:6px 11px;font-size:12.5px}
+#stStats a{color:var(--sub)}
+.st-bar i.ok{background:var(--brass)}
+/* 홈·서재에서도 도구 창(노트·분석·그림 프롬프트)은 열 수 있게 오른쪽 위 단추 하나만 남긴다 */
+.at-home .bar,.at-lib .bar{display:flex!important;background:transparent;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
+.at-home .bar>*,.at-lib .bar>*{visibility:hidden}
+.at-home .bar #tgTool,.at-lib .bar #tgTool{visibility:visible;pointer-events:auto;margin-left:auto}
+/* 태블릿: 집필실의 덮개 칸 — 원고 목록은 메뉴 옆에서, 오른쪽 칸은 오른쪽에서 연다 (읽기 화면의 aside 규칙이 새지 않게) */
+@media (max-width:1100px){
+  #studio .st-binder{left:0!important;right:auto!important}
+  #studio .st-insp{left:auto!important;right:0!important}
+}

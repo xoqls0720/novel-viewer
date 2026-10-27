@@ -342,7 +342,7 @@ function stRenderInfo(){
   $('#stPMin').value = p.min; $('#stPMax').value = p.max; $('#stPDaily').value = p.daily;
   $('#stPRating').value = p.rating || '15'; $('#stPStyle').value = p.style || 'commercial';
   $('#stPDays').innerHTML = DAYS.map((d, i) => `<label><input type="checkbox" value="${i}"${(p.days || []).includes(i) ? ' checked' : ''}>${d}</label>`).join('');
-  $('#stStartHere').checked = store.get('set.stStart', true);
+  $('#stStartHere').checked = store.get('set.stStart', false);
   stRenderRefSel();
 }
 function stInfoFormSave(){
@@ -536,6 +536,6 @@ $('#stToSyn').onclick = () => { const v = stOutText(); if (!v) return; stPatchEp
 $('#btnStudio').onclick = () => stOpen();
 $('#wStudio') && ($('#wStudio').onclick = () => stOpen());
 window.stRefresh = () => { if ($('#studio').hidden) return; if (document.activeElement !== $('#stText') && !ST.saveT){ const v = txtGet(ST.pid, ST.eid); if (v !== $('#stText').value){ $('#stText').value = v; ST.lastText = v; stMeter(); } } stRenderSide(); stRenderEditorInfo(); $('#stOtherBox').hidden = !txtOther(ST.pid, ST.eid); if (ST.view !== 'write') stSetView(ST.view); };
-if (location.hash === '#studio' || (store.get('set.stStart', true) && stProjects().some(p => stEps(p.id).some(e => e.chars > 0)))) stOpen();
+if (location.hash === '#studio' || (store.get('set.stStart', false) && stProjects().some(p => stEps(p.id).some(e => e.chars > 0)))) stOpen();
 
 

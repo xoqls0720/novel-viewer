@@ -219,9 +219,9 @@
 .st-hb button{padding:2px 8px;font-size:11px}
 .st-hb .tp{font-size:12px;color:var(--sub);line-height:1.6;margin-top:4px}
 .st-hb .ws{font-size:12px;color:var(--warn);margin-top:3px}
-.spark{width:60px;height:18px;flex:none}
-.spark polyline{fill:none;stroke:var(--faint);stroke-width:1.5}
-.spark.down polyline{stroke:var(--ok)}.spark.up polyline{stroke:var(--warn)}
+#studio .spark{width:60px;height:18px;flex:none;display:inline-block;background:none;border-radius:0}   /* 읽기 화면 작품 탭의 큰 그래프(.spark)와 겹치지 않게 집필실 안으로만 */
+#studio .spark polyline{fill:none;stroke:var(--faint);stroke-width:1.5}
+#studio .spark.down polyline{stroke:var(--ok)}#studio .spark.up polyline{stroke:var(--warn)}
 #stHl mark.hb{background:transparent;border-bottom:2.5px solid var(--warn);border-radius:0}
 .st-rev>div{margin:0 0 10px}
 .st-rev small{display:block;font-size:11px;color:var(--faint);margin-bottom:4px}
@@ -257,3 +257,11 @@
   #studio.split .st-center{display:flex}
   .st-refpane{position:fixed;left:0;right:0;bottom:0;height:46vh;z-index:4;border-left:0;border-top:1px solid var(--line);box-shadow:var(--shadow-l);border-radius:16px 16px 0 0;overflow:hidden}
 }
+/* 집필실 다듬기: 오른쪽 칸 제목은 금빛 작은 머리글, 칸 사이 숨 고르기, 원고 종이 결 */
+.st-ipane h3{color:var(--brass);font-weight:700;letter-spacing:.06em;margin:20px 0 8px;display:flex;align-items:center;gap:8px}
+.st-ipane h3::after{content:"";flex:1;height:1px;background:var(--hairline)}
+.st-ipane textarea,.st-ipane input[type=text]{background:color-mix(in srgb, var(--panel-2) 35%, var(--panel))}
+.st-page{border-radius:4px;box-shadow:0 1px 1px rgb(0 0 0 / 4%),0 2px 6px rgb(0 0 0 / 4%),0 18px 50px rgb(40 30 10 / 10%)}
+.st-page::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:4px 0 0 4px;background:linear-gradient(180deg, color-mix(in srgb, var(--brass) 45%, transparent), transparent 40%)}
+#studio.focus .st-page::before{display:none}
+.st-pagehead .t{font-size:12.5px;color:var(--sub)}

@@ -67,9 +67,9 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   await A.evaluate(() => document.querySelector('#gdNow').click()); await A.waitForTimeout(2000);
   console.log('A key after B deleted:', JSON.stringify(await A.evaluate(() => JSON.parse(localStorage.getItem('nv.gemKey') || '"x"'))));
   const g0 = mediaGets;
-  await B.click('.grid .card:has-text("hwasan")'); await B.waitForTimeout(1500); 
+  await B.evaluate(() => nvGo('lib')); await B.click('.grid .card:has-text("hwasan")'); await B.waitForTimeout(1500); 
   console.log('B novel text:', (await B.textContent('#reader .novel')).length > 20, '| downloads:', mediaGets - g0);
-  await B.click('.grid .card:has-text("misaeng")').catch(async () => { await B.click('#btnLib').catch(()=>{}); await B.click('.grid .card:has-text("misaeng")'); }); await B.waitForTimeout(2000);
+  await B.evaluate(() => nvGo('lib')); await B.click('.grid .card:has-text("misaeng")').catch(async () => { await B.click('#btnLib').catch(()=>{}); await B.evaluate(() => nvGo('lib')); await B.click('.grid .card:has-text("misaeng")'); }); await B.waitForTimeout(2000);
   console.log('B webtoon imgs:', await B.$$eval('#reader img', e => e.filter(i => i.complete && i.naturalWidth > 0).length));
   // 새로 켜도(인터넷 없이) 목록이 그대로
   await B.context().setOffline(true); await B.reload(); await B.waitForTimeout(1500);

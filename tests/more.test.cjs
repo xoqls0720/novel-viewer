@@ -8,15 +8,14 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   const errs = []; p.on('pageerror', e => errs.push('pageerror ' + e.message)); p.on('console', m => m.type() === 'error' && !/ERR_|net::/.test(m.text()) && errs.push('console ' + m.text()));
   await p.goto(APP); await p.waitForTimeout(1200);
   await p.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await p.waitForTimeout(800);
-  await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(800);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(800);
   if (await p.isVisible('#coachOk')) await p.click('#coachOk');
   const mainW = () => p.$eval('main', m => Math.round(m.getBoundingClientRect().width));
-  // 서재·도구를 숨겨도 읽기 화면이 남는다
-  await p.click('#tgSide'); await p.waitForTimeout(200); const w1 = await mainW();
+  // 옆 서재 칸은 없다: 읽기 화면은 메뉴 옆 전체, 도구를 열면 그만큼만 줄고, 닫으면 돌아온다
+  const w1 = await mainW();
   await p.click('#tgTool'); await p.waitForTimeout(200); const w2 = await mainW();
-  await p.click('#tgSide'); await p.waitForTimeout(200); const w3 = await mainW();
-  await p.click('#tgTool'); await p.click('#tgSide'); await p.waitForTimeout(200); const w4 = await mainW();
-  console.log(`layout widths: ${w1} ${w2} ${w3} ${w4}`);
+  await p.click('#tgTool'); await p.waitForTimeout(200); const w3 = await mainW();
+  console.log(`layout widths: ${w1} ${w2} ${w3}`);
   // 자동 스크롤
   await p.click('main .novel p >> nth=5', {force: true}); await p.keyboard.press('Escape');
   const top0 = await p.$eval('#reader', r => r.scrollTop);
@@ -61,7 +60,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
     console.log('font:', await p.inputValue('#rfont'), '| loaded', await p.evaluate(() => [...document.fonts].some(f => f.family === 'NvMine' && f.status === 'loaded')));
     await p.reload(); await p.waitForTimeout(1500);
     console.log('font after reload:', await p.evaluate(() => [...document.fonts].some(f => f.family === 'NvMine' && f.status === 'loaded')), !(await p.$eval('#rfontMine', o => o.hidden)));
-    await p.click('#btnQuick'); await p.click('#fontDel'); await p.waitForTimeout(300);
+    await p.evaluate(() => document.querySelector('#fontDel').click()); await p.waitForTimeout(300);   // 다시 열면 홈부터라 보기 설정 단추 대신 바로 누른다
     console.log('font removed:', await p.$eval('#rfontMine', o => o.hidden), await p.inputValue('#rfont'));
   } else console.log('font: skipped (no ttf)');
   console.log('ERRORS:', errs.length ? errs : 'none');

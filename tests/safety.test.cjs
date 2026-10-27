@@ -24,10 +24,11 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
     localStorage.setItem('nv.notes.소설/hwasan', JSON.stringify([{id:'n1', ep:0, epName:'1화', parts:[], text:'그 순간, 문이 열렸다.', color:'g', note:'새 인물로 끊기', t:5}]));
   });
   await p.reload(); await p.waitForTimeout(1200);
+  await p.click('#hWrite'); await p.waitForTimeout(800);   // 이제는 홈의 '이어 쓰기'로 들어간다
   console.log('auto studio:', await p.isVisible('#studio'), '| migrated text:', await p.inputValue('#stText'), '| ls removed:', await p.evaluate(() => localStorage.getItem('nv.st.txt.p1.e1') === null));
   // 2) 큰 원고 (2MB) 저장 → 새로 고침 뒤 유지
   await p.evaluate(() => { const ta = document.querySelector('#stText'); ta.value = ta.value + '\n' + '가'.repeat(2_000_000); ta.dispatchEvent(new Event('input')); });
-  await p.waitForTimeout(3500); await p.reload(); await p.waitForTimeout(2000);
+  await p.waitForTimeout(3500); await p.reload(); await p.waitForTimeout(2000); await p.click('#hWrite'); await p.waitForTimeout(800);   // 홈에서 이어 쓰기
   console.log('2MB persisted:', (await p.inputValue('#stText')).length > 2_000_000);
   await p.evaluate(() => { const ta = document.querySelector('#stText'); ta.value = '예전에 쓴 원고다. 않되 없는말.\n\n두 번째 문단.'; ta.dispatchEvent(new Event('input')); }); await p.waitForTimeout(900);
   // 3) AI 넣기 후 Ctrl+Z
@@ -69,14 +70,14 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   const [fc2] = await Promise.all([p.waitForEvent('filechooser'), p.click('#stImport')]); await fc2.setFiles(path.join(DATA, 'imp', 'combined.txt')); await p.waitForTimeout(800);
   console.log('import split eps:', await p.$$eval('#stEpList .st-it', e => e.length), '| dialog:', dialogs.at(-1));
   // 11) 자료실 합본 나누기
-  await p.click('#stToLib'); await p.waitForTimeout(300);
+  await p.click('#gnav [data-g=lib]'); await p.waitForTimeout(300);
   await p.setInputFiles('#pickFolder', path.join(DATA, 'vt3a')); await p.waitForTimeout(800);
-  await p.click('.grid .card:has-text("hapbon")'); await p.waitForTimeout(1200);
+  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hapbon")'); await p.waitForTimeout(1200);
   await p.click('#epBtn'); await p.waitForTimeout(300); console.log('reader split eps:', await p.$$eval('#epList .it', e => e.length), '| btn:', await p.textContent('#epSplit'));
   await p.click('#epSplit'); await p.waitForTimeout(1000); await p.click('#epBtn'); await p.waitForTimeout(300); console.log('after off:', await p.$$eval('#epList .it', e => e.length));
   await p.keyboard.press('Escape');
   // 12) 휴대폰
-  await p.click('#btnStudio').catch(()=>{}); await p.waitForTimeout(400);
+  await p.click('#gnav [data-g=write]').catch(()=>{}); await p.waitForTimeout(400);
   await p.setViewportSize({width:390, height:844}); await p.waitForTimeout(300); await p.screenshot({path: path.join(OUT, 'v8_phone.png')});
   console.log('ERRORS:', errs.length ? errs : 'none');
   await b.close();

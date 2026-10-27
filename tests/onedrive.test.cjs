@@ -90,7 +90,7 @@ async function mockRoutes(ctx){
   console.log('A state uploaded:', APPROOT.has('state.json'));
   // A 에서 작품을 읽고, 떠오른 문장 하나 남기고 맞춘다
   await A.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await A.waitForTimeout(800);
-  await A.click('.grid .card:has-text("hwasan")'); await A.waitForTimeout(600);
+  await A.evaluate(() => nvGo('lib')); await A.click('.grid .card:has-text("hwasan")'); await A.waitForTimeout(600);
   await A.click('#epBtn'); await A.click('#epList .it >> nth=2'); await A.waitForTimeout(500);
   await A.click('#tgTool').catch(() => {}); await A.evaluate(() => { document.querySelector('.tabs [data-tab=notes]').click(); });
   await A.fill('#ideaIn', '검은 눈이 내리는 성문 #장면'); await A.click('#ideaAdd'); await A.waitForTimeout(300);
@@ -104,7 +104,7 @@ async function mockRoutes(ctx){
   await B.click('#odConnect'); await B.waitForTimeout(3000);
   console.log('B got idea:', await B.evaluate(() => (JSON.parse(localStorage.getItem('nv.ideas') || '[]')[0] || {}).text), '| B pos:', await B.evaluate(() => JSON.parse(localStorage.getItem('nv.pos.소설/hwasan') || 'null')?.ep));
   // B: OneDrive 작품 폴더 연결 — '문서/novel' 을 고르면 노벨·웹툰이 따로 연결된다(메모 폴더는 빠진다)
-  await B.click('#toolClose').catch(() => {}); await B.click('#tgSide'); await B.waitForTimeout(200); await B.click('#btnLink'); await B.waitForTimeout(200);
+  await B.click('#toolClose').catch(() => {}); await B.click('#gnav [data-g=lib]'); await B.waitForTimeout(200); await B.click('#btnLink'); await B.waitForTimeout(200);
   await B.click('#srcOd'); await B.waitForTimeout(800);
   console.log('B browse root:', await B.$$eval('#drvList .it span', e => e.map(x => x.textContent)));
   await B.click('#drvList .it:has-text("문서")'); await B.waitForTimeout(400); await B.click('#drvList .it:has-text("novel")'); await B.waitForTimeout(400);

@@ -7,7 +7,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   p.on('dialog', d => d.accept());
   await p.goto(APP); await p.waitForTimeout(700);
   await p.evaluate(() => localStorage.setItem('nv.set.stStart', 'false')); await p.reload(); await p.waitForTimeout(700);
-  await p.click('#btnWebtoon'); await p.waitForTimeout(300);
+  await p.click('#gnav [data-g=toon]'); await p.waitForTimeout(300);
   console.log('home shown:', await p.isVisible('#wtHome'), '| new btn:', await p.isVisible('#wtNew'));
   await p.click('#wtNew'); await p.waitForTimeout(500);
   console.log('editor:', await p.isVisible('#wtCv'), '| pages:', (await p.$$('#wtPages .pg')).length, '| layouts:', (await p.$$('#wtLayouts button')).length);
@@ -40,7 +40,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   await p.waitForTimeout(1000); console.log('saved status:', await p.textContent('#wtSaved'));
   const n0 = await p.evaluate(() => 0); await p.click('#wtUndo'); await p.waitForTimeout(200); await p.click('#wtRedo');
   // 다시 열기
-  await p.click('#wtClose'); await p.waitForTimeout(300); await p.reload(); await p.waitForTimeout(700); await p.click('#btnWebtoon'); await p.waitForTimeout(400);
+  await p.click('#wtClose'); await p.waitForTimeout(300); await p.reload(); await p.waitForTimeout(700); await p.click('#gnav [data-g=toon]'); await p.waitForTimeout(400);
   console.log('listed after reload:', await p.$$eval('#wtList .it b', e => e.map(x => x.textContent)));
   await p.click('#wtList .it'); await p.waitForTimeout(600);
   console.log('reopened items kept:', await p.evaluate(() => document.querySelectorAll('#wtPages .pg').length), '| img panels:', await p.evaluate(async () => { const r = indexedDB.open('nv'); return await new Promise(res => { r.onsuccess = () => { const g = r.result.transaction('wt').objectStore('wt').getAll(); g.onsuccess = () => { const pr = g.result.find(x => x.t === 'proj'); res(JSON.parse(pr.data).pages[0].panels.filter(q => q.img).length + ' / items ' + JSON.parse(pr.data).pages[0].items.length); }; }; }); }));
