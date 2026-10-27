@@ -15,7 +15,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Gowun+Batang:wght@400;700&family=Black+Han+Sans&family=Jua&family=Do+Hyeon&family=Gugi&family=Nanum+Pen+Script&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Gowun+Batang:wght@400;700&family=Black+Han+Sans&family=Jua&family=Do+Hyeon&family=Gugi&family=Nanum+Pen+Script&family=Nanum+Brush+Script&family=Gaegu:wght@700&family=Dokdo&family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
@@ -1371,7 +1371,7 @@ body:not(.is-desktop) .nai-only{display:none!important}
       <div class="wt-sec">
         <h4>글·효과 넣기</h4>
         <div class="wt-add" id="wtAdd">
-          <button data-add="speech">말풍선</button><button data-add="thought">속마음(구름)</button><button data-add="shout">외침</button><button data-add="whisper">속삭임</button>
+          <button data-add="speech">말풍선</button><button data-add="round">둥근 네모</button><button data-add="thought">속마음(구름)</button><button data-add="shout">외침</button><button data-add="whisper">속삭임</button>
           <button data-add="narr">설명 상자</button><button data-add="text">외곽선 글자</button><button data-add="sfx">효과음</button>
           <button data-add="sweat">땀방울</button><button data-add="burst">충격 별</button><button data-add="heart">하트</button><button data-add="speed">집중선</button>
         </div>
@@ -1381,9 +1381,10 @@ body:not(.is-desktop) .nai-only{display:none!important}
         <textarea id="wtText" placeholder="글" style="min-height:64px"></textarea>
         <div class="row tight"><label>크기</label><input type="range" id="wtSizeR" min="14" max="260" class="grow"><output id="wtSizeO"></output></div>
         <div class="row tight" id="wtRotRow"><label>기울기</label><input type="range" id="wtRot" min="-60" max="60" class="grow"><output id="wtRotO"></output></div>
-        <div class="row tight" id="wtShapeRow"><label>모양</label><select id="wtShape"><option value="speech">말풍선</option><option value="thought">속마음(구름)</option><option value="shout">외침</option><option value="whisper">속삭임</option></select><label class="hint"><input type="checkbox" id="wtTail"> 꼬리</label></div>
+        <div class="row tight" id="wtShapeRow"><label>모양</label><select id="wtShape"><option value="speech">말풍선</option><option value="round">둥근 네모</option><option value="thought">속마음(구름)</option><option value="shout">외침</option><option value="whisper">속삭임</option></select><label class="hint"><input type="checkbox" id="wtTail"> 꼬리</label><label class="hint"><input type="checkbox" id="wtDash"> 점선</label></div>
         <div class="row tight" id="wtColorRow"><label>색</label><div class="wt-sw" id="wtSw"></div></div>
-        <div class="row tight" id="wtVertRow"><label class="hint"><input type="checkbox" id="wtVert"> 세로로 쌓기</label><select id="wtFont"><option value="Black Han Sans">굵은 고딕</option><option value="Jua">둥근</option><option value="Do Hyeon">도현</option><option value="Gugi">구기</option><option value="Nanum Pen Script">손글씨</option></select></div>
+        <div class="row tight" id="wtVertRow"><label class="hint"><input type="checkbox" id="wtVert"> 세로</label><label class="hint"><input type="checkbox" id="wtHeart"> 하트</label><label class="hint"><input type="checkbox" id="wtBurst"> 흰 조각</label><select id="wtFont"><option value="brush">붓글씨</option><option value="round">둥근 손글씨</option><option value="heavy">굵은 고딕</option><option value="pen">가는 손글씨</option><option value="wild">거친 손글씨</option></select></div>
+        <div class="row tight" id="wtLineRow"><label>풍선 선</label><select id="wtLine"><option value="thin">얇게</option><option value="none">없이</option><option value="bold">굵게</option></select></div>
         <div class="row tight"><button id="wtDup">복제</button><button id="wtFront">맨 위로</button><button id="wtDel" class="danger">지우기</button></div>
       </div>
       <div class="hint wt-foot">작품·그림은 이 기기에 저장돼요. 성인 장면은 모든 인물이 성인일 때만 만들어요.</div>
@@ -1404,7 +1405,17 @@ body:not(.is-desktop) .nai-only{display:none!important}
       <div class="row tight"><label>쪽 수</label><input type="number" id="wtPagesN" value="4" min="1" max="12" style="width:64px">
         <label>컷 느낌</label><select id="wtTone"><option value="calm">잔잔하게</option><option value="tense">긴장감 있게</option><option value="comic">코믹하게</option></select>
         <label>AI</label><select id="wtAI"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div>
-      <div class="hint">인물은 노벨AI 탭의 <b>인물 사전</b>에 있는 이름만 써요. 하우스 스타일과 등급(일반/성인)도 그 탭 설정을 따라가요.</div>
+      <div class="row tight"><label>인물</label><input type="text" id="wtCast" class="grow" placeholder="이 화에 나오는 인물 이름 (쉼표로: 카엘, 레비안, 새 인물도 괜찮아요)" autocomplete="off"></div>
+      <div class="hint">사전에 없는 이름은 AI가 외형을 지어내서 <b>인물 사전에 넣어 둬요.</b> 다음 화에서도 같은 외형으로 나와요.</div>
+      <details class="fold"><summary>인물 외형·말투 보기·고치기<svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="hint" style="margin:4px 0 4px"><b>외형</b> — 그림에 쓰는 영어 태그 (노벨AI 탭의 인물 사전과 같은 칸)</div>
+        <textarea id="wtChars" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 영어 외형 태그&#10;카엘: 1boy, adult, black hair, golden eyes, black coat"></textarea>
+        <div class="hint" style="margin:8px 0 4px"><b>말투</b> — 대사를 쓸 때 쓰는 한국어 설명</div>
+        <textarea id="wtVoice" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 말투&#10;카엘: 낮은 반말, 짧고 명령적. 감정은 말끝을 흐리는 걸로만 드러낸다&#10;레비안: 짧은 존대, 과묵. 형을 '형님'이라 부른다"></textarea>
+      </details>
+      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="webtoon">웹툰 채색 (보내 준 자료 느낌)</option><option value="nai">내 노벨AI 그림체 (하우스 스타일)</option><option value="custom">직접 쓰기</option></select></div>
+      <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
+      <div class="hint">등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
       <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
       <div class="hint" id="wtAutoStat"></div>
       <div class="row nai-only"><button id="wtGenAll" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
@@ -5771,6 +5782,7 @@ const WT_LAYOUTS = {
 const INSET_POLY = [[.04,.03],[.4,.03],[.4,.27],[.04,.27]];
 const WT_SFX_GRAD = [['#ff8a00', '#c2185b'], ['#ff4fb6', '#7b1fa2'], ['#ff3d3d', '#7a0000'], ['#4fc3f7', '#283593'], ['#ffd54f', '#e65100'], ['#ffffff', '#9e9e9e']];
 const WT_TEXT_COL = ['#ffffff', '#111111', '#ffd54f', '#ff8a80'];
+const WT_BUB_FILL = ['#ffffff', '#eceaf0', '#1c1c1e'];   // 흰 / 연회색 / 검정(속마음·회상)
 const WT = {list: [], proj: null, pi: 0, sel: null, hist: [], redo: [], imgs: new Map(), zoom: 1, drag: null, saveT: 0, thumbT: 0, busy: false};
 const wtPage = () => WT.proj?.pages[WT.pi];
 
@@ -5866,90 +5878,124 @@ function drawPanels(g, pg, k){
   }
 }
 
-/* ---------- 그리기: 말풍선·글·효과음·스티커 ---------- */
-const BUB_BW = 6;
+/* ---------- 그리기: 말풍선·글·효과음·스티커 ----------
+   보내 준 웹툰 자료 기준: 말풍선은 '얇은 선 + 울퉁불퉁한 흰 덩어리 + 가벼운 글씨',
+   효과음은 '붓글씨 + 두꺼운 흰 테두리 + 그라데이션 + 하트', 뒤에 흰 불꽃 조각을 깐다. */
+const BUB_LINE = 4;                      // 말풍선 선 굵기(쪽 너비 1500 기준)
+const WT_TEXT = '"Noto Sans KR","Pretendard Variable",sans-serif';
+const SFX_FONTS = {brush: '"Nanum Brush Script"', round: '"Gaegu"', heavy: '"Black Han Sans"', pen: '"Nanum Pen Script"', wild: '"Dokdo"'};
+// 울퉁불퉁한 덩어리: 타원에 씨앗 잡음을 섞어 부드럽게 잇는다
+function blobPath(g, cx, cy, rx, ry, seed, wob = 0.055, n = 14){
+  const r = rnd(seed), pts = [];
+  for (let i = 0; i < n; i++){ const a = i / n * Math.PI * 2, k = 1 + (r() - 0.5) * 2 * wob; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+  // 점 사이 중점을 이어 부드럽게 닫는다
+  g.beginPath(); g.moveTo((pts[n - 1][0] + pts[0][0]) / 2, (pts[n - 1][1] + pts[0][1]) / 2);
+  for (let i = 0; i < n; i++){ const p1 = pts[i], p2 = pts[(i + 1) % n]; g.quadraticCurveTo(p1[0], p1[1], (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2); }
+  g.closePath();
+}
+function spikePath(g, cx, cy, rx, ry, seed, m = 20){
+  const r = rnd(seed); g.beginPath();
+  for (let i = 0; i < m * 2; i++){ const a = i / (m * 2) * Math.PI * 2, k = i % 2 ? 0.78 : 1.1 + r() * 0.14; const x = cx + Math.cos(a) * rx * k, y = cy + Math.sin(a) * ry * k; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.closePath();
+}
+function roundRectPath(g, cx, cy, rx, ry, r){
+  g.beginPath(); const x = cx - rx, y = cy - ry, w = rx * 2, h = ry * 2, k = Math.min(r, rx, ry);
+  g.moveTo(x + k, y); g.lineTo(x + w - k, y); g.quadraticCurveTo(x + w, y, x + w, y + k);
+  g.lineTo(x + w, y + h - k); g.quadraticCurveTo(x + w, y + h, x + w - k, y + h);
+  g.lineTo(x + k, y + h); g.quadraticCurveTo(x, y + h, x, y + h - k);
+  g.lineTo(x, y + k); g.quadraticCurveTo(x, y, x + k, y); g.closePath();
+}
 function bubbleGeom(g, b){
-  const size = b.size || 42; g.font = `800 ${size}px ${WT_FONT.body}`;
-  const lines = wrapLines(g, b.text, b.w || 330), lh = size * 1.3, tw = Math.max(40, ...lines.map(l => g.measureText(l).width)), th = lines.length * lh;
-  if (b.shape === 'box') return {lines, lh, size, rx: tw / 2 + size * 0.7, ry: th / 2 + size * 0.55, tw, th};
-  return {lines, lh, size, rx: tw / 2 * 1.22 + size * 0.75, ry: th / 2 * 1.18 + size * 0.62, tw, th};
+  const size = b.size || 38; g.font = `500 ${size}px ${WT_TEXT}`;
+  const lines = wrapLines(g, b.text, b.w || 300), lh = size * 1.5, tw = Math.max(40, ...lines.map(l => g.measureText(l).width)), th = lines.length * lh;
+  if (b.shape === 'box') return {lines, lh, size, rx: tw / 2 + size * 0.9, ry: th / 2 + size * 0.6, tw, th};
+  if (b.shape === 'round') return {lines, lh, size, rx: tw / 2 + size * 0.85, ry: th / 2 + size * 0.7, tw, th};
+  const pad = b.shape === 'shout' ? 1.0 : 0.8;
+  return {lines, lh, size, rx: tw / 2 * 1.18 + size * pad, ry: th / 2 * 1.1 + size * (pad * 0.9), tw, th};
 }
-function bubbleOutline(g, b, geo){
-  const {rx, ry} = geo, n = 18;
-  g.beginPath();
-  if (b.shape === 'shout'){
-    const r = rnd(hash(b.id || b.text)); const m = 22;
-    for (let i = 0; i < m * 2; i++){ const a = i / (m * 2) * Math.PI * 2, kk = i % 2 ? 0.86 : 1.18 + r() * 0.1; const x = b.x + Math.cos(a) * rx * kk * 1.08, y = b.y + Math.sin(a) * ry * kk * 1.08; i ? g.lineTo(x, y) : g.moveTo(x, y); }
-    g.closePath(); return;
-  }
-  if (b.shape === 'thought'){
-    for (let i = 0; i <= n; i++){
-      const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, am = (a0 + a1) / 2;
-      const x0 = b.x + Math.cos(a0) * rx, y0 = b.y + Math.sin(a0) * ry, x1 = b.x + Math.cos(a1) * rx, y1 = b.y + Math.sin(a1) * ry;
-      const cx = b.x + Math.cos(am) * rx * 1.2, cy = b.y + Math.sin(am) * ry * 1.2;
-      if (!i) g.moveTo(x0, y0); g.quadraticCurveTo(cx, cy, x1, y1);
-    }
-    g.closePath(); return;
-  }
-  g.ellipse(b.x, b.y, rx, ry, 0, 0, Math.PI * 2);
-}
+// 꼬리: 밑이 좁고 끝이 뾰족한 가는 가시
 function tailPath(g, b, geo, tx, ty){
-  const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
-  const ang = Math.atan2(dy / geo.ry, dx / geo.rx), spread = 0.34;
-  const p1 = [b.x + Math.cos(ang - spread) * geo.rx * 0.92, b.y + Math.sin(ang - spread) * geo.ry * 0.92];
-  const p2 = [b.x + Math.cos(ang + spread) * geo.rx * 0.92, b.y + Math.sin(ang + spread) * geo.ry * 0.92];
+  const ang = Math.atan2((ty - b.y) / geo.ry, (tx - b.x) / geo.rx), spread = 0.17;
+  const p1 = [b.x + Math.cos(ang - spread) * geo.rx * 0.97, b.y + Math.sin(ang - spread) * geo.ry * 0.97];
+  const p2 = [b.x + Math.cos(ang + spread) * geo.rx * 0.97, b.y + Math.sin(ang + spread) * geo.ry * 0.97];
+  const mx = b.x + Math.cos(ang) * geo.rx * 0.9, my = b.y + Math.sin(ang) * geo.ry * 0.9;
   g.beginPath(); g.moveTo(p1[0], p1[1]);
-  g.quadraticCurveTo((p1[0] + tx) / 2 - uy * 14, (p1[1] + ty) / 2 + ux * 14, tx, ty);
-  g.quadraticCurveTo((p2[0] + tx) / 2 + uy * 6, (p2[1] + ty) / 2 - ux * 6, p2[0], p2[1]); g.closePath();
+  g.quadraticCurveTo(mx + (tx - mx) * 0.5, my + (ty - my) * 0.55, tx, ty);
+  g.quadraticCurveTo(mx + (tx - mx) * 0.35, my + (ty - my) * 0.3, p2[0], p2[1]); g.closePath();
 }
 function drawBubble(g, b){
   const geo = bubbleGeom(g, b); b._hw = geo.rx; b._hh = geo.ry;
+  const seed = hash((b.id || '') + (b.text || '')), line = b.line === 'none' ? 0 : BUB_LINE * (b.line === 'bold' ? 2.4 : 1);
+  const hasTail = b.tail && b.shape !== 'box';
+  const shape = () => {
+    if (b.shape === 'shout') spikePath(g, b.x, b.y, geo.rx, geo.ry, seed);
+    else if (b.shape === 'round') roundRectPath(g, b.x, b.y, geo.rx, geo.ry, geo.size * 1.1);
+    else if (b.shape === 'thought') blobPath(g, b.x, b.y, geo.rx, geo.ry, seed, 0.1, 16);
+    else blobPath(g, b.x, b.y, geo.rx, geo.ry, seed, b.shape === 'whisper' ? 0.03 : 0.045, 14);
+  };
+  const dark0 = (b.fill || '#fff').toLowerCase() === '#1c1c1e';
+  g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
   if (b.shape === 'box'){
-    g.fillStyle = '#fff'; g.strokeStyle = '#111'; g.lineWidth = BUB_BW; g.fillRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2); g.strokeRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2);
+    g.fillStyle = b.fill || '#fff'; g.fillRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2);
+    if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line * 0.8; if (b.dash) g.setLineDash([14, 10]); g.strokeRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2); g.setLineDash([]); }
   } else {
-    const hasTail = b.tail && b.shape !== 'shout';
-    g.lineJoin = 'round'; g.fillStyle = '#fff'; g.strokeStyle = '#111';
-    if (b.shape === 'whisper') g.setLineDash([16, 12]);
-    g.lineWidth = BUB_BW * 2; bubbleOutline(g, b, geo); g.stroke();
-    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.stroke(); }
-    g.setLineDash([]);
-    bubbleOutline(g, b, geo); g.fill();
-    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.fill(); }
-    if (hasTail && b.shape === 'thought'){   // 구름은 작은 동그라미 세 개가 꼬리를 대신한다
-      const dx = b.tail.x - b.x, dy = b.tail.y - b.y, a = Math.atan2(dy / geo.ry, dx / geo.rx), sx = b.x + Math.cos(a) * geo.rx * 1.05, sy = b.y + Math.sin(a) * geo.ry * 1.05;
-      [[0.3, 20], [0.62, 14], [0.92, 9]].forEach(([t, r]) => { const cx = sx + (b.tail.x - sx) * t, cy = sy + (b.tail.y - sy) * t; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 5; g.stroke(); });
+    g.fillStyle = b.fill || '#fff';
+    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.fill(); if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line; g.stroke(); } }
+    shape(); g.fill();
+    if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line; if (b.shape === 'whisper' || b.dash) g.setLineDash([18, 13]); g.stroke(); g.setLineDash([]); }
+    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.fill(); }   // 선 자국을 덮어 하나처럼
+    if (hasTail && b.shape === 'thought'){
+      const a = Math.atan2((b.tail.y - b.y) / geo.ry, (b.tail.x - b.x) / geo.rx), sx = b.x + Math.cos(a) * geo.rx, sy = b.y + Math.sin(a) * geo.ry;
+      [[0.35, 0.09], [0.68, 0.062], [0.95, 0.04]].forEach(([t, rr]) => { const R = Math.min(geo.rx, geo.ry) * rr * 2.2; g.beginPath(); g.arc(sx + (b.tail.x - sx) * t, sy + (b.tail.y - sy) * t, R, 0, 7); g.fillStyle = b.fill || '#fff'; g.fill(); if (line){ g.lineWidth = line * 0.8; g.strokeStyle = dark0 ? '#555' : '#111'; g.stroke(); } });
     }
   }
-  g.fillStyle = b.shape === 'whisper' ? '#555' : '#111'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `${b.shape === 'shout' ? 900 : 800} ${geo.size}px ${WT_FONT.body}`;
+  const dark = (b.fill || '#fff').toLowerCase() === '#1c1c1e';
+  g.fillStyle = dark ? '#f4f4f6' : b.shape === 'whisper' ? '#4a4a4a' : '#121212'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `${b.shape === 'shout' ? 700 : 500} ${geo.size}px ${WT_TEXT}`;
   const y0 = b.y - (geo.lines.length - 1) * geo.lh / 2; geo.lines.forEach((l, i) => g.fillText(l, b.x, y0 + i * geo.lh));
-}
-function drawOutlined(g, t){
-  const size = t.size || 46; g.font = `800 ${size}px ${WT_FONT.body}`; const lines = wrapLines(g, t.text, t.w || 420), lh = size * 1.28;
-  t._hw = Math.max(30, ...lines.map(l => g.measureText(l).width)) / 2 + 8; t._hh = lines.length * lh / 2 + 6;
-  g.save(); g.translate(t.x, t.y); g.rotate((t.rot || 0) * Math.PI / 180); g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  const y0 = -(lines.length - 1) * lh / 2; const light = (t.color || '#fff') !== '#111111';
-  lines.forEach((l, i) => { g.lineWidth = size * 0.26; g.strokeStyle = light ? '#111' : '#fff'; g.strokeText(l, 0, y0 + i * lh); g.fillStyle = t.color || '#fff'; g.fillText(l, 0, y0 + i * lh); });
   g.restore();
 }
+function drawOutlined(g, t){
+  const size = t.size || 46; g.font = `700 ${size}px ${WT_TEXT}`; const lines = wrapLines(g, t.text, t.w || 420), lh = size * 1.35;
+  t._hw = Math.max(30, ...lines.map(l => g.measureText(l).width)) / 2 + 8; t._hh = lines.length * lh / 2 + 6;
+  g.save(); g.translate(t.x, t.y); g.rotate((t.rot || 0) * Math.PI / 180); g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  const y0 = -(lines.length - 1) * lh / 2, col = t.color || '#ffffff', light = col !== '#111111';
+  lines.forEach((l, i) => { g.lineWidth = size * 0.3; g.strokeStyle = light ? '#111' : '#fff'; g.strokeText(l, 0, y0 + i * lh); g.fillStyle = col; g.fillText(l, 0, y0 + i * lh); });
+  g.restore();
+}
+// 효과음 뒤에 까는 흰 조각: 글자를 바짝 감싸는 부드러운 덩어리(자료처럼 글자만 떠 보이게)
+function sfxBurst(g, w, h, seed){
+  g.save(); g.fillStyle = '#fff'; blobPath(g, 0, 0, w, h, seed, 0.09, 12); g.fill(); g.restore();
+}
 function drawSfx(g, s){
-  const size = s.size || 120, font = s.font || 'Black Han Sans', chars = [...String(s.text || '')]; if (!chars.length){ s._hw = s._hh = 30; return; }
-  const r = rnd(hash(s.text)); g.save(); g.translate(s.x, s.y); g.rotate((s.rot || 0) * Math.PI / 180);
-  g.font = `900 ${size}px "${font}",${WT_FONT.body}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  const cells = chars.map((ch, i) => ({ch, sc: 0.86 + r() * 0.3, dx: (r() - 0.5) * size * 0.12, dy: (r() - 0.5) * size * 0.05, rot: (r() - 0.5) * 0.28}));
-  const adv = c => g.measureText(c.ch).width * c.sc * 0.98;
-  let W, Hh;
-  if (s.vert){ Hh = size * 0.98 * cells.length; W = size * 1.15; let y = -Hh / 2 + size * 0.5; cells.forEach(c => { c.px = c.dx; c.py = y + c.dy; y += size * 0.98; }); }
-  else { W = cells.reduce((a, c) => a + adv(c), 0); Hh = size * 1.1; let x = -W / 2; cells.forEach(c => { const w = adv(c); c.px = x + w / 2; c.py = c.dy; x += w; }); }
-  s._hw = W / 2 + size * 0.2; s._hh = Hh / 2 + size * 0.1;
-  const gr = WT_SFX_GRAD[s.grad ?? 0] || WT_SFX_GRAD[0]; const grad = g.createLinearGradient(0, -Hh / 2, 0, Hh / 2); grad.addColorStop(0, gr[0]); grad.addColorStop(1, gr[1]);
-  for (const pass of [0, 1, 2]){
+  const size = s.size || 120, fam = SFX_FONTS[s.font] || SFX_FONTS.brush;
+  const chars = [...String(s.text || '')]; if (!chars.length){ s._hw = s._hh = 30; return; }
+  const brush = /Brush|Pen|Dokdo/.test(fam), weight = brush ? 400 : 700;
+  const r = rnd(hash(String(s.text) + (s.id || '')));
+  g.save(); g.translate(s.x, s.y); g.rotate((s.rot || 0) * Math.PI / 180);
+  g.font = `${weight} ${size}px ${fam},${WT_TEXT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineCap = 'round';
+  const cells = chars.map(ch => ({ch, sc: 0.94 + r() * 0.18, dx: (r() - 0.5) * size * 0.07, dy: (r() - 0.5) * size * 0.1, rot: (r() - 0.5) * 0.3}));
+  const adv = c => Math.max(size * 0.5, g.measureText(c.ch).width * c.sc) * (brush ? 1.02 : 0.96);
+  let W, H;
+  if (s.vert){ const step = size * (brush ? 0.82 : 0.9); H = step * cells.length; W = size * 1.05; let y = -H / 2 + step / 2; cells.forEach((c, i) => { c.px = c.dx + (i % 2 ? size * 0.06 : -size * 0.06); c.py = y + c.dy; y += step; }); }
+  else { W = cells.reduce((a, c) => a + adv(c), 0); H = size * 1.0; let x = -W / 2; cells.forEach(c => { const w = adv(c); c.px = x + w / 2; c.py = c.dy; x += w; }); }
+  s._hw = W / 2 + size * 0.24; s._hh = H / 2 + size * 0.2;
+  const gr = WT_SFX_GRAD[s.grad ?? 0] || WT_SFX_GRAD[0];
+  if (s.burst) sfxBurst(g, W / 2 + size * 0.14, H / 2 + size * 0.12, hash('b' + s.text));
+  const grad = g.createLinearGradient(0, -H / 2, 0, H / 2); grad.addColorStop(0, gr[0]); grad.addColorStop(1, gr[1]);
+  for (const pass of [0, 1]){
     for (const c of cells){
       g.save(); g.translate(c.px, c.py); g.rotate(c.rot); g.scale(c.sc, c.sc);
-      if (pass === 0){ g.lineWidth = size * 0.34; g.strokeStyle = '#fff'; g.strokeText(c.ch, 0, 0); }
-      else if (pass === 1){ g.lineWidth = size * 0.17; g.strokeStyle = gr[1] === '#9e9e9e' ? '#555' : '#3a0830'; g.strokeText(c.ch, 0, 0); }
+      if (pass === 0){ g.lineWidth = size * (brush ? 0.2 : 0.26); g.strokeStyle = '#fff'; g.strokeText(c.ch, 0, 0); }
       else { g.fillStyle = grad; g.fillText(c.ch, 0, 0); }
       g.restore();
     }
+  }
+  if (s.heart){
+    const hs = size * 0.4, hx = s.vert ? W * 0.18 : W / 2 + hs * 0.5, hy = s.vert ? H / 2 + hs * 0.35 : H * 0.22;
+    g.save(); g.translate(hx, hy); g.rotate(0.22);
+    const p = () => { g.beginPath(); g.moveTo(0, hs * 0.34); g.bezierCurveTo(-hs * 0.7, -hs * 0.1, -hs * 0.36, -hs * 0.5, 0, -hs * 0.18); g.bezierCurveTo(hs * 0.36, -hs * 0.5, hs * 0.7, -hs * 0.1, 0, hs * 0.34); g.closePath(); };
+    p(); g.lineWidth = hs * 0.36; g.strokeStyle = '#fff'; g.stroke(); g.fillStyle = gr[1]; g.fill(); g.restore();
   }
   g.restore();
 }
@@ -5971,7 +6017,7 @@ function drawSticker(g, s){
   }
   g.restore();
 }
-function drawItem(g, it){ ({speech: drawBubble, thought: drawBubble, shout: drawBubble, whisper: drawBubble, narr: drawBubble, text: drawOutlined, sfx: drawSfx, stk: drawSticker})[it.k === 'bubble' ? it.shape === 'box' ? 'narr' : it.shape : it.k]?.(g, it); }
+function drawItem(g, it){ (it.k === 'bubble' ? drawBubble : {text: drawOutlined, sfx: drawSfx, stk: drawSticker}[it.k])?.(g, it); }
 
 /* ---------- 쪽 한 장 그리기 ---------- */
 function wtRenderPage(g, pg, k, opts = {}){
@@ -6056,12 +6102,13 @@ function wtSideSync(){
   if (it){
     const textual = ['bubble', 'text', 'sfx'].includes(it.k); $('#wtText').hidden = !textual; $('#wtText').value = it.text || '';
     $('#wtSizeR').value = it.size || 100; $('#wtSizeO').textContent = it.size || 100; $('#wtRot').value = it.rot || 0; $('#wtRotO').textContent = (it.rot || 0) + '°';
-    $('#wtRotRow').hidden = it.k === 'bubble'; $('#wtShapeRow').hidden = !(it.k === 'bubble' && it.shape !== 'box');
-    $('#wtShape').value = it.shape || 'speech'; $('#wtTail').checked = !!it.tail;
-    $('#wtColorRow').hidden = !['sfx', 'text'].includes(it.k); $('#wtVertRow').hidden = it.k !== 'sfx';
-    $('#wtVert').checked = !!it.vert; $('#wtFont').value = it.font || 'Black Han Sans';
+    $('#wtRotRow').hidden = it.k === 'bubble'; $('#wtShapeRow').hidden = it.k !== 'bubble'; $('#wtShape').disabled = it.shape === 'box';
+    $('#wtShape').value = it.shape || 'speech'; $('#wtTail').checked = !!it.tail; $('#wtDash').checked = !!it.dash;
+    $('#wtColorRow').hidden = !['sfx', 'text', 'bubble'].includes(it.k); $('#wtVertRow').hidden = it.k !== 'sfx'; $('#wtLineRow').hidden = it.k !== 'bubble';
+    $('#wtVert').checked = !!it.vert; $('#wtHeart').checked = !!it.heart; $('#wtBurst').checked = it.burst !== false; $('#wtFont').value = SFX_FONTS[it.font] ? it.font : 'brush'; $('#wtLine').value = it.line || 'thin';
     const sw = $('#wtSw'); sw.innerHTML = '';
     if (it.k === 'sfx') WT_SFX_GRAD.forEach((g2, i) => { const b = document.createElement('button'); b.style.background = `linear-gradient(${g2[0]},${g2[1]})`; b.className = (it.grad ?? 0) === i ? 'on' : ''; b.onclick = () => { it.grad = i; wtCommit(); wtSideSync(); wtRender(); }; sw.append(b); });
+    else if (it.k === 'bubble') WT_BUB_FILL.forEach(c => { const b2 = document.createElement('button'); b2.style.background = c; b2.className = (it.fill || '#ffffff').toLowerCase() === c ? 'on' : ''; b2.onclick = () => { it.fill = c; wtCommit(); wtSideSync(); wtRender(); }; sw.append(b2); });
     else if (it.k === 'text') WT_TEXT_COL.forEach(c => { const b = document.createElement('button'); b.style.background = c; b.className = (it.color || '#ffffff') === c ? 'on' : ''; b.onclick = () => { it.color = c; wtCommit(); wtSideSync(); wtRender(); }; sw.append(b); });
   }
 }
@@ -6137,10 +6184,10 @@ document.addEventListener('keydown', e => {
 function wtCenterFor(pg){ const s = WT.sel; if (s?.t === 'panel'){ const bb = polyBox(polyPx(pg, pg.panels[s.i])); return [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2, bb]; } return [WT_W / 2, pg.h / 2, [0, 0, WT_W, pg.h]]; }
 function wtAddItem(kind, at){
   const pg = wtPage(), [cx, cy] = at || wtCenterFor(pg); let it;
-  if (['speech', 'thought', 'shout', 'whisper'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 42, w: 330, text: kind === 'shout' ? '뭐라고!' : '대사를 적어 주세요', tail: kind === 'shout' ? null : {x: cx + 40, y: cy + 150}};
-  else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 40, w: 520, text: '설명을 적어 주세요', tail: null};
+  if (['speech', 'round', 'thought', 'shout', 'whisper'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 38, w: 300, line: 'thin', text: kind === 'shout' ? '뭐라고!' : '대사를 적어 주세요', tail: kind === 'shout' ? null : {x: cx + 30, y: cy + 160}};
+  else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 38, w: 480, line: 'thin', text: '설명을 적어 주세요', tail: null};
   else if (kind === 'text') it = {k: 'text', x: cx, y: cy, size: 52, w: 520, text: '속마음을 적어 주세요', color: '#ffffff', rot: 0};
-  else if (kind === 'sfx') it = {k: 'sfx', x: cx, y: cy, size: 150, text: '두근', grad: 0, rot: -10, vert: false, font: 'Black Han Sans'};
+  else if (kind === 'sfx') it = {k: 'sfx', x: cx, y: cy, size: 150, text: '두근', grad: 0, rot: -10, vert: false, font: 'brush', heart: false, burst: false};
   else it = {k: 'stk', kind, x: cx, y: cy, size: kind === 'speed' ? 260 : 130, rot: 0};
   it.id = uid(); pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtSideSync(); wtRender(); return it;
 }
@@ -6150,9 +6197,13 @@ $('#wtText').oninput = () => { const it = wtItem(); if (!it) return; it.text = $
 $('#wtSizeR').oninput = () => { const it = wtItem(); if (!it) return; it.size = +$('#wtSizeR').value; $('#wtSizeO').textContent = it.size; if (it.k === 'bubble') it.w = Math.round(it.size * 7.8); wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 400); };
 $('#wtRot').oninput = () => { const it = wtItem(); if (!it) return; it.rot = +$('#wtRot').value; $('#wtRotO').textContent = it.rot + '°'; wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 400); };
 $('#wtShape').onchange = () => { const it = wtItem(); if (!it) return; it.shape = $('#wtShape').value; wtCommit(); wtRender(); };
+$('#wtDash').onchange = () => { const it = wtItem(); if (!it) return; it.dash = $('#wtDash').checked; wtCommit(); wtRender(); };
 $('#wtTail').onchange = () => { const it = wtItem(); if (!it) return; it.tail = $('#wtTail').checked ? {x: it.x + 40, y: it.y + 150} : null; wtCommit(); wtRender(); };
 $('#wtVert').onchange = () => { const it = wtItem(); if (!it) return; it.vert = $('#wtVert').checked; wtCommit(); wtRender(); };
-$('#wtFont').onchange = () => { const it = wtItem(); if (!it) return; it.font = $('#wtFont').value; document.fonts?.load(`900 40px "${it.font}"`, '가나다').then(wtRender).catch(() => {}); wtCommit(); wtRender(); };
+$('#wtFont').onchange = () => { const it = wtItem(); if (!it) return; it.font = $('#wtFont').value; document.fonts?.load(`400 40px ${SFX_FONTS[it.font]}`, '가나다두근').then(wtRender).catch(() => {}); wtCommit(); wtRender(); };
+$('#wtHeart').onchange = () => { const it = wtItem(); if (!it) return; it.heart = $('#wtHeart').checked; wtCommit(); wtRender(); };
+$('#wtBurst').onchange = () => { const it = wtItem(); if (!it) return; it.burst = $('#wtBurst').checked; wtCommit(); wtRender(); };
+$('#wtLine').onchange = () => { const it = wtItem(); if (!it) return; it.line = $('#wtLine').value; wtCommit(); wtRender(); };
 $('#wtDup').onclick = () => { const it = wtItem(); if (!it) return; const c = JSON.parse(JSON.stringify(it)); c.id = uid(); c.x += 50; c.y += 50; if (c.tail){ c.tail.x += 50; c.tail.y += 50; } wtPage().items.push(c); WT.sel = {t: 'item', i: wtPage().items.length - 1}; wtCommit(); wtSideSync(); wtRender(); };
 $('#wtDel').onclick = () => { const s = WT.sel; if (s?.t !== 'item') return; wtPage().items.splice(s.i, 1); WT.sel = null; wtCommit(); wtSideSync(); wtRender(); };
 $('#wtFront').onclick = () => { const s = WT.sel, pg = wtPage(); if (s?.t !== 'item') return; const [it] = pg.items.splice(s.i, 1); pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtRender(); };
@@ -6222,7 +6273,8 @@ async function wtHomeRender(){
   }
 }
 async function wtOpen(){
-  $('#wt').hidden = false; document.fonts?.load('900 40px "Black Han Sans"', '가나다두근').catch(() => {}); document.fonts?.load('800 40px "Pretendard Variable"', '가나다').catch(() => {});
+  $('#wt').hidden = false; for (const f2 of Object.values(SFX_FONTS)) document.fonts?.load(`400 40px ${f2}`, '가나다두근쿵').catch(() => {});
+  document.fonts?.load('500 40px "Noto Sans KR"', '가나다').catch(() => {}); document.fonts?.load('800 40px "Pretendard Variable"', '가나다').catch(() => {});
   if (!WT.proj){ $('#wtHome').hidden = false; await wtHomeRender(); } else { wtRender(); }
 }
 async function wtClose(){ if (WT.proj){ clearTimeout(WT.saveT); await wtSaveNow(); } $('#wt').hidden = true; }
@@ -6234,10 +6286,15 @@ $('#wtMy').onclick = async () => { if (WT.proj){ clearTimeout(WT.saveT); await w
 wtBuildLayouts();
 /* ================= 웹툰 자동 만들기: 줄거리 → 대본 → 쪽·컷·말풍선 → (컴퓨터) 컷 그림 ================= */
 const WT_LAYOUT_KEYS = Object.keys(WT_LAYOUTS);
+const WT_STYLE = {
+  webtoon: 'korean manhwa style, bl manhwa, semi realistic, clean thin lineart, soft cel shading, airbrushed blush, muted natural palette, soft indoor lighting, detailed male face, sketchy line texture, simple background',
+};
 const WT_SCHEMA = {
-  type: 'object', additionalProperties: false, required: ['title', 'pages'],
+  type: 'object', additionalProperties: false, required: ['title', 'cast', 'pages'],
   properties: {
     title: {type: 'string'},
+    cast: {type: 'array', description: '사전에 없던 인물만. 외형 영어 태그와 한국어 말투를 지어서 채운다', items: {type: 'object', additionalProperties: false, required: ['name', 'tags', 'voice'],
+      properties: {name: {type: 'string'}, tags: {type: 'string', description: '예: 1boy, adult, short black hair, grey eyes, black coat'}, voice: {type: 'string', description: '한국어 한 줄. 예: 낮은 반말, 짧고 명령적. 당황하면 말끝이 흐려진다'}}}},
     pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'panels'],
       properties: {
         layout: {type: 'string', description: '틀 키: ' + WT_LAYOUT_KEYS.join(', ')},
@@ -6247,7 +6304,7 @@ const WT_SCHEMA = {
             tags: {type: 'string', description: '그림용 영어 태그: 구도·카메라·표정·배경·조명·소품. 인물 외형은 쓰지 않는다'},
             chars: {type: 'array', items: {type: 'string'}, description: '인물 사전에 있는 이름만'},
             bubbles: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['type', 'text'],
-              properties: {type: {type: 'string', enum: ['speech', 'thought', 'shout', 'whisper', 'narr', 'text']}, text: {type: 'string'}, who: {type: 'string'}}}},
+              properties: {type: {type: 'string', enum: ['speech', 'round', 'thought', 'shout', 'whisper', 'narr', 'text']}, text: {type: 'string'}, who: {type: 'string'}}}},
             sfx: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['text', 'vert'], properties: {text: {type: 'string'}, vert: {type: 'boolean'}}}},
             stickers: {type: 'array', items: {type: 'string', enum: ['sweat', 'burst', 'heart', 'speed']}},
           }}},
@@ -6259,18 +6316,27 @@ const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 
 - 한 쪽은 1~4컷. 컷 수는 틀과 맞춘다(1→1컷, 2*→2컷, 3*→3컷, 4a→4컷). 장면 전환·감정 고조에는 큰 컷, 반응에는 작은 컷을 쓴다.
 - 첫 쪽은 상황을 한 번에 보여 주는 큰 컷으로 시작하고, 마지막 쪽은 다음이 궁금해지는 여운으로 끝낸다.
 - 컷마다 scene(무슨 일), tags(구도·표정·배경·조명 영어 태그, 예: "upper body, from side, looking down, snow, castle gate, night, soft rim light"), chars(인물 사전의 이름만), bubbles, sfx, stickers.
-- bubbles: type은 speech(보통 대사), thought(속마음 구름), shout(외침), whisper(속삭임), narr(설명 상자: 시간·장소 전환에만), text(그림 위 외곽선 독백). 한 말풍선은 22자 안쪽, 한 컷에 말풍선 최대 3개. 대사는 말하듯 짧게, 설명하지 않는다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
+- bubbles: type은 speech(보통 대사), round(둥근 네모 — 차분하거나 긴 대사), thought(속마음 구름), shout(외침), whisper(속삭임), narr(설명 상자: 시간·장소 전환, 회상), text(그림 위 외곽선 독백). 한 말풍선은 22자 안쪽, 한 컷에 말풍선 최대 3개. 대사는 말하듯 짧게, 설명하지 않는다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
 - sfx: 효과음 2~4글자(예: 두근, 쿵, 스윽, 쮸웁). 꼭 필요한 컷에만. 긴 소리는 vert=true.
 - stickers: sweat(당황), burst(충격), heart(설렘), speed(집중선)를 감정이 튀는 컷에만 쓴다.
-- 인물 사전에 없는 인물은 만들지 않는다(없으면 chars를 비우고 대사로만 다룬다). 모든 인물은 성인이다.
+- 인물: chars 에는 '나오는 인물'로 받은 이름과 사전에 있는 이름을 쓴다. 사전에 없던 이름은 cast 에 외형 영어 태그(성별·나이대·머리·눈·옷·특징 순, 모두 adult)와 한국어 말투를 지어서 한 번만 적는다. 줄거리에 새 인물이 필요하면 이름을 지어 cast 에 넣는다.
+- 말투: 받은 말투 설명이 있으면 그 인물의 대사는 반드시 그 말투로 쓴다(존대·반말, 길이, 말버릇, 호칭). 말투가 없는 인물은 cast 에 적은 말투를 따른다. 인물마다 말이 달라야 누가 말하는지 알 수 있다.
+- 모든 인물은 성인이다.
 출력은 JSON 하나만.`;
 
+/* ---------- 그림체 ---------- */
+function wtStyleTags(){
+  const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'webtoon');
+  if (k === 'nai') return $('#naiStyle').value.trim().replace(/,\s*$/, '');
+  if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
+  return WT_STYLE.webtoon;
+}
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
 function wtPanelPrompt(panel){
   const rating = $('#naiRating').value, dict = wtDict();
   const names = String(panel.chars || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
-  const style = $('#naiStyle').value.trim().replace(/,\s*$/, '');
+  const style = wtStyleTags();
   const found = names.filter(n => dict.has(n)), n = found.length;
   const count = n === 0 ? 'no humans' : n === 1 ? (/1girl/.test(dict.get(found[0])) ? '1girl' : '1boy') : `${n}boys`;
   const tags = (panel.tags || '').trim() || 'upper body, looking at viewer';
@@ -6300,11 +6366,11 @@ function wtPlace(pg, panel, spec){
   for (const b of (spec.bubbles || []).slice(0, 3)){
     const text = String(b.text || '').trim(); if (!text) continue;
     const y = bb[1] + bh * (0.15 + 0.2 * bi), x = bi % 2 === 0 ? right : left;
-    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1 + bi * 90, size: Math.round(40 * sc), w: Math.round(520 * sc), text, tail: null}); }
+    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1 + bi * 90, size: Math.round(38 * sc), w: Math.round(480 * sc), text, line: 'thin', dash: true, tail: null}); }
     else if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(52 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); }
     else {
-      const shape = ['speech', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
-      mk({k: 'bubble', shape, x, y, size: Math.round(42 * sc), w: Math.round(340 * sc), text, tail: shape === 'shout' ? null : {x: x + (bi % 2 ? 30 : -30), y: y + bh * 0.2}}); bi++;
+      const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
+      mk({k: 'bubble', shape, x, y, size: Math.round(38 * sc), w: Math.round(310 * sc), line: 'thin', text, tail: shape === 'shout' ? null : {x: x + (bi % 2 ? 30 : -30), y: y + bh * 0.2}}); bi++;
     }
   }
   (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.2 : 0.8), y: bb[1] + bh * (i ? 0.78 : 0.62), size: Math.round(Math.min(bw, bh) * 0.2), text: t, grad: (hash(t) % 4), rot: i ? 10 : -12, vert: !!s.vert, font: 'Black Han Sans'}); });
@@ -6326,6 +6392,26 @@ function wtBuildFromScript(sc){
   }
   return pages;
 }
+// AI가 지어낸 새 인물을 인물 사전에 넣어 둔다(다음 화에서도 같은 외형으로)
+const wtVoiceDict = () => ($('#wtVoice')?.value || store.get('set.wtVoice', '')).split('\n').map(x => x.trim()).filter(Boolean);
+function wtMergeVoice(cast){
+  const el = $('#wtVoice'); const cur = wtVoiceDict(); const have = new Set(cur.map(l => l.split(':')[0].trim())); let n = 0;
+  for (const c of cast || []){ const name = String(c.name || '').trim(), v = String(c.voice || '').trim(); if (!name || !v || have.has(name)) continue; cur.push(`${name}: ${v}`); have.add(name); n++; }
+  if (n){ el.value = cur.join('\n'); store.set('set.wtVoice', el.value); }
+  return n;
+}
+function wtMergeCast(cast){
+  const el = $('#naiChars'); const cur = el.value.split('\n').map(x => x.trim()).filter(Boolean);
+  const have = new Set(cur.map(l => l.split(':')[0].trim())); let n = 0;
+  for (const c of cast || []){
+    const name = String(c.name || '').trim(), tags = String(c.tags || '').trim();
+    if (!name || !tags || have.has(name)) continue;
+    if ($('#naiRating').value === 'nsfw' && MINOR_RE.test(name + ' ' + tags)) continue;
+    cur.push(`${name}: ${tags}`); have.add(name); n++;
+  }
+  if (n){ el.value = cur.join('\n'); store.set('set.naiChars', el.value); $('#wtChars').value = el.value; }
+  return n;
+}
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
 let wtAbort = null;
@@ -6340,17 +6426,20 @@ $('#wtAutoGo').onclick = async () => {
   const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
   const n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)), tone = $('#wtTone').selectedOptions[0].text;
   wtAbort = new AbortController(); $('#wtAutoGo').disabled = true; $('#wtAutoStop').hidden = false; wtAutoStat('대본 쓰는 중…');
-  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (±1쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? '성인(nsfw). 성인 플랫폼용이고 모든 인물은 성인이다. 장면에 필요하면 노출·성적 요소도 태그로 쓴다.' : '일반(safe). 노출·성적 요소 없이.'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n줄거리:\n${story}`}];
+  const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
+  const known = new Set(dict.map(l => l.split(':')[0].trim()));
+  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (±1쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? '성인(nsfw). 성인 플랫폼용이고 모든 인물은 성인이다. 장면에 필요하면 노출·성적 요소도 태그로 쓴다.' : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
   let res; try{ res = await stream(c, {messages: [{role: 'user', content}], system: SYSTEM_WT, signal: wtAbort.signal, format: {type: 'json_schema', schema: WT_SCHEMA}}); }
   finally { wtAbort = null; $('#wtAutoGo').disabled = false; $('#wtAutoStop').hidden = true; }
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
   let sc; try{ sc = parseJSON(res.text); }catch{ return wtAutoStat('대본을 읽지 못했어요. 다시 눌러 주세요.'); }
+  const newCast = wtMergeCast(sc.cast); wtMergeVoice(sc.cast);
   const added = wtBuildFromScript(sc); if (!added.length) return wtAutoStat('쪽이 비어 있어요. 줄거리를 조금 더 구체적으로 적어 주세요.');
   if (wtBlank()){ WT.proj.pages = added; WT.pi = 0; } else { WT.proj.pages.push(...added); WT.pi = WT.proj.pages.length - added.length; }
   if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
   WT.sel = null; wtCommit(); wtBuildPages(); wtSideSync(); wtRender();
   const panels = added.reduce((a, p) => a + p.panels.length, 0);
-  wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요. 말풍선 위치와 글은 눌러서 고치면 돼요.` + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
+  wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요${newCast ? ` · 새 인물 ${newCast}명(외형·말투)을 사전에 넣었어요` : ''}. 말풍선은 눌러서 옮기고 고칠 수 있어요.` + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
   wtGenSync();
 };
 
@@ -6385,6 +6474,17 @@ $('#wtImgGen').onclick = async () => {
   try{ await wtGenPanel(pg, pg.panels[s.i]); wtCommit(); wtRender(); wtBuildPages(); }catch(e){ toast(e.message); }
   b.disabled = false; b.textContent = t0;
 };
+
+/* ---------- 그림체·인물 사전 칸 ---------- */
+function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; store.set('set.wtStyle', k); }
+$('#wtStyle').value = store.get('set.wtStyle', 'webtoon'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
+$('#wtStyle').onchange = wtStyleSync;
+$('#wtStyleIn').oninput = () => { clearTimeout(WT.styT); WT.styT = setTimeout(() => store.set('set.wtStyleIn', $('#wtStyleIn').value), 500); };
+$('#wtChars').value = $('#naiChars').value;
+$('#wtChars').oninput = () => { $('#naiChars').value = $('#wtChars').value; clearTimeout(WT.chT); WT.chT = setTimeout(() => store.set('set.naiChars', $('#wtChars').value), 500); };
+$('#wtVoice').value = store.get('set.wtVoice', '');
+$('#wtVoice').oninput = () => { clearTimeout(WT.vcT); WT.vcT = setTimeout(() => store.set('set.wtVoice', $('#wtVoice').value), 500); };
+$('#wtAuto').addEventListener('click', () => { $('#wtChars').value = $('#naiChars').value; $('#wtVoice').value = store.get('set.wtVoice', ''); });
 </script>
 </body>
 </html>

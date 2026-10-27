@@ -21,6 +21,7 @@ const WT_LAYOUTS = {
 const INSET_POLY = [[.04,.03],[.4,.03],[.4,.27],[.04,.27]];
 const WT_SFX_GRAD = [['#ff8a00', '#c2185b'], ['#ff4fb6', '#7b1fa2'], ['#ff3d3d', '#7a0000'], ['#4fc3f7', '#283593'], ['#ffd54f', '#e65100'], ['#ffffff', '#9e9e9e']];
 const WT_TEXT_COL = ['#ffffff', '#111111', '#ffd54f', '#ff8a80'];
+const WT_BUB_FILL = ['#ffffff', '#eceaf0', '#1c1c1e'];   // 흰 / 연회색 / 검정(속마음·회상)
 const WT = {list: [], proj: null, pi: 0, sel: null, hist: [], redo: [], imgs: new Map(), zoom: 1, drag: null, saveT: 0, thumbT: 0, busy: false};
 const wtPage = () => WT.proj?.pages[WT.pi];
 
@@ -116,90 +117,124 @@ function drawPanels(g, pg, k){
   }
 }
 
-/* ---------- 그리기: 말풍선·글·효과음·스티커 ---------- */
-const BUB_BW = 6;
+/* ---------- 그리기: 말풍선·글·효과음·스티커 ----------
+   보내 준 웹툰 자료 기준: 말풍선은 '얇은 선 + 울퉁불퉁한 흰 덩어리 + 가벼운 글씨',
+   효과음은 '붓글씨 + 두꺼운 흰 테두리 + 그라데이션 + 하트', 뒤에 흰 불꽃 조각을 깐다. */
+const BUB_LINE = 4;                      // 말풍선 선 굵기(쪽 너비 1500 기준)
+const WT_TEXT = '"Noto Sans KR","Pretendard Variable",sans-serif';
+const SFX_FONTS = {brush: '"Nanum Brush Script"', round: '"Gaegu"', heavy: '"Black Han Sans"', pen: '"Nanum Pen Script"', wild: '"Dokdo"'};
+// 울퉁불퉁한 덩어리: 타원에 씨앗 잡음을 섞어 부드럽게 잇는다
+function blobPath(g, cx, cy, rx, ry, seed, wob = 0.055, n = 14){
+  const r = rnd(seed), pts = [];
+  for (let i = 0; i < n; i++){ const a = i / n * Math.PI * 2, k = 1 + (r() - 0.5) * 2 * wob; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+  // 점 사이 중점을 이어 부드럽게 닫는다
+  g.beginPath(); g.moveTo((pts[n - 1][0] + pts[0][0]) / 2, (pts[n - 1][1] + pts[0][1]) / 2);
+  for (let i = 0; i < n; i++){ const p1 = pts[i], p2 = pts[(i + 1) % n]; g.quadraticCurveTo(p1[0], p1[1], (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2); }
+  g.closePath();
+}
+function spikePath(g, cx, cy, rx, ry, seed, m = 20){
+  const r = rnd(seed); g.beginPath();
+  for (let i = 0; i < m * 2; i++){ const a = i / (m * 2) * Math.PI * 2, k = i % 2 ? 0.78 : 1.1 + r() * 0.14; const x = cx + Math.cos(a) * rx * k, y = cy + Math.sin(a) * ry * k; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.closePath();
+}
+function roundRectPath(g, cx, cy, rx, ry, r){
+  g.beginPath(); const x = cx - rx, y = cy - ry, w = rx * 2, h = ry * 2, k = Math.min(r, rx, ry);
+  g.moveTo(x + k, y); g.lineTo(x + w - k, y); g.quadraticCurveTo(x + w, y, x + w, y + k);
+  g.lineTo(x + w, y + h - k); g.quadraticCurveTo(x + w, y + h, x + w - k, y + h);
+  g.lineTo(x + k, y + h); g.quadraticCurveTo(x, y + h, x, y + h - k);
+  g.lineTo(x, y + k); g.quadraticCurveTo(x, y, x + k, y); g.closePath();
+}
 function bubbleGeom(g, b){
-  const size = b.size || 42; g.font = `800 ${size}px ${WT_FONT.body}`;
-  const lines = wrapLines(g, b.text, b.w || 330), lh = size * 1.3, tw = Math.max(40, ...lines.map(l => g.measureText(l).width)), th = lines.length * lh;
-  if (b.shape === 'box') return {lines, lh, size, rx: tw / 2 + size * 0.7, ry: th / 2 + size * 0.55, tw, th};
-  return {lines, lh, size, rx: tw / 2 * 1.22 + size * 0.75, ry: th / 2 * 1.18 + size * 0.62, tw, th};
+  const size = b.size || 38; g.font = `500 ${size}px ${WT_TEXT}`;
+  const lines = wrapLines(g, b.text, b.w || 300), lh = size * 1.5, tw = Math.max(40, ...lines.map(l => g.measureText(l).width)), th = lines.length * lh;
+  if (b.shape === 'box') return {lines, lh, size, rx: tw / 2 + size * 0.9, ry: th / 2 + size * 0.6, tw, th};
+  if (b.shape === 'round') return {lines, lh, size, rx: tw / 2 + size * 0.85, ry: th / 2 + size * 0.7, tw, th};
+  const pad = b.shape === 'shout' ? 1.0 : 0.8;
+  return {lines, lh, size, rx: tw / 2 * 1.18 + size * pad, ry: th / 2 * 1.1 + size * (pad * 0.9), tw, th};
 }
-function bubbleOutline(g, b, geo){
-  const {rx, ry} = geo, n = 18;
-  g.beginPath();
-  if (b.shape === 'shout'){
-    const r = rnd(hash(b.id || b.text)); const m = 22;
-    for (let i = 0; i < m * 2; i++){ const a = i / (m * 2) * Math.PI * 2, kk = i % 2 ? 0.86 : 1.18 + r() * 0.1; const x = b.x + Math.cos(a) * rx * kk * 1.08, y = b.y + Math.sin(a) * ry * kk * 1.08; i ? g.lineTo(x, y) : g.moveTo(x, y); }
-    g.closePath(); return;
-  }
-  if (b.shape === 'thought'){
-    for (let i = 0; i <= n; i++){
-      const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, am = (a0 + a1) / 2;
-      const x0 = b.x + Math.cos(a0) * rx, y0 = b.y + Math.sin(a0) * ry, x1 = b.x + Math.cos(a1) * rx, y1 = b.y + Math.sin(a1) * ry;
-      const cx = b.x + Math.cos(am) * rx * 1.2, cy = b.y + Math.sin(am) * ry * 1.2;
-      if (!i) g.moveTo(x0, y0); g.quadraticCurveTo(cx, cy, x1, y1);
-    }
-    g.closePath(); return;
-  }
-  g.ellipse(b.x, b.y, rx, ry, 0, 0, Math.PI * 2);
-}
+// 꼬리: 밑이 좁고 끝이 뾰족한 가는 가시
 function tailPath(g, b, geo, tx, ty){
-  const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
-  const ang = Math.atan2(dy / geo.ry, dx / geo.rx), spread = 0.34;
-  const p1 = [b.x + Math.cos(ang - spread) * geo.rx * 0.92, b.y + Math.sin(ang - spread) * geo.ry * 0.92];
-  const p2 = [b.x + Math.cos(ang + spread) * geo.rx * 0.92, b.y + Math.sin(ang + spread) * geo.ry * 0.92];
+  const ang = Math.atan2((ty - b.y) / geo.ry, (tx - b.x) / geo.rx), spread = 0.17;
+  const p1 = [b.x + Math.cos(ang - spread) * geo.rx * 0.97, b.y + Math.sin(ang - spread) * geo.ry * 0.97];
+  const p2 = [b.x + Math.cos(ang + spread) * geo.rx * 0.97, b.y + Math.sin(ang + spread) * geo.ry * 0.97];
+  const mx = b.x + Math.cos(ang) * geo.rx * 0.9, my = b.y + Math.sin(ang) * geo.ry * 0.9;
   g.beginPath(); g.moveTo(p1[0], p1[1]);
-  g.quadraticCurveTo((p1[0] + tx) / 2 - uy * 14, (p1[1] + ty) / 2 + ux * 14, tx, ty);
-  g.quadraticCurveTo((p2[0] + tx) / 2 + uy * 6, (p2[1] + ty) / 2 - ux * 6, p2[0], p2[1]); g.closePath();
+  g.quadraticCurveTo(mx + (tx - mx) * 0.5, my + (ty - my) * 0.55, tx, ty);
+  g.quadraticCurveTo(mx + (tx - mx) * 0.35, my + (ty - my) * 0.3, p2[0], p2[1]); g.closePath();
 }
 function drawBubble(g, b){
   const geo = bubbleGeom(g, b); b._hw = geo.rx; b._hh = geo.ry;
+  const seed = hash((b.id || '') + (b.text || '')), line = b.line === 'none' ? 0 : BUB_LINE * (b.line === 'bold' ? 2.4 : 1);
+  const hasTail = b.tail && b.shape !== 'box';
+  const shape = () => {
+    if (b.shape === 'shout') spikePath(g, b.x, b.y, geo.rx, geo.ry, seed);
+    else if (b.shape === 'round') roundRectPath(g, b.x, b.y, geo.rx, geo.ry, geo.size * 1.1);
+    else if (b.shape === 'thought') blobPath(g, b.x, b.y, geo.rx, geo.ry, seed, 0.1, 16);
+    else blobPath(g, b.x, b.y, geo.rx, geo.ry, seed, b.shape === 'whisper' ? 0.03 : 0.045, 14);
+  };
+  const dark0 = (b.fill || '#fff').toLowerCase() === '#1c1c1e';
+  g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
   if (b.shape === 'box'){
-    g.fillStyle = '#fff'; g.strokeStyle = '#111'; g.lineWidth = BUB_BW; g.fillRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2); g.strokeRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2);
+    g.fillStyle = b.fill || '#fff'; g.fillRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2);
+    if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line * 0.8; if (b.dash) g.setLineDash([14, 10]); g.strokeRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2); g.setLineDash([]); }
   } else {
-    const hasTail = b.tail && b.shape !== 'shout';
-    g.lineJoin = 'round'; g.fillStyle = '#fff'; g.strokeStyle = '#111';
-    if (b.shape === 'whisper') g.setLineDash([16, 12]);
-    g.lineWidth = BUB_BW * 2; bubbleOutline(g, b, geo); g.stroke();
-    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.stroke(); }
-    g.setLineDash([]);
-    bubbleOutline(g, b, geo); g.fill();
-    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.fill(); }
-    if (hasTail && b.shape === 'thought'){   // 구름은 작은 동그라미 세 개가 꼬리를 대신한다
-      const dx = b.tail.x - b.x, dy = b.tail.y - b.y, a = Math.atan2(dy / geo.ry, dx / geo.rx), sx = b.x + Math.cos(a) * geo.rx * 1.05, sy = b.y + Math.sin(a) * geo.ry * 1.05;
-      [[0.3, 20], [0.62, 14], [0.92, 9]].forEach(([t, r]) => { const cx = sx + (b.tail.x - sx) * t, cy = sy + (b.tail.y - sy) * t; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 5; g.stroke(); });
+    g.fillStyle = b.fill || '#fff';
+    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.fill(); if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line; g.stroke(); } }
+    shape(); g.fill();
+    if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line; if (b.shape === 'whisper' || b.dash) g.setLineDash([18, 13]); g.stroke(); g.setLineDash([]); }
+    if (hasTail && b.shape !== 'thought'){ tailPath(g, b, geo, b.tail.x, b.tail.y); g.fill(); }   // 선 자국을 덮어 하나처럼
+    if (hasTail && b.shape === 'thought'){
+      const a = Math.atan2((b.tail.y - b.y) / geo.ry, (b.tail.x - b.x) / geo.rx), sx = b.x + Math.cos(a) * geo.rx, sy = b.y + Math.sin(a) * geo.ry;
+      [[0.35, 0.09], [0.68, 0.062], [0.95, 0.04]].forEach(([t, rr]) => { const R = Math.min(geo.rx, geo.ry) * rr * 2.2; g.beginPath(); g.arc(sx + (b.tail.x - sx) * t, sy + (b.tail.y - sy) * t, R, 0, 7); g.fillStyle = b.fill || '#fff'; g.fill(); if (line){ g.lineWidth = line * 0.8; g.strokeStyle = dark0 ? '#555' : '#111'; g.stroke(); } });
     }
   }
-  g.fillStyle = b.shape === 'whisper' ? '#555' : '#111'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `${b.shape === 'shout' ? 900 : 800} ${geo.size}px ${WT_FONT.body}`;
+  const dark = (b.fill || '#fff').toLowerCase() === '#1c1c1e';
+  g.fillStyle = dark ? '#f4f4f6' : b.shape === 'whisper' ? '#4a4a4a' : '#121212'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `${b.shape === 'shout' ? 700 : 500} ${geo.size}px ${WT_TEXT}`;
   const y0 = b.y - (geo.lines.length - 1) * geo.lh / 2; geo.lines.forEach((l, i) => g.fillText(l, b.x, y0 + i * geo.lh));
-}
-function drawOutlined(g, t){
-  const size = t.size || 46; g.font = `800 ${size}px ${WT_FONT.body}`; const lines = wrapLines(g, t.text, t.w || 420), lh = size * 1.28;
-  t._hw = Math.max(30, ...lines.map(l => g.measureText(l).width)) / 2 + 8; t._hh = lines.length * lh / 2 + 6;
-  g.save(); g.translate(t.x, t.y); g.rotate((t.rot || 0) * Math.PI / 180); g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  const y0 = -(lines.length - 1) * lh / 2; const light = (t.color || '#fff') !== '#111111';
-  lines.forEach((l, i) => { g.lineWidth = size * 0.26; g.strokeStyle = light ? '#111' : '#fff'; g.strokeText(l, 0, y0 + i * lh); g.fillStyle = t.color || '#fff'; g.fillText(l, 0, y0 + i * lh); });
   g.restore();
 }
+function drawOutlined(g, t){
+  const size = t.size || 46; g.font = `700 ${size}px ${WT_TEXT}`; const lines = wrapLines(g, t.text, t.w || 420), lh = size * 1.35;
+  t._hw = Math.max(30, ...lines.map(l => g.measureText(l).width)) / 2 + 8; t._hh = lines.length * lh / 2 + 6;
+  g.save(); g.translate(t.x, t.y); g.rotate((t.rot || 0) * Math.PI / 180); g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  const y0 = -(lines.length - 1) * lh / 2, col = t.color || '#ffffff', light = col !== '#111111';
+  lines.forEach((l, i) => { g.lineWidth = size * 0.3; g.strokeStyle = light ? '#111' : '#fff'; g.strokeText(l, 0, y0 + i * lh); g.fillStyle = col; g.fillText(l, 0, y0 + i * lh); });
+  g.restore();
+}
+// 효과음 뒤에 까는 흰 조각: 글자를 바짝 감싸는 부드러운 덩어리(자료처럼 글자만 떠 보이게)
+function sfxBurst(g, w, h, seed){
+  g.save(); g.fillStyle = '#fff'; blobPath(g, 0, 0, w, h, seed, 0.09, 12); g.fill(); g.restore();
+}
 function drawSfx(g, s){
-  const size = s.size || 120, font = s.font || 'Black Han Sans', chars = [...String(s.text || '')]; if (!chars.length){ s._hw = s._hh = 30; return; }
-  const r = rnd(hash(s.text)); g.save(); g.translate(s.x, s.y); g.rotate((s.rot || 0) * Math.PI / 180);
-  g.font = `900 ${size}px "${font}",${WT_FONT.body}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  const cells = chars.map((ch, i) => ({ch, sc: 0.86 + r() * 0.3, dx: (r() - 0.5) * size * 0.12, dy: (r() - 0.5) * size * 0.05, rot: (r() - 0.5) * 0.28}));
-  const adv = c => g.measureText(c.ch).width * c.sc * 0.98;
-  let W, Hh;
-  if (s.vert){ Hh = size * 0.98 * cells.length; W = size * 1.15; let y = -Hh / 2 + size * 0.5; cells.forEach(c => { c.px = c.dx; c.py = y + c.dy; y += size * 0.98; }); }
-  else { W = cells.reduce((a, c) => a + adv(c), 0); Hh = size * 1.1; let x = -W / 2; cells.forEach(c => { const w = adv(c); c.px = x + w / 2; c.py = c.dy; x += w; }); }
-  s._hw = W / 2 + size * 0.2; s._hh = Hh / 2 + size * 0.1;
-  const gr = WT_SFX_GRAD[s.grad ?? 0] || WT_SFX_GRAD[0]; const grad = g.createLinearGradient(0, -Hh / 2, 0, Hh / 2); grad.addColorStop(0, gr[0]); grad.addColorStop(1, gr[1]);
-  for (const pass of [0, 1, 2]){
+  const size = s.size || 120, fam = SFX_FONTS[s.font] || SFX_FONTS.brush;
+  const chars = [...String(s.text || '')]; if (!chars.length){ s._hw = s._hh = 30; return; }
+  const brush = /Brush|Pen|Dokdo/.test(fam), weight = brush ? 400 : 700;
+  const r = rnd(hash(String(s.text) + (s.id || '')));
+  g.save(); g.translate(s.x, s.y); g.rotate((s.rot || 0) * Math.PI / 180);
+  g.font = `${weight} ${size}px ${fam},${WT_TEXT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineCap = 'round';
+  const cells = chars.map(ch => ({ch, sc: 0.94 + r() * 0.18, dx: (r() - 0.5) * size * 0.07, dy: (r() - 0.5) * size * 0.1, rot: (r() - 0.5) * 0.3}));
+  const adv = c => Math.max(size * 0.5, g.measureText(c.ch).width * c.sc) * (brush ? 1.02 : 0.96);
+  let W, H;
+  if (s.vert){ const step = size * (brush ? 0.82 : 0.9); H = step * cells.length; W = size * 1.05; let y = -H / 2 + step / 2; cells.forEach((c, i) => { c.px = c.dx + (i % 2 ? size * 0.06 : -size * 0.06); c.py = y + c.dy; y += step; }); }
+  else { W = cells.reduce((a, c) => a + adv(c), 0); H = size * 1.0; let x = -W / 2; cells.forEach(c => { const w = adv(c); c.px = x + w / 2; c.py = c.dy; x += w; }); }
+  s._hw = W / 2 + size * 0.24; s._hh = H / 2 + size * 0.2;
+  const gr = WT_SFX_GRAD[s.grad ?? 0] || WT_SFX_GRAD[0];
+  if (s.burst) sfxBurst(g, W / 2 + size * 0.14, H / 2 + size * 0.12, hash('b' + s.text));
+  const grad = g.createLinearGradient(0, -H / 2, 0, H / 2); grad.addColorStop(0, gr[0]); grad.addColorStop(1, gr[1]);
+  for (const pass of [0, 1]){
     for (const c of cells){
       g.save(); g.translate(c.px, c.py); g.rotate(c.rot); g.scale(c.sc, c.sc);
-      if (pass === 0){ g.lineWidth = size * 0.34; g.strokeStyle = '#fff'; g.strokeText(c.ch, 0, 0); }
-      else if (pass === 1){ g.lineWidth = size * 0.17; g.strokeStyle = gr[1] === '#9e9e9e' ? '#555' : '#3a0830'; g.strokeText(c.ch, 0, 0); }
+      if (pass === 0){ g.lineWidth = size * (brush ? 0.2 : 0.26); g.strokeStyle = '#fff'; g.strokeText(c.ch, 0, 0); }
       else { g.fillStyle = grad; g.fillText(c.ch, 0, 0); }
       g.restore();
     }
+  }
+  if (s.heart){
+    const hs = size * 0.4, hx = s.vert ? W * 0.18 : W / 2 + hs * 0.5, hy = s.vert ? H / 2 + hs * 0.35 : H * 0.22;
+    g.save(); g.translate(hx, hy); g.rotate(0.22);
+    const p = () => { g.beginPath(); g.moveTo(0, hs * 0.34); g.bezierCurveTo(-hs * 0.7, -hs * 0.1, -hs * 0.36, -hs * 0.5, 0, -hs * 0.18); g.bezierCurveTo(hs * 0.36, -hs * 0.5, hs * 0.7, -hs * 0.1, 0, hs * 0.34); g.closePath(); };
+    p(); g.lineWidth = hs * 0.36; g.strokeStyle = '#fff'; g.stroke(); g.fillStyle = gr[1]; g.fill(); g.restore();
   }
   g.restore();
 }
@@ -221,7 +256,7 @@ function drawSticker(g, s){
   }
   g.restore();
 }
-function drawItem(g, it){ ({speech: drawBubble, thought: drawBubble, shout: drawBubble, whisper: drawBubble, narr: drawBubble, text: drawOutlined, sfx: drawSfx, stk: drawSticker})[it.k === 'bubble' ? it.shape === 'box' ? 'narr' : it.shape : it.k]?.(g, it); }
+function drawItem(g, it){ (it.k === 'bubble' ? drawBubble : {text: drawOutlined, sfx: drawSfx, stk: drawSticker}[it.k])?.(g, it); }
 
 /* ---------- 쪽 한 장 그리기 ---------- */
 function wtRenderPage(g, pg, k, opts = {}){
@@ -306,12 +341,13 @@ function wtSideSync(){
   if (it){
     const textual = ['bubble', 'text', 'sfx'].includes(it.k); $('#wtText').hidden = !textual; $('#wtText').value = it.text || '';
     $('#wtSizeR').value = it.size || 100; $('#wtSizeO').textContent = it.size || 100; $('#wtRot').value = it.rot || 0; $('#wtRotO').textContent = (it.rot || 0) + '°';
-    $('#wtRotRow').hidden = it.k === 'bubble'; $('#wtShapeRow').hidden = !(it.k === 'bubble' && it.shape !== 'box');
-    $('#wtShape').value = it.shape || 'speech'; $('#wtTail').checked = !!it.tail;
-    $('#wtColorRow').hidden = !['sfx', 'text'].includes(it.k); $('#wtVertRow').hidden = it.k !== 'sfx';
-    $('#wtVert').checked = !!it.vert; $('#wtFont').value = it.font || 'Black Han Sans';
+    $('#wtRotRow').hidden = it.k === 'bubble'; $('#wtShapeRow').hidden = it.k !== 'bubble'; $('#wtShape').disabled = it.shape === 'box';
+    $('#wtShape').value = it.shape || 'speech'; $('#wtTail').checked = !!it.tail; $('#wtDash').checked = !!it.dash;
+    $('#wtColorRow').hidden = !['sfx', 'text', 'bubble'].includes(it.k); $('#wtVertRow').hidden = it.k !== 'sfx'; $('#wtLineRow').hidden = it.k !== 'bubble';
+    $('#wtVert').checked = !!it.vert; $('#wtHeart').checked = !!it.heart; $('#wtBurst').checked = it.burst !== false; $('#wtFont').value = SFX_FONTS[it.font] ? it.font : 'brush'; $('#wtLine').value = it.line || 'thin';
     const sw = $('#wtSw'); sw.innerHTML = '';
     if (it.k === 'sfx') WT_SFX_GRAD.forEach((g2, i) => { const b = document.createElement('button'); b.style.background = `linear-gradient(${g2[0]},${g2[1]})`; b.className = (it.grad ?? 0) === i ? 'on' : ''; b.onclick = () => { it.grad = i; wtCommit(); wtSideSync(); wtRender(); }; sw.append(b); });
+    else if (it.k === 'bubble') WT_BUB_FILL.forEach(c => { const b2 = document.createElement('button'); b2.style.background = c; b2.className = (it.fill || '#ffffff').toLowerCase() === c ? 'on' : ''; b2.onclick = () => { it.fill = c; wtCommit(); wtSideSync(); wtRender(); }; sw.append(b2); });
     else if (it.k === 'text') WT_TEXT_COL.forEach(c => { const b = document.createElement('button'); b.style.background = c; b.className = (it.color || '#ffffff') === c ? 'on' : ''; b.onclick = () => { it.color = c; wtCommit(); wtSideSync(); wtRender(); }; sw.append(b); });
   }
 }
@@ -387,10 +423,10 @@ document.addEventListener('keydown', e => {
 function wtCenterFor(pg){ const s = WT.sel; if (s?.t === 'panel'){ const bb = polyBox(polyPx(pg, pg.panels[s.i])); return [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2, bb]; } return [WT_W / 2, pg.h / 2, [0, 0, WT_W, pg.h]]; }
 function wtAddItem(kind, at){
   const pg = wtPage(), [cx, cy] = at || wtCenterFor(pg); let it;
-  if (['speech', 'thought', 'shout', 'whisper'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 42, w: 330, text: kind === 'shout' ? '뭐라고!' : '대사를 적어 주세요', tail: kind === 'shout' ? null : {x: cx + 40, y: cy + 150}};
-  else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 40, w: 520, text: '설명을 적어 주세요', tail: null};
+  if (['speech', 'round', 'thought', 'shout', 'whisper'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 38, w: 300, line: 'thin', text: kind === 'shout' ? '뭐라고!' : '대사를 적어 주세요', tail: kind === 'shout' ? null : {x: cx + 30, y: cy + 160}};
+  else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 38, w: 480, line: 'thin', text: '설명을 적어 주세요', tail: null};
   else if (kind === 'text') it = {k: 'text', x: cx, y: cy, size: 52, w: 520, text: '속마음을 적어 주세요', color: '#ffffff', rot: 0};
-  else if (kind === 'sfx') it = {k: 'sfx', x: cx, y: cy, size: 150, text: '두근', grad: 0, rot: -10, vert: false, font: 'Black Han Sans'};
+  else if (kind === 'sfx') it = {k: 'sfx', x: cx, y: cy, size: 150, text: '두근', grad: 0, rot: -10, vert: false, font: 'brush', heart: false, burst: false};
   else it = {k: 'stk', kind, x: cx, y: cy, size: kind === 'speed' ? 260 : 130, rot: 0};
   it.id = uid(); pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtSideSync(); wtRender(); return it;
 }
@@ -400,9 +436,13 @@ $('#wtText').oninput = () => { const it = wtItem(); if (!it) return; it.text = $
 $('#wtSizeR').oninput = () => { const it = wtItem(); if (!it) return; it.size = +$('#wtSizeR').value; $('#wtSizeO').textContent = it.size; if (it.k === 'bubble') it.w = Math.round(it.size * 7.8); wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 400); };
 $('#wtRot').oninput = () => { const it = wtItem(); if (!it) return; it.rot = +$('#wtRot').value; $('#wtRotO').textContent = it.rot + '°'; wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 400); };
 $('#wtShape').onchange = () => { const it = wtItem(); if (!it) return; it.shape = $('#wtShape').value; wtCommit(); wtRender(); };
+$('#wtDash').onchange = () => { const it = wtItem(); if (!it) return; it.dash = $('#wtDash').checked; wtCommit(); wtRender(); };
 $('#wtTail').onchange = () => { const it = wtItem(); if (!it) return; it.tail = $('#wtTail').checked ? {x: it.x + 40, y: it.y + 150} : null; wtCommit(); wtRender(); };
 $('#wtVert').onchange = () => { const it = wtItem(); if (!it) return; it.vert = $('#wtVert').checked; wtCommit(); wtRender(); };
-$('#wtFont').onchange = () => { const it = wtItem(); if (!it) return; it.font = $('#wtFont').value; document.fonts?.load(`900 40px "${it.font}"`, '가나다').then(wtRender).catch(() => {}); wtCommit(); wtRender(); };
+$('#wtFont').onchange = () => { const it = wtItem(); if (!it) return; it.font = $('#wtFont').value; document.fonts?.load(`400 40px ${SFX_FONTS[it.font]}`, '가나다두근').then(wtRender).catch(() => {}); wtCommit(); wtRender(); };
+$('#wtHeart').onchange = () => { const it = wtItem(); if (!it) return; it.heart = $('#wtHeart').checked; wtCommit(); wtRender(); };
+$('#wtBurst').onchange = () => { const it = wtItem(); if (!it) return; it.burst = $('#wtBurst').checked; wtCommit(); wtRender(); };
+$('#wtLine').onchange = () => { const it = wtItem(); if (!it) return; it.line = $('#wtLine').value; wtCommit(); wtRender(); };
 $('#wtDup').onclick = () => { const it = wtItem(); if (!it) return; const c = JSON.parse(JSON.stringify(it)); c.id = uid(); c.x += 50; c.y += 50; if (c.tail){ c.tail.x += 50; c.tail.y += 50; } wtPage().items.push(c); WT.sel = {t: 'item', i: wtPage().items.length - 1}; wtCommit(); wtSideSync(); wtRender(); };
 $('#wtDel').onclick = () => { const s = WT.sel; if (s?.t !== 'item') return; wtPage().items.splice(s.i, 1); WT.sel = null; wtCommit(); wtSideSync(); wtRender(); };
 $('#wtFront').onclick = () => { const s = WT.sel, pg = wtPage(); if (s?.t !== 'item') return; const [it] = pg.items.splice(s.i, 1); pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtRender(); };
@@ -472,7 +512,8 @@ async function wtHomeRender(){
   }
 }
 async function wtOpen(){
-  $('#wt').hidden = false; document.fonts?.load('900 40px "Black Han Sans"', '가나다두근').catch(() => {}); document.fonts?.load('800 40px "Pretendard Variable"', '가나다').catch(() => {});
+  $('#wt').hidden = false; for (const f2 of Object.values(SFX_FONTS)) document.fonts?.load(`400 40px ${f2}`, '가나다두근쿵').catch(() => {});
+  document.fonts?.load('500 40px "Noto Sans KR"', '가나다').catch(() => {}); document.fonts?.load('800 40px "Pretendard Variable"', '가나다').catch(() => {});
   if (!WT.proj){ $('#wtHome').hidden = false; await wtHomeRender(); } else { wtRender(); }
 }
 async function wtClose(){ if (WT.proj){ clearTimeout(WT.saveT); await wtSaveNow(); } $('#wt').hidden = true; }

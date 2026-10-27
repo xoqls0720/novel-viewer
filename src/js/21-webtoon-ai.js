@@ -1,9 +1,14 @@
 /* ================= 웹툰 자동 만들기: 줄거리 → 대본 → 쪽·컷·말풍선 → (컴퓨터) 컷 그림 ================= */
 const WT_LAYOUT_KEYS = Object.keys(WT_LAYOUTS);
+const WT_STYLE = {
+  webtoon: 'korean manhwa style, bl manhwa, semi realistic, clean thin lineart, soft cel shading, airbrushed blush, muted natural palette, soft indoor lighting, detailed male face, sketchy line texture, simple background',
+};
 const WT_SCHEMA = {
-  type: 'object', additionalProperties: false, required: ['title', 'pages'],
+  type: 'object', additionalProperties: false, required: ['title', 'cast', 'pages'],
   properties: {
     title: {type: 'string'},
+    cast: {type: 'array', description: '사전에 없던 인물만. 외형 영어 태그와 한국어 말투를 지어서 채운다', items: {type: 'object', additionalProperties: false, required: ['name', 'tags', 'voice'],
+      properties: {name: {type: 'string'}, tags: {type: 'string', description: '예: 1boy, adult, short black hair, grey eyes, black coat'}, voice: {type: 'string', description: '한국어 한 줄. 예: 낮은 반말, 짧고 명령적. 당황하면 말끝이 흐려진다'}}}},
     pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'panels'],
       properties: {
         layout: {type: 'string', description: '틀 키: ' + WT_LAYOUT_KEYS.join(', ')},
@@ -13,7 +18,7 @@ const WT_SCHEMA = {
             tags: {type: 'string', description: '그림용 영어 태그: 구도·카메라·표정·배경·조명·소품. 인물 외형은 쓰지 않는다'},
             chars: {type: 'array', items: {type: 'string'}, description: '인물 사전에 있는 이름만'},
             bubbles: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['type', 'text'],
-              properties: {type: {type: 'string', enum: ['speech', 'thought', 'shout', 'whisper', 'narr', 'text']}, text: {type: 'string'}, who: {type: 'string'}}}},
+              properties: {type: {type: 'string', enum: ['speech', 'round', 'thought', 'shout', 'whisper', 'narr', 'text']}, text: {type: 'string'}, who: {type: 'string'}}}},
             sfx: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['text', 'vert'], properties: {text: {type: 'string'}, vert: {type: 'boolean'}}}},
             stickers: {type: 'array', items: {type: 'string', enum: ['sweat', 'burst', 'heart', 'speed']}},
           }}},
@@ -25,18 +30,27 @@ const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 
 - 한 쪽은 1~4컷. 컷 수는 틀과 맞춘다(1→1컷, 2*→2컷, 3*→3컷, 4a→4컷). 장면 전환·감정 고조에는 큰 컷, 반응에는 작은 컷을 쓴다.
 - 첫 쪽은 상황을 한 번에 보여 주는 큰 컷으로 시작하고, 마지막 쪽은 다음이 궁금해지는 여운으로 끝낸다.
 - 컷마다 scene(무슨 일), tags(구도·표정·배경·조명 영어 태그, 예: "upper body, from side, looking down, snow, castle gate, night, soft rim light"), chars(인물 사전의 이름만), bubbles, sfx, stickers.
-- bubbles: type은 speech(보통 대사), thought(속마음 구름), shout(외침), whisper(속삭임), narr(설명 상자: 시간·장소 전환에만), text(그림 위 외곽선 독백). 한 말풍선은 22자 안쪽, 한 컷에 말풍선 최대 3개. 대사는 말하듯 짧게, 설명하지 않는다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
+- bubbles: type은 speech(보통 대사), round(둥근 네모 — 차분하거나 긴 대사), thought(속마음 구름), shout(외침), whisper(속삭임), narr(설명 상자: 시간·장소 전환, 회상), text(그림 위 외곽선 독백). 한 말풍선은 22자 안쪽, 한 컷에 말풍선 최대 3개. 대사는 말하듯 짧게, 설명하지 않는다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
 - sfx: 효과음 2~4글자(예: 두근, 쿵, 스윽, 쮸웁). 꼭 필요한 컷에만. 긴 소리는 vert=true.
 - stickers: sweat(당황), burst(충격), heart(설렘), speed(집중선)를 감정이 튀는 컷에만 쓴다.
-- 인물 사전에 없는 인물은 만들지 않는다(없으면 chars를 비우고 대사로만 다룬다). 모든 인물은 성인이다.
+- 인물: chars 에는 '나오는 인물'로 받은 이름과 사전에 있는 이름을 쓴다. 사전에 없던 이름은 cast 에 외형 영어 태그(성별·나이대·머리·눈·옷·특징 순, 모두 adult)와 한국어 말투를 지어서 한 번만 적는다. 줄거리에 새 인물이 필요하면 이름을 지어 cast 에 넣는다.
+- 말투: 받은 말투 설명이 있으면 그 인물의 대사는 반드시 그 말투로 쓴다(존대·반말, 길이, 말버릇, 호칭). 말투가 없는 인물은 cast 에 적은 말투를 따른다. 인물마다 말이 달라야 누가 말하는지 알 수 있다.
+- 모든 인물은 성인이다.
 출력은 JSON 하나만.`;
 
+/* ---------- 그림체 ---------- */
+function wtStyleTags(){
+  const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'webtoon');
+  if (k === 'nai') return $('#naiStyle').value.trim().replace(/,\s*$/, '');
+  if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
+  return WT_STYLE.webtoon;
+}
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
 function wtPanelPrompt(panel){
   const rating = $('#naiRating').value, dict = wtDict();
   const names = String(panel.chars || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
-  const style = $('#naiStyle').value.trim().replace(/,\s*$/, '');
+  const style = wtStyleTags();
   const found = names.filter(n => dict.has(n)), n = found.length;
   const count = n === 0 ? 'no humans' : n === 1 ? (/1girl/.test(dict.get(found[0])) ? '1girl' : '1boy') : `${n}boys`;
   const tags = (panel.tags || '').trim() || 'upper body, looking at viewer';
@@ -66,11 +80,11 @@ function wtPlace(pg, panel, spec){
   for (const b of (spec.bubbles || []).slice(0, 3)){
     const text = String(b.text || '').trim(); if (!text) continue;
     const y = bb[1] + bh * (0.15 + 0.2 * bi), x = bi % 2 === 0 ? right : left;
-    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1 + bi * 90, size: Math.round(40 * sc), w: Math.round(520 * sc), text, tail: null}); }
+    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1 + bi * 90, size: Math.round(38 * sc), w: Math.round(480 * sc), text, line: 'thin', dash: true, tail: null}); }
     else if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(52 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); }
     else {
-      const shape = ['speech', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
-      mk({k: 'bubble', shape, x, y, size: Math.round(42 * sc), w: Math.round(340 * sc), text, tail: shape === 'shout' ? null : {x: x + (bi % 2 ? 30 : -30), y: y + bh * 0.2}}); bi++;
+      const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
+      mk({k: 'bubble', shape, x, y, size: Math.round(38 * sc), w: Math.round(310 * sc), line: 'thin', text, tail: shape === 'shout' ? null : {x: x + (bi % 2 ? 30 : -30), y: y + bh * 0.2}}); bi++;
     }
   }
   (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.2 : 0.8), y: bb[1] + bh * (i ? 0.78 : 0.62), size: Math.round(Math.min(bw, bh) * 0.2), text: t, grad: (hash(t) % 4), rot: i ? 10 : -12, vert: !!s.vert, font: 'Black Han Sans'}); });
@@ -92,6 +106,26 @@ function wtBuildFromScript(sc){
   }
   return pages;
 }
+// AI가 지어낸 새 인물을 인물 사전에 넣어 둔다(다음 화에서도 같은 외형으로)
+const wtVoiceDict = () => ($('#wtVoice')?.value || store.get('set.wtVoice', '')).split('\n').map(x => x.trim()).filter(Boolean);
+function wtMergeVoice(cast){
+  const el = $('#wtVoice'); const cur = wtVoiceDict(); const have = new Set(cur.map(l => l.split(':')[0].trim())); let n = 0;
+  for (const c of cast || []){ const name = String(c.name || '').trim(), v = String(c.voice || '').trim(); if (!name || !v || have.has(name)) continue; cur.push(`${name}: ${v}`); have.add(name); n++; }
+  if (n){ el.value = cur.join('\n'); store.set('set.wtVoice', el.value); }
+  return n;
+}
+function wtMergeCast(cast){
+  const el = $('#naiChars'); const cur = el.value.split('\n').map(x => x.trim()).filter(Boolean);
+  const have = new Set(cur.map(l => l.split(':')[0].trim())); let n = 0;
+  for (const c of cast || []){
+    const name = String(c.name || '').trim(), tags = String(c.tags || '').trim();
+    if (!name || !tags || have.has(name)) continue;
+    if ($('#naiRating').value === 'nsfw' && MINOR_RE.test(name + ' ' + tags)) continue;
+    cur.push(`${name}: ${tags}`); have.add(name); n++;
+  }
+  if (n){ el.value = cur.join('\n'); store.set('set.naiChars', el.value); $('#wtChars').value = el.value; }
+  return n;
+}
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
 let wtAbort = null;
@@ -106,17 +140,20 @@ $('#wtAutoGo').onclick = async () => {
   const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
   const n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)), tone = $('#wtTone').selectedOptions[0].text;
   wtAbort = new AbortController(); $('#wtAutoGo').disabled = true; $('#wtAutoStop').hidden = false; wtAutoStat('대본 쓰는 중…');
-  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (±1쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? '성인(nsfw). 성인 플랫폼용이고 모든 인물은 성인이다. 장면에 필요하면 노출·성적 요소도 태그로 쓴다.' : '일반(safe). 노출·성적 요소 없이.'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n줄거리:\n${story}`}];
+  const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
+  const known = new Set(dict.map(l => l.split(':')[0].trim()));
+  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (±1쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? '성인(nsfw). 성인 플랫폼용이고 모든 인물은 성인이다. 장면에 필요하면 노출·성적 요소도 태그로 쓴다.' : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
   let res; try{ res = await stream(c, {messages: [{role: 'user', content}], system: SYSTEM_WT, signal: wtAbort.signal, format: {type: 'json_schema', schema: WT_SCHEMA}}); }
   finally { wtAbort = null; $('#wtAutoGo').disabled = false; $('#wtAutoStop').hidden = true; }
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
   let sc; try{ sc = parseJSON(res.text); }catch{ return wtAutoStat('대본을 읽지 못했어요. 다시 눌러 주세요.'); }
+  const newCast = wtMergeCast(sc.cast); wtMergeVoice(sc.cast);
   const added = wtBuildFromScript(sc); if (!added.length) return wtAutoStat('쪽이 비어 있어요. 줄거리를 조금 더 구체적으로 적어 주세요.');
   if (wtBlank()){ WT.proj.pages = added; WT.pi = 0; } else { WT.proj.pages.push(...added); WT.pi = WT.proj.pages.length - added.length; }
   if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
   WT.sel = null; wtCommit(); wtBuildPages(); wtSideSync(); wtRender();
   const panels = added.reduce((a, p) => a + p.panels.length, 0);
-  wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요. 말풍선 위치와 글은 눌러서 고치면 돼요.` + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
+  wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요${newCast ? ` · 새 인물 ${newCast}명(외형·말투)을 사전에 넣었어요` : ''}. 말풍선은 눌러서 옮기고 고칠 수 있어요.` + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
   wtGenSync();
 };
 
@@ -151,3 +188,14 @@ $('#wtImgGen').onclick = async () => {
   try{ await wtGenPanel(pg, pg.panels[s.i]); wtCommit(); wtRender(); wtBuildPages(); }catch(e){ toast(e.message); }
   b.disabled = false; b.textContent = t0;
 };
+
+/* ---------- 그림체·인물 사전 칸 ---------- */
+function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; store.set('set.wtStyle', k); }
+$('#wtStyle').value = store.get('set.wtStyle', 'webtoon'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
+$('#wtStyle').onchange = wtStyleSync;
+$('#wtStyleIn').oninput = () => { clearTimeout(WT.styT); WT.styT = setTimeout(() => store.set('set.wtStyleIn', $('#wtStyleIn').value), 500); };
+$('#wtChars').value = $('#naiChars').value;
+$('#wtChars').oninput = () => { $('#naiChars').value = $('#wtChars').value; clearTimeout(WT.chT); WT.chT = setTimeout(() => store.set('set.naiChars', $('#wtChars').value), 500); };
+$('#wtVoice').value = store.get('set.wtVoice', '');
+$('#wtVoice').oninput = () => { clearTimeout(WT.vcT); WT.vcT = setTimeout(() => store.set('set.wtVoice', $('#wtVoice').value), 500); };
+$('#wtAuto').addEventListener('click', () => { $('#wtChars').value = $('#naiChars').value; $('#wtVoice').value = store.get('set.wtVoice', ''); });

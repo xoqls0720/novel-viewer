@@ -37,7 +37,7 @@
       <div class="wt-sec">
         <h4>글·효과 넣기</h4>
         <div class="wt-add" id="wtAdd">
-          <button data-add="speech">말풍선</button><button data-add="thought">속마음(구름)</button><button data-add="shout">외침</button><button data-add="whisper">속삭임</button>
+          <button data-add="speech">말풍선</button><button data-add="round">둥근 네모</button><button data-add="thought">속마음(구름)</button><button data-add="shout">외침</button><button data-add="whisper">속삭임</button>
           <button data-add="narr">설명 상자</button><button data-add="text">외곽선 글자</button><button data-add="sfx">효과음</button>
           <button data-add="sweat">땀방울</button><button data-add="burst">충격 별</button><button data-add="heart">하트</button><button data-add="speed">집중선</button>
         </div>
@@ -47,9 +47,10 @@
         <textarea id="wtText" placeholder="글" style="min-height:64px"></textarea>
         <div class="row tight"><label>크기</label><input type="range" id="wtSizeR" min="14" max="260" class="grow"><output id="wtSizeO"></output></div>
         <div class="row tight" id="wtRotRow"><label>기울기</label><input type="range" id="wtRot" min="-60" max="60" class="grow"><output id="wtRotO"></output></div>
-        <div class="row tight" id="wtShapeRow"><label>모양</label><select id="wtShape"><option value="speech">말풍선</option><option value="thought">속마음(구름)</option><option value="shout">외침</option><option value="whisper">속삭임</option></select><label class="hint"><input type="checkbox" id="wtTail"> 꼬리</label></div>
+        <div class="row tight" id="wtShapeRow"><label>모양</label><select id="wtShape"><option value="speech">말풍선</option><option value="round">둥근 네모</option><option value="thought">속마음(구름)</option><option value="shout">외침</option><option value="whisper">속삭임</option></select><label class="hint"><input type="checkbox" id="wtTail"> 꼬리</label><label class="hint"><input type="checkbox" id="wtDash"> 점선</label></div>
         <div class="row tight" id="wtColorRow"><label>색</label><div class="wt-sw" id="wtSw"></div></div>
-        <div class="row tight" id="wtVertRow"><label class="hint"><input type="checkbox" id="wtVert"> 세로로 쌓기</label><select id="wtFont"><option value="Black Han Sans">굵은 고딕</option><option value="Jua">둥근</option><option value="Do Hyeon">도현</option><option value="Gugi">구기</option><option value="Nanum Pen Script">손글씨</option></select></div>
+        <div class="row tight" id="wtVertRow"><label class="hint"><input type="checkbox" id="wtVert"> 세로</label><label class="hint"><input type="checkbox" id="wtHeart"> 하트</label><label class="hint"><input type="checkbox" id="wtBurst"> 흰 조각</label><select id="wtFont"><option value="brush">붓글씨</option><option value="round">둥근 손글씨</option><option value="heavy">굵은 고딕</option><option value="pen">가는 손글씨</option><option value="wild">거친 손글씨</option></select></div>
+        <div class="row tight" id="wtLineRow"><label>풍선 선</label><select id="wtLine"><option value="thin">얇게</option><option value="none">없이</option><option value="bold">굵게</option></select></div>
         <div class="row tight"><button id="wtDup">복제</button><button id="wtFront">맨 위로</button><button id="wtDel" class="danger">지우기</button></div>
       </div>
       <div class="hint wt-foot">작품·그림은 이 기기에 저장돼요. 성인 장면은 모든 인물이 성인일 때만 만들어요.</div>
@@ -70,7 +71,17 @@
       <div class="row tight"><label>쪽 수</label><input type="number" id="wtPagesN" value="4" min="1" max="12" style="width:64px">
         <label>컷 느낌</label><select id="wtTone"><option value="calm">잔잔하게</option><option value="tense">긴장감 있게</option><option value="comic">코믹하게</option></select>
         <label>AI</label><select id="wtAI"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div>
-      <div class="hint">인물은 노벨AI 탭의 <b>인물 사전</b>에 있는 이름만 써요. 하우스 스타일과 등급(일반/성인)도 그 탭 설정을 따라가요.</div>
+      <div class="row tight"><label>인물</label><input type="text" id="wtCast" class="grow" placeholder="이 화에 나오는 인물 이름 (쉼표로: 카엘, 레비안, 새 인물도 괜찮아요)" autocomplete="off"></div>
+      <div class="hint">사전에 없는 이름은 AI가 외형을 지어내서 <b>인물 사전에 넣어 둬요.</b> 다음 화에서도 같은 외형으로 나와요.</div>
+      <details class="fold"><summary>인물 외형·말투 보기·고치기<svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="hint" style="margin:4px 0 4px"><b>외형</b> — 그림에 쓰는 영어 태그 (노벨AI 탭의 인물 사전과 같은 칸)</div>
+        <textarea id="wtChars" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 영어 외형 태그&#10;카엘: 1boy, adult, black hair, golden eyes, black coat"></textarea>
+        <div class="hint" style="margin:8px 0 4px"><b>말투</b> — 대사를 쓸 때 쓰는 한국어 설명</div>
+        <textarea id="wtVoice" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 말투&#10;카엘: 낮은 반말, 짧고 명령적. 감정은 말끝을 흐리는 걸로만 드러낸다&#10;레비안: 짧은 존대, 과묵. 형을 '형님'이라 부른다"></textarea>
+      </details>
+      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="webtoon">웹툰 채색 (보내 준 자료 느낌)</option><option value="nai">내 노벨AI 그림체 (하우스 스타일)</option><option value="custom">직접 쓰기</option></select></div>
+      <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
+      <div class="hint">등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
       <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
       <div class="hint" id="wtAutoStat"></div>
       <div class="row nai-only"><button id="wtGenAll" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
