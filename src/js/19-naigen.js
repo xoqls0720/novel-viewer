@@ -1,6 +1,9 @@
 /* ================= 노벨AI로 그림 바로 만들기 (윈도우 프로그램 전용) =================
    브라우저는 노벨AI에 바로 요청할 수 없어서(CORS) 프로그램이 대신 보낸다(desktop/main.js의 nai-gen).
    장면 목록을 넣으면 ① AI가 프롬프트를 만들고 ② 노벨AI가 그려서 ③ 장면 노트에 저장한다. 사이트에 일일이 넣지 않아도 된다. */
+// 인수인계 문서 기준 고정값 (house_style v15 / 암실 룩 공통)
+const NAI_MODEL = 'nai-diffusion-5-full';
+const NAI_FIXED = {sampler: 'k_euler_ancestral', noise_schedule: 'karras', cfg_rescale: 0.08, prefer_brownian: true, ucPreset: 2, steps: 28, scale: 5};
 const NAI_SIZE = {portrait: [832, 1216], landscape: [1216, 832], square: [1024, 1024]};
 const NG = {run: false, stop: false, done: 0, fail: 0};
 const naiToken = () => store.get('naiKey', '');
@@ -12,7 +15,7 @@ function ngBusy(on){ NG.run = on; $('#pane-nai')?.classList.toggle('ngbusy', on)
 function naiBody(p, seed, sizeKey){
   const tpl = store.get('set.ngTpl', null);
   const [w, h] = NAI_SIZE[sizeKey || $('#ngSize').value] || NAI_SIZE.portrait;
-  const model = $('#ngModel').value.trim() || tpl?.model || 'nai-diffusion-4-5-full';
+  const model = $('#ngModel').value.trim() || tpl?.model || NAI_MODEL;
   const steps = Math.max(1, Math.min(50, +$('#ngSteps').value || 28));
   const chars = (p.chars || []).slice(0, 6);
   const pos = c => { const m = /^(\d)[,:](\d)$/.exec(String(c.position || '').trim()); return m ? {x: +m[1] / 5 + 0.1, y: +m[2] / 5 + 0.1} : {x: 0.5, y: 0.5}; };
@@ -24,9 +27,9 @@ function naiBody(p, seed, sizeKey){
     input: p.base, model, action: 'generate',
     parameters: {
       // ① 기본값 → ② 노벨AI에서 가져온 설정(샘플러·노이즈 같은 건 가져온 쪽이 이긴다) → ③ 내가 칸에서 정한 값
-      params_version: 3, n_samples: 1, ucPreset: 0, qualityToggle: true,
-      sampler: 'k_euler_ancestral', autoSmea: false, dynamic_thresholding: false, controlnet_strength: 1,
-      legacy: false, add_original_image: true, cfg_rescale: 0, noise_schedule: 'karras', legacy_v3_extend: false,
+      params_version: 3, n_samples: 1, qualityToggle: true,
+      ...NAI_FIXED, autoSmea: false, dynamic_thresholding: false, controlnet_strength: 1,
+      legacy: false, add_original_image: true, legacy_v3_extend: false,
       skip_cfg_above_sigma: null, legacy_uc: false, normalize_reference_strength_multiple: true,
       ...base,
       width: w, height: h, scale: +$('#ngScale').value || 5, steps,

@@ -1,12 +1,25 @@
 /* ================= 웹툰 자동 만들기: 줄거리 → 대본 → 쪽·컷·말풍선 → (컴퓨터) 컷 그림 ================= */
 const WT_LAYOUT_KEYS = Object.keys(WT_LAYOUTS);
+// 우리 기본 그림체 2종 (인수인계 문서 house_style v15 / 암실 룩 기준, NAI V5)
 const WT_STYLE = {
-  webtoon: 'korean manhwa style, bl manhwa, semi realistic, clean thin lineart, soft cel shading, airbrushed blush, muted natural palette, soft indoor lighting, detailed male face, sketchy line texture, simple background',
+  neon: {
+    name: '기본 A · 야수파 + 네온',
+    tags: '0.4::artist:ask_(askzy) ::, 0.75::artist:mika_pikazo ::, fauvist palette, bold complementary colors, vivid saturated color, 1.3::thin hot pink and electric cyan ribbon lines ::, torn paper border, 1.8::his handsome face is the focal point, drawn with obsessive detail ::, beautiful detailed eyes, dramatic rim lighting, painterly, thick confident lineart, high contrast, cinematic composition, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic, absurdres',
+    neg: 'bad face, bad eyes, deformed face, lipstick, makeup, eyeshadow, blush makeup, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face',
+  },
+  dark: {
+    name: '기본 B · 암실 룩',
+    tags: '0.4::artist:ask_(askzy) ::, -1.2::bishounen ::, -1::same face ::, 1.1::low key lighting ::, deep shadows, extremely handsome man, beautiful detailed eyes, half-lidded eyes, looking at viewer, closed mouth, 1.2::limited palette ::, 1.2::{MONO} monochrome ::, ink black shadows, dust particles, sparkles, film grain, painterly, cinematic composition, storytelling, high contrast, masterpiece, best quality, very aesthetic',
+    neg: 'bishounen, child, smile, grin, smirk, teeth, lipstick, makeup, katana, glasses, eyewear, 1girl, female, text',
+    dropNeg: /\bfilm grain\b/gi,   // 암실 룩은 필름 그레인을 살린다
+  },
 };
+const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];
 const WT_SCHEMA = {
-  type: 'object', additionalProperties: false, required: ['title', 'cast', 'pages'],
+  type: 'object', additionalProperties: false, required: ['title', 'synopsis', 'cast', 'pages'],
   properties: {
     title: {type: 'string'},
+    synopsis: {type: 'string', description: '네가 채워 넣은 이번 화 줄거리. 한국어 3~6문장. 장소·시간, 무슨 일이 벌어지고, 감정이 어디서 꺾이고, 어떻게 끝나는지'},
     cast: {type: 'array', description: '사전에 없던 인물만. 외형 영어 태그와 한국어 말투를 지어서 채운다', items: {type: 'object', additionalProperties: false, required: ['name', 'tags', 'voice'],
       properties: {name: {type: 'string'}, tags: {type: 'string', description: '예: 1boy, adult, short black hair, grey eyes, black coat'}, voice: {type: 'string', description: '한국어 한 줄. 예: 낮은 반말, 짧고 명령적. 당황하면 말끝이 흐려진다'}}}},
     pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'panels'],
@@ -26,6 +39,8 @@ const WT_SCHEMA = {
   }
 };
 const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 대본으로 바꾼다. 모든 글은 한국어, 그림 태그(tags)만 영어.
+- 받은 줄거리가 한 줄이거나 거칠면 네가 채운다: 장소·시간, 둘 사이에 무슨 일이 있었는지, 감정이 꺾이는 지점, 끝을 정해서 synopsis 에 3~6문장으로 먼저 쓴다. 그 synopsis 대로 쪽을 나눈다.
+- 받은 줄거리에 이미 있는 것은 바꾸지 않는다. 비어 있는 곳만 채운다.
 틀(layout) 키: 1=한 컷, 2a=위아래 반반, 2b=위 작은 컷+아래 큰 컷, 2c=위 큰 컷+아래 작은 컷, 2d=사선 가로 둘, 2e=사선 세로 둘, 3a=세 칸, 3b=위 큰 컷+아래 둘, 3c=왼쪽 길게+오른쪽 둘, 3d=사선 세 칸, 4a=네 칸.
 - 한 쪽은 1~4컷. 컷 수는 틀과 맞춘다(1→1컷, 2*→2컷, 3*→3컷, 4a→4컷). 장면 전환·감정 고조에는 큰 컷, 반응에는 작은 컷을 쓴다.
 - 첫 쪽은 상황을 한 번에 보여 주는 큰 컷으로 시작하고, 마지막 쪽은 다음이 궁금해지는 여운으로 끝낸다.
@@ -39,11 +54,16 @@ const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 
 출력은 JSON 하나만.`;
 
 /* ---------- 그림체 ---------- */
+const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
 function wtStyleTags(){
-  const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'webtoon');
-  if (k === 'nai') return $('#naiStyle').value.trim().replace(/,\s*$/, '');
+  const k = wtStyleKey();
   if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
-  return WT_STYLE.webtoon;
+  return WT_STYLE[k].tags.replace('{MONO}', $('#wtMono')?.value || store.get('set.wtMono', 'cold blue'));
+}
+function wtStyleNeg(neg){
+  const k = wtStyleKey(); const st = WT_STYLE[k]; if (!st) return neg;
+  let out = neg; if (st.dropNeg) out = out.split(',').map(x => x.trim()).filter(x => x && !st.dropNeg.test(x)).join(', ');
+  return [out, st.neg].filter(Boolean).join(', ');
 }
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
@@ -56,6 +76,7 @@ function wtPanelPrompt(panel){
   const tags = (panel.tags || '').trim() || 'upper body, looking at viewer';
   const base = [style, rating === 'nsfw' ? 'nsfw' : '', names.length ? (n ? count : '') : 'no humans', tags, 'no text'].filter(Boolean).join(', ');
   let neg = [$('#naiNeg').value.trim(), 'speech bubble, text, english text, korean text, subtitle, panel border'].filter(Boolean).join(', ');
+  neg = wtStyleNeg(neg);
   if (rating === 'nsfw') neg = neg.split(',').map(s => s.trim()).filter(s => s && s !== 'nsfw').join(', '); else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
   const cols = n === 1 ? [2] : n === 2 ? [1, 3] : n === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
   const chars = found.slice(0, 6).map((name, i) => ({name, prompt: (rating === 'nsfw' && !/\badult\b/.test(dict.get(name)) ? 'adult, ' : '') + dict.get(name), negative: '', position: `${cols[i]},2`}));
@@ -129,7 +150,7 @@ function wtMergeCast(cast){
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
 let wtAbort = null;
-$('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); };
+$('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); $('#wtSyn').value = WT.proj.synopsis || ''; $('#wtSynBox').hidden = !WT.proj.synopsis; };
 $('#wtAutoX').onclick = () => { $('#wtAutoBox').hidden = true; };
 $('#wtAutoStop').onclick = () => wtAbort?.abort();
 $('#wtAutoGo').onclick = async () => {
@@ -148,6 +169,7 @@ $('#wtAutoGo').onclick = async () => {
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
   let sc; try{ sc = parseJSON(res.text); }catch{ return wtAutoStat('대본을 읽지 못했어요. 다시 눌러 주세요.'); }
   const newCast = wtMergeCast(sc.cast); wtMergeVoice(sc.cast);
+  if (sc.synopsis){ WT.proj.synopsis = String(sc.synopsis).slice(0, 2000); $('#wtSyn').value = WT.proj.synopsis; $('#wtSynBox').hidden = false; }
   const added = wtBuildFromScript(sc); if (!added.length) return wtAutoStat('쪽이 비어 있어요. 줄거리를 조금 더 구체적으로 적어 주세요.');
   if (wtBlank()){ WT.proj.pages = added; WT.pi = 0; } else { WT.proj.pages.push(...added); WT.pi = WT.proj.pages.length - added.length; }
   if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
@@ -190,12 +212,16 @@ $('#wtImgGen').onclick = async () => {
 };
 
 /* ---------- 그림체·인물 사전 칸 ---------- */
-function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; store.set('set.wtStyle', k); }
-$('#wtStyle').value = store.get('set.wtStyle', 'webtoon'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
+function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
+$('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
 $('#wtStyle').onchange = wtStyleSync;
+$('#wtMono').onchange = () => store.set('set.wtMono', $('#wtMono').value);
 $('#wtStyleIn').oninput = () => { clearTimeout(WT.styT); WT.styT = setTimeout(() => store.set('set.wtStyleIn', $('#wtStyleIn').value), 500); };
 $('#wtChars').value = $('#naiChars').value;
 $('#wtChars').oninput = () => { $('#naiChars').value = $('#wtChars').value; clearTimeout(WT.chT); WT.chT = setTimeout(() => store.set('set.naiChars', $('#wtChars').value), 500); };
 $('#wtVoice').value = store.get('set.wtVoice', '');
 $('#wtVoice').oninput = () => { clearTimeout(WT.vcT); WT.vcT = setTimeout(() => store.set('set.wtVoice', $('#wtVoice').value), 500); };
 $('#wtAuto').addEventListener('click', () => { $('#wtChars').value = $('#naiChars').value; $('#wtVoice').value = store.get('set.wtVoice', ''); });
+
+$('#wtSynUse').onclick = () => { const v = $('#wtSyn').value.trim(); if (!v) return; $('#wtStory').value = v; WT.proj.synopsis = v; $('#wtAutoGo').click(); };
+$('#wtSyn').oninput = () => { if (WT.proj) WT.proj.synopsis = $('#wtSyn').value; };

@@ -263,7 +263,7 @@
         <div class="krow"><input type="password" id="naiKey" placeholder="노벨AI 토큰 (설정 → Account → Get Persistent API Token)" autocomplete="off"><button id="ngSave">저장</button><button id="ngDel">지우기</button></div>
         <div class="hint">노벨AI 사이트 → 톱니(User Settings) → Account → <b>Get Persistent API Token</b> 을 눌러 나온 긴 글자를 넣으세요. 비밀번호가 아니에요.</div>
         <textarea id="ngList" style="min-height:76px" placeholder="한 줄에 한 장면씩 (비워 두면 방금 만든 프롬프트로 그려요)&#10;카엘이 눈 내리는 성 앞에서 뒤돌아본다&#10;레비안이 새벽 얼음 호수에서 혼자 검을 휘두른다"></textarea>
-        <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-4-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-4-5-full"><option value="nai-diffusion-4-5-curated"><option value="nai-diffusion-4-full"></datalist></div>
+        <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-5-full"><option value="nai-diffusion-5-curated"><option value="nai-diffusion-4-5-full"></datalist></div>
         <div class="row tight"><label>크기</label><select id="ngSize"><option value="portrait">세로 832×1216</option><option value="landscape">가로 1216×832</option><option value="square">정사각 1024×1024</option></select>
           <label>스텝</label><input type="number" id="ngSteps" value="28" min="1" max="50" style="width:64px">
           <label>가이드</label><input type="number" id="ngScale" value="5" min="1" max="10" step="0.5" style="width:60px">

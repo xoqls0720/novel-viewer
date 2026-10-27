@@ -31,7 +31,7 @@ function wtStatus(t){ const el = $('#wtSaved'); if (el) el.textContent = t; }
 function wtSaveSoon(){ clearTimeout(WT.saveT); wtStatus('저장 중…'); WT.saveT = setTimeout(wtSaveNow, 800); }
 async function wtSaveNow(){
   if (!WT.proj) return; WT.proj.updated = Date.now(); WT.proj.name = $('#wtName').value.trim() || WT.proj.name || '이름 없는 웹툰';
-  try{ await idb.tx('readwrite', s => s.put({id: 'p:' + WT.proj.id, t: 'proj', name: WT.proj.name, updated: WT.proj.updated, data: JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter})}), 'wt'); wtStatus('저장됨'); }
+  try{ await idb.tx('readwrite', s => s.put({id: 'p:' + WT.proj.id, t: 'proj', name: WT.proj.name, updated: WT.proj.updated, data: JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter, synopsis: WT.proj.synopsis || ''})}), 'wt'); wtStatus('저장됨'); }
   catch{ wtStatus('저장하지 못했어요'); }
 }
 async function wtPutImage(blob){
@@ -324,9 +324,9 @@ function wtPageOp(a){
 }
 
 /* ---------- 되돌리기 ---------- */
-const wtSnap = () => JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter});
+const wtSnap = () => JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter, synopsis: WT.proj.synopsis || ''});
 function wtCommit(){ const s = wtSnap(); if (WT.hist.at(-1) === s) return; WT.hist.push(s); if (WT.hist.length > 80) WT.hist.shift(); WT.redo = []; wtSaveSoon(); }
-function wtRestore(s){ const d = JSON.parse(s); WT.proj.pages = d.pages; WT.proj.gutter = d.gutter; WT.pi = Math.min(WT.pi, d.pages.length - 1); WT.sel = null; wtBuildPages(); wtSideSync(); wtRender(); wtSaveSoon(); }
+function wtRestore(s){ const d = JSON.parse(s); WT.proj.pages = d.pages; WT.proj.gutter = d.gutter; WT.proj.synopsis = d.synopsis || ''; WT.pi = Math.min(WT.pi, d.pages.length - 1); WT.sel = null; wtBuildPages(); wtSideSync(); wtRender(); wtSaveSoon(); }
 $('#wtUndo').onclick = () => { if (WT.hist.length < 2) return; WT.redo.push(WT.hist.pop()); wtRestore(WT.hist.at(-1)); };
 $('#wtRedo').onclick = () => { const s = WT.redo.pop(); if (!s) return; WT.hist.push(s); wtRestore(s); };
 
@@ -497,7 +497,7 @@ $('#wtExport').onchange = async e => {
 
 /* ---------- 열고 닫기 ---------- */
 async function wtOpenProject(rec){
-  const d = JSON.parse(rec.data); WT.proj = {id: rec.id.slice(2), name: rec.name, pages: d.pages, gutter: d.gutter || 'bleed', updated: rec.updated};
+  const d = JSON.parse(rec.data); WT.proj = {id: rec.id.slice(2), name: rec.name, pages: d.pages, gutter: d.gutter || 'bleed', synopsis: d.synopsis || '', updated: rec.updated};
   WT.pi = 0; WT.sel = null; WT.hist = []; WT.redo = []; WT.zoom = 1; $('#wtName').value = rec.name; await wtPreload(); WT.hist.push(wtSnap());
   $('#wtHome').hidden = true; wtBuildPages(); wtSideSync(); wtRender(); wtStatus('');
 }

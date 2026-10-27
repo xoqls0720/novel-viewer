@@ -1042,7 +1042,7 @@ body:not(.is-desktop) .nai-only{display:none!important}
         <div class="krow"><input type="password" id="naiKey" placeholder="노벨AI 토큰 (설정 → Account → Get Persistent API Token)" autocomplete="off"><button id="ngSave">저장</button><button id="ngDel">지우기</button></div>
         <div class="hint">노벨AI 사이트 → 톱니(User Settings) → Account → <b>Get Persistent API Token</b> 을 눌러 나온 긴 글자를 넣으세요. 비밀번호가 아니에요.</div>
         <textarea id="ngList" style="min-height:76px" placeholder="한 줄에 한 장면씩 (비워 두면 방금 만든 프롬프트로 그려요)&#10;카엘이 눈 내리는 성 앞에서 뒤돌아본다&#10;레비안이 새벽 얼음 호수에서 혼자 검을 휘두른다"></textarea>
-        <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-4-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-4-5-full"><option value="nai-diffusion-4-5-curated"><option value="nai-diffusion-4-full"></datalist></div>
+        <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-5-full"><option value="nai-diffusion-5-curated"><option value="nai-diffusion-4-5-full"></datalist></div>
         <div class="row tight"><label>크기</label><select id="ngSize"><option value="portrait">세로 832×1216</option><option value="landscape">가로 1216×832</option><option value="square">정사각 1024×1024</option></select>
           <label>스텝</label><input type="number" id="ngSteps" value="28" min="1" max="50" style="width:64px">
           <label>가이드</label><input type="number" id="ngScale" value="5" min="1" max="10" step="0.5" style="width:60px">
@@ -1401,7 +1401,7 @@ body:not(.is-desktop) .nai-only{display:none!important}
   <div class="wt-modal" id="wtAutoBox" hidden>
     <div class="wt-modalbox">
       <div class="shh"><b>줄거리로 자동 만들기</b><button class="icon" id="wtAutoX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <textarea id="wtStory" placeholder="이번 화의 줄거리를 적어 주세요. (누가, 어디서, 무슨 일이, 어떤 감정으로)&#10;예) 카엘이 눈 내리는 성문 앞에서 돌아온 신부를 맞이한다. 말은 없지만 장갑을 벗고 손을 내민다." style="min-height:130px"></textarea>
+      <textarea id="wtStory" placeholder="줄거리는 대충 적어도 돼요. 빈 곳은 AI가 채워요.&#10;예) 카엘이 눈 오는 날 신부를 맞이함" style="min-height:110px"></textarea>
       <div class="row tight"><label>쪽 수</label><input type="number" id="wtPagesN" value="4" min="1" max="12" style="width:64px">
         <label>컷 느낌</label><select id="wtTone"><option value="calm">잔잔하게</option><option value="tense">긴장감 있게</option><option value="comic">코믹하게</option></select>
         <label>AI</label><select id="wtAI"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div>
@@ -1413,10 +1413,16 @@ body:not(.is-desktop) .nai-only{display:none!important}
         <div class="hint" style="margin:8px 0 4px"><b>말투</b> — 대사를 쓸 때 쓰는 한국어 설명</div>
         <textarea id="wtVoice" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 말투&#10;카엘: 낮은 반말, 짧고 명령적. 감정은 말끝을 흐리는 걸로만 드러낸다&#10;레비안: 짧은 존대, 과묵. 형을 '형님'이라 부른다"></textarea>
       </details>
-      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="webtoon">웹툰 채색 (보내 준 자료 느낌)</option><option value="nai">내 노벨AI 그림체 (하우스 스타일)</option><option value="custom">직접 쓰기</option></select></div>
+      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="custom">직접 쓰기</option></select></div>
+      <div class="row tight" id="wtMonoRow" hidden><label>단색</label><select id="wtMono"><option value="cold blue">cold blue · 7년 전 가이드</option><option value="red">red · 명부</option><option value="gold">gold · 흑요룡</option><option value="white and grey">white and grey · 날개</option><option value="teal">teal · 인어</option><option value="amber">amber · 성녀</option><option value="magenta">magenta · 아이돌</option><option value="dusty orange">dusty orange · 백신</option><option value="moonlight blue">moonlight blue · 늑대</option><option value="warm sepia">warm sepia · 캠퍼스</option></select></div>
       <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
-      <div class="hint">등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
+      <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요. 등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
       <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
+      <div id="wtSynBox" hidden>
+        <div class="hint" style="margin:4px 0 4px"><b>AI가 채운 줄거리</b> — 고쳐서 다시 만들어도 돼요</div>
+        <textarea id="wtSyn" style="min-height:84px"></textarea>
+        <div class="row tight"><button id="wtSynUse">이 줄거리로 다시 만들기</button></div>
+      </div>
       <div class="hint" id="wtAutoStat"></div>
       <div class="row nai-only"><button id="wtGenAll" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
     </div>
@@ -5628,6 +5634,9 @@ async function psdComposite(file){
 /* ================= 노벨AI로 그림 바로 만들기 (윈도우 프로그램 전용) =================
    브라우저는 노벨AI에 바로 요청할 수 없어서(CORS) 프로그램이 대신 보낸다(desktop/main.js의 nai-gen).
    장면 목록을 넣으면 ① AI가 프롬프트를 만들고 ② 노벨AI가 그려서 ③ 장면 노트에 저장한다. 사이트에 일일이 넣지 않아도 된다. */
+// 인수인계 문서 기준 고정값 (house_style v15 / 암실 룩 공통)
+const NAI_MODEL = 'nai-diffusion-5-full';
+const NAI_FIXED = {sampler: 'k_euler_ancestral', noise_schedule: 'karras', cfg_rescale: 0.08, prefer_brownian: true, ucPreset: 2, steps: 28, scale: 5};
 const NAI_SIZE = {portrait: [832, 1216], landscape: [1216, 832], square: [1024, 1024]};
 const NG = {run: false, stop: false, done: 0, fail: 0};
 const naiToken = () => store.get('naiKey', '');
@@ -5639,7 +5648,7 @@ function ngBusy(on){ NG.run = on; $('#pane-nai')?.classList.toggle('ngbusy', on)
 function naiBody(p, seed, sizeKey){
   const tpl = store.get('set.ngTpl', null);
   const [w, h] = NAI_SIZE[sizeKey || $('#ngSize').value] || NAI_SIZE.portrait;
-  const model = $('#ngModel').value.trim() || tpl?.model || 'nai-diffusion-4-5-full';
+  const model = $('#ngModel').value.trim() || tpl?.model || NAI_MODEL;
   const steps = Math.max(1, Math.min(50, +$('#ngSteps').value || 28));
   const chars = (p.chars || []).slice(0, 6);
   const pos = c => { const m = /^(\d)[,:](\d)$/.exec(String(c.position || '').trim()); return m ? {x: +m[1] / 5 + 0.1, y: +m[2] / 5 + 0.1} : {x: 0.5, y: 0.5}; };
@@ -5651,9 +5660,9 @@ function naiBody(p, seed, sizeKey){
     input: p.base, model, action: 'generate',
     parameters: {
       // ① 기본값 → ② 노벨AI에서 가져온 설정(샘플러·노이즈 같은 건 가져온 쪽이 이긴다) → ③ 내가 칸에서 정한 값
-      params_version: 3, n_samples: 1, ucPreset: 0, qualityToggle: true,
-      sampler: 'k_euler_ancestral', autoSmea: false, dynamic_thresholding: false, controlnet_strength: 1,
-      legacy: false, add_original_image: true, cfg_rescale: 0, noise_schedule: 'karras', legacy_v3_extend: false,
+      params_version: 3, n_samples: 1, qualityToggle: true,
+      ...NAI_FIXED, autoSmea: false, dynamic_thresholding: false, controlnet_strength: 1,
+      legacy: false, add_original_image: true, legacy_v3_extend: false,
       skip_cfg_above_sigma: null, legacy_uc: false, normalize_reference_strength_multiple: true,
       ...base,
       width: w, height: h, scale: +$('#ngScale').value || 5, steps,
@@ -5792,7 +5801,7 @@ function wtStatus(t){ const el = $('#wtSaved'); if (el) el.textContent = t; }
 function wtSaveSoon(){ clearTimeout(WT.saveT); wtStatus('저장 중…'); WT.saveT = setTimeout(wtSaveNow, 800); }
 async function wtSaveNow(){
   if (!WT.proj) return; WT.proj.updated = Date.now(); WT.proj.name = $('#wtName').value.trim() || WT.proj.name || '이름 없는 웹툰';
-  try{ await idb.tx('readwrite', s => s.put({id: 'p:' + WT.proj.id, t: 'proj', name: WT.proj.name, updated: WT.proj.updated, data: JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter})}), 'wt'); wtStatus('저장됨'); }
+  try{ await idb.tx('readwrite', s => s.put({id: 'p:' + WT.proj.id, t: 'proj', name: WT.proj.name, updated: WT.proj.updated, data: JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter, synopsis: WT.proj.synopsis || ''})}), 'wt'); wtStatus('저장됨'); }
   catch{ wtStatus('저장하지 못했어요'); }
 }
 async function wtPutImage(blob){
@@ -6085,9 +6094,9 @@ function wtPageOp(a){
 }
 
 /* ---------- 되돌리기 ---------- */
-const wtSnap = () => JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter});
+const wtSnap = () => JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter, synopsis: WT.proj.synopsis || ''});
 function wtCommit(){ const s = wtSnap(); if (WT.hist.at(-1) === s) return; WT.hist.push(s); if (WT.hist.length > 80) WT.hist.shift(); WT.redo = []; wtSaveSoon(); }
-function wtRestore(s){ const d = JSON.parse(s); WT.proj.pages = d.pages; WT.proj.gutter = d.gutter; WT.pi = Math.min(WT.pi, d.pages.length - 1); WT.sel = null; wtBuildPages(); wtSideSync(); wtRender(); wtSaveSoon(); }
+function wtRestore(s){ const d = JSON.parse(s); WT.proj.pages = d.pages; WT.proj.gutter = d.gutter; WT.proj.synopsis = d.synopsis || ''; WT.pi = Math.min(WT.pi, d.pages.length - 1); WT.sel = null; wtBuildPages(); wtSideSync(); wtRender(); wtSaveSoon(); }
 $('#wtUndo').onclick = () => { if (WT.hist.length < 2) return; WT.redo.push(WT.hist.pop()); wtRestore(WT.hist.at(-1)); };
 $('#wtRedo').onclick = () => { const s = WT.redo.pop(); if (!s) return; WT.hist.push(s); wtRestore(s); };
 
@@ -6258,7 +6267,7 @@ $('#wtExport').onchange = async e => {
 
 /* ---------- 열고 닫기 ---------- */
 async function wtOpenProject(rec){
-  const d = JSON.parse(rec.data); WT.proj = {id: rec.id.slice(2), name: rec.name, pages: d.pages, gutter: d.gutter || 'bleed', updated: rec.updated};
+  const d = JSON.parse(rec.data); WT.proj = {id: rec.id.slice(2), name: rec.name, pages: d.pages, gutter: d.gutter || 'bleed', synopsis: d.synopsis || '', updated: rec.updated};
   WT.pi = 0; WT.sel = null; WT.hist = []; WT.redo = []; WT.zoom = 1; $('#wtName').value = rec.name; await wtPreload(); WT.hist.push(wtSnap());
   $('#wtHome').hidden = true; wtBuildPages(); wtSideSync(); wtRender(); wtStatus('');
 }
@@ -6286,13 +6295,26 @@ $('#wtMy').onclick = async () => { if (WT.proj){ clearTimeout(WT.saveT); await w
 wtBuildLayouts();
 /* ================= 웹툰 자동 만들기: 줄거리 → 대본 → 쪽·컷·말풍선 → (컴퓨터) 컷 그림 ================= */
 const WT_LAYOUT_KEYS = Object.keys(WT_LAYOUTS);
+// 우리 기본 그림체 2종 (인수인계 문서 house_style v15 / 암실 룩 기준, NAI V5)
 const WT_STYLE = {
-  webtoon: 'korean manhwa style, bl manhwa, semi realistic, clean thin lineart, soft cel shading, airbrushed blush, muted natural palette, soft indoor lighting, detailed male face, sketchy line texture, simple background',
+  neon: {
+    name: '기본 A · 야수파 + 네온',
+    tags: '0.4::artist:ask_(askzy) ::, 0.75::artist:mika_pikazo ::, fauvist palette, bold complementary colors, vivid saturated color, 1.3::thin hot pink and electric cyan ribbon lines ::, torn paper border, 1.8::his handsome face is the focal point, drawn with obsessive detail ::, beautiful detailed eyes, dramatic rim lighting, painterly, thick confident lineart, high contrast, cinematic composition, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic, absurdres',
+    neg: 'bad face, bad eyes, deformed face, lipstick, makeup, eyeshadow, blush makeup, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face',
+  },
+  dark: {
+    name: '기본 B · 암실 룩',
+    tags: '0.4::artist:ask_(askzy) ::, -1.2::bishounen ::, -1::same face ::, 1.1::low key lighting ::, deep shadows, extremely handsome man, beautiful detailed eyes, half-lidded eyes, looking at viewer, closed mouth, 1.2::limited palette ::, 1.2::{MONO} monochrome ::, ink black shadows, dust particles, sparkles, film grain, painterly, cinematic composition, storytelling, high contrast, masterpiece, best quality, very aesthetic',
+    neg: 'bishounen, child, smile, grin, smirk, teeth, lipstick, makeup, katana, glasses, eyewear, 1girl, female, text',
+    dropNeg: /\bfilm grain\b/gi,   // 암실 룩은 필름 그레인을 살린다
+  },
 };
+const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];
 const WT_SCHEMA = {
-  type: 'object', additionalProperties: false, required: ['title', 'cast', 'pages'],
+  type: 'object', additionalProperties: false, required: ['title', 'synopsis', 'cast', 'pages'],
   properties: {
     title: {type: 'string'},
+    synopsis: {type: 'string', description: '네가 채워 넣은 이번 화 줄거리. 한국어 3~6문장. 장소·시간, 무슨 일이 벌어지고, 감정이 어디서 꺾이고, 어떻게 끝나는지'},
     cast: {type: 'array', description: '사전에 없던 인물만. 외형 영어 태그와 한국어 말투를 지어서 채운다', items: {type: 'object', additionalProperties: false, required: ['name', 'tags', 'voice'],
       properties: {name: {type: 'string'}, tags: {type: 'string', description: '예: 1boy, adult, short black hair, grey eyes, black coat'}, voice: {type: 'string', description: '한국어 한 줄. 예: 낮은 반말, 짧고 명령적. 당황하면 말끝이 흐려진다'}}}},
     pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'panels'],
@@ -6312,6 +6334,8 @@ const WT_SCHEMA = {
   }
 };
 const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 대본으로 바꾼다. 모든 글은 한국어, 그림 태그(tags)만 영어.
+- 받은 줄거리가 한 줄이거나 거칠면 네가 채운다: 장소·시간, 둘 사이에 무슨 일이 있었는지, 감정이 꺾이는 지점, 끝을 정해서 synopsis 에 3~6문장으로 먼저 쓴다. 그 synopsis 대로 쪽을 나눈다.
+- 받은 줄거리에 이미 있는 것은 바꾸지 않는다. 비어 있는 곳만 채운다.
 틀(layout) 키: 1=한 컷, 2a=위아래 반반, 2b=위 작은 컷+아래 큰 컷, 2c=위 큰 컷+아래 작은 컷, 2d=사선 가로 둘, 2e=사선 세로 둘, 3a=세 칸, 3b=위 큰 컷+아래 둘, 3c=왼쪽 길게+오른쪽 둘, 3d=사선 세 칸, 4a=네 칸.
 - 한 쪽은 1~4컷. 컷 수는 틀과 맞춘다(1→1컷, 2*→2컷, 3*→3컷, 4a→4컷). 장면 전환·감정 고조에는 큰 컷, 반응에는 작은 컷을 쓴다.
 - 첫 쪽은 상황을 한 번에 보여 주는 큰 컷으로 시작하고, 마지막 쪽은 다음이 궁금해지는 여운으로 끝낸다.
@@ -6325,11 +6349,16 @@ const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 
 출력은 JSON 하나만.`;
 
 /* ---------- 그림체 ---------- */
+const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
 function wtStyleTags(){
-  const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'webtoon');
-  if (k === 'nai') return $('#naiStyle').value.trim().replace(/,\s*$/, '');
+  const k = wtStyleKey();
   if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
-  return WT_STYLE.webtoon;
+  return WT_STYLE[k].tags.replace('{MONO}', $('#wtMono')?.value || store.get('set.wtMono', 'cold blue'));
+}
+function wtStyleNeg(neg){
+  const k = wtStyleKey(); const st = WT_STYLE[k]; if (!st) return neg;
+  let out = neg; if (st.dropNeg) out = out.split(',').map(x => x.trim()).filter(x => x && !st.dropNeg.test(x)).join(', ');
+  return [out, st.neg].filter(Boolean).join(', ');
 }
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
@@ -6342,6 +6371,7 @@ function wtPanelPrompt(panel){
   const tags = (panel.tags || '').trim() || 'upper body, looking at viewer';
   const base = [style, rating === 'nsfw' ? 'nsfw' : '', names.length ? (n ? count : '') : 'no humans', tags, 'no text'].filter(Boolean).join(', ');
   let neg = [$('#naiNeg').value.trim(), 'speech bubble, text, english text, korean text, subtitle, panel border'].filter(Boolean).join(', ');
+  neg = wtStyleNeg(neg);
   if (rating === 'nsfw') neg = neg.split(',').map(s => s.trim()).filter(s => s && s !== 'nsfw').join(', '); else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
   const cols = n === 1 ? [2] : n === 2 ? [1, 3] : n === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
   const chars = found.slice(0, 6).map((name, i) => ({name, prompt: (rating === 'nsfw' && !/\badult\b/.test(dict.get(name)) ? 'adult, ' : '') + dict.get(name), negative: '', position: `${cols[i]},2`}));
@@ -6415,7 +6445,7 @@ function wtMergeCast(cast){
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
 let wtAbort = null;
-$('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); };
+$('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); $('#wtSyn').value = WT.proj.synopsis || ''; $('#wtSynBox').hidden = !WT.proj.synopsis; };
 $('#wtAutoX').onclick = () => { $('#wtAutoBox').hidden = true; };
 $('#wtAutoStop').onclick = () => wtAbort?.abort();
 $('#wtAutoGo').onclick = async () => {
@@ -6434,6 +6464,7 @@ $('#wtAutoGo').onclick = async () => {
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
   let sc; try{ sc = parseJSON(res.text); }catch{ return wtAutoStat('대본을 읽지 못했어요. 다시 눌러 주세요.'); }
   const newCast = wtMergeCast(sc.cast); wtMergeVoice(sc.cast);
+  if (sc.synopsis){ WT.proj.synopsis = String(sc.synopsis).slice(0, 2000); $('#wtSyn').value = WT.proj.synopsis; $('#wtSynBox').hidden = false; }
   const added = wtBuildFromScript(sc); if (!added.length) return wtAutoStat('쪽이 비어 있어요. 줄거리를 조금 더 구체적으로 적어 주세요.');
   if (wtBlank()){ WT.proj.pages = added; WT.pi = 0; } else { WT.proj.pages.push(...added); WT.pi = WT.proj.pages.length - added.length; }
   if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
@@ -6476,15 +6507,19 @@ $('#wtImgGen').onclick = async () => {
 };
 
 /* ---------- 그림체·인물 사전 칸 ---------- */
-function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; store.set('set.wtStyle', k); }
-$('#wtStyle').value = store.get('set.wtStyle', 'webtoon'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
+function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
+$('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
 $('#wtStyle').onchange = wtStyleSync;
+$('#wtMono').onchange = () => store.set('set.wtMono', $('#wtMono').value);
 $('#wtStyleIn').oninput = () => { clearTimeout(WT.styT); WT.styT = setTimeout(() => store.set('set.wtStyleIn', $('#wtStyleIn').value), 500); };
 $('#wtChars').value = $('#naiChars').value;
 $('#wtChars').oninput = () => { $('#naiChars').value = $('#wtChars').value; clearTimeout(WT.chT); WT.chT = setTimeout(() => store.set('set.naiChars', $('#wtChars').value), 500); };
 $('#wtVoice').value = store.get('set.wtVoice', '');
 $('#wtVoice').oninput = () => { clearTimeout(WT.vcT); WT.vcT = setTimeout(() => store.set('set.wtVoice', $('#wtVoice').value), 500); };
 $('#wtAuto').addEventListener('click', () => { $('#wtChars').value = $('#naiChars').value; $('#wtVoice').value = store.get('set.wtVoice', ''); });
+
+$('#wtSynUse').onclick = () => { const v = $('#wtSyn').value.trim(); if (!v) return; $('#wtStory').value = v; WT.proj.synopsis = v; $('#wtAutoGo').click(); };
+$('#wtSyn').oninput = () => { if (WT.proj) WT.proj.synopsis = $('#wtSyn').value; };
 </script>
 </body>
 </html>

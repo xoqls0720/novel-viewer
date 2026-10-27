@@ -67,7 +67,7 @@
   <div class="wt-modal" id="wtAutoBox" hidden>
     <div class="wt-modalbox">
       <div class="shh"><b>줄거리로 자동 만들기</b><button class="icon" id="wtAutoX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <textarea id="wtStory" placeholder="이번 화의 줄거리를 적어 주세요. (누가, 어디서, 무슨 일이, 어떤 감정으로)&#10;예) 카엘이 눈 내리는 성문 앞에서 돌아온 신부를 맞이한다. 말은 없지만 장갑을 벗고 손을 내민다." style="min-height:130px"></textarea>
+      <textarea id="wtStory" placeholder="줄거리는 대충 적어도 돼요. 빈 곳은 AI가 채워요.&#10;예) 카엘이 눈 오는 날 신부를 맞이함" style="min-height:110px"></textarea>
       <div class="row tight"><label>쪽 수</label><input type="number" id="wtPagesN" value="4" min="1" max="12" style="width:64px">
         <label>컷 느낌</label><select id="wtTone"><option value="calm">잔잔하게</option><option value="tense">긴장감 있게</option><option value="comic">코믹하게</option></select>
         <label>AI</label><select id="wtAI"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div>
@@ -79,10 +79,16 @@
         <div class="hint" style="margin:8px 0 4px"><b>말투</b> — 대사를 쓸 때 쓰는 한국어 설명</div>
         <textarea id="wtVoice" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 말투&#10;카엘: 낮은 반말, 짧고 명령적. 감정은 말끝을 흐리는 걸로만 드러낸다&#10;레비안: 짧은 존대, 과묵. 형을 '형님'이라 부른다"></textarea>
       </details>
-      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="webtoon">웹툰 채색 (보내 준 자료 느낌)</option><option value="nai">내 노벨AI 그림체 (하우스 스타일)</option><option value="custom">직접 쓰기</option></select></div>
+      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="custom">직접 쓰기</option></select></div>
+      <div class="row tight" id="wtMonoRow" hidden><label>단색</label><select id="wtMono"><option value="cold blue">cold blue · 7년 전 가이드</option><option value="red">red · 명부</option><option value="gold">gold · 흑요룡</option><option value="white and grey">white and grey · 날개</option><option value="teal">teal · 인어</option><option value="amber">amber · 성녀</option><option value="magenta">magenta · 아이돌</option><option value="dusty orange">dusty orange · 백신</option><option value="moonlight blue">moonlight blue · 늑대</option><option value="warm sepia">warm sepia · 캠퍼스</option></select></div>
       <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
-      <div class="hint">등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
+      <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요. 등급(일반/성인)은 노벨AI 탭 설정을 따라가요.</div>
       <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
+      <div id="wtSynBox" hidden>
+        <div class="hint" style="margin:4px 0 4px"><b>AI가 채운 줄거리</b> — 고쳐서 다시 만들어도 돼요</div>
+        <textarea id="wtSyn" style="min-height:84px"></textarea>
+        <div class="row tight"><button id="wtSynUse">이 줄거리로 다시 만들기</button></div>
+      </div>
       <div class="hint" id="wtAutoStat"></div>
       <div class="row nai-only"><button id="wtGenAll" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
     </div>
