@@ -9,9 +9,9 @@ function ngBusy(on){ NG.run = on; $('#pane-nai')?.classList.toggle('ngbusy', on)
 
 // 프롬프트 묶음 → 노벨AI 요청 본문. V4 이상은 인물마다 칸이 따로 있다.
 // 노벨AI에서 가져온 설정(ngTpl)이 있으면 그 값을 바탕으로 삼고, 글·인물·씨앗만 갈아 끼운다.
-function naiBody(p, seed){
+function naiBody(p, seed, sizeKey){
   const tpl = store.get('set.ngTpl', null);
-  const [w, h] = NAI_SIZE[$('#ngSize').value] || NAI_SIZE.portrait;
+  const [w, h] = NAI_SIZE[sizeKey || $('#ngSize').value] || NAI_SIZE.portrait;
   const model = $('#ngModel').value.trim() || tpl?.model || 'nai-diffusion-4-5-full';
   const steps = Math.max(1, Math.min(50, +$('#ngSteps').value || 28));
   const chars = (p.chars || []).slice(0, 6);
@@ -40,12 +40,15 @@ function naiBody(p, seed){
   };
 }
 // 한 장 그려서 장면 노트에 저장
-async function naiOne(p, desc){
-  const r = await window.nvDesktop.naiGen(naiToken(), naiBody(p));
+// 한 장 그려서 그림(PNG blob)만 돌려준다. 웹툰 만들기에서도 쓴다.
+async function naiGenBlob(p, sizeKey){
+  const r = await window.nvDesktop.naiGen(naiToken(), naiBody(p, undefined, sizeKey));
   if (!r?.ok) throw new Error(r?.status === 401 ? '토큰이 맞지 않아요 (노벨AI 토큰을 다시 넣어 주세요)' : r?.status === 402 ? '남은 생성 수가 없어요' : r?.status === 429 ? '너무 자주 보냈어요. 잠시 뒤 다시 해 주세요' : (r?.text || '실패'));
-  let blob;
-  if (r.images?.length) blob = new Blob([Uint8Array.from(atob(r.images[0]), c => c.charCodeAt(0))], {type: 'image/png'});
-  else { const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); blob = new Blob([await f.async('arraybuffer')], {type: 'image/png'}); }
+  if (r.images?.length) return new Blob([Uint8Array.from(atob(r.images[0]), c => c.charCodeAt(0))], {type: 'image/png'});
+  const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'});
+}
+async function naiOne(p, desc){
+  const blob = await naiGenBlob(p);
   const im = await loadImgEl(blob);
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);
   const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);

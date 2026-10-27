@@ -38,6 +38,7 @@
       <input type="file" id="pickFolder" webkitdirectory multiple hidden>
       <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
       <button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg>집필실 · 내 작품 쓰기</button>
+      <button id="btnWebtoon" class="studio-btn"><svg class="i"><use href="#i-cards"/></svg>웹툰 만들기</button>
       <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
       <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
@@ -404,6 +405,7 @@
   <button id="selNote">메모</button><button id="selAsk">묻기</button><button id="selCopy">복사</button>
 </div>
 {{STUDIO}}
+{{WEBTOON}}
 <div class="toast" id="toast"></div>
 <button class="primary share-ready" id="shareReady" hidden><svg class="i"><use href="#i-right"/></svg><span></span></button>
 

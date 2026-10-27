@@ -1,0 +1,42 @@
+/* ---------- 웹툰 만들기 ---------- */
+#wt{position:fixed;inset:0;z-index:36;background:color-mix(in srgb,var(--panel-2) 70%,var(--bg));display:flex;flex-direction:column;font-family:var(--ui)}
+#wt[hidden]{display:none}
+.wt-top{display:flex;align-items:center;gap:8px;padding:calc(8px + var(--sat)) 12px 8px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+#wtName{width:min(260px,40vw);font-weight:600}
+.wt-main{flex:1;min-height:0;display:grid;grid-template-columns:132px minmax(0,1fr) 330px}
+.wt-pages{overflow-y:auto;padding:10px 8px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px;align-items:center}
+.wt-pages .pg{position:relative;width:104px;border:2px solid var(--line);border-radius:6px;background:#fff;cursor:pointer;flex:none;overflow:hidden}
+.wt-pages .pg.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent)}
+.wt-pages .pg canvas{display:block;width:100%;height:auto}
+.wt-pages .pg b{position:absolute;left:4px;top:3px;font-size:10px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:0 6px}
+.wt-pages .pgbtns{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.wt-pages .pgbtns button{font-size:11px;padding:3px 7px;min-height:0}
+.wt-stage{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0}
+.wt-bar{display:flex;align-items:center;gap:8px;padding:6px 10px}
+.wt-scroll{flex:1;min-height:0;overflow:auto;display:flex;padding:10px;background:var(--panel-2)}
+.wt-scroll canvas{margin:auto;flex:none;box-shadow:var(--shadow);background:#fff;touch-action:none;cursor:default}
+.wt-side{overflow-y:auto;padding:10px 12px;background:var(--panel);border-left:1px solid var(--line)}
+.wt-sec{padding:6px 0 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.wt-sec h4{margin:0 0 8px;font-size:12px;color:var(--faint);letter-spacing:.04em}
+.wt-layouts{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px}
+.wt-layouts button{padding:3px;min-height:0;height:46px;display:flex;align-items:center;justify-content:center}
+.wt-layouts button.on{border-color:var(--accent);background:var(--panel-2)}
+.wt-layouts svg{width:100%;height:100%}
+.wt-add{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.wt-add button{justify-content:center;font-size:12.5px}
+.wt-sw{display:flex;gap:6px;flex-wrap:wrap}
+.wt-sw button{width:26px;height:26px;border-radius:50%;padding:0;min-height:0;border:2px solid var(--line)}
+.wt-sw button.on{outline:2px solid var(--accent);outline-offset:2px}
+.wt-foot{margin-top:6px}
+.wt-home,.wt-modal{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px}
+.wt-home[hidden],.wt-modal[hidden]{display:none}
+.wt-homebox,.wt-modalbox{width:min(560px,100%);max-height:90%;overflow:auto;background:var(--panel);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-l,0 20px 60px rgba(0,0,0,.3));display:flex;flex-direction:column;gap:10px}
+#wtList .it{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius-s);margin-top:6px;cursor:pointer}
+#wtList .it b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#wtList .it span{font-size:11px;color:var(--faint)}
+body:not(.is-desktop) .nai-only{display:none!important}
+@media (max-width:1100px){
+  .wt-main{grid-template-columns:96px minmax(0,1fr);grid-template-rows:minmax(0,1fr) 40vh}
+  .wt-side{grid-column:1 / -1;border-left:0;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  .wt-pages .pg{width:76px}
+}

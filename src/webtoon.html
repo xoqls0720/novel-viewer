@@ -1,0 +1,79 @@
+<section id="wt" hidden>
+  <header class="wt-top">
+    <button class="icon" id="wtClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button>
+    <button id="wtMy" title="내 웹툰 목록">내 웹툰</button>
+    <input type="text" id="wtName" placeholder="웹툰 이름" autocomplete="off">
+    <span class="grow"></span>
+    <span class="hint" id="wtSaved"></span>
+    <button id="wtUndo" title="되돌리기 (Ctrl+Z)">되돌리기</button><button id="wtRedo" title="다시 (Ctrl+Shift+Z)">다시</button>
+    <button id="wtAuto" class="primary" title="줄거리를 넣으면 쪽·컷·말풍선·효과음을 자동으로 깔아 줘요">줄거리로 자동 만들기</button>
+    <select id="wtExport"><option value="">내보내기…</option><option value="zip">쪽마다 PNG (zip)</option><option value="strip">세로로 긴 한 장 (PNG)</option><option value="pdf">PDF</option><option value="this">이 쪽만 PNG</option></select>
+  </header>
+  <div class="wt-main">
+    <div class="wt-pages" id="wtPages"></div>
+    <div class="wt-stage" id="wtStage">
+      <div class="wt-bar">
+        <button id="wtZoomOut" title="줄이기">−</button><button id="wtFit" title="화면에 맞추기">맞춤</button><button id="wtZoomIn" title="키우기">+</button>
+        <span class="hint" id="wtHint">컷을 누르고 끌면 그림 위치, 휠로 크기. 글·효과는 눌러서 고르기</span>
+      </div>
+      <div class="wt-scroll" id="wtScroll"><canvas id="wtCv"></canvas></div>
+    </div>
+    <div class="wt-side" id="wtSide">
+      <div class="wt-sec">
+        <h4>쪽</h4>
+        <div class="wt-layouts" id="wtLayouts"></div>
+        <div class="row tight"><label>쪽 크기</label><select id="wtSize"><option value="2000">세로 3:4 (1500×2000)</option><option value="2250">세로 2:3 (1500×2250)</option><option value="1500">정사각 (1500×1500)</option><option value="3000">긴 컷 (1500×3000)</option></select></div>
+        <div class="row tight"><label>컷 사이</label><select id="wtGutter"><option value="bleed">꽉 차게 (검은 선)</option><option value="framed">여백 있게</option></select></div>
+        <div class="row tight"><button id="wtAddInset">작은 확대 컷 넣기</button><button id="wtPageText">글 쪽으로</button></div>
+      </div>
+      <div class="wt-sec" id="wtPanelSec" hidden>
+        <h4>선택한 컷</h4>
+        <div class="row tight"><button id="wtImgScrap">장면 노트에서</button><button id="wtImgFile">파일에서</button><button id="wtImgGen" class="nai-only">노벨AI로 만들기</button></div>
+        <input type="file" id="wtImgInput" accept="image/*" hidden>
+        <textarea id="wtPanelTags" placeholder="이 컷 그림 프롬프트(영어 태그). 비워 두면 만들 때 장면 설명으로 채워요" style="min-height:60px"></textarea>
+        <div class="row tight"><input type="text" id="wtPanelChars" placeholder="나오는 인물 (쉼표로: 카엘, 레비안)" class="grow"></div>
+        <div class="row tight"><button id="wtImgReset">그림 위치 처음으로</button><button id="wtImgClear" class="danger">그림 빼기</button><button id="wtPanelDel" class="danger">컷 지우기</button></div>
+      </div>
+      <div class="wt-sec">
+        <h4>글·효과 넣기</h4>
+        <div class="wt-add" id="wtAdd">
+          <button data-add="speech">말풍선</button><button data-add="thought">속마음(구름)</button><button data-add="shout">외침</button><button data-add="whisper">속삭임</button>
+          <button data-add="narr">설명 상자</button><button data-add="text">외곽선 글자</button><button data-add="sfx">효과음</button>
+          <button data-add="sweat">땀방울</button><button data-add="burst">충격 별</button><button data-add="heart">하트</button><button data-add="speed">집중선</button>
+        </div>
+      </div>
+      <div class="wt-sec" id="wtItemSec" hidden>
+        <h4>선택한 글·효과</h4>
+        <textarea id="wtText" placeholder="글" style="min-height:64px"></textarea>
+        <div class="row tight"><label>크기</label><input type="range" id="wtSizeR" min="14" max="260" class="grow"><output id="wtSizeO"></output></div>
+        <div class="row tight" id="wtRotRow"><label>기울기</label><input type="range" id="wtRot" min="-60" max="60" class="grow"><output id="wtRotO"></output></div>
+        <div class="row tight" id="wtShapeRow"><label>모양</label><select id="wtShape"><option value="speech">말풍선</option><option value="thought">속마음(구름)</option><option value="shout">외침</option><option value="whisper">속삭임</option></select><label class="hint"><input type="checkbox" id="wtTail"> 꼬리</label></div>
+        <div class="row tight" id="wtColorRow"><label>색</label><div class="wt-sw" id="wtSw"></div></div>
+        <div class="row tight" id="wtVertRow"><label class="hint"><input type="checkbox" id="wtVert"> 세로로 쌓기</label><select id="wtFont"><option value="Black Han Sans">굵은 고딕</option><option value="Jua">둥근</option><option value="Do Hyeon">도현</option><option value="Gugi">구기</option><option value="Nanum Pen Script">손글씨</option></select></div>
+        <div class="row tight"><button id="wtDup">복제</button><button id="wtFront">맨 위로</button><button id="wtDel" class="danger">지우기</button></div>
+      </div>
+      <div class="hint wt-foot">작품·그림은 이 기기에 저장돼요. 성인 장면은 모든 인물이 성인일 때만 만들어요.</div>
+    </div>
+  </div>
+  <div class="wt-home" id="wtHome">
+    <div class="wt-homebox">
+      <div class="shh"><b>웹툰 만들기</b><button class="icon" id="wtHomeX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="hint">쪽 단위로 컷을 깔고, 말풍선·효과음을 얹어 한 화를 만들어요. 줄거리를 넣으면 초안을 자동으로 만들어 줘요.</div>
+      <div class="row"><button class="primary grow" id="wtNew">새 웹툰</button></div>
+      <div id="wtList"></div>
+    </div>
+  </div>
+  <div class="wt-modal" id="wtAutoBox" hidden>
+    <div class="wt-modalbox">
+      <div class="shh"><b>줄거리로 자동 만들기</b><button class="icon" id="wtAutoX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <textarea id="wtStory" placeholder="이번 화의 줄거리를 적어 주세요. (누가, 어디서, 무슨 일이, 어떤 감정으로)&#10;예) 카엘이 눈 내리는 성문 앞에서 돌아온 신부를 맞이한다. 말은 없지만 장갑을 벗고 손을 내민다." style="min-height:130px"></textarea>
+      <div class="row tight"><label>쪽 수</label><input type="number" id="wtPagesN" value="4" min="1" max="12" style="width:64px">
+        <label>컷 느낌</label><select id="wtTone"><option value="calm">잔잔하게</option><option value="tense">긴장감 있게</option><option value="comic">코믹하게</option></select>
+        <label>AI</label><select id="wtAI"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div>
+      <div class="hint">인물은 노벨AI 탭의 <b>인물 사전</b>에 있는 이름만 써요. 하우스 스타일과 등급(일반/성인)도 그 탭 설정을 따라가요.</div>
+      <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
+      <div class="hint" id="wtAutoStat"></div>
+      <div class="row nai-only"><button id="wtGenAll" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
+    </div>
+  </div>
+</section>
