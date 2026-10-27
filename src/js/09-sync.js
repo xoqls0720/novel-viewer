@@ -3,7 +3,7 @@
 // API 키는 켜 두었을 때만(keys.json) 맞추고, 백업 파일에는 넣지 않는다. Ollama 주소·고른 AI는 기기마다 따로다.
 const GD = {token: null, exp: 0, client: null, busy: false, timer: null};
 const GD_API = 'https://www.googleapis.com/drive/v3', GD_UP = 'https://www.googleapis.com/upload/drive/v3';
-function gdStatus(t){ $('#gdStatus').textContent = t; }
+function gdStatus(t){ if (SYNC_OD()){ odStatus(t); return; } $('#gdStatus').textContent = t; }   // OneDrive로 맞출 때는 그쪽 칸에 쓴다
 const DESKTOP = !!window.nvDesktop;   // 윈도우 프로그램(Electron)으로 열었을 때
 function gdReady(){ return (location.protocol === 'https:' || (DESKTOP && store.get('gd.secret', ''))) && store.get('gd.client', ''); }
 async function gdLoadGIS(){
@@ -45,6 +45,7 @@ async function gdFetch(url, opt = {}, interactive = false){
   return r;
 }
 async function gdList(){
+  if (SYNC_OD()) return odList();   // 23-onedrive.js: 같은 모양의 파일 목록
   const out = []; let page = '';
   do { const r = await (await gdFetch(`${GD_API}/files?spaces=appDataFolder&pageSize=1000&orderBy=modifiedTime desc&fields=nextPageToken,files(id,name,modifiedTime)${page ? '&pageToken=' + page : ''}`)).json(); out.push(...r.files); page = r.nextPageToken; } while (page);
   const map = new Map();
@@ -52,6 +53,7 @@ async function gdList(){
   return map;
 }
 async function gdPut(files, name, blob){
+  if (SYNC_OD()) return odPut(files, name, blob);
   const f = files.get(name);
   if (f){ await gdFetch(`${GD_UP}/files/${f.id}?uploadType=media`, {method:'PATCH', body: blob}); return; }
   const fd = new FormData();
@@ -59,9 +61,9 @@ async function gdPut(files, name, blob){
   fd.append('file', blob);
   const r = await (await gdFetch(`${GD_UP}/files?uploadType=multipart&fields=id,name,modifiedTime`, {method:'POST', body: fd})).json(); files.set(name, r);
 }
-async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
-async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|naiKey|olOk|__ts|__kts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+async function gdGet(files, name, as = 'json'){ if (SYNC_OD()) return odGet(files, name, as); const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
+async function gdDel(files, name){ if (SYNC_OD()) return odDel(files, name); const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|naiKey|olOk|__ts|__kts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach|asSpeed|phoneView)|gd\.|od\.|sync\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -112,10 +114,12 @@ async function gdSyncKeys(files){
 }
 const mergeById = (a, b, tomb) => { const m = new Map(); for (const x of [...(a||[]), ...(b||[])]) { const o = m.get(x.id); if (!o || (x.t||0) > (o.t||0)) m.set(x.id, x); } return [...m.values()].filter(x => !tomb.has(x.id)); };
 async function gdSync(interactive = false){
-  if (GD.busy) return; if (!gdReady()){ if (interactive) toast(location.protocol !== 'https:' ? '구글 드라이브 동기화는 https 주소(앱으로 설치한 뷰어)에서만 돼요' : '먼저 클라이언트 ID를 넣고 연결해 주세요'); return; }
+  if (GD.busy) return;
+  const od = SYNC_OD();
+  if (od ? !odReady() : !gdReady()){ if (interactive) toast(od ? 'OneDrive 연결 설정(클라이언트 ID)을 먼저 마쳐 주세요' : location.protocol !== 'https:' ? '구글 드라이브 동기화는 https 주소(앱으로 설치한 뷰어)에서만 돼요' : '먼저 클라이언트 ID를 넣고 연결해 주세요'); return; }
   GD.busy = true; gdStatus('동기화 중…');
   try{
-    if (interactive) await gdToken(true);
+    if (od) await odToken(interactive); else if (interactive) await gdToken(true);
     const files = await gdList();
     const remote = (await gdGet(files, 'state.json')) || {ls:{}, ts:{}, scraps:[]};
     const local = localState();
@@ -183,14 +187,17 @@ async function gdSync(interactive = false){
     localStorage.setItem('nv.gd.last', JSON.stringify(Date.now()));
     gdStatus(`마지막 동기화 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · 원고 올림 ${tx.up} · 받음 ${tx.down}${tx.conflict ? ` · 겹침 ${tx.conflict}` : ''}${kd ? ` · API 키 받음 ${kd}` : ''} · 장면 올림 ${up} · 받음 ${down}`);
     applySettingsFromStore(); renderLib(); renderNotes(); renderScraps(); renderNaiHist();
-    window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js)
+    if (!od) window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js). OneDrive는 작품 폴더를 바로 연결하니 올리지 않는다
+    if (od) odUI();
   }catch(e){
     const needLogin = e.message === 'auth' || /popup|access_denied|interaction|timeout/.test(e.message);
-    gdStatus(e.message === 'setup' ? '설정이 필요해요' : needLogin ? '구글 로그인이 필요해요. 설정 탭에서 "연결"을 눌러 주세요' : '동기화하지 못했어요 (' + e.message + ')');
-    if (needLogin && interactive === false && !GD.warned){ GD.warned = true; toast('구글 드라이브 동기화가 멈췄어요. 설정 → 연결을 눌러 주세요'); }
+    const who = od ? 'Microsoft' : '구글';
+    gdStatus(e.message === 'setup' ? '설정이 필요해요' : needLogin ? `${who} 로그인이 필요해요. 설정 탭에서 "연결"을 눌러 주세요` : '동기화하지 못했어요 (' + e.message + ')');
+    if (needLogin && interactive === false && !GD.warned){ GD.warned = true; toast(`${od ? 'OneDrive' : '구글 드라이브'} 동기화가 멈췄어요. 설정 → 연결을 눌러 주세요`); }
   }finally{ GD.busy = false; }
 }
-window.gdSoon = () => { if (!gdReady() || !$('#gdAuto').checked) return; clearTimeout(GD.timer); GD.timer = setTimeout(() => gdSync(false), 45000); };
+function syncOn(){ return SYNC_OD() ? odReady() && odLinked() : gdReady() && $('#gdAuto').checked; }
+window.gdSoon = () => { if (!syncOn()) return; clearTimeout(GD.timer); GD.timer = setTimeout(() => gdSync(false), 45000); };
 function applySettingsFromStore(){
   for (const id of SETTINGS){ const el = $('#'+id); const v = store.get('set.'+id, null); if (v === null) continue; if (el.type === 'checkbox') el.checked = v; else el.value = v; }
   for (const id of ['naiChars','naiStyle','naiNeg']){ const v = store.get('set.'+id, null); if (v !== null && document.activeElement !== $('#'+id)) $('#'+id).value = v; }
@@ -208,8 +215,9 @@ $('#gdNow').onclick = () => gdSync(true);
 $('#gdAuto').onchange = () => store.set('gd.auto', $('#gdAuto').checked);
 $('#gdKeys').checked = store.get('gd.syncKeys', true);
 $('#gdKeys').onchange = () => { store.set('gd.syncKeys', $('#gdKeys').checked); toast($('#gdKeys').checked ? 'API 키도 기기끼리 맞춰요' : 'API 키는 이 기기에만 둬요'); };
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && gdReady() && $('#gdAuto').checked && GD.token) gdSync(false); });
-if (gdReady()){ if (!DESKTOP) gdLoadGIS().catch(()=>{}); if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && syncOn() && (SYNC_OD() ? OD.token : GD.token)) gdSync(false); });
+if (!SYNC_OD() && gdReady()){ if (!DESKTOP) gdLoadGIS().catch(()=>{}); if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
+else if (SYNC_OD()) setTimeout(() => { if (syncOn() || (!DESKTOP && store.get('od.everLinked', false))) gdSync(false); }, 3000);
 { const last = store.get('gd.last', 0); if (last) gdStatus('마지막 동기화 ' + new Date(last).toLocaleString('ko-KR')); else if (location.protocol !== 'https:' && !DESKTOP) gdStatus('https 주소(앱으로 설치한 뷰어)에서 켤 수 있어요'); }
 
 if (store.get('apiKey','')) setTimeout(() => loadSDK().catch(()=>{}), 1200);

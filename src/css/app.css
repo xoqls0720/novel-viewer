@@ -76,6 +76,8 @@ aside,.tool{background:var(--panel);overflow:auto;min-width:0;-webkit-overflow-s
 aside{border-right:1px solid var(--line)}
 .tool{border-left:1px solid var(--line)}
 .hide-side aside,.hide-tool .tool{display:none}
+/* 서재·도구를 숨겨도 읽기 화면이 가운데 칸에 남게 자리를 못 박는다 (안 그러면 0폭 첫 칸으로 밀려 화면이 사라진다) */
+@media (min-width:1101px){ .app>aside{grid-area:1/1} .app>main{grid-area:1/2} .app>.tool{grid-area:1/3} }
 
 /* ---------- 서재 ---------- */
 .side-head{padding:calc(16px + var(--sat)) 16px 12px;display:flex;flex-direction:column;gap:9px;position:sticky;top:0;background:var(--panel);z-index:2;border-bottom:1px solid var(--hairline)}
@@ -252,7 +254,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .tapzone.l{left:0} .tapzone.r{right:0}
 .mobile-only{display:none}
 @media (max-width:1100px){
-  .app,.app.hide-tool,.app.hide-side{grid-template-columns:1fr}
+  .app,.app.hide-tool,.app.hide-side,.app.hide-side.hide-tool{grid-template-columns:1fr}
   aside,.tool{position:fixed;inset:0;width:100%;z-index:12}
   @media (min-width:701px){ aside{right:auto;width:340px;box-shadow:var(--shadow)} .tool{left:auto;width:420px;box-shadow:var(--shadow)} #epDrawer,#quick{left:auto;right:16px;width:420px!important;max-width:calc(100% - 32px)} }
   .app:not(.show-side) aside{display:none}
@@ -454,3 +456,96 @@ details.fold summary .chev{margin-left:auto}
 .sk-ctx>*{flex:none}
 
 #pane-nai.ngbusy #ngList,#pane-nai.ngbusy #ngModel{opacity:.6;pointer-events:none}
+
+/* ---------- 자동 스크롤 · 폰 화면 보기 ---------- */
+.aschip{position:absolute;left:50%;bottom:calc(130px + var(--sab));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:4px;padding:5px 6px 5px 14px;border-radius:99px;background:color-mix(in srgb, var(--panel) 92%, transparent);border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums;transition:opacity .3s}
+.aschip[hidden]{display:none}
+.aschip button{border:0;box-shadow:none;background:transparent;padding:4px 10px;border-radius:99px;font-size:13px;min-height:0}
+.aschip button:hover{background:var(--panel-2)}
+.aschip #asStop{color:var(--accent);font-weight:700}
+.immersive .aschip{opacity:.35}
+.immersive .aschip:hover{opacity:1}
+.reader.phone:not(.paged) .novel{--ph:620px;max-width:375px;margin:calc(66px + var(--sat)) auto 0;padding:28px 20px 24px;border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);background-image:repeating-linear-gradient(to bottom, transparent 0 calc(var(--ph) - 1px), color-mix(in srgb, var(--accent) 28%, transparent) calc(var(--ph) - 1px) var(--ph));background-origin:border-box}
+.reader.phone:not(.paged) .epend{max-width:375px}
+/* 태블릿 세로(아이패드): 보기 설정은 오른쪽, 회차 목록은 왼쪽 위 단추 아래에 띄운다 */
+@media (min-width:701px) and (max-width:1100px){
+  #quick{left:auto;right:16px;top:calc(58px + var(--sat));bottom:auto;max-height:calc(100% - 140px)}
+  #epDrawer{left:16px;right:auto;top:calc(58px + var(--sat));bottom:auto;width:420px!important}
+}
+
+/* ================= 다듬기: 책답게, 작가 작업실답게 ================= */
+/* 서재 머리: 집필실·웹툰은 나란히 놓은 두 장의 카드 */
+.studio-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.studio-row .studio-btn{margin:0;padding:10px 12px;align-items:center}
+.studio-btn span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;min-width:0}
+.studio-btn b{font-family:var(--display);font-size:14.5px;font-weight:700;letter-spacing:-0.01em}
+.studio-btn small{font-size:11px;color:var(--sub);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.studio-btn svg{width:22px;height:22px;padding:4px;border-radius:8px;background:color-mix(in srgb, var(--brass) 14%, transparent);box-sizing:content-box}
+
+/* 표지 없는 작품: 천으로 싼 양장본 — 등(왼쪽) 그림자, 금박 테두리, 가운데 제목 */
+.card .cv .ph{background:
+    linear-gradient(90deg, rgb(0 0 0 / 22%) 0, rgb(0 0 0 / 6%) 5%, rgb(255 255 255 / 10%) 7%, transparent 11%),
+    radial-gradient(120% 90% at 30% 10%, hsl(var(--h) 34% 46%), hsl(var(--h) 38% 28%));
+  color:hsl(var(--h) 45% 92%);border:0;padding:14px 12px 14px 18px;font-family:var(--display);font-size:14.5px;line-height:1.45;letter-spacing:-0.01em;text-shadow:0 1px 1px rgb(0 0 0 / 30%);
+  word-break:keep-all}
+.card .cv .ph::before{content:"";position:absolute;inset:8px 7px 8px 13px;border:1px solid hsl(var(--h) 55% 78% / 45%);border-radius:2px;box-shadow:inset 0 0 0 3px transparent, inset 0 0 0 4px hsl(var(--h) 55% 78% / 18%);pointer-events:none}
+.card .cv .ph::after{content:"";position:absolute;left:50%;bottom:18px;width:18px;height:1px;background:hsl(var(--h) 55% 80% / 60%);transform:translateX(-30%)}
+:root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{background:
+    linear-gradient(90deg, rgb(0 0 0 / 35%) 0, rgb(0 0 0 / 10%) 5%, rgb(255 255 255 / 6%) 7%, transparent 11%),
+    radial-gradient(120% 90% at 30% 10%, hsl(var(--h) 28% 34%), hsl(var(--h) 32% 18%));color:hsl(var(--h) 40% 86%)}
+.card .cv{border-radius:3px 7px 7px 3px}
+.card .cv::after{border-radius:3px 7px 7px 3px}
+.card .cv .kind{left:auto;right:6px;top:6px;font-size:9.5px;letter-spacing:.08em;padding:2px 7px;background:rgb(0 0 0 / 38%)}
+.card .cv .pb{height:2px}
+.card .t{font-size:13px;margin-top:9px}
+
+/* 회차 머리: 작품 이름(작게) · 회차 제목 · 금빛 짧은 줄과 마름모 */
+.novel .chead{margin:10px 0 2.8em}
+.novel .chead .cw{font-size:11px;letter-spacing:.22em;font-weight:600}
+.novel .chead h2{font-size:1.42em;margin-top:.6em;font-weight:700}
+.novel .chead .orn{font-size:0;letter-spacing:0;height:9px;margin:1.3em auto 0;width:84px;position:relative;color:var(--brass)}
+.novel .chead .orn::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--brass) 70%, transparent), transparent)}
+.novel .chead .orn::after{content:"";position:absolute;left:50%;top:1px;width:6px;height:6px;margin-left:-3px;background:var(--reader-bg);border:1px solid color-mix(in srgb, var(--brass) 80%, transparent);transform:rotate(45deg)}
+.epend .orn{font-size:0;height:9px;width:84px;position:relative}
+.epend .orn::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--brass) 70%, transparent), transparent)}
+.epend .orn::after{content:"";position:absolute;left:50%;top:1px;width:6px;height:6px;margin-left:-3px;background:var(--reader-bg);border:1px solid color-mix(in srgb, var(--brass) 80%, transparent);transform:rotate(45deg)}
+.nextcard{border-radius:16px;padding:16px 18px}
+.nextcard .n{font-family:var(--display);font-size:16px}
+
+/* 첫 화면: 책 머리처럼 */
+.welcome h2{font-size:38px;letter-spacing:-0.03em;margin-bottom:6px}
+.welcome .logo{border-radius:16px;background:linear-gradient(150deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent));box-shadow:var(--shadow), inset 0 1px 0 rgb(255 255 255 / 18%)}
+.welcome .tile{border-radius:16px;padding:16px 16px 15px;transition:transform .2s, box-shadow .2s}
+.welcome .tile:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.welcome .tile b{font-family:var(--display);font-size:15px}
+.w-resume{margin:18px auto 22px;max-width:440px;display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow);text-align:left;cursor:pointer;transition:transform .2s, border-color .2s}
+.w-resume:hover{transform:translateY(-2px);border-color:color-mix(in srgb, var(--brass) 45%, var(--line))}
+.w-resume[hidden]{display:none}
+.w-resume .cv{flex:0 0 48px;height:66px;border-radius:2px 5px 5px 2px;overflow:hidden;position:relative;box-shadow:var(--shadow-s)}
+.w-resume .cv img{width:100%;height:100%;object-fit:cover;display:block}
+.w-resume .cv .ph{position:absolute;inset:0;background:linear-gradient(90deg, rgb(0 0 0 / 22%) 0, transparent 12%), radial-gradient(120% 90% at 30% 10%, hsl(var(--h) 34% 46%), hsl(var(--h) 38% 28%))}
+.w-resume .tx{flex:1;min-width:0}
+.w-resume .k{font-size:11px;color:var(--brass);font-weight:700;letter-spacing:.08em}
+.w-resume .n{font-family:var(--display);font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.w-resume .e{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w-resume .bar2{height:3px;border-radius:2px;background:var(--line);margin-top:8px;overflow:hidden}
+.w-resume .bar2 i{display:block;height:100%;background:var(--brass)}
+.w-resume>svg{color:var(--faint)}
+
+/* 막대·서랍: 유리 느낌을 조금 더, 선은 더 가늘게 */
+.bar,.botbar{border-color:var(--hairline)}
+.sheet{border-color:var(--hairline);box-shadow:var(--shadow-l)}
+.eplist .it{border-radius:12px}
+.eplist .it.cur{font-weight:700}
+.lib h4{font-family:var(--display);letter-spacing:.02em;font-size:12.5px;color:var(--sub)}
+/* 기기끼리 맞추기 */
+.od-box{border:1px solid color-mix(in srgb, var(--accent) 22%, var(--line));border-radius:14px;padding:12px 14px;background:linear-gradient(160deg, var(--accent-soft), transparent 70%)}
+.od-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.od-head b{font-size:14px}
+.od-tag{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:2px 8px}
+.od-setup{margin-top:10px}
+.od-setup summary,.gd-box summary{cursor:pointer;font-size:12.5px;color:var(--sub);padding:4px 0}
+.od-setup ol{padding-left:18px;margin:6px 0 8px}
+.od-setup li{margin:3px 0}
+.od-setup code{font-size:11.5px;background:var(--panel-2);padding:1px 5px;border-radius:5px;word-break:break-all}
+.gd-box{margin-top:12px}

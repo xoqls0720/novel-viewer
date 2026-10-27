@@ -61,12 +61,12 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   console.log('scraps after import:', await p.$$eval('#scrapList .card', e => e.length));
   // 다른 앱 파일: 굿노트 PDF(위에서 만든 것), RLE 압축 PSD, .procreate 미리보기
   const fx = path.join(__dirname, 'out', 'fx'); fs.mkdirSync(fx, {recursive: true});
-  require('child_process').execFileSync('python3', ['-I', '-c', `
+  require('child_process').execFileSync(process.platform === 'win32' ? 'python' : 'python3', ['-I', '-c', `
 from PIL import Image
 from psd_tools import PSDImage
 import zipfile, io
-im = Image.new('RGB', (120, 80), (200, 30, 30)); im.paste((30, 30, 200), (60, 0, 120, 80)); PSDImage.frompil(im).save('${fx}/rle.psd')
-b = io.BytesIO(); im.save(b, 'PNG'); z = zipfile.ZipFile('${fx}/art.procreate', 'w'); z.writestr('QuickLook/Thumbnail.png', b.getvalue()); z.writestr('Document.archive', b'x'); z.close()
+im = Image.new('RGB', (120, 80), (200, 30, 30)); im.paste((30, 30, 200), (60, 0, 120, 80)); PSDImage.frompil(im).save('${fx.split(path.sep).join('/')}/rle.psd')
+b = io.BytesIO(); im.save(b, 'PNG'); z = zipfile.ZipFile('${fx.split(path.sep).join('/')}/art.procreate', 'w'); z.writestr('QuickLook/Thumbnail.png', b.getvalue()); z.writestr('Document.archive', b'x'); z.close()
 `]);
   const before = (await p.$$('#scrapList .card')).length;
   await p.setInputFiles('#noteImportFile', [path.join(__dirname, 'out', 'sk.pdf'), path.join(fx, 'rle.psd'), path.join(fx, 'art.procreate')]); await p.waitForTimeout(4000);

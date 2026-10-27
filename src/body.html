@@ -37,8 +37,8 @@
       </div>
       <input type="file" id="pickFolder" webkitdirectory multiple hidden>
       <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
-      <button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg>집필실 · 내 작품 쓰기</button>
-      <button id="btnWebtoon" class="studio-btn"><svg class="i"><use href="#i-cards"/></svg>웹툰 만들기</button>
+      <div class="studio-row"><button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg><span><b>집필실</b><small>내 작품 쓰기</small></span></button>
+      <button id="btnWebtoon" class="studio-btn"><svg class="i"><use href="#i-cards"/></svg><span><b>웹툰</b><small>콘티·컷 만들기</small></span></button></div>
       <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
       <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
@@ -50,6 +50,7 @@
     <div class="reader" id="reader"><div class="welcome"><div class="box">
       <div class="logo"><svg class="i"><use href="#i-book"/></svg></div>
       <h2>Novelist</h2>
+      <div class="w-resume" id="wResume" hidden></div>
       <p>소설·웹툰·만화를 한곳에서 읽고,<br>좋은 장면은 표시하고, 바로 분석하고, 내 글로 옮겨요.</p>
       <div class="row" style="justify-content:center"><button class="primary" id="wFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button><button id="wFiles"><svg class="i"><use href="#i-file"/></svg>파일·zip 열기</button><button id="wStudio"><svg class="i"><use href="#i-pen"/></svg>집필실</button></div>
       <div class="tiles">
@@ -57,11 +58,12 @@
         <div class="tile"><svg class="i"><use href="#i-pen"/></svg><b>표시하기</b><span>문장 형광펜, 장면을 담아 그 위에 필기</span></div>
         <div class="tile"><svg class="i"><use href="#i-chart"/></svg><b>분석·쓰기</b><span>회차 수치, Claude 분석, 글쓰기, 노벨AI 프롬프트</span></div>
       </div>
-      <div class="keys desk-only"><kbd>[</kbd> <kbd>]</kbd> 이전·다음 화 · <kbd>←</kbd> <kbd>→</kbd> 쪽 넘기기 · <kbd>Space</kbd> 자동 스크롤 · <kbd>T</kbd> 읽어 주기 · <kbd>A</kbd> 도구 · <kbd>/</kbd> 검색 · <kbd>F</kbd> 막대 숨기기</div>
+      <div class="keys desk-only"><kbd>[</kbd> <kbd>]</kbd> 이전·다음 화 · <kbd>←</kbd> <kbd>→</kbd> 쪽 넘기기 · <kbd>Space</kbd> 자동 스크롤(<kbd>↑</kbd><kbd>↓</kbd> 속도) · <kbd>+</kbd> <kbd>−</kbd> 글자 크기 · <kbd>P</kbd> 폰 화면 · <kbd>T</kbd> 읽어 주기 · <kbd>A</kbd> 도구 · <kbd>/</kbd> 검색 · <kbd>F</kbd> 막대 숨기기</div>
       <div class="keys mobile-only" style="display:block">화면 가운데를 누르면 막대가 숨고 다시 나와요. 문장을 길게 누르면 형광펜이 떠요.</div>
     </div></div></div>
     <div id="dim"></div><div id="warm"></div>
     <div class="mini" id="mini"></div>
+    <div class="aschip" id="asChip" hidden><span id="asTxt"></span><button id="asSlow" title="느리게 (↓)">−</button><button id="asFast" title="빠르게 (↑)">+</button><button id="asStop" title="멈추기 (Space)">멈춤</button></div>
     <div class="coach" id="coach" hidden></div>
     <div id="wmap" title="문단 지도: 진한 색=대사, 주황=긴 문단. 누르면 그 자리로"><canvas></canvas><i></i></div>
 
@@ -92,7 +94,8 @@
     <div class="sheet" id="linkSheet">
       <div class="shh"><b>작품 폴더 연결</b><button class="icon" id="linkClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
       <div class="hint">한 번 연결하면 켤 때마다 저절로 불러와요. 파일은 원래 자리에 두고, 열 때 그 화만 읽어요. 드라이브에서 받은 화는 기기에 남겨서 다음엔 인터넷 없이도 열려요.</div>
-      <div class="row"><button class="primary grow" id="srcDisk" hidden>내 컴퓨터 폴더 연결</button><button class="grow" id="srcDrive">구글 드라이브 폴더 연결</button></div>
+      <div class="row"><button class="primary grow" id="srcDisk" hidden>내 컴퓨터 폴더 연결</button><button class="grow" id="srcOd">OneDrive 폴더 연결</button><button class="grow" id="srcDrive">구글 드라이브 폴더</button></div>
+      <div class="hint">'노벨'·'만화'·'웹툰'이 들어 있는 폴더(예: 문서/novel)를 고르면 종류별로 알아서 나눠 연결해요.</div>
       <div id="drvBrowse" hidden>
         <div class="row tight"><button id="drvUp">↑ 위로</button><span id="drvPath" class="hint grow"></span></div>
         <div class="drv" id="drvList"></div>
@@ -131,9 +134,11 @@
         <div class="qrow"><label>문단 간격</label><div class="ctl"><input type="range" id="pgap" min="0" max="2" step="0.1" value="0.9"><output id="pgapOut"></output></div></div>
         <div class="qrow"><label>양옆 여백</label><div class="ctl"><input type="range" id="margin" min="8" max="72" step="2" value="24"><output id="marginOut"></output></div></div>
         <div class="qrow desk-only"><label>글 폭</label><div class="ctl"><input type="range" id="col" min="420" max="1100" step="20" value="620"><output id="colOut"></output></div></div>
-        <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option></select></div>
+        <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option><option value='"NvMine","Noto Serif KR",serif' id="rfontMine" hidden>내 글꼴</option></select></div>
+        <div class="qrow"><label>내 글꼴</label><div class="row tight"><button id="fontAdd" title="TTF·OTF·WOFF 글꼴 파일을 넣어 읽기 글꼴로 써요">글꼴 파일 넣기</button><button id="fontDel" hidden>빼기</button></div><input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/*" hidden></div>
         <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
         <div class="qrow"><label><input type="checkbox" id="writerView"> 작가 보기 (문단 글자 수·대사·갈고리·절단·1,000자 눈금, W)</label></div>
+        <div class="qrow"><label><input type="checkbox" id="phoneView"> 폰 화면으로 보기 (독자가 보는 폭과 폰 화면 장수, P)</label></div>
         <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
         <input type="number" id="fs" value="18" hidden>
       </div>
@@ -147,6 +152,8 @@
       </div>
       <div class="q-sec"><div class="lab">자동</div>
         <div class="qrow"><label>회차 끝에서</label><select id="autoNext"><option value="btn">다음 화 카드</option><option value="auto">자동으로 넘김</option></select></div>
+        <div class="qrow"><label>자동 스크롤 속도</label><div class="ctl"><input type="range" id="asSpeed" min="1" max="10" step="1" value="4"><output id="asSpeedOut"></output></div></div>
+        <div class="qrow"><button id="asGo" class="grow">자동 스크롤 시작 (Space)</button></div>
         <div class="qrow"><label>읽어 주기 속도</label><div class="ctl"><input type="range" id="ttsRate" min="0.6" max="2" step="0.1" value="1.1"><output id="ttsRateOut"></output></div></div>
       </div>
     </div>
@@ -335,12 +342,29 @@
       <div class="hint" style="margin-top:10px">키는 이 기기에만 저장되고 동기화·백업 파일에는 들어가지 않아요. 공용 기기에서는 저장하지 마세요.</div>
       <div class="row" style="margin-top:6px"><label>누적 사용</label><span id="spent" class="hint grow"></span><button id="spentReset" class="mini-act">초기화</button></div>
 
-      <h3>구글 드라이브 동기화</h3>
-      <div class="hint" style="margin-bottom:8px">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰 컴퓨터와 아이폰을 같게 해요. 작품 파일과 API 키는 올라가지 않아요.</div>
+      <h3>기기끼리 맞추기</h3>
+      <div class="od-box">
+        <div class="od-head"><b>OneDrive</b><span class="od-tag">추천</span><span class="hint grow" id="odStatus" style="text-align:right"></span></div>
+        <div class="hint">마이크로소프트 계정으로 한 번 로그인하면 진도·형광펜·메모·장면 노트·집필실 원고가 OneDrive의 <b>앱 전용 폴더(앱/Novelist)</b>에 맞춰져요. 작품 폴더도 OneDrive에서 바로 연결해 아이패드에서 열 때 그 화만 받아요.</div>
+        <div class="row" style="margin-top:10px"><button class="primary" id="odConnect">Microsoft 계정으로 연결</button><button id="odNow" hidden>지금 맞추기</button><button id="odOut" hidden>연결 끊기</button><label class="hint"><input type="checkbox" id="odUse"> 이걸로 맞추기</label></div>
+        <details class="od-setup" id="odSetup"><summary>처음 한 번: 앱 등록 (클라이언트 ID)</summary>
+          <ol class="hint">
+            <li><b>portal.azure.com</b> → <b>앱 등록</b> → 새 등록. 이름 Novelist, 지원 계정은 <b>개인 Microsoft 계정만</b>.</li>
+            <li><b>인증</b> → 플랫폼 추가 → <b>단일 페이지 애플리케이션</b>: <code id="odRedirWeb"></code></li>
+            <li>같은 곳에서 <b>모바일 및 데스크톱 애플리케이션</b> 추가: <code>http://localhost</code> (윈도우 프로그램용)</li>
+            <li><b>API 권한</b> → Microsoft Graph 위임: <code>Files.Read</code>, <code>Files.ReadWrite.AppFolder</code>, <code>offline_access</code></li>
+            <li>개요의 <b>애플리케이션(클라이언트) ID</b>를 아래에 넣어요. 비밀번호는 필요 없어요.</li>
+          </ol>
+          <div class="krow"><input type="text" id="odClient" placeholder="애플리케이션(클라이언트) ID  예: 1a2b3c4d-…" autocomplete="off"><button id="odSave">저장</button></div>
+        </details>
+      </div>
+      <details class="gd-box"><summary>구글 드라이브로 맞추기 (예전 방식)</summary>
+      <div class="hint" style="margin:8px 0">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰요. OneDrive를 쓰면 이건 꺼 두세요.</div>
       <div class="krow"><input type="text" id="gdClient" placeholder="OAuth 클라이언트 ID (….apps.googleusercontent.com)" autocomplete="off"><button id="gdSave">저장</button></div>
       <div class="krow desktop-only" hidden style="margin-top:6px"><input type="password" id="gdSecret" placeholder="클라이언트 보안 비밀번호 (GOCSPX-…)" autocomplete="off"></div>
       <div class="row" style="margin-top:8px"><button class="primary" id="gdConnect">연결</button><button id="gdNow">지금 동기화</button><label class="hint"><input type="checkbox" id="gdAuto"> 자동</label><label class="hint" title="Claude·Gemini·Groq 키를 다른 기기에도 넣어 줘요. 구글 드라이브의 이 앱 전용 칸에만 저장돼요"><input type="checkbox" id="gdKeys"> API 키도</label><span class="hint grow" id="gdStatus" style="text-align:right"></span></div>
       <div class="hint">등록할 주소(승인된 JavaScript 원본): <b id="gdOrigin"></b></div>
+      </details>
 
       <h3>이 기기에 저장</h3>
       <div class="row"><label class="hint grow"><input type="checkbox" id="keepLocal"> 가져온 작품을 이 기기에 저장해 다음에도 바로 열기</label></div>

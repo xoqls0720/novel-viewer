@@ -138,7 +138,7 @@ function setFrac(f){
 function updateProgress(){
   if (!cur) return;
   const f = getFrac(), pi = pagedInfo(); if (!scrubbing) $('#scrub').value = Math.round(f * 1000);
-  const where = $('#reader .manga') ? `${mangaPos + mangaShown} / ${curImgs.length}` : pi ? `${pi.k} / ${pi.n}쪽` : `${Math.round(f*100)}%`;
+  const where = $('#reader .manga') ? `${mangaPos + mangaShown} / ${curImgs.length}` : pi ? `${pi.k} / ${pi.n}쪽` : phoneWhere() || `${Math.round(f*100)}%`;
   $('#pageInd').textContent = where;
   if (f > 0.9) markRead(curEp);
   // 몰입 화면 아래 한 줄: 회차 · 위치 · 남은 시간 · 시각

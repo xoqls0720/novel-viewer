@@ -22,6 +22,8 @@ src/js/11-texts.js        집필실 원고 저장소(IndexedDB 'texts')
 src/js/12-studio.js       집필실 본체(작품·회차·원고·카드·개요·설정집·통계·AI 도우미)
 src/js/13-studio-tools.js 되돌리기, 원고 메모, 내보내기, 판 비교, 맞춤법, 참고, 합본 나누기, 자동 백업, 아이폰 키보드
 src/js/14-studio-learn.js 쓰면서 느는 장치(고친 이유·기억할 것·거울·퇴고 패턴·참고 작품·말 설명)
+src/js/22-reader-more.js  자동 스크롤·폰 화면 보기·내 글꼴·방향키·첫 화면 이어 읽기·아이패드 가로 배치
+src/js/23-onedrive.js     OneDrive 로그인(PKCE)·앱 전용 폴더 맞추기·OneDrive 작품 폴더 연결
 ```
 
 JS 파일은 번호 순서대로 이어 붙여 `<script type="module">` 하나가 돼요. 그래서 한 파일의 함수를 다른 파일에서 그냥 부를 수 있어요. 다만 시작할 때 바로 실행되는 코드가 뒤 파일의 `const`/`let` 을 건드리면 오류가 나니, 그런 값은 앞 파일에 두세요.
@@ -51,3 +53,11 @@ npm run dist         # 윈도우 설치 파일 → desktop/dist/ (리눅스에�
 ```
 
 `v1.2.3` 같은 태그를 올리면 `.github/workflows/desktop.yml`이 윈도우에서 설치 파일을 만들어 GitHub 릴리스에 올리고, 설치된 프로그램은 거기서 새 판을 받아요(공개 다운로드가 생기니 올릴지 먼저 정하세요).
+
+## OneDrive
+
+`sync.backend` 가 `od` 이면 09-sync.js 의 `gdList/gdPut/gdGet/gdDel` 이 23-onedrive.js 의 같은 모양 함수로 넘어가요(합치는 규칙은 하나). 맞추기 파일은 OneDrive `앱/Novelist`(approot)에만 쓰고, 작품 폴더는 `Files.Read` 로 읽기만 해요.
+
+처음 한 번 Azure 앱 등록이 필요해요(개인 Microsoft 계정만). 인증 → 단일 페이지 애플리케이션 `https://xoqls0720.github.io/novel-viewer/`, 모바일 및 데스크톱 `http://localhost`, API 권한 `Files.Read`·`Files.ReadWrite.AppFolder`·`offline_access`. 받은 클라이언트 ID(비밀 아님)를 23-onedrive.js 의 `OD_CLIENT_ID` 에 넣으면 기기마다 넣지 않아도 돼요.
+
+웹(아이패드)의 다시 쓰는 토큰은 마이크로소프트 정책상 하루짜리라, 만료되면 켤 때(작품을 열기 전) 한 번 조용히 로그인 페이지를 다녀와요. 윈도우 프로그램은 기본 브라우저 + `http://localhost:53683` 으로 받고 토큰은 윈도우 암호화로 보관해요.

@@ -1,6 +1,6 @@
 // 노벨 뷰어 윈도우 프로그램: 웹 앱을 app:// 주소로 띄우고, 구글 로그인·자동 업데이트를 맡는다
 const { app, BrowserWindow, protocol, net, shell, ipcMain, Menu, safeStorage, dialog } = require('electron');
-const path = require('path'), fs = require('fs'), http = require('http'), crypto = require('crypto');
+const path = require('path'), fs = require('fs'), http = require('http'), crypto = require('crypto'), os = require('os');
 const { pathToFileURL } = require('url');
 
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true } }]);
@@ -92,7 +92,7 @@ ipcMain.handle('lib-pick', async () => {
 });
 // 폴더 아래 파일을 모두 훑는다(숨김 파일은 뺀다). rel 은 '폴더이름/하위/파일'
 ipcMain.handle('lib-scan', async (_e, root) => {
-  root = path.normalize(root); if (!libRoots().includes(root)) throw new Error('연결하지 않은 폴더예요');
+  root = path.normalize(root); if (!libRoots().some(r => root === r || root.startsWith(r + path.sep))) throw new Error('연결하지 않은 폴더예요');   // 연결한 폴더 안의 '노벨'·'만화' 같은 하위 폴더도 된다
   const base = path.basename(root), out = [];
   async function walk(dir, rel){
     let ents = []; try{ ents = await fs.promises.readdir(dir, { withFileTypes: true }); }catch{ return; }
@@ -104,6 +104,46 @@ ipcMain.handle('lib-scan', async (_e, root) => {
     }
   }
   await walk(root, base); return out;
+});
+// 연결한 폴더가 있는지, 바로 아래 폴더 이름들 (종류 폴더를 나눠 연결할 때)
+ipcMain.handle('lib-info', async (_e, root) => {
+  root = path.normalize(root); if (!libRoots().some(r => root === r || root.startsWith(r + path.sep))) return {exists: false, dirs: []};
+  try{ const ents = await fs.promises.readdir(root, { withFileTypes: true }); return {exists: true, dirs: ents.filter(d => d.isDirectory() && !d.name.startsWith('.')).map(d => d.name)}; }
+  catch{ return {exists: false, dirs: []}; }
+});
+// 폴더가 옮겨졌으면(예: 바탕 화면 → OneDrive) 같은 이름의 폴더를 찾아 새로 연결한다. OneDrive·문서·바탕 화면 아래 네 단계까지만 본다.
+ipcMain.handle('lib-find', async (_e, oldPath) => {
+  const old = path.normalize(oldPath || ''); const name = path.basename(old); if (!name) return null;
+  const home = os.homedir();
+  const bases = [...new Set([process.env.OneDrive, process.env.OneDriveConsumer, path.join(home, 'OneDrive'), path.join(home, 'Documents'), path.join(home, 'Desktop')].filter(Boolean).map(p => path.normalize(p)))];
+  const skip = /^(\.|node_modules$|AppData$|\$)/;
+  // 얕은 곳부터 넓게 본다(만화 회차 폴더 깊숙이 들어가지 않게). 폴더 3,000개까지만 연다.
+  async function look(base){
+    let level = [base], seen = 0;
+    for (let depth = 0; depth <= 4 && level.length; depth++){
+      const next = [];
+      for (const dir of level){
+        if (++seen > 3000) return null;
+        let ents = []; try{ ents = await fs.promises.readdir(dir, { withFileTypes: true }); }catch{ continue; }
+        const hit = ents.find(d => d.isDirectory() && d.name === name); if (hit) return path.join(dir, hit.name);
+        for (const d of ents) if (d.isDirectory() && !skip.test(d.name)) next.push(path.join(dir, d.name));
+      }
+      level = next;
+    }
+    return null;
+  }
+  for (const b of bases){
+    const found = await look(b);
+    if (found && found !== old){ const roots = libRoots().filter(r => r !== old); if (!roots.includes(found)) roots.push(found); fs.writeFileSync(ROOTS(), JSON.stringify(roots)); return found; }
+  }
+  return null;
+});
+// 옮겨진 폴더를 사람이 직접 다시 고른다 (진도·메모는 폴더 이름으로 이어져서 그대로 남는다)
+ipcMain.handle('lib-repick', async (_e, oldPath) => {
+  const r = await dialog.showOpenDialog(win, { title: '옮긴 작품 폴더 다시 고르기', properties: ['openDirectory'] });
+  if (r.canceled || !r.filePaths[0]) return null;
+  const p = path.normalize(r.filePaths[0]); const roots = libRoots().filter(x => x !== path.normalize(oldPath || '')); if (!roots.includes(p)) roots.push(p); fs.writeFileSync(ROOTS(), JSON.stringify(roots));
+  return p;
 });
 /* ---------- 노벨AI 그림 만들기 ----------
    브라우저에서는 막혀 있어서(CORS) 프로그램이 대신 보낸다.
@@ -229,6 +269,44 @@ ipcMain.handle('gd-login', (_e, id, secret, scope) => new Promise((resolve, reje
   server.listen(PORT, '127.0.0.1', () => {
     const q = new URLSearchParams({ client_id: id, redirect_uri: REDIRECT, response_type: 'code', scope: scope || 'https://www.googleapis.com/auth/drive.appdata', include_granted_scopes: 'true', access_type: 'offline', prompt: 'consent', code_challenge: challenge, code_challenge_method: 'S256', state });
     shell.openExternal('https://accounts.google.com/o/oauth2/v2/auth?' + q);
+  });
+  setTimeout(() => { server.close(); reject(new Error('timeout')); }, 5 * 60000);
+}));
+
+/* ---------- OneDrive 로그인(기본 브라우저 + http://localhost:53683) ----------
+   마이크로소프트 앱 등록의 '모바일 및 데스크톱 애플리케이션'에 http://localhost 를 넣어 두면 된다. 비밀번호는 쓰지 않는다(PKCE). */
+const OD_PORT = 53683, OD_REDIRECT = `http://localhost:${OD_PORT}/`, OD_AUTH = 'https://login.microsoftonline.com/consumers/oauth2/v2.0';
+const OD_TOK = () => path.join(app.getPath('userData'), 'od.bin');
+const odSave = t => fs.writeFileSync(OD_TOK(), safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(t) : Buffer.from(t));
+const odLoad = () => { try{ const b = fs.readFileSync(OD_TOK()); return safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(b) : b.toString(); }catch{ return null; } };
+async function odTokenRequest(params){
+  const r = await net.fetch(OD_AUTH + '/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(params).toString() });
+  const j = await r.json(); if (!r.ok) throw new Error(j.error_description || j.error || ('token ' + r.status)); return j;
+}
+ipcMain.handle('od-logout', () => { try{ fs.unlinkSync(OD_TOK()); }catch{} return true; });
+ipcMain.handle('od-token', async (_e, id, scope) => {
+  const rt = odLoad(); if (!rt) return null;
+  try{ const j = await odTokenRequest({ client_id: id, scope, refresh_token: rt, grant_type: 'refresh_token' }); if (j.refresh_token) odSave(j.refresh_token); return { token: j.access_token, expires: j.expires_in }; }
+  catch(e){ if (/invalid_grant/.test(e.message)){ try{ fs.unlinkSync(OD_TOK()); }catch{} } return null; }
+});
+ipcMain.handle('od-login', (_e, id, scope) => new Promise((resolve, reject) => {
+  const verifier = crypto.randomBytes(32).toString('base64url'); const challenge = crypto.createHash('sha256').update(verifier).digest('base64url'); const state = crypto.randomBytes(12).toString('hex');
+  const server = http.createServer(async (req, res) => {
+    const u = new URL(req.url, OD_REDIRECT); if (u.pathname !== '/'){ res.writeHead(404); res.end(); return; }
+    const done = (ok, msg) => { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(`<meta charset="utf-8"><body style="font:16px sans-serif;padding:40px">${ok ? '✓ Novelist에 OneDrive를 연결했어요. 이 창은 닫아도 돼요.' : '연결하지 못했어요: ' + msg}</body>`); server.close(); };
+    if (u.searchParams.get('state') !== state){ done(false, 'state'); return reject(new Error('state')); }
+    if (u.searchParams.get('error')){ done(false, u.searchParams.get('error_description') || u.searchParams.get('error')); return reject(new Error(u.searchParams.get('error'))); }
+    try{
+      const j = await odTokenRequest({ client_id: id, scope, code: u.searchParams.get('code'), redirect_uri: OD_REDIRECT, grant_type: 'authorization_code', code_verifier: verifier });
+      if (j.refresh_token) odSave(j.refresh_token);
+      done(true); if (win){ if (win.isMinimized()) win.restore(); win.focus(); }
+      resolve({ token: j.access_token, expires: j.expires_in });
+    }catch(e){ done(false, e.message); reject(e); }
+  });
+  server.on('error', reject);
+  server.listen(OD_PORT, '127.0.0.1', () => {
+    const q = new URLSearchParams({ client_id: id, response_type: 'code', redirect_uri: OD_REDIRECT, scope, code_challenge: challenge, code_challenge_method: 'S256', state, response_mode: 'query' });
+    shell.openExternal(OD_AUTH + '/authorize?' + q);
   });
   setTimeout(() => { server.close(); reject(new Error('timeout')); }, 5 * 60000);
 }));

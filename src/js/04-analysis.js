@@ -28,7 +28,11 @@ function statHTML(a, withTop=true){
   ${withTop && a.top.length ? `<h3>자주 나온 말</h3><div class="hint">${a.top.map(([w,c])=>`${esc(w)} ${c}`).join(' · ')}</div>` : ''}
   <h3>마지막 세 줄 (절단)</h3><div class="endlines">${a.last.map(esc).join('<br>')}</div>`;
 }
-function renderEpStats(){ $('#pane-stat').innerHTML = `<h3>${esc(cur.eps[curEp].name)}</h3>` + statHTML(analyze(curText)); }
+function renderEpStats(){
+  $('#pane-stat').innerHTML = `<h3>${esc(cur.eps[curEp].name)}</h3>` + statHTML(analyze(curText));
+  const n = phoneScreens(curParas); if (!n) return;   // 22-reader-more.js
+  $('#pane-stat .kv').insertAdjacentHTML('beforeend', `<span>폰 화면</span><span class="v">약 ${n}장</span><span class="s" title="폭 375px · 지금 글자 크기·줄간격 기준">${n >= 50 && n <= 60 ? '<span class="good">연재 보통</span>' : n < 50 ? '짧은 편' : '긴 편'}</span>`);
+}
 
 let workStatToken = 0;
 async function renderWorkStats(){

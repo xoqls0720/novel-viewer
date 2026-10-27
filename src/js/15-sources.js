@@ -68,24 +68,37 @@ async function driveFiles(src, refresh){
 /* ---------- 불러오기 ---------- */
 const SRC_STATE = {};
 function srcStatus(id, t){ SRC_STATE[id] = t; const el = document.querySelector(`[data-src="${id}"] .st`); if (el) el.textContent = t; }
+// 내 컴퓨터 폴더가 옮겨졌으면(바탕 화면 → OneDrive 등) 같은 이름의 폴더를 찾아 이어 붙인다. 작품 열쇠는 폴더 이름으로 만들어서 진도·메모가 그대로 이어진다.
+async function diskRelink(src){
+  const info = await window.nvDesktop.libInfo?.(src.path); if (!info || info.exists) return true;
+  srcStatus(src.id, '폴더가 옮겨졌는지 찾는 중…');
+  const found = await window.nvDesktop.libFind?.(src.path);
+  if (!found){ src.missing = true; srcStatus(src.id, '폴더를 찾을 수 없어요 → "다시 고르기"'); renderSources(); return false; }
+  const list = libSources(); const me = list.find(x => x.id === src.id); if (me){ me.path = found; delete me.missing; } src.path = found; delete src.missing;
+  libSave(list); toast(`'${src.name}' 폴더가 옮겨져서 새 자리로 다시 연결했어요`);
+  return true;
+}
 async function loadSource(src, {refresh = false, quiet = true} = {}){
   try{
+    if (src.kind === 'disk' && !(await diskRelink(src))) return;
     srcStatus(src.id, '불러오는 중…');
-    const files = src.kind === 'disk' ? await diskFiles(src) : await driveFiles(src, refresh);
+    const files = src.kind === 'disk' ? await diskFiles(src) : src.kind === 'onedrive' ? await odFiles(src, refresh) : await driveFiles(src, refresh);
     const before = works.length;
     await addFiles(files, {persist: false, quiet: true});
     srcStatus(src.id, `파일 ${files.length.toLocaleString()}개 · ${new Date().toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'})}`);
     if (!quiet) toast(`${src.name}: 작품 ${works.length - before > 0 ? (works.length - before) + '개를 새로 ' : ''}불러왔어요`);
   }catch(e){
     const login = /auth|scope|setup|popup|timeout/.test(e.message);
-    srcStatus(src.id, login ? '구글 연결이 필요해요 → 위 단추로 다시 연결' : '불러오지 못했어요 (' + e.message + ')');
-    if (!quiet) toast(login ? '구글 드라이브에 다시 연결해 주세요 (설정 탭 → 연결)' : `${src.name}을 불러오지 못했어요`);
+    const who = src.kind === 'onedrive' ? 'Microsoft' : '구글';
+    srcStatus(src.id, login ? `${who} 연결이 필요해요 → 위 단추로 다시 연결` : '불러오지 못했어요 (' + e.message + ')');
+    if (!quiet) toast(login ? `${src.kind === 'onedrive' ? 'OneDrive' : '구글 드라이브'}에 다시 연결해 주세요 (설정 탭 → 연결)` : `${src.name}을 불러오지 못했어요`);
   }
 }
 async function loadAllSources(){
   for (const s of libSources()){
     if (s.kind === 'disk' && !DESKTOP) continue;
     if (s.kind === 'drive' && !gdReady()) { srcStatus(s.id, '설정 탭에서 구글 드라이브를 먼저 연결해 주세요'); continue; }
+    if (s.kind === 'onedrive' && !(odReady() && odLinked())) { srcStatus(s.id, '설정 탭에서 OneDrive를 먼저 연결해 주세요'); continue; }
     await loadSource(s);
   }
 }
@@ -96,14 +109,15 @@ function renderSources(){
   box.innerHTML = list.length ? '' : '<div class="hint">아직 연결한 폴더가 없어요.</div>';
   for (const s of list){
     const d = document.createElement('div'); d.className = 'src'; d.dataset.src = s.id;
-    d.innerHTML = `<div class="nm"><b></b><span class="k">${s.kind === 'disk' ? '내 컴퓨터' : '구글 드라이브'}</span></div><div class="hint p"></div><div class="hint st"></div><div class="row tight"><button data-a="re">새로 고침</button><button data-a="rm">연결 끊기</button></div>`;
+    d.innerHTML = `<div class="nm"><b></b><span class="k">${({disk: '내 컴퓨터', onedrive: 'OneDrive'})[s.kind] || '구글 드라이브'}</span></div><div class="hint p"></div><div class="hint st"></div><div class="row tight"><button data-a="re">새로 고침</button>${s.kind === 'disk' ? '<button data-a="pick">다시 고르기</button>' : ''}<button data-a="rm">연결 끊기</button></div>`;
     d.querySelector('b').textContent = s.name; d.querySelector('.p').textContent = s.kind === 'disk' ? s.path : '';
     d.querySelector('.st').textContent = SRC_STATE[s.id] || '';
     d.querySelector('[data-a=re]').onclick = () => loadSource(s, {refresh: true, quiet: false});
+    const pk = d.querySelector('[data-a=pick]'); if (pk) pk.onclick = async () => { const p = await window.nvDesktop.libRepick?.(s.path); if (!p) return; const list = libSources(); const me = list.find(x => x.id === s.id); if (me){ me.path = p; delete me.missing; } libSave(list); loadSource(me || s, {quiet: false}); };
     d.querySelector('[data-a=rm]').onclick = async () => {
       if (!confirm(`'${s.name}' 연결을 끊을까요? (원래 파일은 그대로 있어요. 메모·진도도 남아요)`)) return;
       libSave(libSources().filter(x => x.id !== s.id));
-      if (s.kind === 'drive') try{ await idb.tx('readwrite', st => st.delete('__idx:' + s.id), 'dcache'); }catch{}
+      if (s.kind === 'drive' || s.kind === 'onedrive') try{ await idb.tx('readwrite', st => st.delete('__idx:' + s.id), 'dcache'); }catch{}
       toast('연결을 끊었어요. 다시 켜면 목록에서 빠져요');
     };
     box.append(d);
@@ -115,8 +129,13 @@ $('#linkClose').onclick = closeSheets;
 $('#srcDisk').onclick = async () => {
   const p = await window.nvDesktop.libPick(); if (!p) return;
   if (libSources().some(s => s.kind === 'disk' && s.path === p)) return toast('이미 연결한 폴더예요');
-  const src = {id: uid(), kind: 'disk', name: p.split(/[\\/]/).pop(), path: p, t: Date.now()};
-  libSave([...libSources(), src]); loadSource(src, {quiet: false});
+  // '노벨'·'만화'·'웹툰'이 바로 아래에 있으면 하나씩 따로 연결한다(종류가 맞게 나뉘게)
+  const kids = ((await window.nvDesktop.libInfo?.(p))?.dirs || []).filter(n => KIND_DIR.test(n));
+  const sep = p.includes('\\') ? '\\' : '/';
+  const add = (kids.length ? kids.map(n => p + sep + n) : [p]).filter(x => !libSources().some(s => s.kind === 'disk' && s.path === x)).map(x => ({id: uid(), kind: 'disk', name: x.split(/[\\/]/).pop(), path: x, t: Date.now()}));
+  if (!add.length) return toast('이미 연결한 폴더예요');
+  libSave([...libSources(), ...add]); if (kids.length) toast(`${add.map(s => s.name).join('·')} 폴더를 따로 연결했어요`);
+  for (const src of add) await loadSource(src, {quiet: false});
 };
 // 드라이브 폴더 고르기: 내 드라이브(또는 공유 문서함)에서 폴더를 따라 들어가 '이 폴더 연결'
 const DRV = {stack: []};
@@ -127,13 +146,14 @@ $('#srcDrive').onclick = async () => {
   store.set('lib.sources', [...libSources(), {id: '__pending', kind: 'drive'}]);
   try{ GD.token = null; sessionStorage.removeItem('nv.gdTok'); await gdToken(true); }
   catch(e){ store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); return toast('구글 로그인을 마치지 못했어요 (' + e.message + ')'); }
-  DRV.stack = [{id: 'root', name: '내 드라이브'}]; $('#drvBrowse').hidden = false; drvRender();
+  DRV.kind = 'drive'; DRV.stack = [{id: 'root', name: '내 드라이브'}]; $('#drvBrowse').hidden = false; drvRender();
 };
 async function drvRender(){
   const here = DRV.stack.at(-1); const box = $('#drvList');
   $('#drvPath').textContent = DRV.stack.map(x => x.name).join(' › ');
   $('#drvUp').disabled = DRV.stack.length < 2; $('#drvPick').disabled = here.id === 'root' || here.id === 'shared';
   box.innerHTML = '<div class="hint">불러오는 중…</div>';
+  if (DRV.kind === 'od'){ $('#drvPick').disabled = false; try{ const fs = await odFolders(here.id); box.innerHTML = ''; for (const f of fs){ const d = document.createElement('div'); d.className = 'it'; d.innerHTML = `<svg class="i"><use href="#i-folder"/></svg><span></span><small class="hint" style="margin-left:auto">${f.n ?? ''}</small>`; d.querySelector('span').textContent = f.name; d.onclick = () => { DRV.stack.push({id: f.id, name: f.name}); drvRender(); }; box.append(d); } if (!fs.length) box.innerHTML = '<div class="hint">안에 폴더가 없어요. 이 폴더를 연결하면 돼요.</div>'; }catch(e){ box.innerHTML = `<div class="hint">목록을 받지 못했어요 (${esc(e.message)})</div>`; } return; }
   try{
     const q = here.id === 'shared' ? `sharedWithMe and mimeType='${DRIVE_FOLDER}' and trashed=false` : `'${here.id}' in parents and mimeType='${DRIVE_FOLDER}' and trashed=false`;
     const fs = (await driveList(q)).sort((a, b) => natural(a.name, b.name));
@@ -147,6 +167,7 @@ $('#drvUp').onclick = () => { if (DRV.stack.length > 1){ DRV.stack.pop(); drvRen
 $('#drvCancel').onclick = () => { $('#drvBrowse').hidden = true; store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); };
 $('#drvPick').onclick = () => {
   const here = DRV.stack.at(-1);
+  if (DRV.kind === 'od') return here.id === 'root' ? toast('OneDrive 맨 위는 너무 커요. 작품 폴더로 들어가서 연결해 주세요') : odPick(here);
   const list = libSources().filter(s => s.id !== '__pending');
   if (list.some(s => s.kind === 'drive' && s.folderId === here.id)) return toast('이미 연결한 폴더예요');
   const src = {id: uid(), kind: 'drive', name: here.name, folderId: here.id, t: Date.now()};

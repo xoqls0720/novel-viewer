@@ -96,6 +96,8 @@ aside,.tool{background:var(--panel);overflow:auto;min-width:0;-webkit-overflow-s
 aside{border-right:1px solid var(--line)}
 .tool{border-left:1px solid var(--line)}
 .hide-side aside,.hide-tool .tool{display:none}
+/* 서재·도구를 숨겨도 읽기 화면이 가운데 칸에 남게 자리를 못 박는다 (안 그러면 0폭 첫 칸으로 밀려 화면이 사라진다) */
+@media (min-width:1101px){ .app>aside{grid-area:1/1} .app>main{grid-area:1/2} .app>.tool{grid-area:1/3} }
 
 /* ---------- 서재 ---------- */
 .side-head{padding:calc(16px + var(--sat)) 16px 12px;display:flex;flex-direction:column;gap:9px;position:sticky;top:0;background:var(--panel);z-index:2;border-bottom:1px solid var(--hairline)}
@@ -272,7 +274,7 @@ table.ep tr[data-i]:hover td{background:var(--panel-2)}
 .tapzone.l{left:0} .tapzone.r{right:0}
 .mobile-only{display:none}
 @media (max-width:1100px){
-  .app,.app.hide-tool,.app.hide-side{grid-template-columns:1fr}
+  .app,.app.hide-tool,.app.hide-side,.app.hide-side.hide-tool{grid-template-columns:1fr}
   aside,.tool{position:fixed;inset:0;width:100%;z-index:12}
   @media (min-width:701px){ aside{right:auto;width:340px;box-shadow:var(--shadow)} .tool{left:auto;width:420px;box-shadow:var(--shadow)} #epDrawer,#quick{left:auto;right:16px;width:420px!important;max-width:calc(100% - 32px)} }
   .app:not(.show-side) aside{display:none}
@@ -474,6 +476,99 @@ details.fold summary .chev{margin-left:auto}
 .sk-ctx>*{flex:none}
 
 #pane-nai.ngbusy #ngList,#pane-nai.ngbusy #ngModel{opacity:.6;pointer-events:none}
+
+/* ---------- 자동 스크롤 · 폰 화면 보기 ---------- */
+.aschip{position:absolute;left:50%;bottom:calc(130px + var(--sab));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:4px;padding:5px 6px 5px 14px;border-radius:99px;background:color-mix(in srgb, var(--panel) 92%, transparent);border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums;transition:opacity .3s}
+.aschip[hidden]{display:none}
+.aschip button{border:0;box-shadow:none;background:transparent;padding:4px 10px;border-radius:99px;font-size:13px;min-height:0}
+.aschip button:hover{background:var(--panel-2)}
+.aschip #asStop{color:var(--accent);font-weight:700}
+.immersive .aschip{opacity:.35}
+.immersive .aschip:hover{opacity:1}
+.reader.phone:not(.paged) .novel{--ph:620px;max-width:375px;margin:calc(66px + var(--sat)) auto 0;padding:28px 20px 24px;border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);background-image:repeating-linear-gradient(to bottom, transparent 0 calc(var(--ph) - 1px), color-mix(in srgb, var(--accent) 28%, transparent) calc(var(--ph) - 1px) var(--ph));background-origin:border-box}
+.reader.phone:not(.paged) .epend{max-width:375px}
+/* 태블릿 세로(아이패드): 보기 설정은 오른쪽, 회차 목록은 왼쪽 위 단추 아래에 띄운다 */
+@media (min-width:701px) and (max-width:1100px){
+  #quick{left:auto;right:16px;top:calc(58px + var(--sat));bottom:auto;max-height:calc(100% - 140px)}
+  #epDrawer{left:16px;right:auto;top:calc(58px + var(--sat));bottom:auto;width:420px!important}
+}
+
+/* ================= 다듬기: 책답게, 작가 작업실답게 ================= */
+/* 서재 머리: 집필실·웹툰은 나란히 놓은 두 장의 카드 */
+.studio-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.studio-row .studio-btn{margin:0;padding:10px 12px;align-items:center}
+.studio-btn span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;min-width:0}
+.studio-btn b{font-family:var(--display);font-size:14.5px;font-weight:700;letter-spacing:-0.01em}
+.studio-btn small{font-size:11px;color:var(--sub);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.studio-btn svg{width:22px;height:22px;padding:4px;border-radius:8px;background:color-mix(in srgb, var(--brass) 14%, transparent);box-sizing:content-box}
+
+/* 표지 없는 작품: 천으로 싼 양장본 — 등(왼쪽) 그림자, 금박 테두리, 가운데 제목 */
+.card .cv .ph{background:
+    linear-gradient(90deg, rgb(0 0 0 / 22%) 0, rgb(0 0 0 / 6%) 5%, rgb(255 255 255 / 10%) 7%, transparent 11%),
+    radial-gradient(120% 90% at 30% 10%, hsl(var(--h) 34% 46%), hsl(var(--h) 38% 28%));
+  color:hsl(var(--h) 45% 92%);border:0;padding:14px 12px 14px 18px;font-family:var(--display);font-size:14.5px;line-height:1.45;letter-spacing:-0.01em;text-shadow:0 1px 1px rgb(0 0 0 / 30%);
+  word-break:keep-all}
+.card .cv .ph::before{content:"";position:absolute;inset:8px 7px 8px 13px;border:1px solid hsl(var(--h) 55% 78% / 45%);border-radius:2px;box-shadow:inset 0 0 0 3px transparent, inset 0 0 0 4px hsl(var(--h) 55% 78% / 18%);pointer-events:none}
+.card .cv .ph::after{content:"";position:absolute;left:50%;bottom:18px;width:18px;height:1px;background:hsl(var(--h) 55% 80% / 60%);transform:translateX(-30%)}
+:root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{background:
+    linear-gradient(90deg, rgb(0 0 0 / 35%) 0, rgb(0 0 0 / 10%) 5%, rgb(255 255 255 / 6%) 7%, transparent 11%),
+    radial-gradient(120% 90% at 30% 10%, hsl(var(--h) 28% 34%), hsl(var(--h) 32% 18%));color:hsl(var(--h) 40% 86%)}
+.card .cv{border-radius:3px 7px 7px 3px}
+.card .cv::after{border-radius:3px 7px 7px 3px}
+.card .cv .kind{left:auto;right:6px;top:6px;font-size:9.5px;letter-spacing:.08em;padding:2px 7px;background:rgb(0 0 0 / 38%)}
+.card .cv .pb{height:2px}
+.card .t{font-size:13px;margin-top:9px}
+
+/* 회차 머리: 작품 이름(작게) · 회차 제목 · 금빛 짧은 줄과 마름모 */
+.novel .chead{margin:10px 0 2.8em}
+.novel .chead .cw{font-size:11px;letter-spacing:.22em;font-weight:600}
+.novel .chead h2{font-size:1.42em;margin-top:.6em;font-weight:700}
+.novel .chead .orn{font-size:0;letter-spacing:0;height:9px;margin:1.3em auto 0;width:84px;position:relative;color:var(--brass)}
+.novel .chead .orn::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--brass) 70%, transparent), transparent)}
+.novel .chead .orn::after{content:"";position:absolute;left:50%;top:1px;width:6px;height:6px;margin-left:-3px;background:var(--reader-bg);border:1px solid color-mix(in srgb, var(--brass) 80%, transparent);transform:rotate(45deg)}
+.epend .orn{font-size:0;height:9px;width:84px;position:relative}
+.epend .orn::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--brass) 70%, transparent), transparent)}
+.epend .orn::after{content:"";position:absolute;left:50%;top:1px;width:6px;height:6px;margin-left:-3px;background:var(--reader-bg);border:1px solid color-mix(in srgb, var(--brass) 80%, transparent);transform:rotate(45deg)}
+.nextcard{border-radius:16px;padding:16px 18px}
+.nextcard .n{font-family:var(--display);font-size:16px}
+
+/* 첫 화면: 책 머리처럼 */
+.welcome h2{font-size:38px;letter-spacing:-0.03em;margin-bottom:6px}
+.welcome .logo{border-radius:16px;background:linear-gradient(150deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent));box-shadow:var(--shadow), inset 0 1px 0 rgb(255 255 255 / 18%)}
+.welcome .tile{border-radius:16px;padding:16px 16px 15px;transition:transform .2s, box-shadow .2s}
+.welcome .tile:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.welcome .tile b{font-family:var(--display);font-size:15px}
+.w-resume{margin:18px auto 22px;max-width:440px;display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow);text-align:left;cursor:pointer;transition:transform .2s, border-color .2s}
+.w-resume:hover{transform:translateY(-2px);border-color:color-mix(in srgb, var(--brass) 45%, var(--line))}
+.w-resume[hidden]{display:none}
+.w-resume .cv{flex:0 0 48px;height:66px;border-radius:2px 5px 5px 2px;overflow:hidden;position:relative;box-shadow:var(--shadow-s)}
+.w-resume .cv img{width:100%;height:100%;object-fit:cover;display:block}
+.w-resume .cv .ph{position:absolute;inset:0;background:linear-gradient(90deg, rgb(0 0 0 / 22%) 0, transparent 12%), radial-gradient(120% 90% at 30% 10%, hsl(var(--h) 34% 46%), hsl(var(--h) 38% 28%))}
+.w-resume .tx{flex:1;min-width:0}
+.w-resume .k{font-size:11px;color:var(--brass);font-weight:700;letter-spacing:.08em}
+.w-resume .n{font-family:var(--display);font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.w-resume .e{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w-resume .bar2{height:3px;border-radius:2px;background:var(--line);margin-top:8px;overflow:hidden}
+.w-resume .bar2 i{display:block;height:100%;background:var(--brass)}
+.w-resume>svg{color:var(--faint)}
+
+/* 막대·서랍: 유리 느낌을 조금 더, 선은 더 가늘게 */
+.bar,.botbar{border-color:var(--hairline)}
+.sheet{border-color:var(--hairline);box-shadow:var(--shadow-l)}
+.eplist .it{border-radius:12px}
+.eplist .it.cur{font-weight:700}
+.lib h4{font-family:var(--display);letter-spacing:.02em;font-size:12.5px;color:var(--sub)}
+/* 기기끼리 맞추기 */
+.od-box{border:1px solid color-mix(in srgb, var(--accent) 22%, var(--line));border-radius:14px;padding:12px 14px;background:linear-gradient(160deg, var(--accent-soft), transparent 70%)}
+.od-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.od-head b{font-size:14px}
+.od-tag{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:2px 8px}
+.od-setup{margin-top:10px}
+.od-setup summary,.gd-box summary{cursor:pointer;font-size:12.5px;color:var(--sub);padding:4px 0}
+.od-setup ol{padding-left:18px;margin:6px 0 8px}
+.od-setup li{margin:3px 0}
+.od-setup code{font-size:11.5px;background:var(--panel-2);padding:1px 5px;border-radius:5px;word-break:break-all}
+.gd-box{margin-top:12px}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -816,8 +911,8 @@ body:not(.is-desktop) .nai-only{display:none!important}
       </div>
       <input type="file" id="pickFolder" webkitdirectory multiple hidden>
       <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
-      <button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg>집필실 · 내 작품 쓰기</button>
-      <button id="btnWebtoon" class="studio-btn"><svg class="i"><use href="#i-cards"/></svg>웹툰 만들기</button>
+      <div class="studio-row"><button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg><span><b>집필실</b><small>내 작품 쓰기</small></span></button>
+      <button id="btnWebtoon" class="studio-btn"><svg class="i"><use href="#i-cards"/></svg><span><b>웹툰</b><small>콘티·컷 만들기</small></span></button></div>
       <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
       <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
@@ -829,6 +924,7 @@ body:not(.is-desktop) .nai-only{display:none!important}
     <div class="reader" id="reader"><div class="welcome"><div class="box">
       <div class="logo"><svg class="i"><use href="#i-book"/></svg></div>
       <h2>Novelist</h2>
+      <div class="w-resume" id="wResume" hidden></div>
       <p>소설·웹툰·만화를 한곳에서 읽고,<br>좋은 장면은 표시하고, 바로 분석하고, 내 글로 옮겨요.</p>
       <div class="row" style="justify-content:center"><button class="primary" id="wFolder"><svg class="i"><use href="#i-folder"/></svg>폴더 열기</button><button id="wFiles"><svg class="i"><use href="#i-file"/></svg>파일·zip 열기</button><button id="wStudio"><svg class="i"><use href="#i-pen"/></svg>집필실</button></div>
       <div class="tiles">
@@ -836,11 +932,12 @@ body:not(.is-desktop) .nai-only{display:none!important}
         <div class="tile"><svg class="i"><use href="#i-pen"/></svg><b>표시하기</b><span>문장 형광펜, 장면을 담아 그 위에 필기</span></div>
         <div class="tile"><svg class="i"><use href="#i-chart"/></svg><b>분석·쓰기</b><span>회차 수치, Claude 분석, 글쓰기, 노벨AI 프롬프트</span></div>
       </div>
-      <div class="keys desk-only"><kbd>[</kbd> <kbd>]</kbd> 이전·다음 화 · <kbd>←</kbd> <kbd>→</kbd> 쪽 넘기기 · <kbd>Space</kbd> 자동 스크롤 · <kbd>T</kbd> 읽어 주기 · <kbd>A</kbd> 도구 · <kbd>/</kbd> 검색 · <kbd>F</kbd> 막대 숨기기</div>
+      <div class="keys desk-only"><kbd>[</kbd> <kbd>]</kbd> 이전·다음 화 · <kbd>←</kbd> <kbd>→</kbd> 쪽 넘기기 · <kbd>Space</kbd> 자동 스크롤(<kbd>↑</kbd><kbd>↓</kbd> 속도) · <kbd>+</kbd> <kbd>−</kbd> 글자 크기 · <kbd>P</kbd> 폰 화면 · <kbd>T</kbd> 읽어 주기 · <kbd>A</kbd> 도구 · <kbd>/</kbd> 검색 · <kbd>F</kbd> 막대 숨기기</div>
       <div class="keys mobile-only" style="display:block">화면 가운데를 누르면 막대가 숨고 다시 나와요. 문장을 길게 누르면 형광펜이 떠요.</div>
     </div></div></div>
     <div id="dim"></div><div id="warm"></div>
     <div class="mini" id="mini"></div>
+    <div class="aschip" id="asChip" hidden><span id="asTxt"></span><button id="asSlow" title="느리게 (↓)">−</button><button id="asFast" title="빠르게 (↑)">+</button><button id="asStop" title="멈추기 (Space)">멈춤</button></div>
     <div class="coach" id="coach" hidden></div>
     <div id="wmap" title="문단 지도: 진한 색=대사, 주황=긴 문단. 누르면 그 자리로"><canvas></canvas><i></i></div>
 
@@ -871,7 +968,8 @@ body:not(.is-desktop) .nai-only{display:none!important}
     <div class="sheet" id="linkSheet">
       <div class="shh"><b>작품 폴더 연결</b><button class="icon" id="linkClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
       <div class="hint">한 번 연결하면 켤 때마다 저절로 불러와요. 파일은 원래 자리에 두고, 열 때 그 화만 읽어요. 드라이브에서 받은 화는 기기에 남겨서 다음엔 인터넷 없이도 열려요.</div>
-      <div class="row"><button class="primary grow" id="srcDisk" hidden>내 컴퓨터 폴더 연결</button><button class="grow" id="srcDrive">구글 드라이브 폴더 연결</button></div>
+      <div class="row"><button class="primary grow" id="srcDisk" hidden>내 컴퓨터 폴더 연결</button><button class="grow" id="srcOd">OneDrive 폴더 연결</button><button class="grow" id="srcDrive">구글 드라이브 폴더</button></div>
+      <div class="hint">'노벨'·'만화'·'웹툰'이 들어 있는 폴더(예: 문서/novel)를 고르면 종류별로 알아서 나눠 연결해요.</div>
       <div id="drvBrowse" hidden>
         <div class="row tight"><button id="drvUp">↑ 위로</button><span id="drvPath" class="hint grow"></span></div>
         <div class="drv" id="drvList"></div>
@@ -910,9 +1008,11 @@ body:not(.is-desktop) .nai-only{display:none!important}
         <div class="qrow"><label>문단 간격</label><div class="ctl"><input type="range" id="pgap" min="0" max="2" step="0.1" value="0.9"><output id="pgapOut"></output></div></div>
         <div class="qrow"><label>양옆 여백</label><div class="ctl"><input type="range" id="margin" min="8" max="72" step="2" value="24"><output id="marginOut"></output></div></div>
         <div class="qrow desk-only"><label>글 폭</label><div class="ctl"><input type="range" id="col" min="420" max="1100" step="20" value="620"><output id="colOut"></output></div></div>
-        <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option></select></div>
+        <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option><option value='"NvMine","Noto Serif KR",serif' id="rfontMine" hidden>내 글꼴</option></select></div>
+        <div class="qrow"><label>내 글꼴</label><div class="row tight"><button id="fontAdd" title="TTF·OTF·WOFF 글꼴 파일을 넣어 읽기 글꼴로 써요">글꼴 파일 넣기</button><button id="fontDel" hidden>빼기</button></div><input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/*" hidden></div>
         <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
         <div class="qrow"><label><input type="checkbox" id="writerView"> 작가 보기 (문단 글자 수·대사·갈고리·절단·1,000자 눈금, W)</label></div>
+        <div class="qrow"><label><input type="checkbox" id="phoneView"> 폰 화면으로 보기 (독자가 보는 폭과 폰 화면 장수, P)</label></div>
         <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
         <input type="number" id="fs" value="18" hidden>
       </div>
@@ -926,6 +1026,8 @@ body:not(.is-desktop) .nai-only{display:none!important}
       </div>
       <div class="q-sec"><div class="lab">자동</div>
         <div class="qrow"><label>회차 끝에서</label><select id="autoNext"><option value="btn">다음 화 카드</option><option value="auto">자동으로 넘김</option></select></div>
+        <div class="qrow"><label>자동 스크롤 속도</label><div class="ctl"><input type="range" id="asSpeed" min="1" max="10" step="1" value="4"><output id="asSpeedOut"></output></div></div>
+        <div class="qrow"><button id="asGo" class="grow">자동 스크롤 시작 (Space)</button></div>
         <div class="qrow"><label>읽어 주기 속도</label><div class="ctl"><input type="range" id="ttsRate" min="0.6" max="2" step="0.1" value="1.1"><output id="ttsRateOut"></output></div></div>
       </div>
     </div>
@@ -1114,12 +1216,29 @@ body:not(.is-desktop) .nai-only{display:none!important}
       <div class="hint" style="margin-top:10px">키는 이 기기에만 저장되고 동기화·백업 파일에는 들어가지 않아요. 공용 기기에서는 저장하지 마세요.</div>
       <div class="row" style="margin-top:6px"><label>누적 사용</label><span id="spent" class="hint grow"></span><button id="spentReset" class="mini-act">초기화</button></div>
 
-      <h3>구글 드라이브 동기화</h3>
-      <div class="hint" style="margin-bottom:8px">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰 컴퓨터와 아이폰을 같게 해요. 작품 파일과 API 키는 올라가지 않아요.</div>
+      <h3>기기끼리 맞추기</h3>
+      <div class="od-box">
+        <div class="od-head"><b>OneDrive</b><span class="od-tag">추천</span><span class="hint grow" id="odStatus" style="text-align:right"></span></div>
+        <div class="hint">마이크로소프트 계정으로 한 번 로그인하면 진도·형광펜·메모·장면 노트·집필실 원고가 OneDrive의 <b>앱 전용 폴더(앱/Novelist)</b>에 맞춰져요. 작품 폴더도 OneDrive에서 바로 연결해 아이패드에서 열 때 그 화만 받아요.</div>
+        <div class="row" style="margin-top:10px"><button class="primary" id="odConnect">Microsoft 계정으로 연결</button><button id="odNow" hidden>지금 맞추기</button><button id="odOut" hidden>연결 끊기</button><label class="hint"><input type="checkbox" id="odUse"> 이걸로 맞추기</label></div>
+        <details class="od-setup" id="odSetup"><summary>처음 한 번: 앱 등록 (클라이언트 ID)</summary>
+          <ol class="hint">
+            <li><b>portal.azure.com</b> → <b>앱 등록</b> → 새 등록. 이름 Novelist, 지원 계정은 <b>개인 Microsoft 계정만</b>.</li>
+            <li><b>인증</b> → 플랫폼 추가 → <b>단일 페이지 애플리케이션</b>: <code id="odRedirWeb"></code></li>
+            <li>같은 곳에서 <b>모바일 및 데스크톱 애플리케이션</b> 추가: <code>http://localhost</code> (윈도우 프로그램용)</li>
+            <li><b>API 권한</b> → Microsoft Graph 위임: <code>Files.Read</code>, <code>Files.ReadWrite.AppFolder</code>, <code>offline_access</code></li>
+            <li>개요의 <b>애플리케이션(클라이언트) ID</b>를 아래에 넣어요. 비밀번호는 필요 없어요.</li>
+          </ol>
+          <div class="krow"><input type="text" id="odClient" placeholder="애플리케이션(클라이언트) ID  예: 1a2b3c4d-…" autocomplete="off"><button id="odSave">저장</button></div>
+        </details>
+      </div>
+      <details class="gd-box"><summary>구글 드라이브로 맞추기 (예전 방식)</summary>
+      <div class="hint" style="margin:8px 0">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰요. OneDrive를 쓰면 이건 꺼 두세요.</div>
       <div class="krow"><input type="text" id="gdClient" placeholder="OAuth 클라이언트 ID (….apps.googleusercontent.com)" autocomplete="off"><button id="gdSave">저장</button></div>
       <div class="krow desktop-only" hidden style="margin-top:6px"><input type="password" id="gdSecret" placeholder="클라이언트 보안 비밀번호 (GOCSPX-…)" autocomplete="off"></div>
       <div class="row" style="margin-top:8px"><button class="primary" id="gdConnect">연결</button><button id="gdNow">지금 동기화</button><label class="hint"><input type="checkbox" id="gdAuto"> 자동</label><label class="hint" title="Claude·Gemini·Groq 키를 다른 기기에도 넣어 줘요. 구글 드라이브의 이 앱 전용 칸에만 저장돼요"><input type="checkbox" id="gdKeys"> API 키도</label><span class="hint grow" id="gdStatus" style="text-align:right"></span></div>
       <div class="hint">등록할 주소(승인된 JavaScript 원본): <b id="gdOrigin"></b></div>
+      </details>
 
       <h3>이 기기에 저장</h3>
       <div class="row"><label class="hint grow"><input type="checkbox" id="keepLocal"> 가져온 작품을 이 기기에 저장해 다음에도 바로 열기</label></div>
@@ -1457,7 +1576,7 @@ const store = {
   set(k, v){
     try{ localStorage.setItem('nv.'+k, JSON.stringify(v)); }catch{ toast('브라우저 저장 공간이 꽉 찼어요. 설정 탭에서 백업 후 정리해 주세요.'); return; }
     if (/^(apiKey|gemKey|grKey|naiKey)$/.test(k)){ const kt = this.get('__kts', {}); kt[k] = Date.now(); try{ localStorage.setItem('nv.__kts', JSON.stringify(kt)); }catch{} window.gdSoon?.(); }   // API 키는 따로(keys.json) 맞춘다
-    if (!k.startsWith('__') && !/^(apiKey|gemKey|grKey|naiKey|olOk)$/.test(k) && !k.startsWith('gd.')){ const ts = this.get('__ts', {}); ts[k] = Date.now(); try{ localStorage.setItem('nv.__ts', JSON.stringify(ts)); }catch{} window.gdSoon?.(); }
+    if (!k.startsWith('__') && !/^(apiKey|gemKey|grKey|naiKey|olOk)$/.test(k) && !/^(gd|od|sync)\./.test(k)){ const ts = this.get('__ts', {}); ts[k] = Date.now(); try{ localStorage.setItem('nv.__ts', JSON.stringify(ts)); }catch{} window.gdSoon?.(); }
   }
 };
 function tomb(kind, id){ const t = store.get('__tomb', {notes:[], scraps:[]}); t[kind] = [...new Set([...(t[kind]||[]), id])].slice(-2000); store.set('__tomb', t); window.gdSoon?.(); }
@@ -1806,7 +1925,7 @@ function setFrac(f){
 function updateProgress(){
   if (!cur) return;
   const f = getFrac(), pi = pagedInfo(); if (!scrubbing) $('#scrub').value = Math.round(f * 1000);
-  const where = $('#reader .manga') ? `${mangaPos + mangaShown} / ${curImgs.length}` : pi ? `${pi.k} / ${pi.n}쪽` : `${Math.round(f*100)}%`;
+  const where = $('#reader .manga') ? `${mangaPos + mangaShown} / ${curImgs.length}` : pi ? `${pi.k} / ${pi.n}쪽` : phoneWhere() || `${Math.round(f*100)}%`;
   $('#pageInd').textContent = where;
   if (f > 0.9) markRead(curEp);
   // 몰입 화면 아래 한 줄: 회차 · 위치 · 남은 시간 · 시각
@@ -2203,7 +2322,11 @@ function statHTML(a, withTop=true){
   ${withTop && a.top.length ? `<h3>자주 나온 말</h3><div class="hint">${a.top.map(([w,c])=>`${esc(w)} ${c}`).join(' · ')}</div>` : ''}
   <h3>마지막 세 줄 (절단)</h3><div class="endlines">${a.last.map(esc).join('<br>')}</div>`;
 }
-function renderEpStats(){ $('#pane-stat').innerHTML = `<h3>${esc(cur.eps[curEp].name)}</h3>` + statHTML(analyze(curText)); }
+function renderEpStats(){
+  $('#pane-stat').innerHTML = `<h3>${esc(cur.eps[curEp].name)}</h3>` + statHTML(analyze(curText));
+  const n = phoneScreens(curParas); if (!n) return;   // 22-reader-more.js
+  $('#pane-stat .kv').insertAdjacentHTML('beforeend', `<span>폰 화면</span><span class="v">약 ${n}장</span><span class="s" title="폭 375px · 지금 글자 크기·줄간격 기준">${n >= 50 && n <= 60 ? '<span class="good">연재 보통</span>' : n < 50 ? '짧은 편' : '긴 편'}</span>`);
+}
 
 let workStatToken = 0;
 async function renderWorkStats(){
@@ -3455,7 +3578,7 @@ async function renderScraps(){
 // API 키는 켜 두었을 때만(keys.json) 맞추고, 백업 파일에는 넣지 않는다. Ollama 주소·고른 AI는 기기마다 따로다.
 const GD = {token: null, exp: 0, client: null, busy: false, timer: null};
 const GD_API = 'https://www.googleapis.com/drive/v3', GD_UP = 'https://www.googleapis.com/upload/drive/v3';
-function gdStatus(t){ $('#gdStatus').textContent = t; }
+function gdStatus(t){ if (SYNC_OD()){ odStatus(t); return; } $('#gdStatus').textContent = t; }   // OneDrive로 맞출 때는 그쪽 칸에 쓴다
 const DESKTOP = !!window.nvDesktop;   // 윈도우 프로그램(Electron)으로 열었을 때
 function gdReady(){ return (location.protocol === 'https:' || (DESKTOP && store.get('gd.secret', ''))) && store.get('gd.client', ''); }
 async function gdLoadGIS(){
@@ -3497,6 +3620,7 @@ async function gdFetch(url, opt = {}, interactive = false){
   return r;
 }
 async function gdList(){
+  if (SYNC_OD()) return odList();   // 23-onedrive.js: 같은 모양의 파일 목록
   const out = []; let page = '';
   do { const r = await (await gdFetch(`${GD_API}/files?spaces=appDataFolder&pageSize=1000&orderBy=modifiedTime desc&fields=nextPageToken,files(id,name,modifiedTime)${page ? '&pageToken=' + page : ''}`)).json(); out.push(...r.files); page = r.nextPageToken; } while (page);
   const map = new Map();
@@ -3504,6 +3628,7 @@ async function gdList(){
   return map;
 }
 async function gdPut(files, name, blob){
+  if (SYNC_OD()) return odPut(files, name, blob);
   const f = files.get(name);
   if (f){ await gdFetch(`${GD_UP}/files/${f.id}?uploadType=media`, {method:'PATCH', body: blob}); return; }
   const fd = new FormData();
@@ -3511,9 +3636,9 @@ async function gdPut(files, name, blob){
   fd.append('file', blob);
   const r = await (await gdFetch(`${GD_UP}/files?uploadType=multipart&fields=id,name,modifiedTime`, {method:'POST', body: fd})).json(); files.set(name, r);
 }
-async function gdGet(files, name, as = 'json'){ const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
-async function gdDel(files, name){ const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
-const DEVICE_ONLY = /^(apiKey|gemKey|grKey|naiKey|olOk|__ts|__kts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach)|gd\.)/;
+async function gdGet(files, name, as = 'json'){ if (SYNC_OD()) return odGet(files, name, as); const f = files.get(name); if (!f) return null; const r = await gdFetch(`${GD_API}/files/${f.id}?alt=media`); return as === 'json' ? r.json() : r.blob(); }
+async function gdDel(files, name){ if (SYNC_OD()) return odDel(files, name); const f = files.get(name); if (f){ await gdFetch(`${GD_API}/files/${f.id}`, {method:'DELETE'}).catch(()=>{}); files.delete(name); } }
+const DEVICE_ONLY = /^(apiKey|gemKey|grKey|naiKey|olOk|__ts|__kts|theme|spent|st\.bk\.|lib\.|set\.(stRefPane|provider|aiProv|wProv|naiProv|stProv|olModel|stNoSide|stNoInsp|stTw|stStart|olUrl|keepLocal|fs|lh|pgap|col|wcol|dimLv|fit|spread|rtl|indent|rfont|align|weight|ls|margin|warm|wake|gap|pageAnim|tapMode|autoNext|autoSpeed|ttsRate|libSort|pagedDefault|coach|asSpeed|phoneView)|gd\.|od\.|sync\.)/;
 function localState(){
   const ls = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (!k.startsWith('nv.')) continue; const kk = k.slice(3); if (!DEVICE_ONLY.test(kk)) ls[kk] = localStorage.getItem(k); }
   return {ls, ts: store.get('__ts', {})};
@@ -3564,10 +3689,12 @@ async function gdSyncKeys(files){
 }
 const mergeById = (a, b, tomb) => { const m = new Map(); for (const x of [...(a||[]), ...(b||[])]) { const o = m.get(x.id); if (!o || (x.t||0) > (o.t||0)) m.set(x.id, x); } return [...m.values()].filter(x => !tomb.has(x.id)); };
 async function gdSync(interactive = false){
-  if (GD.busy) return; if (!gdReady()){ if (interactive) toast(location.protocol !== 'https:' ? '구글 드라이브 동기화는 https 주소(앱으로 설치한 뷰어)에서만 돼요' : '먼저 클라이언트 ID를 넣고 연결해 주세요'); return; }
+  if (GD.busy) return;
+  const od = SYNC_OD();
+  if (od ? !odReady() : !gdReady()){ if (interactive) toast(od ? 'OneDrive 연결 설정(클라이언트 ID)을 먼저 마쳐 주세요' : location.protocol !== 'https:' ? '구글 드라이브 동기화는 https 주소(앱으로 설치한 뷰어)에서만 돼요' : '먼저 클라이언트 ID를 넣고 연결해 주세요'); return; }
   GD.busy = true; gdStatus('동기화 중…');
   try{
-    if (interactive) await gdToken(true);
+    if (od) await odToken(interactive); else if (interactive) await gdToken(true);
     const files = await gdList();
     const remote = (await gdGet(files, 'state.json')) || {ls:{}, ts:{}, scraps:[]};
     const local = localState();
@@ -3635,14 +3762,17 @@ async function gdSync(interactive = false){
     localStorage.setItem('nv.gd.last', JSON.stringify(Date.now()));
     gdStatus(`마지막 동기화 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · 원고 올림 ${tx.up} · 받음 ${tx.down}${tx.conflict ? ` · 겹침 ${tx.conflict}` : ''}${kd ? ` · API 키 받음 ${kd}` : ''} · 장면 올림 ${up} · 받음 ${down}`);
     applySettingsFromStore(); renderLib(); renderNotes(); renderScraps(); renderNaiHist();
-    window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js)
+    if (!od) window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js). OneDrive는 작품 폴더를 바로 연결하니 올리지 않는다
+    if (od) odUI();
   }catch(e){
     const needLogin = e.message === 'auth' || /popup|access_denied|interaction|timeout/.test(e.message);
-    gdStatus(e.message === 'setup' ? '설정이 필요해요' : needLogin ? '구글 로그인이 필요해요. 설정 탭에서 "연결"을 눌러 주세요' : '동기화하지 못했어요 (' + e.message + ')');
-    if (needLogin && interactive === false && !GD.warned){ GD.warned = true; toast('구글 드라이브 동기화가 멈췄어요. 설정 → 연결을 눌러 주세요'); }
+    const who = od ? 'Microsoft' : '구글';
+    gdStatus(e.message === 'setup' ? '설정이 필요해요' : needLogin ? `${who} 로그인이 필요해요. 설정 탭에서 "연결"을 눌러 주세요` : '동기화하지 못했어요 (' + e.message + ')');
+    if (needLogin && interactive === false && !GD.warned){ GD.warned = true; toast(`${od ? 'OneDrive' : '구글 드라이브'} 동기화가 멈췄어요. 설정 → 연결을 눌러 주세요`); }
   }finally{ GD.busy = false; }
 }
-window.gdSoon = () => { if (!gdReady() || !$('#gdAuto').checked) return; clearTimeout(GD.timer); GD.timer = setTimeout(() => gdSync(false), 45000); };
+function syncOn(){ return SYNC_OD() ? odReady() && odLinked() : gdReady() && $('#gdAuto').checked; }
+window.gdSoon = () => { if (!syncOn()) return; clearTimeout(GD.timer); GD.timer = setTimeout(() => gdSync(false), 45000); };
 function applySettingsFromStore(){
   for (const id of SETTINGS){ const el = $('#'+id); const v = store.get('set.'+id, null); if (v === null) continue; if (el.type === 'checkbox') el.checked = v; else el.value = v; }
   for (const id of ['naiChars','naiStyle','naiNeg']){ const v = store.get('set.'+id, null); if (v !== null && document.activeElement !== $('#'+id)) $('#'+id).value = v; }
@@ -3660,8 +3790,9 @@ $('#gdNow').onclick = () => gdSync(true);
 $('#gdAuto').onchange = () => store.set('gd.auto', $('#gdAuto').checked);
 $('#gdKeys').checked = store.get('gd.syncKeys', true);
 $('#gdKeys').onchange = () => { store.set('gd.syncKeys', $('#gdKeys').checked); toast($('#gdKeys').checked ? 'API 키도 기기끼리 맞춰요' : 'API 키는 이 기기에만 둬요'); };
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && gdReady() && $('#gdAuto').checked && GD.token) gdSync(false); });
-if (gdReady()){ if (!DESKTOP) gdLoadGIS().catch(()=>{}); if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && syncOn() && (SYNC_OD() ? OD.token : GD.token)) gdSync(false); });
+if (!SYNC_OD() && gdReady()){ if (!DESKTOP) gdLoadGIS().catch(()=>{}); if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
+else if (SYNC_OD()) setTimeout(() => { if (syncOn() || (!DESKTOP && store.get('od.everLinked', false))) gdSync(false); }, 3000);
 { const last = store.get('gd.last', 0); if (last) gdStatus('마지막 동기화 ' + new Date(last).toLocaleString('ko-KR')); else if (location.protocol !== 'https:' && !DESKTOP) gdStatus('https 주소(앱으로 설치한 뷰어)에서 켤 수 있어요'); }
 
 if (store.get('apiKey','')) setTimeout(() => loadSDK().catch(()=>{}), 1200);
@@ -5291,24 +5422,37 @@ async function driveFiles(src, refresh){
 /* ---------- 불러오기 ---------- */
 const SRC_STATE = {};
 function srcStatus(id, t){ SRC_STATE[id] = t; const el = document.querySelector(`[data-src="${id}"] .st`); if (el) el.textContent = t; }
+// 내 컴퓨터 폴더가 옮겨졌으면(바탕 화면 → OneDrive 등) 같은 이름의 폴더를 찾아 이어 붙인다. 작품 열쇠는 폴더 이름으로 만들어서 진도·메모가 그대로 이어진다.
+async function diskRelink(src){
+  const info = await window.nvDesktop.libInfo?.(src.path); if (!info || info.exists) return true;
+  srcStatus(src.id, '폴더가 옮겨졌는지 찾는 중…');
+  const found = await window.nvDesktop.libFind?.(src.path);
+  if (!found){ src.missing = true; srcStatus(src.id, '폴더를 찾을 수 없어요 → "다시 고르기"'); renderSources(); return false; }
+  const list = libSources(); const me = list.find(x => x.id === src.id); if (me){ me.path = found; delete me.missing; } src.path = found; delete src.missing;
+  libSave(list); toast(`'${src.name}' 폴더가 옮겨져서 새 자리로 다시 연결했어요`);
+  return true;
+}
 async function loadSource(src, {refresh = false, quiet = true} = {}){
   try{
+    if (src.kind === 'disk' && !(await diskRelink(src))) return;
     srcStatus(src.id, '불러오는 중…');
-    const files = src.kind === 'disk' ? await diskFiles(src) : await driveFiles(src, refresh);
+    const files = src.kind === 'disk' ? await diskFiles(src) : src.kind === 'onedrive' ? await odFiles(src, refresh) : await driveFiles(src, refresh);
     const before = works.length;
     await addFiles(files, {persist: false, quiet: true});
     srcStatus(src.id, `파일 ${files.length.toLocaleString()}개 · ${new Date().toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'})}`);
     if (!quiet) toast(`${src.name}: 작품 ${works.length - before > 0 ? (works.length - before) + '개를 새로 ' : ''}불러왔어요`);
   }catch(e){
     const login = /auth|scope|setup|popup|timeout/.test(e.message);
-    srcStatus(src.id, login ? '구글 연결이 필요해요 → 위 단추로 다시 연결' : '불러오지 못했어요 (' + e.message + ')');
-    if (!quiet) toast(login ? '구글 드라이브에 다시 연결해 주세요 (설정 탭 → 연결)' : `${src.name}을 불러오지 못했어요`);
+    const who = src.kind === 'onedrive' ? 'Microsoft' : '구글';
+    srcStatus(src.id, login ? `${who} 연결이 필요해요 → 위 단추로 다시 연결` : '불러오지 못했어요 (' + e.message + ')');
+    if (!quiet) toast(login ? `${src.kind === 'onedrive' ? 'OneDrive' : '구글 드라이브'}에 다시 연결해 주세요 (설정 탭 → 연결)` : `${src.name}을 불러오지 못했어요`);
   }
 }
 async function loadAllSources(){
   for (const s of libSources()){
     if (s.kind === 'disk' && !DESKTOP) continue;
     if (s.kind === 'drive' && !gdReady()) { srcStatus(s.id, '설정 탭에서 구글 드라이브를 먼저 연결해 주세요'); continue; }
+    if (s.kind === 'onedrive' && !(odReady() && odLinked())) { srcStatus(s.id, '설정 탭에서 OneDrive를 먼저 연결해 주세요'); continue; }
     await loadSource(s);
   }
 }
@@ -5319,14 +5463,15 @@ function renderSources(){
   box.innerHTML = list.length ? '' : '<div class="hint">아직 연결한 폴더가 없어요.</div>';
   for (const s of list){
     const d = document.createElement('div'); d.className = 'src'; d.dataset.src = s.id;
-    d.innerHTML = `<div class="nm"><b></b><span class="k">${s.kind === 'disk' ? '내 컴퓨터' : '구글 드라이브'}</span></div><div class="hint p"></div><div class="hint st"></div><div class="row tight"><button data-a="re">새로 고침</button><button data-a="rm">연결 끊기</button></div>`;
+    d.innerHTML = `<div class="nm"><b></b><span class="k">${({disk: '내 컴퓨터', onedrive: 'OneDrive'})[s.kind] || '구글 드라이브'}</span></div><div class="hint p"></div><div class="hint st"></div><div class="row tight"><button data-a="re">새로 고침</button>${s.kind === 'disk' ? '<button data-a="pick">다시 고르기</button>' : ''}<button data-a="rm">연결 끊기</button></div>`;
     d.querySelector('b').textContent = s.name; d.querySelector('.p').textContent = s.kind === 'disk' ? s.path : '';
     d.querySelector('.st').textContent = SRC_STATE[s.id] || '';
     d.querySelector('[data-a=re]').onclick = () => loadSource(s, {refresh: true, quiet: false});
+    const pk = d.querySelector('[data-a=pick]'); if (pk) pk.onclick = async () => { const p = await window.nvDesktop.libRepick?.(s.path); if (!p) return; const list = libSources(); const me = list.find(x => x.id === s.id); if (me){ me.path = p; delete me.missing; } libSave(list); loadSource(me || s, {quiet: false}); };
     d.querySelector('[data-a=rm]').onclick = async () => {
       if (!confirm(`'${s.name}' 연결을 끊을까요? (원래 파일은 그대로 있어요. 메모·진도도 남아요)`)) return;
       libSave(libSources().filter(x => x.id !== s.id));
-      if (s.kind === 'drive') try{ await idb.tx('readwrite', st => st.delete('__idx:' + s.id), 'dcache'); }catch{}
+      if (s.kind === 'drive' || s.kind === 'onedrive') try{ await idb.tx('readwrite', st => st.delete('__idx:' + s.id), 'dcache'); }catch{}
       toast('연결을 끊었어요. 다시 켜면 목록에서 빠져요');
     };
     box.append(d);
@@ -5338,8 +5483,13 @@ $('#linkClose').onclick = closeSheets;
 $('#srcDisk').onclick = async () => {
   const p = await window.nvDesktop.libPick(); if (!p) return;
   if (libSources().some(s => s.kind === 'disk' && s.path === p)) return toast('이미 연결한 폴더예요');
-  const src = {id: uid(), kind: 'disk', name: p.split(/[\\/]/).pop(), path: p, t: Date.now()};
-  libSave([...libSources(), src]); loadSource(src, {quiet: false});
+  // '노벨'·'만화'·'웹툰'이 바로 아래에 있으면 하나씩 따로 연결한다(종류가 맞게 나뉘게)
+  const kids = ((await window.nvDesktop.libInfo?.(p))?.dirs || []).filter(n => KIND_DIR.test(n));
+  const sep = p.includes('\\') ? '\\' : '/';
+  const add = (kids.length ? kids.map(n => p + sep + n) : [p]).filter(x => !libSources().some(s => s.kind === 'disk' && s.path === x)).map(x => ({id: uid(), kind: 'disk', name: x.split(/[\\/]/).pop(), path: x, t: Date.now()}));
+  if (!add.length) return toast('이미 연결한 폴더예요');
+  libSave([...libSources(), ...add]); if (kids.length) toast(`${add.map(s => s.name).join('·')} 폴더를 따로 연결했어요`);
+  for (const src of add) await loadSource(src, {quiet: false});
 };
 // 드라이브 폴더 고르기: 내 드라이브(또는 공유 문서함)에서 폴더를 따라 들어가 '이 폴더 연결'
 const DRV = {stack: []};
@@ -5350,13 +5500,14 @@ $('#srcDrive').onclick = async () => {
   store.set('lib.sources', [...libSources(), {id: '__pending', kind: 'drive'}]);
   try{ GD.token = null; sessionStorage.removeItem('nv.gdTok'); await gdToken(true); }
   catch(e){ store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); return toast('구글 로그인을 마치지 못했어요 (' + e.message + ')'); }
-  DRV.stack = [{id: 'root', name: '내 드라이브'}]; $('#drvBrowse').hidden = false; drvRender();
+  DRV.kind = 'drive'; DRV.stack = [{id: 'root', name: '내 드라이브'}]; $('#drvBrowse').hidden = false; drvRender();
 };
 async function drvRender(){
   const here = DRV.stack.at(-1); const box = $('#drvList');
   $('#drvPath').textContent = DRV.stack.map(x => x.name).join(' › ');
   $('#drvUp').disabled = DRV.stack.length < 2; $('#drvPick').disabled = here.id === 'root' || here.id === 'shared';
   box.innerHTML = '<div class="hint">불러오는 중…</div>';
+  if (DRV.kind === 'od'){ $('#drvPick').disabled = false; try{ const fs = await odFolders(here.id); box.innerHTML = ''; for (const f of fs){ const d = document.createElement('div'); d.className = 'it'; d.innerHTML = `<svg class="i"><use href="#i-folder"/></svg><span></span><small class="hint" style="margin-left:auto">${f.n ?? ''}</small>`; d.querySelector('span').textContent = f.name; d.onclick = () => { DRV.stack.push({id: f.id, name: f.name}); drvRender(); }; box.append(d); } if (!fs.length) box.innerHTML = '<div class="hint">안에 폴더가 없어요. 이 폴더를 연결하면 돼요.</div>'; }catch(e){ box.innerHTML = `<div class="hint">목록을 받지 못했어요 (${esc(e.message)})</div>`; } return; }
   try{
     const q = here.id === 'shared' ? `sharedWithMe and mimeType='${DRIVE_FOLDER}' and trashed=false` : `'${here.id}' in parents and mimeType='${DRIVE_FOLDER}' and trashed=false`;
     const fs = (await driveList(q)).sort((a, b) => natural(a.name, b.name));
@@ -5370,6 +5521,7 @@ $('#drvUp').onclick = () => { if (DRV.stack.length > 1){ DRV.stack.pop(); drvRen
 $('#drvCancel').onclick = () => { $('#drvBrowse').hidden = true; store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); };
 $('#drvPick').onclick = () => {
   const here = DRV.stack.at(-1);
+  if (DRV.kind === 'od') return here.id === 'root' ? toast('OneDrive 맨 위는 너무 커요. 작품 폴더로 들어가서 연결해 주세요') : odPick(here);
   const list = libSources().filter(s => s.id !== '__pending');
   if (list.some(s => s.kind === 'drive' && s.folderId === here.id)) return toast('이미 연결한 폴더예요');
   const src = {id: uid(), kind: 'drive', name: here.name, folderId: here.id, t: Date.now()};
@@ -6739,6 +6891,411 @@ $('#naiStyleSel').onchange = () => { $('#wtStyle').value = $('#naiStyleSel').val
 $('#wtStyle').addEventListener('change', () => { $('#naiStyleSel').value = $('#wtStyle').value; naiStyleLabel(); });
 $('#wtMono').addEventListener('change', naiStyleLabel);
 naiStyleLabel();
+/* ================= 읽기 편의 더하기: 자동 스크롤·폰 화면 보기·내 글꼴·방향키 ================= */
+const typing = e => /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
+const overlayOpen = () => !$('#studio').hidden || !$('#wt').hidden || $('#sketch').classList.contains('open');
+
+/* ---------- 자동 스크롤 ----------
+   소설 스크롤·웹툰은 매 화면마다 조금씩 내리고, 쪽 넘김·만화는 몇 초마다 한 쪽씩 넘긴다.
+   화면을 누르거나 휠을 굴리면 멈춘다. 회차 끝에 닿으면 다음 화로 이어 간다. */
+const AS = {on: false, raf: 0, last: 0, pos: 0, acc: 0, endT: 0};
+const asSpeed = () => +$('#asSpeed').value || 4;
+const asPx = () => 4 * Math.pow(1.35, asSpeed()) * ($('#reader .webtoon') ? 3 : 1);   // 1단계 약 5px/초 ~ 10단계 약 80px/초
+const asSec = () => 40 / Math.pow(1.25, asSpeed());                                   // 쪽 넘김 간격: 1단계 32초 ~ 10단계 4초
+const asStepMode = () => !!($('#reader.paged') || $('#reader .manga'));
+function asLabel(){ $('#asTxt').textContent = `자동 스크롤 · 속도 ${asSpeed()}` + (asStepMode() ? ` (${Math.round(asSec())}초마다)` : ''); $('#asSpeedOut').textContent = asSpeed(); }
+function asStart(){
+  if (!cur) return toast('작품을 먼저 열어 주세요');
+  if (AS.on) return;
+  if ($('#btnTTS').classList.contains('on')) stopTTS();
+  AS.on = true; AS.last = 0; AS.acc = 0; AS.endT = 0; AS.pos = $('#reader').scrollTop;
+  $('#asChip').hidden = false; $('#asGo').textContent = '자동 스크롤 멈추기 (Space)'; asLabel();
+  closeSheets(); $('#app').classList.add('immersive');
+  AS.raf = requestAnimationFrame(asTick);
+}
+function asStop(msg){
+  if (!AS.on) return;
+  AS.on = false; cancelAnimationFrame(AS.raf);
+  $('#asChip').hidden = true; $('#asGo').textContent = '자동 스크롤 시작 (Space)';
+  quiet(); $('#app').classList.remove('immersive');   // 멈추면 막대를 다시 보여 준다
+  if (msg) toast(msg);
+}
+function asTick(t){
+  if (!AS.on) return;
+  if (!cur) return asStop();
+  const dt = AS.last ? Math.min(0.1, (t - AS.last) / 1000) : 0; AS.last = t;
+  const r = $('#reader');
+  if (asStepMode()){
+    AS.acc += dt;
+    if (AS.acc >= asSec()){ AS.acc = 0; if ($('#reader .manga')) mangaStep(1); else pageTurn(1); }
+  } else if (r.scrollHeight > r.clientHeight){
+    if (Math.abs(r.scrollTop - AS.pos) > 3) AS.pos = r.scrollTop;   // 회차가 바뀌거나 프로그램이 옮긴 자리를 따라간다
+    const atEnd = r.scrollTop + r.clientHeight >= r.scrollHeight - 2;
+    if (!atEnd){ AS.endT = 0; AS.pos += asPx() * dt; quiet(200); r.scrollTop = AS.pos; }
+    else if (curEp >= cur.eps.length - 1) return asStop('마지막 화 끝까지 읽었어요');
+    else if ($('#autoNext').value !== 'auto'){   // '자동으로 넘김'이면 원래 장치가 넘긴다
+      AS.endT += dt; if (AS.endT > 1.6){ AS.endT = 0; openEp(curEp + 1); }
+    }
+  }
+  AS.raf = requestAnimationFrame(asTick);
+}
+function asNudge(d){ const el = $('#asSpeed'); el.value = Math.min(10, Math.max(1, asSpeed() + d)); el.dispatchEvent(new Event('change')); rangeFill(el); asLabel(); }
+{ const v = store.get('set.asSpeed', null); if (v !== null) $('#asSpeed').value = v; }
+$('#asSpeed').addEventListener('change', () => { store.set('set.asSpeed', $('#asSpeed').value); asLabel(); });
+$('#asSpeed').addEventListener('input', asLabel);
+$('#asGo').onclick = () => AS.on ? asStop() : asStart();
+$('#asStop').onclick = () => asStop();
+$('#asSlow').onclick = () => asNudge(-1);
+$('#asFast').onclick = () => asNudge(1);
+// 사람이 직접 움직이면 멈춘다 (막대·칩을 누르는 건 빼고)
+$('#reader').addEventListener('wheel', () => asStop(), {passive: true});
+$('#reader').addEventListener('pointerdown', () => asStop(), true);
+document.addEventListener('visibilitychange', () => { if (document.hidden) asStop(); });
+asLabel(); rangeFill($('#asSpeed'));
+
+/* ---------- 폰 화면으로 보기 (작가용) ----------
+   독자 대부분이 폰으로 읽으니, 375px 폭에서 어떻게 끊기는지와 한 화가 폰 화면 몇 장인지 본다. */
+// 폭은 아이폰 기본 375px, 높이는 위아래 막대를 뺀 글 자리 620px. (시작할 때 앞 파일에서 불릴 수 있어 const 대신 함수로 둔다)
+function PHONE_W(){ return 375; } function PHONE_H(){ return 620; }
+function phoneSync(){
+  const on = $('#phoneView').checked;
+  $('#reader').classList.toggle('phone', on);
+  document.documentElement.style.setProperty('--ph', PHONE_H() + 'px');
+  if ($('#reader .novel')) requestAnimationFrame(() => { writerMarks(); updateProgress(); });
+}
+// 지금 글자 설정으로 375px 폭에 깔면 폰 화면 몇 장인지 (보이지 않는 곳에서 재어 본다)
+function phoneScreens(paras){
+  if (!paras?.length) return 0;
+  const box = document.createElement('div'); box.className = 'novel';
+  box.style.cssText = `position:absolute;left:-99999px;top:0;visibility:hidden;max-width:none;width:${PHONE_W()}px;padding:28px 20px 24px;margin:0`;
+  const frag = document.createDocumentFragment(); const head = $('#reader .novel .chead'); if (head) frag.append(head.cloneNode(true));   // 폰 화면 보기 틀과 같은 조건으로 잰다
+  for (const t of paras){ const p = document.createElement('p'); p.textContent = t; frag.append(p); }
+  box.append(frag); document.body.append(box);
+  const h = box.scrollHeight; box.remove();
+  return Math.max(1, Math.ceil(h / PHONE_H()));
+}
+function phoneWhere(){
+  const nv = $('#reader.phone:not(.paged) .novel'); if (!nv) return '';
+  const r = $('#reader'); const n = Math.max(1, Math.ceil(nv.offsetHeight / PHONE_H()));
+  const k = Math.min(n, Math.max(1, Math.floor((r.scrollTop + r.clientHeight / 2 - nv.offsetTop) / PHONE_H()) + 1));
+  return `폰 ${k} / ${n}장`;
+}
+{ const v = store.get('set.phoneView', null); if (v !== null) $('#phoneView').checked = v; }
+$('#phoneView').addEventListener('change', () => { store.set('set.phoneView', $('#phoneView').checked); phoneSync(); });
+// 소설을 새로 그릴 때마다 폰 보기 표시를 다시 붙인다 (쪽 표시는 updateProgress 가 phoneWhere 로 바꾼다)
+new MutationObserver(() => { $('#reader').classList.toggle('phone', $('#phoneView').checked); }).observe($('#reader'), {childList: true});
+phoneSync();
+
+/* ---------- 내 글꼴 파일 ----------
+   글꼴은 커서 localStorage 대신 따로 작은 IndexedDB 에 둔다. */
+const fontDb = () => new Promise((res, rej) => { const r = indexedDB.open('nv-font', 1); r.onupgradeneeded = () => r.result.createObjectStore('f'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function fontIO(mode, fn){ const db = await fontDb(); return await new Promise((res, rej) => { const t = db.transaction('f', mode); const q = fn(t.objectStore('f')); t.oncomplete = () => { db.close(); res(q?.result); }; t.onerror = () => rej(t.error); }); }
+async function fontApply(rec){
+  const opt = $('#rfontMine');
+  if (!rec){ opt.hidden = true; $('#fontDel').hidden = true; return false; }
+  try{
+    const face = new FontFace('NvMine', await rec.blob.arrayBuffer()); await face.load();
+    [...document.fonts].filter(f => f.family === 'NvMine').forEach(f => document.fonts.delete(f)); document.fonts.add(face);
+  }catch{ toast('글꼴 파일을 읽지 못했어요 (TTF·OTF·WOFF만 돼요)'); return false; }
+  opt.hidden = false; opt.textContent = '내 글꼴 · ' + rec.name.replace(/\.(ttf|otf|woff2?)$/i, ''); $('#fontDel').hidden = false;
+  return true;
+}
+$('#fontAdd').onclick = () => $('#fontFile').click();
+$('#fontFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  if (f.size > 40 * 1048576) return toast('글꼴 파일이 너무 커요 (40MB까지)');
+  const rec = {name: f.name, blob: f};
+  if (!await fontApply(rec)) return;
+  try{ await fontIO('readwrite', s => s.put(rec, 'mine')); }catch{}
+  $('#rfont').value = $('#rfontMine').value; $('#rfont').dispatchEvent(new Event('change'));
+  toast('내 글꼴로 바꿨어요');
+};
+$('#fontDel').onclick = async () => {
+  try{ await fontIO('readwrite', s => s.delete('mine')); }catch{}
+  [...document.fonts].filter(f => f.family === 'NvMine').forEach(f => document.fonts.delete(f));
+  if ($('#rfont').value === $('#rfontMine').value){ $('#rfont').selectedIndex = 0; $('#rfont').dispatchEvent(new Event('change')); }
+  fontApply(null); toast('내 글꼴을 뺐어요');
+};
+fontIO('readonly', s => s.get('mine')).then(rec => fontApply(rec || null)).catch(() => {});
+
+/* ---------- 키보드 ----------
+   Space 자동 스크롤, ↑↓ 속도(자동 스크롤 중) · 스크롤 보기에서 ←→·PageUp/Down 한 화면, Home/End, +/− 글자 크기, P 폰 화면 */
+document.addEventListener('keydown', e => {
+  if (typing(e) || overlayOpen() || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key;
+  if (k === ' ' && cur){ e.preventDefault(); if (e.target.tagName === 'BUTTON') e.target.blur(); AS.on ? asStop() : asStart(); return; }
+  if (AS.on && (k === 'ArrowUp' || k === 'ArrowDown')){ e.preventDefault(); asNudge(k === 'ArrowUp' ? 1 : -1); return; }
+  if (AS.on && k === 'Escape') asStop();
+  if (k === '+' || k === '='){ $('#fsUp').click(); toast(`글자 크기 ${$('#fs').value}`); return; }
+  if (k === '-' || k === '_'){ $('#fsDown').click(); toast(`글자 크기 ${$('#fs').value}`); return; }
+  if ((k === 'p' || k === 'P') && cur){ const c = $('#phoneView'); c.checked = !c.checked; c.dispatchEvent(new Event('change')); toast(c.checked ? '폰 화면으로 보기를 켰어요' : '폰 화면으로 보기를 껐어요'); return; }
+  // 스크롤 보기(소설·웹툰)에서 한 화면씩
+  if (!cur || $('#reader.paged') || $('#reader .manga')) return;
+  const r = $('#reader'); const page = r.clientHeight - 110;   // 위아래 막대만큼 겹쳐 둔다
+  const go = y => { asStop(); r.scrollTo({top: y, behavior: 'smooth'}); };
+  if (k === 'ArrowRight' || k === 'PageDown'){ e.preventDefault(); if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2) $('#next').click(); else go(r.scrollTop + page); }
+  else if (k === 'ArrowLeft' || k === 'PageUp'){ e.preventDefault(); go(r.scrollTop - page); }
+  else if (k === 'ArrowDown'){ e.preventDefault(); go(r.scrollTop + 80); }
+  else if (k === 'ArrowUp'){ e.preventDefault(); go(r.scrollTop - 80); }
+  else if (k === 'Home'){ e.preventDefault(); go(0); }
+  else if (k === 'End'){ e.preventDefault(); go(r.scrollHeight); }
+});
+
+/* ---------- 아이패드 가로: 서재와 도구가 함께 열려 글이 좁아지지 않게 ----------
+   터치 기기에서 작품을 열거나 도구 창을 열면 서재를 접는다 (☰ 로 다시 연다). */
+document.addEventListener('click', e => {
+  if (!isTouch() || isMobile()) return;
+  const a = $('#app');
+  if (e.target.closest('#lib .card')) a.classList.add('hide-side');
+  else if (e.target.closest('#tgTool') && !a.classList.contains('hide-tool') && innerWidth < 1500) a.classList.add('hide-side');
+});
+
+/* ---------- 첫 화면 '이어 읽기' 카드 ----------
+   서재가 다시 그려질 때마다(작품을 불러오면) 가장 최근에 읽은 작품을 첫 화면 가운데에 보여 준다. */
+function renderResume(){
+  const box = $('#wResume'); if (!box) return;
+  let best = null, bt = 0;
+  for (const w of works){ const p = store.get('pos.' + w.key, null); if (p && (p.t || 0) > bt){ bt = p.t; best = {w, p}; } }
+  if (!best){ box.hidden = true; return; }
+  const {w, p} = best; const total = p.n || w.eps.length; const ep = w.eps[Math.min(p.ep, w.eps.length - 1)];
+  const pct = Math.min(100, Math.round(((p.ep + (p.f || 0)) / total) * 100)); const cu = coverUrl(w);
+  box.innerHTML = `<div class="cv">${cu ? `<img alt="" src="${cu}">` : '<div class="ph"></div>'}</div><div class="tx"><div class="k">이어 읽기</div><div class="n"></div><div class="e"></div><div class="bar2"><i style="width:${pct}%"></i></div></div><svg class="i"><use href="#i-right"/></svg>`;
+  box.querySelector('.n').textContent = w.name;
+  box.querySelector('.e').textContent = `${ep?.label || ep?.name || (p.ep + 1) + '화'} · ${Math.round((p.f || 0) * 100)}% · ${new Date(p.t).toLocaleDateString('ko-KR', {month: 'long', day: 'numeric'})}`;
+  box.querySelector('.ph')?.style.setProperty('--h', hueOf(w.name));
+  box.onclick = () => openWork(w);
+  box.hidden = false;
+}
+new MutationObserver(renderResume).observe($('#lib'), {childList: true});
+/* ================= OneDrive: 기기끼리 맞추기 · 작품 폴더 연결 ================= */
+// 로그인은 마이크로소프트 계정(PKCE, 비밀번호 없음). 웹·아이패드는 이 페이지로 돌아오는 방식, 윈도우 프로그램은 기본 브라우저 + localhost.
+// 맞추기 파일은 OneDrive '앱/Novelist' 폴더(approot)에만 쓰고, 작품 폴더는 읽기만 한다.
+// 다시 쓰는 토큰(refresh token)은 'nv.' 밖에 둬서 백업·동기화 파일에 섞이지 않게 한다.
+const OD_CLIENT_ID = '';   // 앱 등록 후 여기에 넣으면 기기마다 ID를 넣지 않아도 된다(비밀 값이 아니다)
+var OD = {token: null, exp: 0, warned: false};
+function odClient(){ return store.get('od.client', '') || OD_CLIENT_ID; }
+function odAuthBase(){ return 'https://login.microsoftonline.com/consumers/oauth2/v2.0'; }
+function odGraph(){ return 'https://graph.microsoft.com/v1.0'; }
+function odScope(){ return 'Files.Read Files.ReadWrite.AppFolder offline_access'; }
+function odRedirect(){ return location.origin + location.pathname; }
+function odWebOk(){ return location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname); }
+function odReady(){ return !!odClient() && (DESKTOP || odWebOk()); }
+function SYNC_OD(){ return store.get('sync.backend', '') === 'od'; }
+// 앞 파일의 시작 코드에서 불릴 수 있어 const 대신 함수로 둔다
+function odRtGet(){ try{ return localStorage.getItem('nvod.rt') || ''; }catch{ return ''; } }
+function odRtSet(v){ try{ v ? localStorage.setItem('nvod.rt', v) : localStorage.removeItem('nvod.rt'); }catch{} }
+function odLinked(){ return DESKTOP ? !!store.get('od.linked', false) : !!odRtGet(); }
+
+/* ---------- 로그인 ---------- */
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function odPkce(){ const v = b64url(crypto.getRandomValues(new Uint8Array(32))); const c = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v))); return {v, c}; }
+async function odLoginRedirect(silent = false){
+  const {v, c} = await odPkce(); const state = b64url(crypto.getRandomValues(new Uint8Array(12)));
+  sessionStorage.setItem('nvod.pkce', JSON.stringify({v, state, silent}));
+  const q = new URLSearchParams({client_id: odClient(), response_type: 'code', redirect_uri: odRedirect(), scope: odScope(), code_challenge: c, code_challenge_method: 'S256', state, response_mode: 'query'});
+  if (silent) q.set('prompt', 'none');
+  location.assign(`${odAuthBase()}/authorize?${q}`);
+}
+async function odTokenReq(params){
+  const r = await fetch(`${odAuthBase()}/token`, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({client_id: odClient(), scope: odScope(), ...params})});
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error === 'invalid_grant' ? 'auth' : (j.error || 'token ' + r.status)); return j;
+}
+function odKeep(j){ OD.token = j.access_token || j.token; OD.exp = Date.now() + (j.expires_in || j.expires || 3600) * 1000; if (j.refresh_token) odRtSet(j.refresh_token); return OD.token; }
+// 로그인하고 돌아왔을 때(주소에 ?code= 가 붙어 온다)
+async function odHandleReturn(){
+  const u = new URL(location.href); const code = u.searchParams.get('code'), err = u.searchParams.get('error');
+  const saved = JSON.parse(sessionStorage.getItem('nvod.pkce') || 'null');
+  if (!saved || (!code && !err)) return false;
+  sessionStorage.removeItem('nvod.pkce');
+  history.replaceState(null, '', odRedirect() + location.hash);
+  if (u.searchParams.get('state') !== saved.state) return false;
+  if (err){ odStatus(saved.silent ? 'Microsoft 로그인이 다시 필요해요 → "연결"' : '연결하지 못했어요 (' + err + ')'); return false; }
+  try{
+    odKeep(await odTokenReq({grant_type: 'authorization_code', code, redirect_uri: odRedirect(), code_verifier: saved.v}));
+    if (!store.get('sync.backend', '')) store.set('sync.backend', 'od');
+    odUI(); if (!saved.silent) toast('OneDrive에 연결했어요');
+    if (SYNC_OD()) setTimeout(() => gdSync(false), 300);
+    if (store.get('od.afterLogin', '') === 'browse'){ store.set('od.afterLogin', ''); setTimeout(() => odBrowseOpen(), 400); }
+    return true;
+  }catch(e){ odStatus('연결하지 못했어요 (' + e.message + ')'); return false; }
+}
+async function odToken(interactive){
+  if (OD.token && Date.now() < OD.exp - 60000) return OD.token;
+  if (!odReady()) throw new Error('setup');
+  if (DESKTOP){
+    let r = await window.nvDesktop.odToken?.(odClient(), odScope()).catch(() => null);
+    if (!r && interactive){ toast('기본 브라우저에서 Microsoft 로그인을 마쳐 주세요'); r = await window.nvDesktop.odLogin(odClient(), odScope()); }
+    if (!r) throw new Error('auth');
+    store.set('od.linked', true); return odKeep(r);
+  }
+  const rt = odRtGet();
+  if (rt){ try{ return odKeep(await odTokenReq({grant_type: 'refresh_token', refresh_token: rt})); }catch(e){ if (e.message === 'auth') odRtSet(''); else throw e; } }
+  // 다시 쓰는 토큰이 만료됐으면(웹은 하루) 한 번 조용히 다녀온다: 마이크로소프트에 로그인돼 있으면 바로 돌아온다
+  // 읽는 중에는 화면이 바뀌면 안 되니, 작품을 열기 전(켜자마자)에만 한다
+  if (interactive || (!cur && store.get('od.silentT', 0) < Date.now() - 10 * 60000 && store.get('od.everLinked', false))){
+    store.set('od.silentT', Date.now()); await odLoginRedirect(!interactive); await new Promise(() => {});
+  }
+  throw new Error('auth');
+}
+async function odFetch(url, opt = {}, interactive = false){
+  const t = await odToken(interactive);
+  const r = await fetch(url.startsWith('http') ? url : odGraph() + url, {...opt, headers: {...(opt.headers || {}), Authorization: 'Bearer ' + t}});
+  if (r.status === 401){ OD.token = null; throw new Error('auth'); }
+  if (r.status === 429 || r.status === 503){ const s = +(r.headers.get('Retry-After') || 3); await new Promise(z => setTimeout(z, Math.min(30, s) * 1000)); return odFetch(url, opt, interactive); }
+  if (!r.ok) throw new Error('onedrive ' + r.status);
+  return r;
+}
+
+/* ---------- 앱 전용 폴더 파일 (09-sync.js 의 gdList·gdPut·gdGet·gdDel 과 같은 모양) ---------- */
+async function odList(){
+  const map = new Map(); let url = '/me/drive/special/approot/children?$top=999&$select=id,name,size,lastModifiedDateTime,file';
+  while (url){ const j = await (await odFetch(url)).json(); for (const f of j.value || []) if (f.file) map.set(f.name, {id: f.id, name: f.name}); url = j['@odata.nextLink'] || ''; }
+  return map;
+}
+const odPath = name => '/me/drive/special/approot:/' + encodeURIComponent(name) + ':';
+async function odPut(files, name, blob){
+  if (blob.size <= 4 * 1048576){
+    const it = await (await odFetch(odPath(name) + '/content', {method: 'PUT', body: blob, headers: {'Content-Type': blob.type || 'application/octet-stream'}})).json();
+    files.set(name, {id: it.id, name}); return;
+  }
+  // 4MB 넘는 그림은 나눠 올린다 (조각은 320KiB 배수)
+  const s = await (await odFetch(odPath(name) + '/createUploadSession', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({item: {'@microsoft.graph.conflictBehavior': 'replace'}})})).json();
+  const CH = 320 * 1024 * 15; let it = null;
+  for (let at = 0; at < blob.size; at += CH){
+    const part = blob.slice(at, Math.min(blob.size, at + CH));
+    const r = await fetch(s.uploadUrl, {method: 'PUT', body: part, headers: {'Content-Range': `bytes ${at}-${at + part.size - 1}/${blob.size}`}});
+    if (!r.ok && r.status !== 202) throw new Error('upload ' + r.status);
+    if (r.status === 200 || r.status === 201) it = await r.json();
+  }
+  if (it) files.set(name, {id: it.id, name});
+}
+// 내려받기는 미리 서명된 주소(@microsoft.graph.downloadUrl)로 한다: /content 는 다른 곳으로 넘겨서 브라우저가 막는다
+async function odDownloadUrl(id){ const j = await (await odFetch(`/me/drive/items/${id}?$select=id,@microsoft.graph.downloadUrl`)).json(); return j['@microsoft.graph.downloadUrl']; }
+async function odGet(files, name, as = 'json'){
+  const f = files.get(name); if (!f) return null;
+  const r = await fetch(await odDownloadUrl(f.id)); if (!r.ok) throw new Error('download ' + r.status);
+  return as === 'json' ? r.json() : r.blob();
+}
+async function odDel(files, name){ const f = files.get(name); if (f){ await odFetch(`/me/drive/items/${f.id}`, {method: 'DELETE'}).catch(() => {}); files.delete(name); } }
+
+/* ---------- 작품 폴더 (OneDrive) ---------- */
+// 폴더 아래 전부를 delta 로 한 번에 받는다(개인 OneDrive). 안 되면 폴더마다 따라 내려간다.
+async function odIndex(src, onProgress){
+  const items = new Map(); let url = `/me/drive/items/${src.folderId}/delta?$select=id,name,size,file,folder,parentReference,lastModifiedDateTime,deleted`; let n = 0;
+  try{
+    while (url){ const j = await (await odFetch(url)).json(); for (const it of j.value || []){ if (it.deleted) items.delete(it.id); else items.set(it.id, it); } n += (j.value || []).length; onProgress?.(n); url = j['@odata.nextLink'] || ''; }
+  }catch(e){ if (e.message === 'auth') throw e; return odIndexWalk(src, onProgress); }
+  const pathOf = new Map([[src.folderId, src.name]]);
+  const resolve = id => { if (pathOf.has(id)) return pathOf.get(id); const it = items.get(id); if (!it) return null; const pp = resolve(it.parentReference?.id); const p = pp === null ? null : pp + '/' + it.name; pathOf.set(id, p); return p; };
+  const files = [];
+  for (const it of items.values()){ if (!it.file || it.id === src.folderId) continue; const pp = resolve(it.parentReference?.id); if (pp) files.push({id: it.id, rel: pp + '/' + it.name, size: it.size || 0, mtime: Date.parse(it.lastModifiedDateTime) || 0}); }
+  return files;
+}
+async function odIndexWalk(src, onProgress){
+  const files = [], queue = [{id: src.folderId, path: src.name}];
+  const worker = async () => {
+    while (queue.length){
+      const {id, path} = queue.shift(); let url = `/me/drive/items/${id}/children?$top=999&$select=id,name,size,file,folder,lastModifiedDateTime`;
+      while (url){ const j = await (await odFetch(url)).json(); for (const it of j.value || []){ if (it.folder) queue.push({id: it.id, path: path + '/' + it.name}); else if (it.file) files.push({id: it.id, rel: path + '/' + it.name, size: it.size || 0, mtime: Date.parse(it.lastModifiedDateTime) || 0}); } url = j['@odata.nextLink'] || ''; }
+      onProgress?.(files.length);
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  return files;
+}
+// 웹툰 한 화의 그림 수십 장을 열 때 주소를 20개씩 묶어 받는다 ($batch)
+const ODQ = {wait: [], t: 0};
+function odUrlBatched(id){
+  return new Promise((res, rej) => { ODQ.wait.push({id, res, rej}); clearTimeout(ODQ.t); ODQ.t = setTimeout(odFlushUrls, ODQ.wait.length >= 20 ? 0 : 25); });
+}
+async function odFlushUrls(){
+  const all = ODQ.wait.splice(0);
+  for (let i = 0; i < all.length; i += 20){
+    const part = all.slice(i, i + 20);
+    try{
+      const j = await (await odFetch('/$batch', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({requests: part.map((q, k) => ({id: String(k), method: 'GET', url: `/me/drive/items/${q.id}?$select=id,@microsoft.graph.downloadUrl`}))})})).json();
+      const by = new Map((j.responses || []).map(r => [r.id, r]));
+      part.forEach((q, k) => { const r = by.get(String(k)); const u = r?.status === 200 && r.body?.['@microsoft.graph.downloadUrl']; u ? q.res(u) : odDownloadUrl(q.id).then(q.res, q.rej); });
+    }catch(e){ part.forEach(q => q.rej(e)); }
+  }
+}
+const OD_INFLIGHT = new Map();
+function odBlob(f){ if (!OD_INFLIGHT.has(f.id)) OD_INFLIGHT.set(f.id, odBlob0(f).finally(() => OD_INFLIGHT.delete(f.id))); return OD_INFLIGHT.get(f.id); }
+async function odBlob0(f){
+  const key = 'od:' + f.id;
+  try{ const c = await idb.tx('readonly', s => s.get(key), 'dcache'); if (c && c.mtime === f.mtime) return c.blob; }catch{}
+  const r = await fetch(await odUrlBatched(f.id)); if (!r.ok) throw new Error('download ' + r.status);
+  const b = await r.blob();
+  try{ await idb.tx('readwrite', s => s.put({id: key, blob: b, mtime: f.mtime}), 'dcache'); }catch{}
+  return b;
+}
+async function odFiles(src, refresh){
+  let idx = null;
+  if (!refresh){ try{ idx = (await idb.tx('readonly', s => s.get('__idx:' + src.id), 'dcache'))?.files; }catch{} }
+  if (!idx){
+    idx = await odIndex(src, n => srcStatus(src.id, `목록 받는 중… 항목 ${n.toLocaleString()}개`));
+    try{ await idb.tx('readwrite', s => s.put({id: '__idx:' + src.id, files: idx, t: Date.now()}), 'dcache'); }catch{}
+  }
+  return idx.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => odBlob(f)}), {remote: true}));
+}
+// '노벨'·'만화'·'웹툰' 같은 종류 폴더가 바로 아래에 있으면 하나씩 따로 연결한다(종류가 맞게 나뉘게)
+const KIND_DIR = /^(노벨|소설|novel|만화|망가|manga|comic|웹툰|webtoon)s?$/i;
+
+/* ---------- 폴더 고르기 화면 (연결 시트의 드라이브 고르기 칸을 같이 쓴다) ---------- */
+async function odBrowseOpen(){
+  if (!odClient()){ openTool('set'); $('#odSetup').open = true; $('#odClient').focus(); return toast('설정 탭에서 OneDrive 클라이언트 ID를 먼저 넣어 주세요'); }
+  if (!odReady()) return toast('OneDrive는 https 주소(설치한 앱)나 윈도우 프로그램에서 연결할 수 있어요');
+  if (!odLinked()){ store.set('od.afterLogin', 'browse'); try{ await odToken(true); }catch(e){ return toast('Microsoft 로그인을 마치지 못했어요 (' + e.message + ')'); } }
+  if (!$('#linkSheet').classList.contains('open')){ closeSheets(); $('#linkSheet').classList.add('open'); renderSources(); }
+  DRV.kind = 'od'; DRV.stack = [{id: 'root', name: 'OneDrive'}]; $('#drvBrowse').hidden = false; drvRender();
+}
+async function odFolders(id){
+  const out = []; let url = id === 'root' ? '/me/drive/root/children?$top=999&$select=id,name,folder' : `/me/drive/items/${id}/children?$top=999&$select=id,name,folder`;
+  while (url){ const j = await (await odFetch(url)).json(); for (const it of j.value || []) if (it.folder) out.push({id: it.id, name: it.name, n: it.folder.childCount}); url = j['@odata.nextLink'] || ''; }
+  return out.sort((a, b) => natural(a.name, b.name));
+}
+async function odPick(here){
+  const list = libSources().filter(s => s.id !== '__pending');
+  let targets = [here];
+  try{ const subs = (await odFolders(here.id)).filter(f => KIND_DIR.test(f.name)); if (subs.length) targets = subs; }catch{}
+  const add = targets.filter(t => !list.some(s => s.kind === 'onedrive' && s.folderId === t.id)).map(t => ({id: uid(), kind: 'onedrive', name: t.name, folderId: t.id, t: Date.now()}));
+  if (!add.length) return toast('이미 연결한 폴더예요');
+  libSave([...list, ...add]); $('#drvBrowse').hidden = true;
+  if (targets.length > 1) toast(`${add.map(s => s.name).join('·')} 폴더를 따로 연결했어요`);
+  for (const s of add) await loadSource(s, {quiet: false});
+}
+
+/* ---------- 설정 화면 ---------- */
+function odStatus(t){ const el = $('#odStatus'); if (el) el.textContent = t; }
+function odUI(){
+  const linked = odLinked();
+  $('#odClient').value = store.get('od.client', '');
+  $('#odRedirWeb').textContent = odWebOk() ? odRedirect() : 'https://xoqls0720.github.io/novel-viewer/';
+  $('#odSetup').hidden = !!OD_CLIENT_ID && !store.get('od.client', '');
+  $('#odConnect').hidden = linked; $('#odNow').hidden = !linked; $('#odOut').hidden = !linked;
+  $('#odUse').checked = SYNC_OD();
+  if (linked) store.set('od.everLinked', true);
+  if (!odClient()) odStatus('처음 한 번 앱 등록이 필요해요'); else if (!linked) odStatus(odReady() ? '연결 전' : 'https 주소에서 열어 주세요');
+  else { const last = store.get('gd.last', 0); odStatus(SYNC_OD() && last ? '마지막 ' + new Date(last).toLocaleString('ko-KR', {month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit'}) : '연결됨'); }
+}
+$('#odSave').onclick = () => { store.set('od.client', $('#odClient').value.trim()); odUI(); toast('저장했어요'); };
+$('#odConnect').onclick = async () => {
+  if ($('#odClient').value.trim() && $('#odClient').value.trim() !== store.get('od.client', '')) store.set('od.client', $('#odClient').value.trim());
+  if (!odClient()){ $('#odSetup').open = true; $('#odClient').focus(); return toast('먼저 앱 등록에서 받은 클라이언트 ID를 넣어 주세요'); }
+  if (!odReady()) return toast('OneDrive는 https 주소(설치한 앱)나 윈도우 프로그램에서 연결할 수 있어요');
+  store.set('sync.backend', 'od');
+  try{ await odToken(true); odUI(); toast('OneDrive에 연결했어요'); gdSync(false); }catch(e){ odStatus('연결하지 못했어요 (' + e.message + ')'); }
+};
+$('#odNow').onclick = () => { if (!SYNC_OD()){ store.set('sync.backend', 'od'); odUI(); } gdSync(true); };
+$('#odOut').onclick = async () => {
+  if (!confirm('이 기기에서 OneDrive 연결을 끊을까요? (OneDrive에 맞춰 둔 파일은 남아요)')) return;
+  odRtSet(''); OD.token = null; store.set('od.linked', false); store.set('od.everLinked', false); try{ await window.nvDesktop?.odLogout?.(); }catch{}
+  if (SYNC_OD()) store.set('sync.backend', ''); odUI(); toast('연결을 끊었어요');
+};
+$('#odUse').onchange = () => { store.set('sync.backend', $('#odUse').checked ? 'od' : ''); odUI(); toast($('#odUse').checked ? 'OneDrive로 맞춰요' : 'OneDrive 맞추기를 껐어요'); };
+$('#srcOd').onclick = () => odBrowseOpen();
+odUI();
+odHandleReturn();
 </script>
 </body>
 </html>
