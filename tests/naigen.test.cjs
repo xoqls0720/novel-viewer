@@ -20,10 +20,11 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
     };
   }, {png: PNG.toString('base64')});
   await p.goto(APP); await p.waitForTimeout(700);
-  await p.evaluate(() => { localStorage.setItem('nv.set.stStart', 'false'); localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); localStorage.setItem('nv.provider', '"gemini"'); localStorage.setItem('nv.set.provider', '"gemini"'); localStorage.setItem('nv.set.naiChars', JSON.stringify('카엘: 1boy, adult, black hair, golden eyes')); localStorage.setItem('nv.set.naiStyle', JSON.stringify('masterpiece, korean webtoon style')); });
+  await p.evaluate(() => { localStorage.setItem('nv.set.ngModel', JSON.stringify('nai-diffusion-4-5-full')); localStorage.removeItem('nv.set.ngV5'); localStorage.setItem('nv.set.stStart', 'false'); localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); localStorage.setItem('nv.provider', '"gemini"'); localStorage.setItem('nv.set.provider', '"gemini"'); localStorage.setItem('nv.set.naiChars', JSON.stringify('카엘: 1boy, adult, black hair, golden eyes')); localStorage.setItem('nv.set.naiStyle', JSON.stringify('masterpiece, korean webtoon style')); });
   await p.reload(); await p.waitForTimeout(800);
   await p.click('#tgTool').catch(() => {}); await p.click('.tabs button[data-tab=nai]'); await p.waitForTimeout(200);
   console.log('desktop ui:', await p.isVisible('#ngGo'), '| web hint hidden:', !(await p.isVisible('#ngWeb')));
+  console.log('old model upgraded:', await p.inputValue('#ngModel'), '| style sel:', await p.$eval('#naiStyleSel', e => e.value), '|', (await p.textContent('#naiStyleNow')).slice(0, 22));
   // 토큰 없이 누르면 안내
   await p.click('#ngGo'); await p.waitForTimeout(300);
   console.log('no token:', (await p.textContent('#toast')).includes('토큰'), '| no request:', await p.evaluate(() => window.__nai.length) === 0);
@@ -35,6 +36,11 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   await p.click('#ngGrab'); await p.waitForTimeout(600);
   console.log('grab:', await p.textContent('#ngStat'));
   console.log('grabbed fields:', await p.inputValue('#ngModel'), await p.inputValue('#ngSteps'), await p.inputValue('#ngScale'), await p.$eval('#ngSize', e => e.value), '| token:', await p.evaluate(() => JSON.parse(localStorage.getItem('nv.naiKey'))));
+  // 노벨AI 탭에서 프롬프트를 만들면 그림체가 들어간다
+  await p.click('.tabs button[data-tab=nai]'); await p.fill('#naiIn', '성문 앞의 카엘'); await p.selectOption('#naiProv', 'gemini'); await p.click('#naiGo'); await p.waitForTimeout(1200);
+  const nb = await p.$$eval('#naiOut .fv', e => e.map(x => x.textContent));
+  console.log('tab style in base:', nb[0].startsWith('0.4::artist:ask_(askzy) ::') && nb[0].includes('snowy castle gate') && nb[0].endsWith('no text'));
+  console.log('tab neg from style:', /hand on face/.test(nb.at(-2) || '') || /hand on face/.test(nb.join(' ')));
   // 장면 두 줄 × 2장
   await p.fill('#ngList', '카엘이 눈 내리는 성 앞에서 뒤돌아본다\n레비안이 새벽 얼음 호수에서 검을 휘두른다');
   await p.fill('#ngEach', '2'); await p.selectOption('#ngSize', 'portrait'); await p.fill('#ngSteps', '28'); await p.evaluate(() => { document.querySelector('#ngSize').dispatchEvent(new Event('change')); });
@@ -44,7 +50,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   const reqs = await p.evaluate(() => window.__nai.map(x => x.body));
   console.log('requests:', reqs.length, '| model:', reqs[0].model, '| size:', reqs[0].parameters.width + 'x' + reqs[0].parameters.height, '| steps:', reqs[0].parameters.steps);
   console.log('kept from grab:', reqs[0].parameters.sampler, reqs[0].parameters.noise_schedule, reqs[0].parameters.cfg_rescale, '| dropped img/stream:', !('image' in reqs[0].parameters) && !('stream' in reqs[0].parameters));
-  console.log('payload keys ok:', ['input', 'model', 'action'].every(k => k in reqs[0]), '| v4 caption:', reqs[0].parameters.v4_prompt.caption.base_caption.includes('snowy castle'), '| style in base:', reqs[0].parameters.v4_prompt.caption.base_caption.includes('korean webtoon'));
+  console.log('payload keys ok:', ['input', 'model', 'action'].every(k => k in reqs[0]), '| v4 caption:', reqs[0].parameters.v4_prompt.caption.base_caption.includes('snowy castle'), '| style in base:', reqs[0].parameters.v4_prompt.caption.base_caption.startsWith('0.4::artist:ask_(askzy) ::'));
   console.log('char prompt:', reqs[0].parameters.characterPrompts[0].prompt, '| center:', JSON.stringify(reqs[0].parameters.characterPrompts[0].center), '| use_coords:', reqs[0].parameters.use_coords);
   console.log('neg:', reqs[0].parameters.v4_negative_prompt.caption.base_caption.includes('blurry'), '| seeds differ:', new Set(reqs.map(r => r.parameters.seed)).size === reqs.length);
   const scraps = await p.evaluate(() => new Promise(res => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('scraps').objectStore('scraps').getAll(); g.onsuccess = () => res(g.result.map(x => x.epName)); }; }));

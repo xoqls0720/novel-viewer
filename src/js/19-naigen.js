@@ -132,6 +132,12 @@ $('#ngStop').onclick = () => { NG.stop = true; ngStat('멈추는 중… (그리�
 $('#naiKey').value = ''; keySaved('naiKey');
 $('#ngSave').onclick = () => saveKey('naiKey');
 $('#ngDel').onclick = () => delKey('naiKey');
+// 예전 판에서 저장해 둔 옛 모델이 새 기본값(V5 full)을 덮지 않게 한 번만 올린다
+if (!store.get('set.ngV5', false)){
+  const old = store.get('set.ngModel', '');
+  if (/^nai-diffusion-4/.test(old) && !store.get('set.ngTpl', null)) store.set('set.ngModel', NAI_MODEL);
+  store.set('set.ngV5', true);
+}
 for (const id of ['ngModel', 'ngSteps', 'ngScale', 'ngSize']){ const el = $('#' + id); const v = store.get('set.' + id, null); if (v !== null) el.value = v; el.addEventListener('change', () => store.set('set.' + id, el.value)); }
 if (store.get('set.ngTpl', null)) ngStat('노벨AI에서 가져온 설정을 쓰고 있어요');
 if (DESKTOP) $$('.nai-desktop').forEach(el => el.hidden = false); else $('#ngWeb').hidden = false;

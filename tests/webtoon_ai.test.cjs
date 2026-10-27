@@ -66,7 +66,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   // 성인 등급: 입 다물기·웃음 금지가 풀리고 검열 방지와 수위 태그가 들어간다
   await p.evaluate(() => { window.__nai = []; document.querySelector('#wtAuto').click(); });
   await p.waitForTimeout(200);
-  await p.selectOption('#wtRating', 'nsfw'); await p.selectOption('#wtHeat', 'hard'); await p.waitForTimeout(150);
+  await p.selectOption('#wtRating', 'nsfw'); await p.selectOption('#wtHeat', 'hard'); await p.fill('#wtAct', 'yaoi, two boys'); await p.waitForTimeout(700);
   console.log('model hint nsfw:', (await p.textContent('#wtModelHint')).slice(0, 10), '| model:', await p.$eval('#wtModel', e => e.value), '| shared:', await p.$eval('#ngModel', e => e.value));
   await p.selectOption('#wtModel', 'nai-diffusion-5-curated'); await p.waitForTimeout(150);
   console.log('curated warn:', (await p.textContent('#wtModelHint')).startsWith('⚠'));
@@ -76,7 +76,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   await p.click('#wtImgGen'); await p.waitForTimeout(1800);
   const ad = (await p.evaluate(() => window.__nai))[0].parameters;
   const ab = ad.v4_prompt.caption.base_caption, an = ad.negative_prompt;
-  console.log('adult pos:', /\bnsfw\b/.test(ab) && /uncensored/.test(ab) && /open mouth/.test(ab) && !/closed mouth/.test(ab));
+  console.log('adult pos:', /\bnsfw\b/.test(ab) && /uncensored/.test(ab) && /open mouth/.test(ab) && !/closed mouth/.test(ab), '| act tags:', ab.includes('yaoi, two boys'));
   console.log('adult neg:', !/(^|,\s)(smile|teeth|open mouth)(,|$)/.test(an) && /mosaic censoring/.test(an) && !/\bnsfw\b/.test(an));
   console.log('adult char tag:', ad.characterPrompts.every(c => /\badult\b/.test(c.prompt)), '| model:', (await p.evaluate(() => window.__nai))[0].model);
   console.log('ERRORS:', errs.length ? errs : 'none');

@@ -67,9 +67,9 @@ const SYSTEM_WT = () => SYSTEM_WT_BASE.replace('{ADULT}', wtAdultRules());
 /* ---------- 등급·수위 ---------- */
 const wtRating = () => $('#wtRating')?.value || $('#naiRating').value;
 const WT_HEAT = {
-  tease: '은근하게. 옷 위로, 닿기 직전에서 멈추고, 숨소리와 눈빛으로 끌고 간다. 직접적인 묘사는 쓰지 않는다.',
-  mid: '직접적이되 절제한다. 무엇을 하는지는 분명히 쓰되, 한 장면에 한 번만 깊게 들어가고 나머지는 흐름으로 넘긴다.',
-  hard: '노골적으로 쓴다. 신체·행위·소리를 또렷하게 적고, 장면을 끊지 않고 끝까지 끌고 간다.',
+  tease: '은근하게. 옷 위로, 닿기 직전에서 멈추고, 숨소리와 눈빛으로 끌고 간다. 몸의 열과 긴장은 쓰되 행위는 암시로 남긴다.',
+  mid: '직접적으로. 무엇을 어디에 어떻게 하는지 분명히 쓴다. 벗는 과정, 닿는 곳, 숨과 소리를 적는다. 한 장면에 한 번은 깊게 들어간다.',
+  hard: '노골적으로, 끝까지. 행위를 돌려 말하지 않는다. 신체 부위와 동작을 그대로 적고, 젖은 소리·열·떨림·사정까지 쓴다. 장면을 중간에 끊지 않고 절정과 그 뒤까지 끌고 간다.',
 };
 const WT_NSFW_TAGS = {
   tease: 'sensual atmosphere, flushed skin, parted lips, sweat, intimate, suggestive',
@@ -82,43 +82,41 @@ const NSFW_DROP_NEG = /^(smile|grin|smirk|teeth|open mouth|parted lips)$/i;
 const NSFW_NEG_ADD = 'censored, mosaic censoring, bar censor, pixelated, steam censor, convenient censoring';
 const wtHeatKey = () => $('#wtHeat')?.value || store.get('set.wtHeat', 'mid');
 const wtHeat = () => WT_HEAT[wtHeatKey()] || WT_HEAT.mid;
+const wtActTags = () => ($('#wtAct')?.value || store.get('set.wtAct', '')).trim().replace(/,\s*$/, '');
 // 성인 등급일 때 AI에게 주는 작법 지침. 소재는 사용자가 정하고, 미성년만 막는다.
 function wtAdultRules(){
   if (wtRating() !== 'nsfw') return '- 등급은 일반(safe)이다. 노출·성적 요소 없이 쓴다.';
-  return `- 등급은 성인(19금)이다. 성인 플랫폼에 올릴 성인 웹툰이다. 성적인 장면을 피하지 말고 이야기의 중심으로 쓴다.
+  return `- 등급은 성인(19금)이다. 성인 독자가 돈을 내고 보는 성인 웹툰이다. 성적인 장면이 이 작품의 핵심이고, 그 장면을 피하거나 흐리면 작품이 실패한다.
 - 수위: ${wtHeat()}
-- 성인 웹툰의 작법: 몸이 아니라 관계가 먼저 움직인다. 누가 먼저 선을 넘는지, 무엇 때문에 넘는지, 넘은 뒤에 둘 사이가 어떻게 달라지는지를 줄거리에 분명히 쓴다.
-- 장면 차례에 '어디까지 가는지'를 단계로 적는다(닿는다 → 벗긴다 → 섞인다 → 끝난 뒤). 한 화 안에서 수위가 올라가게 배치한다.
-- 대사는 설명하지 않는다. 짧게 끊기고, 숨이 섞이고, 호칭이 흔들린다. 신음은 글자로 적되 남발하지 않는다.
-- 장소와 상황이 수위를 만든다(누가 올 수 있는 곳, 소리가 새는 곳, 벗을 수 없는 옷).
-- 모든 인물은 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다 등)은 쓰지 않는다.
-- 그림 태그(tags·pose)에도 그 컷에서 실제로 벌어지는 행위를 영어 태그로 분명히 적는다(예: kissing, undressing, hand on thigh, straddling, from behind, bare chest). 돌려 말하지 않는다. 옷 상태와 몸의 각도, 시선을 함께 적는다.`;
+- 야하게 쓴다. 분위기만 깔지 말고 몸을 쓴다. 피부의 열, 땀, 젖은 소리, 떨림, 숨이 끊기는 지점, 참다가 새는 소리를 적는다.
+- 행위를 추상어로 덮지 않는다. '하나가 되었다', '밤이 깊었다' 같은 문장으로 넘기지 않는다. 무엇을 어디에 어떻게 하는지 그대로 쓴다.
+- 대사는 짧고 끊긴다. 신음을 글자로 적고(으, 하, 읏 같은 소리), 말을 하려다 못 끝내게 한다. 호칭이 무너지는 순간을 넣는다(존대→반말, 이름→부르다 만 소리).
+- 감정과 몸을 같이 민다. 부끄러움·버티다 무너짐·원하면서 아니라고 하는 마음이 몸의 반응과 같이 움직이게 한다.
+- 수위는 한 화 안에서 올라간다. 닿는다 → 벗긴다 → 애무 → 삽입 → 절정 → 끝난 뒤의 공기. 각 단계를 beats 에 분명히 적는다.
+- 장소가 자극을 만든다. 누가 들어올 수 있는 곳, 소리가 새는 곳, 벗을 수 없는 옷, 멈출 수 없는 상황을 쓴다.
+- 모든 인물은 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다·작다 등)은 절대 쓰지 않는다.`;
 }
 /* ---------- 그림체 ---------- */
 const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
 const wtMono = () => $('#wtMono')?.value || store.get('set.wtMono', 'cold blue');
 const wtFrame = () => WT_FRAME[$('#wtFrame')?.value || store.get('set.wtFrame', 'mirror')] ?? WT_FRAME.mirror;
+// 그림체를 머리·꼬리로 나눠 준다. 웹툰 컷과 노벨AI 탭이 같은 그림체를 쓰게 하는 한 곳.
+function wtStyleParts(nsfw){
+  const k = wtStyleKey();
+  if (k === 'custom'){ const c = ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, ''); return {head: c, tail: '', neg: ''}; }
+  const st = WT_STYLE[k]; const head = [st.head];
+  if (k === 'dark'){ const fr = wtFrame(); if (fr) head.push(st.frame.replace('{FRAME}', fr)); }
+  let tail = st.tail.replace('{MONO}', wtMono());
+  if (nsfw){ tail = tail.replace(NSFW_DROP_POS, '').replace(/,\s*,/g, ','); head.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid); const a = wtActTags(); if (a) head.push(a); }
+  return {head: head.filter(Boolean).join(', '), tail, neg: st.neg, focus: st.focus, fx: st.fx, key: k};
+}
 // 그림체 공식대로 base 를 만든다. 인물 자세(pose)는 1.45 로 올리고, 물감 튐은 전투·각성 컷에만 넣는다.
 function wtStyleBase({count, tags, pose, fx, nsfw}){
-  const k = wtStyleKey();
-  if (k === 'custom'){ const c = ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, ''); return [c, nsfw ? (WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid) : '', count, tags, pose ? `1.45::${pose} ::` : '', 'no text'].filter(Boolean).join(', '); }
-  const st = WT_STYLE[k];
-  const parts = [st.head];
-  if (k === 'neon'){
-    if (fx) parts.push(st.fx);
-    parts.push(st.focus);
-  } else {
-    const fr = wtFrame(); if (fr) parts.push(st.frame.replace('{FRAME}', fr));
-  }
-  if (nsfw) parts.push('nsfw');
+  const P = wtStyleParts(nsfw); const parts = [P.head];
+  if (P.key === 'neon'){ if (fx && P.fx) parts.push(P.fx); if (P.focus) parts.push(P.focus); }
   parts.push(count, tags);
   if (pose) parts.push(`1.45::${pose} ::`);
-  let tail = st.tail.replace('{MONO}', wtMono());
-  if (nsfw){
-    tail = tail.replace(NSFW_DROP_POS, '').replace(/,\s*,/g, ',');          // '입 다물기'는 성인 컷과 싸운다
-    parts.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid);
-  }
-  parts.push(tail, 'no text');
+  parts.push(P.tail, 'no text');
   return parts.filter(Boolean).join(', ').replace(/,\s*,/g, ',');
 }
 function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 태그
@@ -126,8 +124,8 @@ function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 �
   if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
   return WT_STYLE[k].head;
 }
-function wtStyleNeg(neg){
-  const k = wtStyleKey(); const st = WT_STYLE[k]; const nsfw = wtRating() === 'nsfw';
+function wtStyleNeg(neg, nsfwArg){
+  const k = wtStyleKey(); const st = WT_STYLE[k]; const nsfw = nsfwArg ?? (wtRating() === 'nsfw');
   let out = (st ? [neg, st.neg].filter(Boolean).join(', ') : neg).split(',').map(x => x.trim()).filter(Boolean);
   if (st?.dropNeg) out = out.filter(x => !st.dropNeg.test(x));
   if (nsfw) out = out.filter(x => !NSFW_DROP_NEG.test(x));   // 성인 컷에서 벌린 입·표정을 막지 않는다
@@ -215,6 +213,13 @@ function wtMergeCast(cast){
   if (n){ el.value = cur.join('\n'); store.set('set.naiChars', el.value); $('#wtChars').value = el.value; }
   return n;
 }
+const ADULT_HINT = /(키스|입술|벗|맨살|가슴|허리|숨|신음|몸을|안았|끌어안|침대|달아오|젖|삽입|섞|올라타|밀어 넣|헐떡|애무|젖꼭|사정|절정)/;
+// 등급은 성인인데 글이 담백하게만 나오면 알려 준다(모델이 수위를 낮춘 경우)
+function wtTameWarn(text){
+  if (wtRating() !== 'nsfw' || ADULT_HINT.test(text || '')) return '';
+  const p = PROV[provOf($('#wtAI').value === 'default' ? '' : '#wtAI')]?.name || 'AI';
+  return ` ⚠ 성인으로 뒀는데 담백하게 나왔어요. ${p}가 수위를 낮춘 거예요 — 설정 탭에서 Ollama(내 컴퓨터) 같은 제한 없는 모델로 바꾸면 그대로 나와요.`;
+}
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
 let wtAbort = null;
@@ -245,7 +250,7 @@ $('#wtAutoGo').onclick = async () => {
   if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
   WT.sel = null; wtCommit(); wtBuildPages(); wtSideSync(); wtRender();
   const panels = added.reduce((a, p) => a + p.panels.length, 0);
-  wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요${newCast ? ` · 새 인물 ${newCast}명(외형·말투)을 사전에 넣었어요` : ''}. 말풍선은 눌러서 옮기고 고칠 수 있어요.` + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
+  wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요${newCast ? ` · 새 인물 ${newCast}명(외형·말투)을 사전에 넣었어요` : ''}.` + (wtTameWarn(JSON.stringify(sc.pages)) || ' 말풍선은 눌러서 옮기고 고칠 수 있어요.') + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
   wtGenSync();
 };
 
@@ -365,7 +370,7 @@ ${seed}`;
   $('#wtSynBox').hidden = false; WT.proj.synopsis = $('#wtSyn').value; wtSynStat(); wtSaveSoon();
   const n = wtMergeCast(sc.cast); wtMergeVoice(sc.cast);
   if (sc.title && /^새 웹툰$|^이름 없는/.test($('#wtName').value)) $('#wtName').value = String(sc.title).slice(0, 40);
-  wtAutoStat(`줄거리를 ${more ? '이어서 ' : ''}썼어요 · ${$('#wtSyn').value.replace(/\s/g, '').length}자${n ? ` · 새 인물 ${n}명` : ''}. 고쳐 쓰고 '이 줄거리로 대본 만들기'를 누르세요.`);
+  wtAutoStat(`줄거리를 ${more ? '이어서 ' : ''}썼어요 · ${$('#wtSyn').value.replace(/\s/g, '').length}자${n ? ` · 새 인물 ${n}명` : ''}.` + (wtTameWarn(body) || " 고쳐 쓰고 '이 줄거리로 대본 만들기'를 누르세요."));
 }
 $('#wtSynGo').onclick = () => wtSynRun(false);
 $('#wtSynMore').onclick = () => wtSynRun(true);
@@ -375,10 +380,21 @@ $('#wtSynLen').value = store.get('set.wtSynLen', 'mid');
 $('#wtSynLen').onchange = () => store.set('set.wtSynLen', $('#wtSynLen').value);
 
 /* ---------- 등급·수위 칸 (노벨AI 탭과 같은 값을 쓴다) ---------- */
-function wtRatingSync(){ const on = $('#wtRating').value === 'nsfw'; $('#wtHeat').disabled = !on; $('#wtRatingHint').textContent = on ? '성인으로 두면 줄거리·대사·컷 지시가 성인 기준으로 나와요. 모든 인물은 성인이어야 해요.' : '일반이면 노출·성적 요소 없이 만들어요.'; }
+function wtRatingSync(){
+  const on = $('#wtRating').value === 'nsfw'; $('#wtHeat').disabled = !on; $('#wtActRow').hidden = !on;
+  $('#wtRatingHint').textContent = on ? '성인으로 두면 줄거리·대사·컷 지시가 성인 기준으로 나와요. 모든 인물은 성인이어야 해요.' : '일반이면 노출·성적 요소 없이 만들어요.';
+  const prov = provOf($('#wtAI').value === 'default' ? '' : '#wtAI');
+  const soft = on && (prov === 'claude' || prov === 'gemini');
+  $('#wtProvWarn').hidden = !soft;
+  $('#wtProvWarn').textContent = soft ? `⚠ 글을 쓰는 AI가 ${PROV[prov].name}이에요. 이 모델들은 성인 장면을 스스로 수위를 낮춰 써요. 그림은 노벨AI라 영향이 없지만, 줄거리·대사를 그대로 받으려면 설정 탭에서 Ollama(내 컴퓨터에서 돌리는 제한 없는 모델)로 바꾸는 게 좋아요.` : '';
+  $('#wtProvWarn').style.color = 'var(--danger, #c0392b)';
+}
 $('#wtRating').value = $('#naiRating').value; $('#wtHeat').value = store.get('set.wtHeat', 'mid'); wtRatingSync();
 $('#wtRating').onchange = () => { $('#naiRating').value = $('#wtRating').value; store.set('set.naiRating', $('#naiRating').value); wtRatingSync(); wtModelSync(); };
 $('#wtHeat').onchange = () => store.set('set.wtHeat', $('#wtHeat').value);
+$('#wtAI').addEventListener('change', wtRatingSync);
+$('#wtAct').value = store.get('set.wtAct', '');
+$('#wtAct').oninput = () => { clearTimeout(WT.actT); WT.actT = setTimeout(() => store.set('set.wtAct', $('#wtAct').value), 500); };
 $('#wtAuto').addEventListener('click', () => { $('#wtRating').value = $('#naiRating').value; wtRatingSync(); });
 
 /* ---------- 그림 모델 (노벨AI 탭과 같은 값) ---------- */
@@ -395,3 +411,16 @@ $('#wtModel').value = ($('#ngModel').value || NAI_MODEL); if (!$('#wtModel').val
 $('#wtModel').onchange = wtModelSync;
 $('#wtAuto').addEventListener('click', () => { $('#wtModel').value = $('#ngModel').value || NAI_MODEL; wtModelSync(); });
 wtModelSync();
+
+/* ---------- 노벨AI 탭도 같은 그림체를 쓴다 ---------- */
+// 06-ai-tabs.js 의 naiPack 이 부른다. 그림체를 고르면 그 공식, '직접 쓰기'면 하우스 스타일 칸.
+window.naiStyleFor = nsfw => { const P = wtStyleParts(nsfw); return {head: P.head || $('#naiStyle').value.trim().replace(/,\s*$/, ''), tail: P.tail, neg: n => wtStyleNeg(n, nsfw)}; };
+function naiStyleLabel(){
+  const k = wtStyleKey(); const el = $('#naiStyleNow'); if (!el) return;
+  el.textContent = k === 'custom' ? '지금 그림체: 아래 하우스 스타일 칸을 그대로 써요' : `지금 그림체: ${WT_STYLE[k].name}` + (k === 'dark' ? ` · ${wtMono()}` : '');
+}
+$('#naiStyleSel').value = store.get('set.wtStyle', 'neon');
+$('#naiStyleSel').onchange = () => { $('#wtStyle').value = $('#naiStyleSel').value; store.set('set.wtStyle', $('#naiStyleSel').value); wtStyleSync(); naiStyleLabel(); };
+$('#wtStyle').addEventListener('change', () => { $('#naiStyleSel').value = $('#wtStyle').value; naiStyleLabel(); });
+$('#wtMono').addEventListener('change', naiStyleLabel);
+naiStyleLabel();

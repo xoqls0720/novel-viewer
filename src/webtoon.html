@@ -88,7 +88,9 @@
       <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요.</div>
       <div class="row tight"><label>등급</label><select id="wtRating"><option value="safe">일반</option><option value="nsfw">성인 (19금)</option></select>
         <label>수위</label><select id="wtHeat"><option value="tease">은근하게 · 분위기와 암시</option><option value="mid" selected>보통 · 직접적이되 절제</option><option value="hard">직접적으로 · 노골적인 묘사</option></select></div>
-      <div class="hint" id="wtRatingHint">성인으로 두면 줄거리와 대사, 컷 지시가 전부 성인 기준으로 나와요. 모든 인물은 성인이어야 해요.</div>
+      <div class="hint" id="wtRatingHint"></div>
+      <div class="hint" id="wtProvWarn" hidden></div>
+      <div class="row tight" id="wtActRow" hidden><label>컷 성인 태그</label><input type="text" id="wtAct" class="grow" placeholder="성인 컷 그림에 늘 더할 영어 태그 (예: yaoi, two boys, kissing, bare chest)" autocomplete="off"></div>
       <div class="row tight"><label>줄거리 분량</label><select id="wtSynLen"><option value="short">짧게 · 3~6문장</option><option value="mid" selected>보통 · 10문장 안팎</option><option value="long">길게 · 장면마다 한 줄씩</option><option value="arc">아주 길게 · 화 나누기까지</option></select></div>
       <div class="row"><button id="wtSynGo" class="grow">줄거리 길게 쓰기</button><button id="wtSynMore">이어서 더 쓰기</button><button id="wtSynStop" hidden>멈추기</button></div>
       <div class="hint">줄거리만 먼저 늘려 보고, 마음에 들면 아래에서 대본으로 넘기면 돼요.</div>

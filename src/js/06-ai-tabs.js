@@ -164,12 +164,11 @@ const SYSTEM_NAI = `너는 NovelAI Diffusion V4.5·V5 프롬프트 전문가다.
 const naiState = {abort: null};
 function naiCharsDict(){ return $('#naiChars').value.split('\n').map(l => l.trim()).filter(Boolean); }
 function naiPack(res){
-  const style = $('#naiStyle').value.trim().replace(/,\s*$/, '');
-  const rating = $('#naiRating').value;
-  const ratingTag = rating === 'nsfw' ? 'nsfw' : '';
-  const base = [style, ratingTag, res.base_prompt].filter(Boolean).join(', ');
-  let neg = [$('#naiNeg').value.trim(), res.negative].filter(Boolean).join(', ');
-  if (rating === 'nsfw') neg = neg.split(',').map(s=>s.trim()).filter(s => s && s !== 'nsfw').join(', ');
+  const rating = $('#naiRating').value, nsfw = rating === 'nsfw';
+  const S = window.naiStyleFor ? window.naiStyleFor(nsfw) : {head: $('#naiStyle').value.trim().replace(/,\s*$/, ''), tail: '', neg: n => n};
+  const base = [S.head, nsfw && !/\bnsfw\b/.test(S.head) ? 'nsfw' : '', res.base_prompt, S.tail, 'no text'].filter(Boolean).join(', ');
+  let neg = S.neg([$('#naiNeg').value.trim(), res.negative].filter(Boolean).join(', '));
+  if (nsfw) neg = neg.split(',').map(s=>s.trim()).filter(s => s && s !== 'nsfw').join(', ');
   else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
   const chars = res.characters.map(c => ({...c, prompt: rating === 'nsfw' && !/\badult\b/.test(c.prompt) ? 'adult, ' + c.prompt : c.prompt}));
   return {base, neg, chars, size: res.size, notes: res.notes, rating};
