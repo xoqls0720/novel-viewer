@@ -4,16 +4,23 @@ const WT_LAYOUT_KEYS = Object.keys(WT_LAYOUTS);
 const WT_STYLE = {
   neon: {
     name: '기본 A · 야수파 + 네온',
-    tags: '0.4::artist:ask_(askzy) ::, 0.75::artist:mika_pikazo ::, fauvist palette, bold complementary colors, vivid saturated color, 1.3::thin hot pink and electric cyan ribbon lines ::, torn paper border, 1.8::his handsome face is the focal point, drawn with obsessive detail ::, beautiful detailed eyes, dramatic rim lighting, painterly, thick confident lineart, high contrast, cinematic composition, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic, absurdres',
-    neg: 'bad face, bad eyes, deformed face, lipstick, makeup, eyeshadow, blush makeup, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face',
+    // 공식 순서: ask + mika + 팔레트 + LINES + LUP + UPM + TORN + [FXP] + FOCUS + 인물(자세 1.4~1.5) + HAIR2 + FPM + DEV2 + 꼬리 + QG + no text
+    head: '0.4::artist:ask_(askzy) ::, 0.75::artist:mika_pikazo ::, fauvist palette, bold complementary colors, vivid saturated color, thick confident lineart, dramatic rim lighting, 1.3::thin hot pink and electric cyan ribbon lines ::, torn paper border',
+    fx: '1.2::paint splatter, dripping paint ::',                                   // 전투·각성 컷에서만
+    focus: '1.8::his handsome face is the focal point, drawn with obsessive detail ::',
+    tail: 'detailed hair strands, beautiful detailed eyes, painterly, high contrast, cinematic composition, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic, absurdres',
+    neg: 'bad face, bad eyes, deformed face, extra fingers, lipstick, makeup, eyeshadow, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face, bright pastel everyday palette',
   },
   dark: {
     name: '기본 B · 암실 룩',
-    tags: '0.4::artist:ask_(askzy) ::, -1.2::bishounen ::, -1::same face ::, 1.1::low key lighting ::, deep shadows, extremely handsome man, beautiful detailed eyes, half-lidded eyes, looking at viewer, closed mouth, 1.2::limited palette ::, 1.2::{MONO} monochrome ::, ink black shadows, dust particles, sparkles, film grain, painterly, cinematic composition, storytelling, high contrast, masterpiece, best quality, very aesthetic',
-    neg: 'bishounen, child, smile, grin, smirk, teeth, lipstick, makeup, katana, glasses, eyewear, 1girl, female, text',
+    head: '0.4::artist:ask_(askzy) ::, -1.2::bishounen ::, -1::same face ::, 1.1::low key lighting ::, deep shadows',
+    frame: '1.15::seen through {FRAME} ::, framed composition, foreground silhouette',   // 액자 효과가 핵심
+    tail: 'extremely handsome man, beautiful detailed eyes, half-lidded eyes, looking at viewer, closed mouth, 1.2::limited palette ::, 1.2::{MONO} monochrome ::, ink black shadows, dust particles, sparkles, film grain, painterly, cinematic composition, storytelling, high contrast, masterpiece, best quality, very aesthetic',
+    neg: 'bishounen, child, smile, grin, smirk, teeth, lipstick, makeup, katana, glasses, eyewear, 1girl, female',
     dropNeg: /\bfilm grain\b/gi,   // 암실 룩은 필름 그레인을 살린다
   },
 };
+const WT_FRAME = {mirror: 'a mirror', photo: 'a wet photograph', tank: 'aquarium glass', shutter: 'a gap in the shutters', fence: 'barbed wire', booth: 'recording booth glass', none: ''};
 const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];
 const WT_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['title', 'synopsis', 'cast', 'pages'],
@@ -25,10 +32,12 @@ const WT_SCHEMA = {
     pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'panels'],
       properties: {
         layout: {type: 'string', description: '틀 키: ' + WT_LAYOUT_KEYS.join(', ')},
-        panels: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['scene', 'tags', 'chars', 'bubbles', 'sfx', 'stickers'],
+        panels: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['scene', 'tags', 'pose', 'fx', 'chars', 'bubbles', 'sfx', 'stickers'],
           properties: {
             scene: {type: 'string', description: '이 컷에서 일어나는 일(한국어 한 줄)'},
-            tags: {type: 'string', description: '그림용 영어 태그: 구도·카메라·표정·배경·조명·소품. 인물 외형은 쓰지 않는다'},
+            tags: {type: 'string', description: '그림용 영어 태그: 구도·카메라·배경·조명·소품. 인물 외형은 쓰지 않는다'},
+            pose: {type: 'string', description: '이 컷의 자세·표정만 영어 태그로. 예: leaning against the wall, looking down, hand reaching out'},
+            fx: {type: 'boolean', description: '전투·각성 컷이면 true. 그 외에는 false'},
             chars: {type: 'array', items: {type: 'string'}, description: '인물 사전에 있는 이름만'},
             bubbles: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['type', 'text'],
               properties: {type: {type: 'string', enum: ['speech', 'round', 'thought', 'shout', 'whisper', 'narr', 'text']}, text: {type: 'string'}, who: {type: 'string'}}}},
@@ -44,7 +53,8 @@ const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 
 틀(layout) 키: 1=한 컷, 2a=위아래 반반, 2b=위 작은 컷+아래 큰 컷, 2c=위 큰 컷+아래 작은 컷, 2d=사선 가로 둘, 2e=사선 세로 둘, 3a=세 칸, 3b=위 큰 컷+아래 둘, 3c=왼쪽 길게+오른쪽 둘, 3d=사선 세 칸, 4a=네 칸.
 - 한 쪽은 1~4컷. 컷 수는 틀과 맞춘다(1→1컷, 2*→2컷, 3*→3컷, 4a→4컷). 장면 전환·감정 고조에는 큰 컷, 반응에는 작은 컷을 쓴다.
 - 첫 쪽은 상황을 한 번에 보여 주는 큰 컷으로 시작하고, 마지막 쪽은 다음이 궁금해지는 여운으로 끝낸다.
-- 컷마다 scene(무슨 일), tags(구도·표정·배경·조명 영어 태그, 예: "upper body, from side, looking down, snow, castle gate, night, soft rim light"), chars(인물 사전의 이름만), bubbles, sfx, stickers.
+- 컷마다 scene(무슨 일), tags(구도·카메라·배경·조명 영어 태그, 예: "upper body, from side, snow, castle gate, night, soft rim light"), pose(그 인물의 자세·표정만, 예: "looking down, hand reaching out, parted lips"), fx(전투·각성 컷이면 true), chars(인물 사전의 이름만), bubbles, sfx, stickers.
+- 밝고 화사한 일상 팔레트는 쓰지 않는다. 빛과 그림자 대비로 감정을 만든다.
 - bubbles: type은 speech(보통 대사), round(둥근 네모 — 차분하거나 긴 대사), thought(속마음 구름), shout(외침), whisper(속삭임), narr(설명 상자: 시간·장소 전환, 회상), text(그림 위 외곽선 독백). 한 말풍선은 22자 안쪽, 한 컷에 말풍선 최대 3개. 대사는 말하듯 짧게, 설명하지 않는다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
 - sfx: 효과음 2~4글자(예: 두근, 쿵, 스윽, 쮸웁). 꼭 필요한 컷에만. 긴 소리는 vert=true.
 - stickers: sweat(당황), burst(충격), heart(설렘), speed(집중선)를 감정이 튀는 컷에만 쓴다.
@@ -55,10 +65,30 @@ const SYSTEM_WT = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 
 
 /* ---------- 그림체 ---------- */
 const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
-function wtStyleTags(){
+const wtMono = () => $('#wtMono')?.value || store.get('set.wtMono', 'cold blue');
+const wtFrame = () => WT_FRAME[$('#wtFrame')?.value || store.get('set.wtFrame', 'mirror')] ?? WT_FRAME.mirror;
+// 그림체 공식대로 base 를 만든다. 인물 자세(pose)는 1.45 로 올리고, 물감 튐은 전투·각성 컷에만 넣는다.
+function wtStyleBase({count, tags, pose, fx, nsfw}){
+  const k = wtStyleKey();
+  if (k === 'custom'){ const c = ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, ''); return [c, nsfw ? 'nsfw' : '', count, tags, pose ? `1.45::${pose} ::` : '', 'no text'].filter(Boolean).join(', '); }
+  const st = WT_STYLE[k];
+  const parts = [st.head];
+  if (k === 'neon'){
+    if (fx) parts.push(st.fx);
+    parts.push(st.focus);
+  } else {
+    const fr = wtFrame(); if (fr) parts.push(st.frame.replace('{FRAME}', fr));
+  }
+  if (nsfw) parts.push('nsfw');
+  parts.push(count, tags);
+  if (pose) parts.push(`1.45::${pose} ::`);
+  parts.push(st.tail.replace('{MONO}', wtMono()), 'no text');
+  return parts.filter(Boolean).join(', ');
+}
+function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 태그
   const k = wtStyleKey();
   if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
-  return WT_STYLE[k].tags.replace('{MONO}', $('#wtMono')?.value || store.get('set.wtMono', 'cold blue'));
+  return WT_STYLE[k].head;
 }
 function wtStyleNeg(neg){
   const k = wtStyleKey(); const st = WT_STYLE[k]; if (!st) return neg;
@@ -70,11 +100,10 @@ function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i
 function wtPanelPrompt(panel){
   const rating = $('#naiRating').value, dict = wtDict();
   const names = String(panel.chars || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
-  const style = wtStyleTags();
   const found = names.filter(n => dict.has(n)), n = found.length;
   const count = n === 0 ? 'no humans' : n === 1 ? (/1girl/.test(dict.get(found[0])) ? '1girl' : '1boy') : `${n}boys`;
   const tags = (panel.tags || '').trim() || 'upper body, looking at viewer';
-  const base = [style, rating === 'nsfw' ? 'nsfw' : '', names.length ? (n ? count : '') : 'no humans', tags, 'no text'].filter(Boolean).join(', ');
+  const base = wtStyleBase({count: names.length ? (n ? count : '') : 'no humans', tags, pose: (panel.pose || '').trim(), fx: !!panel.fx, nsfw: rating === 'nsfw'});
   let neg = [$('#naiNeg').value.trim(), 'speech bubble, text, english text, korean text, subtitle, panel border'].filter(Boolean).join(', ');
   neg = wtStyleNeg(neg);
   if (rating === 'nsfw') neg = neg.split(',').map(s => s.trim()).filter(s => s && s !== 'nsfw').join(', '); else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
@@ -119,7 +148,7 @@ function wtBuildFromScript(sc){
     const want = {1: '1', 2: '2a', 3: '3a', 4: '4a'}[specs.length];
     const key = WT_LAYOUTS[sp.layout] && WT_LAYOUTS[sp.layout].polys.length === specs.length ? sp.layout : want;
     const pg = wtNewPage(key, 2000); const real = pg.panels;
-    specs.forEach((spec, i) => { const pn = real[i]; pn.scene = spec.scene || ''; pn.tags = spec.tags || ''; pn.chars = (spec.chars || []).join(', '); });
+    specs.forEach((spec, i) => { const pn = real[i]; pn.scene = spec.scene || ''; pn.tags = spec.tags || ''; pn.pose = spec.pose || ''; pn.fx = !!spec.fx; pn.chars = (spec.chars || []).join(', '); });
     const order = ['speed', 'stk', 'sfx', 'text', 'bubble'];   // 아래에 깔릴 것부터
     const items = []; specs.forEach((spec, i) => items.push(...wtPlace(pg, real[i], spec)));
     items.sort((a, b) => order.indexOf(a.k === 'stk' && a.kind === 'speed' ? 'speed' : a.k) - order.indexOf(b.k === 'stk' && b.kind === 'speed' ? 'speed' : b.k));
@@ -212,10 +241,12 @@ $('#wtImgGen').onclick = async () => {
 };
 
 /* ---------- 그림체·인물 사전 칸 ---------- */
-function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
+function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark'; $('#wtFrameRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
 $('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
 $('#wtStyle').onchange = wtStyleSync;
 $('#wtMono').onchange = () => store.set('set.wtMono', $('#wtMono').value);
+$('#wtFrame').value = store.get('set.wtFrame', 'mirror');
+$('#wtFrame').onchange = () => store.set('set.wtFrame', $('#wtFrame').value);
 $('#wtStyleIn').oninput = () => { clearTimeout(WT.styT); WT.styT = setTimeout(() => store.set('set.wtStyleIn', $('#wtStyleIn').value), 500); };
 $('#wtChars').value = $('#naiChars').value;
 $('#wtChars').oninput = () => { $('#naiChars').value = $('#wtChars').value; clearTimeout(WT.chT); WT.chT = setTimeout(() => store.set('set.naiChars', $('#wtChars').value), 500); };

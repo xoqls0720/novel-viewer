@@ -8,12 +8,12 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   p.on('dialog', d => d.accept());
   const script = {title: '눈 내리는 성문', synopsis: '눈이 내리는 밤, 카엘은 북쪽 성문 앞에서 돌아온 신부를 기다린다. 말은 없지만 장갑을 벗고 손을 내민다. 이든이 멀리서 그 모습을 본다.', cast: [{name: '이든', tags: '1boy, adult, short brown hair, green eyes, grey coat'}, {name: '카엘', tags: '덮어쓰기 안 됨'}], pages: [
     {layout: '2d', panels: [
-      {scene: '카엘이 성문 앞에서 돌아본다', tags: 'upper body, from side, snow, castle gate, night', chars: ['카엘'], bubbles: [{type: 'narr', text: '그날 밤, 북쪽 성문', who: ''}, {type: 'speech', text: '…왔군.', who: '카엘'}], sfx: [{text: '두근', vert: true}], stickers: ['sweat']},
-      {scene: '장갑을 벗고 손을 내민다', tags: 'close-up, hand, glove removed', chars: ['카엘'], bubbles: [{type: 'text', text: '추웠을 텐데', who: ''}], sfx: [], stickers: ['heart']}]},
+      {scene: '카엘이 성문 앞에서 돌아본다', tags: 'upper body, from side, snow, castle gate, night', pose: 'looking back over shoulder, parted lips', fx: false, chars: ['카엘'], bubbles: [{type: 'narr', text: '그날 밤, 북쪽 성문', who: ''}, {type: 'speech', text: '…왔군.', who: '카엘'}], sfx: [{text: '두근', vert: true}], stickers: ['sweat']},
+      {scene: '장갑을 벗고 손을 내민다', tags: 'close-up, hand, glove removed', pose: 'hand reaching out', fx: false, chars: ['카엘'], bubbles: [{type: 'text', text: '추웠을 텐데', who: ''}], sfx: [], stickers: ['heart']}]},
     {layout: '3b', panels: [
-      {scene: '눈 덮인 성 전경', tags: 'wide shot, snow, castle', chars: [], bubbles: [], sfx: [], stickers: []},
-      {scene: '이든이 지켜본다', tags: 'upper body, looking away', chars: ['이든'], bubbles: [{type: 'thought', text: '또 저 표정이군', who: '이든'}], sfx: [], stickers: []},
-      {scene: '두 사람', tags: 'two shot', chars: ['카엘', '이든'], bubbles: [{type: 'shout', text: '멈춰!', who: '카엘'}], sfx: [{text: '쿵', vert: false}], stickers: ['burst', 'speed']}]},
+      {scene: '눈 덮인 성 전경', tags: 'wide shot, snow, castle', pose: '', fx: false, chars: [], bubbles: [], sfx: [], stickers: []},
+      {scene: '이든이 지켜본다', tags: 'upper body, looking away', pose: 'arms folded', fx: false, chars: ['이든'], bubbles: [{type: 'thought', text: '또 저 표정이군', who: '이든'}], sfx: [], stickers: []},
+      {scene: '두 사람', tags: 'two shot', pose: 'sword raised', fx: true, chars: ['카엘', '이든'], bubbles: [{type: 'shout', text: '멈춰!', who: '카엘'}], sfx: [{text: '쿵', vert: false}], stickers: ['burst', 'speed']}]},
   ]};
   await ctx.route('https://generativelanguage.googleapis.com/**', r => (globalThis.__gem = r.request().postData()) && r.fulfill({status: 200, headers: {'content-type': 'text/event-stream', 'access-control-allow-origin': '*'}, body: `data: ${JSON.stringify({candidates: [{content: {parts: [{text: JSON.stringify(script)}]}, finishReason: 'STOP'}]})}\n\n`}));
   await ctx.addInitScript(({png}) => {
@@ -42,7 +42,10 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   console.log('gen stat:', await p.textContent('#wtAutoStat'));
   const reqs = await p.evaluate(() => window.__nai); console.log('requests:', reqs.length);
   const r0 = reqs[0].parameters, r4 = reqs[4].parameters;
-  console.log('p1c1 chars:', r0.characterPrompts.map(c => c.prompt.slice(0, 22)).join('|'), '| style neon:', r0.v4_prompt.caption.base_caption.includes('artist:mika_pikazo') && r0.negative_prompt.includes('hand on face') && r0.v4_prompt.caption.base_caption.includes('no text'), '| neg bubble:', r0.negative_prompt.includes('speech bubble'));
+  const b0 = r0.v4_prompt.caption.base_caption;
+  console.log('p1c1 chars:', r0.characterPrompts.map(c => c.prompt.slice(0, 22)).join('|'), '| style neon:', b0.startsWith('0.4::artist:ask_(askzy) ::, 0.75::artist:mika_pikazo ::') && b0.endsWith('no text') && r0.negative_prompt.includes('hand on face'), '| neg bubble:', r0.negative_prompt.includes('speech bubble'));
+  console.log('A order:', ['torn paper border', '1.8::his handsome face', '1boy', 'castle gate', '1.45::looking back over shoulder'].every((t, i, a) => b0.indexOf(t) > (i ? b0.indexOf(a[i - 1]) : -1)), '| pose weighted:', b0.includes('1.45::looking back over shoulder, parted lips ::'));
+  console.log('fx only on battle:', !b0.includes('paint splatter'), reqs[4].parameters.v4_prompt.caption.base_caption.includes('1.2::paint splatter'));
   console.log('new cast saved:', await p.evaluate(() => JSON.parse(localStorage.getItem('nv.set.naiChars')).split('\n').map(l => l.split(':')[0]).join(',')));
   console.log('cast kept old tags:', await p.evaluate(() => /카엘: 1boy, adult, black hair/.test(JSON.parse(localStorage.getItem('nv.set.naiChars')))));
   console.log('two chars centers:', r4.characterPrompts.map(c => c.center.x).join(','), '| sizes:', reqs.map(r => r.parameters.width + 'x' + r.parameters.height).join(' '));
@@ -58,7 +61,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   await p.click('#wtImgGen'); await p.waitForTimeout(1800);
   const nreq = await p.evaluate(() => window.__nai);
   const nb = nreq[0].parameters;
-  console.log('dark style:', nb.v4_prompt.caption.base_caption.includes('1.2::red monochrome ::'), '| film grain kept:', /film grain/.test(nb.v4_prompt.caption.base_caption) && !/film grain/.test(nb.negative_prompt), '| neg bishounen:', nb.negative_prompt.includes('bishounen'));
+  console.log('dark style:', nb.v4_prompt.caption.base_caption.includes('1.2::red monochrome ::') && nb.v4_prompt.caption.base_caption.includes('1.15::seen through a mirror ::'), '| film grain kept:', /film grain/.test(nb.v4_prompt.caption.base_caption) && !/film grain/.test(nb.negative_prompt), '| neg bishounen:', nb.negative_prompt.includes('bishounen'));
   console.log('fixed gen:', nreq[0].model, nb.width + 'x' + nb.height, nb.steps, nb.scale, nb.sampler, nb.noise_schedule, nb.cfg_rescale, nb.ucPreset, nb.prefer_brownian);
   console.log('ERRORS:', errs.length ? errs : 'none');
   await b.close();
