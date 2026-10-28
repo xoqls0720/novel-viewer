@@ -6,7 +6,7 @@ for (const id of VIEW_IDS){
   el.addEventListener('change', () => { store.set('set.'+id, el.type === 'checkbox' ? el.checked : el.value); applyView2(); if (id === 'wake') wakeSync(); if (['weight','ls','margin'].includes(id) && $('#reader.paged')) setFrac(getFrac()); });
 }
 for (const id of Object.keys(OUTS)) $('#'+id).addEventListener('input', () => { applyView(); applyView2(); if (['weight','ls','margin'].includes(id) && $('#reader.paged')) setFrac(getFrac()); });
-const VIEW_DEFAULT = {dimLv:'0', warmLv:'0', fs:'18', weight:'400', ls:'0', lh:'1.9', pgap:'0.9', margin:'24', col:'620', rfont:'"Noto Serif KR",serif', align:'left', indent:'0', tapMode:'lr', wcol:'720', gap:'0', spread:'auto', rtl:'1', fit:'h', ttsRate:'1.1'};
+const VIEW_DEFAULT = {dimLv:'0', warmLv:'0', fs:'18', weight:'400', ls:'0', lh:'1.9', pgap:'0.9', margin:'24', col:'620', rfont:'"RIDIBatang","Noto Serif KR",serif', align:'left', indent:'0', tapMode:'lr', wcol:'720', gap:'0', spread:'auto', rtl:'1', fit:'h', ttsRate:'1.1'};
 $('#qReset').onclick = () => {
   for (const [id, v] of Object.entries(VIEW_DEFAULT)){ const el = $('#'+id); if (!el || el.value === v) continue; el.value = v; el.dispatchEvent(new Event('change')); }
   applyView(); toast('보기 설정을 기본값으로 되돌렸어요');

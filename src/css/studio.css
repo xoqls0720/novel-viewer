@@ -6,7 +6,7 @@
 #studio.noside .st-binder,#studio.noinsp .st-insp{display:none}
 :root[data-theme="dark"] #studio,:root[data-theme="black"] #studio{--desk:#0e0e10}
 .st-rail{grid-row:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:calc(10px + var(--sat)) 6px calc(10px + var(--sab));background:var(--panel);border-right:1px solid var(--line)}
-.st-rail .logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 15px/1 "Gowun Batang",serif;margin:0 0 12px}
+.st-rail .logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 15px/1 "Hahmlet",serif;margin:0 0 12px}
 .st-rail button{flex-direction:column;gap:3px;width:52px;padding:8px 0 6px;border:0;border-radius:12px;font-size:10.5px;color:var(--sub)}
 .st-rail button .i{width:21px;height:21px}
 .st-rail button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
@@ -15,9 +15,9 @@
 .st-binder{border-right:1px solid var(--line);padding:calc(14px + var(--sat)) 12px calc(16px + var(--sab))}
 .st-insp{border-left:1px solid var(--line);display:flex;flex-direction:column}
 .st-proj{display:flex;gap:10px;align-items:center;margin-bottom:12px}
-.st-cover{width:46px;height:64px;border-radius:6px;flex:none;background:linear-gradient(160deg,hsl(var(--h,30) 35% 80%),hsl(var(--h,30) 30% 58%));background-size:cover;background-position:center;box-shadow:0 2px 8px rgb(0 0 0 / 18%);display:grid;place-items:center;color:#fff;font:700 13px/1.2 "Gowun Batang",serif;text-align:center;padding:4px;overflow:hidden;cursor:pointer}
+.st-cover{width:46px;height:64px;border-radius:6px;flex:none;background:linear-gradient(160deg,hsl(var(--h,30) 35% 80%),hsl(var(--h,30) 30% 58%));background-size:cover;background-position:center;box-shadow:0 2px 8px rgb(0 0 0 / 18%);display:grid;place-items:center;color:#fff;font:700 13px/1.2 "Hahmlet",serif;text-align:center;padding:4px;overflow:hidden;cursor:pointer}
 .st-proj .pi{flex:1;min-width:0}
-.st-proj select{width:100%;border:0;background-color:transparent;font:700 15px/1.3 "Gowun Batang",serif;padding:2px 22px 2px 0;background-position:right 2px center}
+.st-proj select{width:100%;border:0;background-color:transparent;font:700 15px/1.3 "Hahmlet",serif;padding:2px 22px 2px 0;background-position:right 2px center}
 .st-proj .pm{font-size:11.5px;color:var(--faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .st-card{background:var(--panel-2);border-radius:var(--radius-s);padding:10px 12px;font-size:12.5px;line-height:1.75;color:var(--sub)}
 .st-card b{color:var(--ink);font-variant-numeric:tabular-nums}
@@ -56,7 +56,7 @@
 .st-desk{padding:36px 20px 45vh;display:flex;justify-content:center;min-height:100%}
 .st-page{width:min(100%, calc(var(--col,620px) + 2 * 64px));background:var(--reader-bg);box-shadow:0 1px 2px rgb(0 0 0 / 6%),0 12px 40px rgb(0 0 0 / 9%);border-radius:3px;padding:56px 64px 80px;position:relative;align-self:flex-start;min-height:calc(100vh - 160px)}
 .st-pagehead{display:flex;justify-content:space-between;font:500 11px/1 var(--ui);letter-spacing:.06em;color:var(--faint);margin:-28px 0 28px}
-.st-pagehead .t{font-family:"Gowun Batang",serif;letter-spacing:0;font-size:12px}
+.st-pagehead .t{font-family:"Hahmlet",serif;letter-spacing:0;font-size:12px}
 #stText{display:block;width:100%;min-height:60vh;border:0;border-radius:0;background:transparent;resize:none;outline:none;padding:0;font-family:var(--rfont,"Noto Serif KR",serif);font-size:var(--fs,18px);line-height:var(--lh,1.9);color:var(--reader-ink);font-weight:var(--fw,400);letter-spacing:var(--ls,0em);field-sizing:content;caret-color:var(--accent);overflow:hidden}
 #stText::placeholder{color:var(--faint)}
 #stText::selection{background:color-mix(in srgb, var(--accent) 22%, transparent)}
@@ -71,7 +71,7 @@
 #studio.focus .st-top:hover,#studio.focus .st-meter:hover,#studio.focus .st-rail:hover{opacity:1}
 #studio.focus .st-page{box-shadow:none;background:transparent}
 .st-wrap{padding:24px;max-width:1200px;margin:0 auto}
-.st-wrap h2{font:700 22px/1.3 "Gowun Batang",serif;margin:4px 0 4px}
+.st-wrap h2{font:700 22px/1.3 "Hahmlet",serif;margin:4px 0 4px}
 .st-wrap .sub{color:var(--sub);font-size:13px;margin:0 0 18px}
 .st-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
 .st-ic{background:#fffdf6;color:#2a2620;border-radius:4px;box-shadow:0 1px 2px rgb(0 0 0 / 8%),0 6px 16px rgb(0 0 0 / 8%);padding:12px 14px 10px;display:flex;flex-direction:column;gap:6px;min-height:170px;border-top:5px solid #c9b27a;cursor:grab;background-image:repeating-linear-gradient(transparent 0 27px,rgb(80 110 170 / 13%) 27px 28px);background-position:0 40px}
@@ -79,9 +79,9 @@
 .st-ic.drop{outline:2px dashed var(--accent);outline-offset:3px}
 .st-ic .h{display:flex;gap:6px;align-items:baseline}
 .st-ic .h .no{font:700 12px/1 var(--ui);color:#9a8f7c}
-.st-ic .h b{flex:1;font:700 14.5px/1.35 "Gowun Batang",serif;cursor:pointer}
+.st-ic .h b{flex:1;font:700 14.5px/1.35 "Hahmlet",serif;cursor:pointer}
 .st-ic .h b:hover{text-decoration:underline}
-.st-ic textarea{flex:1;border:0;background:transparent;padding:0;min-height:84px;font:14px/28px "Gowun Batang",serif;color:#2a2620;resize:none}
+.st-ic textarea{flex:1;border:0;background:transparent;padding:0;min-height:84px;font:14px/28px "Hahmlet",serif;color:#2a2620;resize:none}
 .st-ic .f{display:flex;justify-content:space-between;font:11px/1 var(--ui);color:#9a8f7c}
 .st-ic.add{border:2px dashed var(--line);background:transparent;box-shadow:none;align-items:center;justify-content:center;color:var(--faint);cursor:pointer;font-size:14px}
 .st-tbl{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
@@ -99,7 +99,7 @@
 .st-bc .ph{width:72px;height:92px;border-radius:8px;flex:none;background:var(--panel-2) center/cover no-repeat;display:grid;place-items:center;color:var(--faint);font-size:11px;cursor:pointer;border:1px dashed var(--line);text-align:center}
 .st-bc .ph.has{border:0}
 .st-bc .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-.st-bc .meta input{font:700 16px/1.3 "Gowun Batang",serif;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:4px 0}
+.st-bc .meta input{font:700 16px/1.3 "Hahmlet",serif;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:4px 0}
 .st-bc .meta .row{margin:0}
 .st-bc .meta select{padding:3px 24px 3px 8px;font-size:12px;background-position:right 7px center}
 .st-bc textarea{min-height:120px;font-size:13.5px;field-sizing:content}
@@ -173,7 +173,7 @@
 #stHl mark{color:transparent;background:color-mix(in srgb, var(--hl-y) 70%, transparent);border-bottom:2px solid var(--brass);border-radius:2px}
 #stText{position:relative;z-index:1}
 .st-cmt{border-left:3px solid var(--brass);padding:6px 10px;margin:0 0 8px;background:var(--panel-2);border-radius:0 8px 8px 0;font-size:12.5px}
-.st-cmt .q{color:var(--sub);font-family:"Gowun Batang",serif}
+.st-cmt .q{color:var(--sub);font-family:"Hahmlet",serif}
 .st-cmt .n{margin:3px 0 6px;color:var(--ink)}
 .st-cmt.lost{opacity:.6}
 .st-cmt button{padding:3px 8px;font-size:11.5px}
@@ -186,7 +186,7 @@
 .st-ref{border-left:3px solid var(--hl-y);padding:6px 10px;margin:0 0 8px;font-size:12.5px;background:var(--panel-2);border-radius:0 8px 8px 0}
 .st-ref.hl-g{border-left-color:var(--hl-g)}.st-ref.hl-p{border-left-color:var(--hl-p)}
 .st-ref .w{font-size:11px;color:var(--faint)}
-.st-ref .q{font-family:"Gowun Batang",serif;margin:3px 0;line-height:1.6}
+.st-ref .q{font-family:"Hahmlet",serif;margin:3px 0;line-height:1.6}
 .st-ref .n{color:var(--sub);margin-bottom:4px}
 .st-ref button{padding:3px 8px;font-size:11.5px}
 .st-diff{background:var(--reader-bg);border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;font-family:var(--rfont,"Noto Serif KR",serif);font-size:16px;line-height:1.85;color:var(--reader-ink);margin-top:10px}
@@ -230,7 +230,7 @@
 .term{border-bottom:1px dotted currentColor;cursor:help}
 #termPop{position:fixed;z-index:50;max-width:300px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;font-size:12.5px;line-height:1.65;color:var(--ink)}
 #termPop b{display:block;margin-bottom:2px}
-#termPop .ex{color:var(--sub);margin-top:6px;font-family:"Gowun Batang",serif}
+#termPop .ex{color:var(--sub);margin-top:6px;font-family:"Hahmlet",serif}
 [hidden]{display:none!important}
 
 .st-rail button,.st-itabs button,.st-tabs button,.st-it .ud button,.st-bc .del,.st-ic .h b{background:transparent;box-shadow:none}

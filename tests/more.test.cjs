@@ -17,23 +17,26 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   await p.click('#tgTool'); await p.waitForTimeout(200); const w3 = await mainW();
   console.log(`layout widths: ${w1} ${w2} ${w3}`);
   // 자동 스크롤
+  // Space = 한 화면 내리기 (자동 스크롤은 뺐다)
   await p.click('main .novel p >> nth=5', {force: true}); await p.keyboard.press('Escape');
-  const top0 = await p.$eval('#reader', r => r.scrollTop);
-  await p.keyboard.press('Space'); await p.waitForTimeout(150);
-  const chip = await p.isVisible('#asChip');
-  for (let i = 0; i < 6; i++) await p.keyboard.press('ArrowUp');
-  await p.waitForTimeout(1500);
-  const top1 = await p.$eval('#reader', r => r.scrollTop);
-  console.log(`autoscroll: chip ${chip} | speed ${await p.inputValue('#asSpeed')} | moved ${top1 > top0 + 20}`);
-  await p.mouse.wheel(0, 10); await p.waitForTimeout(150);
-  const top2 = await p.$eval('#reader', r => r.scrollTop); await p.waitForTimeout(600);
-  console.log(`wheel stops: ${!(await p.isVisible('#asChip'))} ${Math.abs((await p.$eval('#reader', r => r.scrollTop)) - top2) < 3}`);
-  // 끝까지 가면 다음 화로 이어 간다
-  await p.$eval('#reader', r => r.scrollTop = r.scrollHeight - r.clientHeight - 30);
-  await p.keyboard.press('Space'); await p.waitForTimeout(3500);
-  console.log('autoscroll next ep:', await p.textContent('#epTitle'), '| still on:', await p.isVisible('#asChip'));
-  await p.click('#asStop'); await p.waitForTimeout(100);
-  console.log('stop btn:', !(await p.isVisible('#asChip')));
+  await p.$eval('#reader', r => r.scrollTop = 0); await p.waitForTimeout(200);
+  await p.keyboard.press('Space'); await p.waitForTimeout(700);
+  console.log('space page:', (await p.$eval('#reader', r => r.scrollTop)) > 100, '| no autoscroll ui:', await p.$('#asChip') === null && await p.$('#asGo') === null);
+  // 읽기 과녁: 정하면 위 막대에 뜨고, 작품마다 기억된다 (스크롤로 숨은 막대를 먼저 되살린다)
+  await p.$eval('#reader', r => r.scrollTop = 0); await p.keyboard.press('Escape'); await p.waitForTimeout(350);
+  await p.click('#btnQuick'); await p.waitForTimeout(250);
+  await p.selectOption('#readFocus', '대사'); await p.waitForTimeout(150); await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  console.log('focus chip:', await p.textContent('#focusChip'), '| shown:', await p.isVisible('#focusChip'));
+  // 필사: 따라 쓰고, 저장되고, 원문과 비교가 뜬다
+  await p.click('#btnQuick'); await p.waitForTimeout(250); await p.click('#fsOpen'); await p.waitForTimeout(400);
+  await p.fill('#fsText', '청명은 고개를 들었다. 내가 새로 쓴 줄.'); await p.waitForTimeout(1300);
+  console.log('fs stat:', /원문 [\d,]+자 · 내 필사 [\d,]+자/.test(await p.textContent('#fsStat')));
+  await p.click('#fsDiff'); await p.waitForTimeout(200);
+  console.log('fs diff:', await p.$$eval('#fsCmp ins, #fsCmp del, #fsCmp .a, #fsCmp .d', e => e.length > 0));
+  await p.keyboard.press('Escape'); await p.waitForTimeout(300);
+  await p.click('#btnQuick'); await p.waitForTimeout(250); await p.click('#fsOpen'); await p.waitForTimeout(400);
+  console.log('fs kept:', (await p.inputValue('#fsText')).includes('내가 새로 쓴 줄'));
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
   // 방향키로 한 화면씩
   await p.$eval('#reader', r => r.scrollTop = 0); await p.waitForTimeout(200);
   await p.keyboard.press('ArrowRight'); await p.waitForTimeout(700);

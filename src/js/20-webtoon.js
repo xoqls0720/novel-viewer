@@ -120,6 +120,7 @@ function drawPanels(g, pg, k){
 /* ---------- 그리기: 말풍선·글·효과음·스티커 ----------
    보내 준 웹툰 자료 기준: 말풍선은 '얇은 선 + 울퉁불퉁한 흰 덩어리 + 가벼운 글씨',
    효과음은 '붓글씨 + 두꺼운 흰 테두리 + 그라데이션 + 하트', 뒤에 흰 불꽃 조각을 깐다. */
+const wtAccent = () => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c9452a';   // 고르기 표시는 앱 강조색으로
 const BUB_LINE = 4;                      // 말풍선 선 굵기(쪽 너비 1500 기준)
 const WT_TEXT = '"Noto Sans KR","Pretendard Variable",sans-serif';
 const SFX_FONTS = {brush: '"Nanum Brush Script"', round: '"Gaegu"', heavy: '"Black Han Sans"', pen: '"Nanum Pen Script"', wild: '"Dokdo"'};
@@ -268,17 +269,17 @@ function wtRenderPage(g, pg, k, opts = {}){
 }
 function wtDrawUI(g, pg){
   const sel = WT.sel; if (!sel) return;
-  g.save(); g.lineJoin = 'round'; g.setLineDash([16, 10]); g.lineWidth = 4; g.strokeStyle = '#2f6df6';
+  g.save(); g.lineJoin = 'round'; g.setLineDash([16, 10]); g.lineWidth = 4; g.strokeStyle = wtAccent();
   if (sel.t === 'panel'){ const p = pg.panels[sel.i]; if (p){ const pts = polyPx(pg, p); g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); } }
   else if (sel.t === 'item'){
     const it = pg.items[sel.i]; if (it){
       g.translate(it.x, it.y); g.rotate((it.rot || 0) * Math.PI / 180);
       const hw = it._hw || 40, hh = it._hh || 40; g.strokeRect(-hw, -hh, hw * 2, hh * 2); g.setLineDash([]);
-      g.fillStyle = '#fff'; g.strokeStyle = '#2f6df6'; g.lineWidth = 4;
+      g.fillStyle = '#fff'; g.strokeStyle = wtAccent(); g.lineWidth = 4;
       for (const [hx, hy] of [[hw, hh]]){ g.beginPath(); g.rect(hx - 14, hy - 14, 28, 28); g.fill(); g.stroke(); }
       if (it.k !== 'bubble'){ g.beginPath(); g.moveTo(0, -hh); g.lineTo(0, -hh - 36); g.stroke(); g.beginPath(); g.arc(0, -hh - 48, 13, 0, 7); g.fill(); g.stroke(); }
       g.rotate(-(it.rot || 0) * Math.PI / 180); g.translate(-it.x, -it.y);
-      if (it.k === 'bubble' && it.tail){ g.beginPath(); g.arc(it.tail.x, it.tail.y, 14, 0, 7); g.fillStyle = '#2f6df6'; g.fill(); }
+      if (it.k === 'bubble' && it.tail){ g.beginPath(); g.arc(it.tail.x, it.tail.y, 14, 0, 7); g.fillStyle = wtAccent(); g.fill(); }
     }
   }
   g.restore();
@@ -422,7 +423,8 @@ document.addEventListener('keydown', e => {
 /* ---------- 글·효과 넣기와 고치기 ---------- */
 function wtCenterFor(pg){ const s = WT.sel; if (s?.t === 'panel'){ const bb = polyBox(polyPx(pg, pg.panels[s.i])); return [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2, bb]; } return [WT_W / 2, pg.h / 2, [0, 0, WT_W, pg.h]]; }
 function wtAddItem(kind, at){
-  const pg = wtPage(), [cx, cy] = at || wtCenterFor(pg); let it;
+  const pg = wtPage(); let [cx, cy] = at || wtCenterFor(pg); let it;
+  if (!at){ const n = pg.items.filter(x => Math.hypot((x.x || 0) - cx, (x.y || 0) - cy) < 180).length; cx += n * 56; cy += n * 56; }   // 같은 자리에 겹쳐 쌓이지 않게 조금씩 비껴 놓는다
   if (['speech', 'round', 'thought', 'shout', 'whisper'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 38, w: 300, line: 'thin', text: kind === 'shout' ? '뭐라고!' : '대사를 적어 주세요', tail: kind === 'shout' ? null : {x: cx + 30, y: cy + 160}};
   else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 38, w: 480, line: 'thin', text: '설명을 적어 주세요', tail: null};
   else if (kind === 'text') it = {k: 'text', x: cx, y: cy, size: 52, w: 520, text: '속마음을 적어 주세요', color: '#ffffff', rot: 0};

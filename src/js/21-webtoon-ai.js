@@ -9,7 +9,7 @@ const WT_STYLE = {
     fx: '1.2::paint splatter, dripping paint ::',                                   // 전투·각성 컷에서만
     focus: '1.8::his handsome face is the focal point, drawn with obsessive detail ::',
     tail: 'detailed hair strands, beautiful detailed eyes, painterly, high contrast, cinematic composition, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic, absurdres',
-    neg: 'bad face, bad eyes, deformed face, extra fingers, lipstick, makeup, eyeshadow, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face, bright pastel everyday palette',
+    neg: 'child, bad face, bad eyes, deformed face, extra fingers, lipstick, makeup, eyeshadow, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face, bright pastel everyday palette',
   },
   dark: {
     name: '기본 B · 암실 룩',
@@ -111,47 +111,70 @@ function wtStyleParts(nsfw){
   return {head: head.filter(Boolean).join(', '), tail, neg: st.neg, focus: st.focus, fx: st.fx, key: k};
 }
 // 그림체 공식대로 base 를 만든다. 인물 자세(pose)는 1.45 로 올리고, 물감 튐은 전투·각성 컷에만 넣는다.
-function wtStyleBase({count, tags, pose, fx, nsfw}){
+// who: {male, female, people} — 그림체가 남자 주인공을 전제로 쓴 말(his handsome face, handsome man)은 남자가 있을 때만,
+// 얼굴·시선 태그는 사람이 있을 때만 붙인다. (인물 없는 풍경 컷에 looking at viewer 가 붙던 것을 막는다)
+const WT_FACE_TAIL = /\b(extremely handsome man|beautiful detailed eyes|half-lidded eyes|looking at viewer|closed mouth|detailed hair strands)\b,?\s*/gi;
+function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: false, people: true}}){
   const P = wtStyleParts(nsfw); const parts = [P.head];
-  if (P.key === 'neon'){ if (fx && P.fx) parts.push(P.fx); if (P.focus) parts.push(P.focus); }
+  if (P.key === 'neon'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
   parts.push(count, tags);
-  if (pose) parts.push(`1.45::${pose} ::`);
-  parts.push(P.tail, 'no text');
-  return parts.filter(Boolean).join(', ').replace(/,\s*,/g, ',');
+  if (pose && who.people) parts.push(`1.45::${pose} ::`);
+  let tail = P.tail || '';
+  if (!who.people) tail = tail.replace(WT_FACE_TAIL, '');
+  else if (!who.male) tail = tail.replace(/\bextremely handsome man,?\s*/i, '');
+  parts.push(tail, 'no text');
+  return parts.filter(Boolean).join(', ').replace(/,\s*,/g, ',').replace(/,\s*$/, '');
 }
 function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 태그
   const k = wtStyleKey();
   if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
   return WT_STYLE[k].head;
 }
-function wtStyleNeg(neg, nsfwArg){
+function wtStyleNeg(neg, nsfwArg, who){
   const k = wtStyleKey(); const st = WT_STYLE[k]; const nsfw = nsfwArg ?? (wtRating() === 'nsfw');
   let out = (st ? [neg, st.neg].filter(Boolean).join(', ') : neg).split(',').map(x => x.trim()).filter(Boolean);
   if (st?.dropNeg) out = out.filter(x => !st.dropNeg.test(x));
+  if (who?.female) out = out.filter(x => !/^(1girl|female)$/i.test(x));   // 여자 인물이 나오는 컷에서 그림체의 '1girl, female' 막기를 푼다
   if (nsfw) out = out.filter(x => !NSFW_DROP_NEG.test(x));   // 성인 컷에서 벌린 입·표정을 막지 않는다
   if (nsfw) out.push(...NSFW_NEG_ADD.split(',').map(x => x.trim()));
   return [...new Set(out)].join(', ');
 }
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
-function wtPanelPrompt(panel){
+const wtNaiTextOn = () => $('#wtNaiText')?.checked ?? store.get('set.wtNaiText', false);
+function wtPanelPrompt(panel, bubbleTexts){
   const rating = wtRating(), dict = wtDict();
   const names = String(panel.chars || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
   const found = names.filter(n => dict.has(n)), n = found.length;
-  const count = n === 0 ? 'no humans' : n === 1 ? (/1girl/.test(dict.get(found[0])) ? '1girl' : '1boy') : `${n}boys`;
-  const tags = (panel.tags || '').trim() || 'upper body, looking at viewer';
-  const base = wtStyleBase({count: names.length ? (n ? count : '') : 'no humans', tags, pose: (panel.pose || '').trim(), fx: !!panel.fx, nsfw: rating === 'nsfw'});
+  // 인원수 태그는 성별대로 센다 (예전엔 두 사람 이상이면 무조건 2boys 였다)
+  const isGirl = x => /\b(\d?girls?|woman|women|female)\b/i.test(x || '');
+  const girls = found.filter(x => isGirl(dict.get(x))).length, boys = n - girls;
+  const count = n === 0 ? 'no humans' : [boys ? (boys === 1 ? '1boy' : `${boys}boys`) : '', girls ? (girls === 1 ? '1girl' : `${girls}girls`) : ''].filter(Boolean).join(', ');
+  const people = names.length > 0;
+  const who = {male: !n || boys > 0, female: girls > 0, people};
+  const tags = (panel.tags || '').trim() || (people ? 'upper body, looking at viewer' : 'scenery, wide shot');
+  const base = wtStyleBase({count: people ? (n ? count : '') : 'no humans', tags, pose: (panel.pose || '').trim(), fx: !!panel.fx, nsfw: rating === 'nsfw', who});
   let neg = [$('#naiNeg').value.trim(), 'speech bubble, text, english text, korean text, subtitle, panel border'].filter(Boolean).join(', ');
-  neg = wtStyleNeg(neg);
+  neg = wtStyleNeg(neg, undefined, who);
   if (rating === 'nsfw') neg = neg.split(',').map(s => s.trim()).filter(s => s && s !== 'nsfw').join(', '); else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
   const cols = n === 1 ? [2] : n === 2 ? [1, 3] : n === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
   const chars = found.slice(0, 6).map((name, i) => ({name, prompt: (rating === 'nsfw' && !/\badult\b/.test(dict.get(name)) ? 'adult, ' : '') + dict.get(name), negative: '', position: `${cols[i]},2`}));
-  return {base, neg, chars, size: '', notes: '', rating};
+  // 노벨AI 글자 그리기: 'no text' 를 빼고 프롬프트 맨 끝에 Text: 를 붙인다 (공식 문법: 맨 끝, 여러 개는 빈 줄로)
+  let base2 = base;
+  const bt = (bubbleTexts || []).map(x => String(x).trim()).filter(Boolean).slice(0, 2);
+  if (wtNaiTextOn() && bt.length){
+    base2 = base2.replace(/,\s*no text\s*$/i, '') + ', text, speech bubble';
+    neg = neg.split(',').map(x => x.trim()).filter(x => x && !/^(speech bubble|text|english text|korean text|subtitle)$/i.test(x)).join(', ');
+    base2 += '\nText: ' + bt.join('\n\n');
+  }
+  return {base: base2, neg, chars, size: '', notes: '', rating};
 }
 function wtSizeKey(pg, panel){ const bb = polyBox(polyPx(pg, panel)), r = (bb[2] - bb[0]) / (bb[3] - bb[1]); return r > 1.3 ? 'landscape' : r < 0.78 ? 'portrait' : 'square'; }
 const wtMinorBlock = p => wtRating() === 'nsfw' && MINOR_RE.test([p.base, ...p.chars.map(c => c.prompt)].join(' '));
 async function wtGenPanel(pg, panel){
-  const p = wtPanelPrompt(panel);
+  const bb = polyBox(polyPx(pg, panel));
+  const bt = (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
+  const p = wtPanelPrompt(panel, bt);
   if (wtMinorBlock(p)) throw new Error('미성년을 떠올리게 하는 태그가 있어서 건너뛰었어요');
   const blob = await naiGenBlob(p, wtSizeKey(pg, panel));
   const id = await wtPutImage(blob); panel.img = id; panel.view = {ox: 0, oy: 0, s: 1}; return id;
@@ -288,6 +311,8 @@ $('#wtImgGen').onclick = async () => {
 
 /* ---------- 그림체·인물 사전 칸 ---------- */
 function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark'; $('#wtFrameRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
+$('#wtNaiText').checked = store.get('set.wtNaiText', false);
+$('#wtNaiText').onchange = () => store.set('set.wtNaiText', $('#wtNaiText').checked);
 $('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
 $('#wtStyle').onchange = wtStyleSync;
 $('#wtMono').onchange = () => store.set('set.wtMono', $('#wtMono').value);
@@ -424,3 +449,5 @@ $('#naiStyleSel').onchange = () => { $('#wtStyle').value = $('#naiStyleSel').val
 $('#wtStyle').addEventListener('change', () => { $('#naiStyleSel').value = $('#wtStyle').value; naiStyleLabel(); });
 $('#wtMono').addEventListener('change', naiStyleLabel);
 naiStyleLabel();
+
+window.nvWtPrompt = wtPanelPrompt;   // 시험용

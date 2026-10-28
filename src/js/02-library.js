@@ -141,7 +141,9 @@ function renderLib(){
     }
     grid.append(workCard(w));
   }
-  if (!list.length) lib.insertAdjacentHTML('beforeend', `<div class="hint" style="padding:16px 4px">${works.length ? '찾는 작품이 없어요' : '아직 불러온 작품이 없어요. 위의 폴더 열기나 파일·zip으로 가져오세요.'}</div>`);
+  if (!list.length) lib.insertAdjacentHTML('beforeend', works.length
+    ? '<div class="hint" style="padding:16px 4px">찾는 작품이 없어요</div>'
+    : `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>서재가 비어 있어요</b><p>위의 <b>폴더 열기</b>로 작품 폴더(노벨·만화·웹툰)를 고르거나,<br>txt·epub·zip 파일을 끌어다 놓아도 돼요. OneDrive 폴더를 연결하면 켤 때마다 저절로 들어와요.</p></div>`);
 }
 
 /* ================= EPUB ================= */

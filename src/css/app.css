@@ -11,7 +11,7 @@
   --bar-bg:color-mix(in srgb, var(--panel) 90%, transparent);
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
   --ui:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
-  --display:"Gowun Batang","Noto Serif KR",serif;
+  --display:"Hahmlet","Noto Serif KR",serif;
 }
 :root[data-theme="sepia"]{
   --bg:#eadfc8; --panel:#f7efdd; --panel-2:#e7dcc2; --ink:#39301f; --sub:#73644a; --faint:#8f7f63; --line:#dccfae;
@@ -101,7 +101,7 @@ aside{border-right:1px solid var(--line)}
 .card.on .cv{outline:2.5px solid var(--accent);outline-offset:2px}
 .card.on .t{color:var(--accent)}
 .card .cv img{width:100%;height:100%;object-fit:cover;display:block}
-.card .cv .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;font-family:"Gowun Batang",serif;font-size:15px;line-height:1.35;color:var(--sub)}
+.card .cv .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;font-family:"Hahmlet",serif;font-size:15px;line-height:1.35;color:var(--sub)}
 .card .cv .kind{position:absolute;left:6px;top:6px;font-size:10px;font-weight:600;padding:2px 6px;border-radius:99px;background:rgb(0 0 0 / 55%);color:#fff;backdrop-filter:blur(6px)}
 .card .cv .pb{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgb(0 0 0 / 25%)}
 .card .cv .pb i{display:block;height:100%;background:var(--brass)}
@@ -131,7 +131,7 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;position:relati
 .novel p{margin:0 0 var(--pgap,0.9em);text-indent:var(--indent,0)}
 .novel .chead{margin:6px 0 2.4em;text-align:center;font-family:var(--ui)}
 .novel .chead .cw{font-size:12px;letter-spacing:.14em;color:var(--brass);text-transform:uppercase;font-weight:600}
-.novel .chead h2{font-family:"Gowun Batang",var(--rfont),serif;font-weight:700;font-size:1.25em;margin:.5em 0 0;line-height:1.45;color:var(--reader-ink);letter-spacing:-0.01em}
+.novel .chead h2{font-family:"Hahmlet",var(--rfont),serif;font-weight:700;font-size:1.25em;margin:.5em 0 0;line-height:1.45;color:var(--reader-ink);letter-spacing:-0.01em}
 .novel .chead .orn{margin-top:1.1em;color:var(--faint);letter-spacing:.6em;font-size:12px}
 .novel mark{border-radius:3px;padding:0 1px;color:inherit;cursor:pointer}
 .novel mark.y{background:var(--hl-y)} .novel mark.g{background:var(--hl-g)} .novel mark.p{background:var(--hl-p)}
@@ -194,7 +194,7 @@ kbd{font-family:var(--ui);font-size:11px;border:1px solid var(--line);border-bot
 .seg button{flex:1;border:0;border-radius:9px;padding:7px 6px;font-size:12.5px;color:var(--sub)}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0 / 12%);font-weight:600}
 .swatches{display:flex;gap:10px}
-.swatches button{width:44px;height:44px;border-radius:50%;padding:0;border:1px solid var(--line);font-size:13px;font-family:"Gowun Batang",serif}
+.swatches button{width:44px;height:44px;border-radius:50%;padding:0;border:1px solid var(--line);font-size:13px;font-family:"Hahmlet",serif}
 .swatches button.on{outline:2px solid var(--accent);outline-offset:2px}
 .stepper{display:flex;align-items:center;gap:8px}
 .stepper output{min-width:42px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px}
@@ -457,14 +457,7 @@ details.fold summary .chev{margin-left:auto}
 
 #pane-nai.ngbusy #ngList,#pane-nai.ngbusy #ngModel{opacity:.6;pointer-events:none}
 
-/* ---------- 자동 스크롤 · 폰 화면 보기 ---------- */
-.aschip{position:absolute;left:50%;bottom:calc(130px + var(--sab));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:4px;padding:5px 6px 5px 14px;border-radius:99px;background:color-mix(in srgb, var(--panel) 92%, transparent);border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums;transition:opacity .3s}
-.aschip[hidden]{display:none}
-.aschip button{border:0;box-shadow:none;background:transparent;padding:4px 10px;border-radius:99px;font-size:13px;min-height:0}
-.aschip button:hover{background:var(--panel-2)}
-.aschip #asStop{color:var(--accent);font-weight:700}
-.immersive .aschip{opacity:.35}
-.immersive .aschip:hover{opacity:1}
+/* ---------- 폰 화면 보기 ---------- */
 .reader.phone:not(.paged) .novel{--ph:620px;max-width:375px;margin:calc(66px + var(--sat)) auto 0;padding:28px 20px 24px;border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);background-image:repeating-linear-gradient(to bottom, transparent 0 calc(var(--ph) - 1px), color-mix(in srgb, var(--accent) 28%, transparent) calc(var(--ph) - 1px) var(--ph));background-origin:border-box}
 .reader.phone:not(.paged) .epend{max-width:375px}
 /* 태블릿 세로(아이패드): 보기 설정은 오른쪽, 회차 목록은 왼쪽 위 단추 아래에 띄운다 */

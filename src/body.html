@@ -81,7 +81,13 @@
     </section>
     <div id="dim"></div><div id="warm"></div>
     <div class="mini" id="mini"></div>
-    <div class="aschip" id="asChip" hidden><span id="asTxt"></span><button id="asSlow" title="느리게 (↓)">−</button><button id="asFast" title="빠르게 (↑)">+</button><button id="asStop" title="멈추기 (Space)">멈춤</button></div>
+    <section class="fs-pane" id="fsPane" hidden>
+      <div class="fs-head"><b>필사</b><span class="hint" id="fsStat"></span><button class="icon" id="fsClose" title="닫기 (Esc)"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="hint fs-hint">원문을 왼쪽에 두고 따라 써 보세요. 저절로 저장되고, 기기끼리도 맞춰져요. 다 쓰면 <b>원문과 비교</b>로 틀린 곳을 봐요.</div>
+      <textarea id="fsText" placeholder="여기에 따라 씁니다…" spellcheck="false"></textarea>
+      <div class="fs-foot"><button id="fsDiff">원문과 비교</button><button id="fsCopyIdea">좋은 문장으로 보내기</button><button id="fsWipe">지우기</button></div>
+      <div class="fs-cmp" id="fsCmp" hidden></div>
+    </section>
     <div class="coach" id="coach" hidden></div>
     <div id="wmap" title="문단 지도: 진한 색=대사, 주황=긴 문단. 누르면 그 자리로"><canvas></canvas><i></i></div>
 
@@ -89,7 +95,7 @@
       <button class="icon" id="tgSide" title="서재로"><svg class="i"><use href="#i-left"/></svg></button>
       <button class="epbtn" id="epBtn" title="회차 목록"><span class="w" id="title">작품을 골라 주세요</span><span class="e"><span id="epTitle"></span><svg class="i" style="width:16px;height:16px"><use href="#i-down"/></svg></span></button>
       <select id="epSel" hidden></select>
-      <button class="icon" id="btnBm" title="책갈피 (B)"><svg class="i"><use href="#i-bm"/></svg></button>
+      <span class="focus-chip" id="focusChip" hidden></span><button class="icon" id="btnBm" title="책갈피 (B)"><svg class="i"><use href="#i-bm"/></svg></button>
       <button class="icon" id="btnTTS" title="읽어 주기 (T)"><svg class="i"><use href="#i-sound"/></svg></button>
       <button class="icon" id="btnQuick" title="보기 설정"><svg class="i"><use href="#i-aa"/></svg></button>
       <button class="icon" id="tgTool" title="분석·글쓰기·Claude (A)"><svg class="i"><use href="#i-panel"/></svg></button>
@@ -132,32 +138,34 @@
       <div class="shh"><b>보기 설정</b><button id="qReset">기본값</button><button class="icon" id="qClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
       <div class="q-sec"><div class="lab">테마</div>
         <div class="swatches" id="themeSw">
-          <div class="sw"><button data-theme="light" style="background:#fbfaf7;color:#24221f">가</button>밝게</div>
-          <div class="sw"><button data-theme="sepia" style="background:#f5ecd9;color:#3a2e1f">가</button>종이</div>
-          <div class="sw"><button data-theme="dark" style="background:#161618;color:#c9c4ba">가</button>어둡게</div>
-          <div class="sw"><button data-theme="black" style="background:#000;color:#b8b3aa">가</button>검정</div>
+          <div class="sw"><button data-theme="light" style="background:#fdfcfa;color:#141416"><i>가나다</i>라마바사아</button>밝게</div>
+          <div class="sw"><button data-theme="sepia" style="background:#f7f0e1;color:#2e2619"><i>가나다</i>라마바사아</button>종이</div>
+          <div class="sw"><button data-theme="dark" style="background:#121214;color:#d9d6d0"><i>가나다</i>라마바사아</button>어둡게</div>
+          <div class="sw"><button data-theme="black" style="background:#000;color:#c4c1bb"><i>가나다</i>라마바사아</button>검정</div>
         </div>
-        <div class="qrow"><label>화면 어둡게</label><div class="ctl"><input type="range" id="dimLv" min="0" max="70" value="0"><output id="dimOut"></output></div></div>
-        <div class="qrow"><label>따뜻한 색감</label><div class="ctl"><input type="range" id="warmLv" min="0" max="40" value="0"><output id="warmOut"></output></div></div>
-        <div class="qrow"><label><input type="checkbox" id="wake"> 읽는 동안 화면 켜 두기</label></div>
       </div>
-      <div class="q-sec"><div class="lab">보기 방식</div>
-        <select id="mode" style="width:100%"><option value="auto">자동 (작품 종류대로)</option><option value="novel">소설 · 스크롤</option><option value="paged">소설 · 쪽 넘김</option><option value="webtoon">웹툰 · 세로</option><option value="manga">만화 · 펼침</option></select>
-      </div>
-      <div class="q-sec" id="qNovel"><div class="lab">글자</div>
-        <div class="qrow"><label>크기</label><div class="stepper"><button id="fsDown">가−</button><output id="fsOut">18</output><button id="fsUp">가+</button></div></div>
-        <div class="qrow"><label>굵기</label><div class="ctl"><input type="range" id="weight" min="300" max="600" step="50" value="400"><output id="weightOut"></output></div></div>
-        <div class="qrow"><label>자간</label><div class="ctl"><input type="range" id="ls" min="-0.05" max="0.1" step="0.01" value="0"><output id="lsOut"></output></div></div>
-        <div class="qrow"><label>줄간격</label><div class="ctl"><input type="range" id="lh" min="1.3" max="2.6" step="0.05" value="1.9"><output id="lhOut"></output></div></div>
-        <div class="qrow"><label>문단 간격</label><div class="ctl"><input type="range" id="pgap" min="0" max="2" step="0.1" value="0.9"><output id="pgapOut"></output></div></div>
-        <div class="qrow"><label>양옆 여백</label><div class="ctl"><input type="range" id="margin" min="8" max="72" step="2" value="24"><output id="marginOut"></output></div></div>
-        <div class="qrow desk-only"><label>글 폭</label><div class="ctl"><input type="range" id="col" min="420" max="1100" step="20" value="620"><output id="colOut"></output></div></div>
-        <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option><option value='"NvMine","Noto Serif KR",serif' id="rfontMine" hidden>내 글꼴</option></select></div>
-        <div class="qrow"><label>내 글꼴</label><div class="row tight"><button id="fontAdd" title="TTF·OTF·WOFF 글꼴 파일을 넣어 읽기 글꼴로 써요">글꼴 파일 넣기</button><button id="fontDel" hidden>빼기</button></div><input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/*" hidden></div>
-        <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
-        <div class="qrow"><label><input type="checkbox" id="writerView"> 작가 보기 (문단 글자 수·대사·갈고리·절단·1,000자 눈금, W)</label></div>
-        <div class="qrow"><label><input type="checkbox" id="phoneView"> 폰 화면으로 보기 (독자가 보는 폭과 폰 화면 장수, P)</label></div>
-        <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
+      <div class="q-sec" id="qNovel">
+        <div class="q-fs"><button id="fsDown">가<small>−</small></button><div class="q-fsmid"><output id="fsOut">18</output><span>글자 크기</span></div><button id="fsUp" class="big">가<small>+</small></button></div>
+        <div class="qrow"><label>글꼴</label><select id="rfont" class="grow"><option value='"RIDIBatang","Noto Serif KR",serif'>리디바탕</option><option value='"Hahmlet","Noto Serif KR",serif'>함렛</option><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option><option value='"NvMine","Noto Serif KR",serif' id="rfontMine" hidden>내 글꼴</option></select></div>
+        <div class="lab" style="margin-top:14px">짜임</div>
+        <div class="q-dens" id="qDens">
+          <button data-dens="airy"><b>여유</b><span>줄 사이 넉넉히</span></button>
+          <button data-dens="std"><b>기본</b><span>연재 표준</span></button>
+          <button data-dens="tight"><b>촘촘</b><span>한눈에 많이</span></button>
+        </div>
+        <details class="q-more" id="qMore"><summary>세부 조정</summary>
+          <div class="qrow"><label>굵기</label><div class="ctl"><input type="range" id="weight" min="300" max="600" step="50" value="400"><output id="weightOut"></output></div></div>
+          <div class="qrow"><label>자간</label><div class="ctl"><input type="range" id="ls" min="-0.05" max="0.1" step="0.01" value="0"><output id="lsOut"></output></div></div>
+          <div class="qrow"><label>줄간격</label><div class="ctl"><input type="range" id="lh" min="1.3" max="2.6" step="0.05" value="1.9"><output id="lhOut"></output></div></div>
+          <div class="qrow"><label>문단 간격</label><div class="ctl"><input type="range" id="pgap" min="0" max="2" step="0.1" value="0.9"><output id="pgapOut"></output></div></div>
+          <div class="qrow"><label>양옆 여백</label><div class="ctl"><input type="range" id="margin" min="8" max="72" step="2" value="24"><output id="marginOut"></output></div></div>
+          <div class="qrow desk-only"><label>글 폭</label><div class="ctl"><input type="range" id="col" min="420" max="1100" step="20" value="620"><output id="colOut"></output></div></div>
+          <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
+          <div class="qrow"><label>화면 어둡게</label><div class="ctl"><input type="range" id="dimLv" min="0" max="70" value="0"><output id="dimOut"></output></div></div>
+          <div class="qrow"><label>따뜻한 색감</label><div class="ctl"><input type="range" id="warmLv" min="0" max="40" value="0"><output id="warmOut"></output></div></div>
+          <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
+          <div class="qrow"><label>내 글꼴</label><div class="row tight"><button id="fontAdd" title="TTF·OTF·WOFF 글꼴 파일을 넣어 읽기 글꼴로 써요">글꼴 파일 넣기</button><button id="fontDel" hidden>빼기</button></div><input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/*" hidden></div>
+        </details>
         <input type="number" id="fs" value="18" hidden>
       </div>
       <div class="q-sec" id="qImg"><div class="lab">웹툰 · 만화</div>
@@ -168,11 +176,20 @@
         <div class="qrow"><label><input type="checkbox" id="coverSingle" checked> 표지는 한 쪽</label><label><input type="checkbox" id="splitWide"> 붙은 두 쪽 나누기</label></div>
         <div class="qrow"><label><input type="checkbox" id="crop"> 여백 자르기</label></div>
       </div>
-      <div class="q-sec"><div class="lab">자동</div>
+      <div class="q-sec" id="qTools"><div class="lab">읽는 방법</div>
+        <div class="qrow"><label>보기 방식</label><select id="mode"><option value="auto">자동 (작품 종류대로)</option><option value="novel">소설 · 스크롤</option><option value="paged">소설 · 쪽 넘김</option><option value="webtoon">웹툰 · 세로</option><option value="manga">만화 · 펼침</option></select></div>
         <div class="qrow"><label>회차 끝에서</label><select id="autoNext"><option value="btn">다음 화 카드</option><option value="auto">자동으로 넘김</option></select></div>
-        <div class="qrow"><label>자동 스크롤 속도</label><div class="ctl"><input type="range" id="asSpeed" min="1" max="10" step="1" value="4"><output id="asSpeedOut"></output></div></div>
-        <div class="qrow"><button id="asGo" class="grow">자동 스크롤 시작 (Space)</button></div>
         <div class="qrow"><label>읽어 주기 속도</label><div class="ctl"><input type="range" id="ttsRate" min="0.6" max="2" step="0.1" value="1.1"><output id="ttsRateOut"></output></div></div>
+        <div class="qrow"><label><input type="checkbox" id="wake"> 읽는 동안 화면 켜 두기</label></div>
+      </div>
+      <div class="q-sec" id="qWriter"><div class="lab">작가의 눈</div>
+        <div class="qrow"><label>이번 읽기의 과녁</label><select id="readFocus"><option value="">정하지 않음</option><option value="대사">대사 — 말맛·호흡</option><option value="절단">절단 — 회차 끝내기</option><option value="장면 전환">장면 전환 — 잇는 법</option><option value="문장">문장 — 리듬·어휘</option><option value="감정">감정 — 보여 주는 법</option></select></div>
+        <div class="hint" style="margin:-2px 0 8px">하나만 정하고 읽으면 형광펜이 모여요. 과녁은 작품마다 따로 기억해요.</div>
+        <div class="q-chips">
+          <label class="chip2"><input type="checkbox" id="writerView"><span>작가 보기 <small>문단 수치·절단 (W)</small></span></label>
+          <label class="chip2"><input type="checkbox" id="phoneView"><span>폰 화면 틀 <small>독자가 보는 폭 (P)</small></span></label>
+        </div>
+        <div class="q-chips"><button id="fsOpen"><svg class="i"><use href="#i-pen"/></svg>필사 모드 — 따라 쓰며 익히기</button></div>
       </div>
     </div>
   </main>

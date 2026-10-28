@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Novelist</title>
-<meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f4f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0e10" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -15,7 +15,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Gowun+Batang:wght@400;700&family=Black+Han+Sans&family=Jua&family=Do+Hyeon&family=Gugi&family=Nanum+Pen+Script&family=Nanum+Brush+Script&family=Gaegu:wght@700&family=Dokdo&family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600&family=Gowun+Batang:wght@400;700&family=Black+Han+Sans&family=Jua&family=Do+Hyeon&family=Gugi&family=Nanum+Pen+Script&family=Nanum+Brush+Script&family=Gaegu:wght@700&family=Dokdo&family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
@@ -31,7 +31,7 @@
   --bar-bg:color-mix(in srgb, var(--panel) 90%, transparent);
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
   --ui:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
-  --display:"Gowun Batang","Noto Serif KR",serif;
+  --display:"Hahmlet","Noto Serif KR",serif;
 }
 :root[data-theme="sepia"]{
   --bg:#eadfc8; --panel:#f7efdd; --panel-2:#e7dcc2; --ink:#39301f; --sub:#73644a; --faint:#8f7f63; --line:#dccfae;
@@ -121,7 +121,7 @@ aside{border-right:1px solid var(--line)}
 .card.on .cv{outline:2.5px solid var(--accent);outline-offset:2px}
 .card.on .t{color:var(--accent)}
 .card .cv img{width:100%;height:100%;object-fit:cover;display:block}
-.card .cv .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;font-family:"Gowun Batang",serif;font-size:15px;line-height:1.35;color:var(--sub)}
+.card .cv .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;font-family:"Hahmlet",serif;font-size:15px;line-height:1.35;color:var(--sub)}
 .card .cv .kind{position:absolute;left:6px;top:6px;font-size:10px;font-weight:600;padding:2px 6px;border-radius:99px;background:rgb(0 0 0 / 55%);color:#fff;backdrop-filter:blur(6px)}
 .card .cv .pb{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgb(0 0 0 / 25%)}
 .card .cv .pb i{display:block;height:100%;background:var(--brass)}
@@ -151,7 +151,7 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0;position:relati
 .novel p{margin:0 0 var(--pgap,0.9em);text-indent:var(--indent,0)}
 .novel .chead{margin:6px 0 2.4em;text-align:center;font-family:var(--ui)}
 .novel .chead .cw{font-size:12px;letter-spacing:.14em;color:var(--brass);text-transform:uppercase;font-weight:600}
-.novel .chead h2{font-family:"Gowun Batang",var(--rfont),serif;font-weight:700;font-size:1.25em;margin:.5em 0 0;line-height:1.45;color:var(--reader-ink);letter-spacing:-0.01em}
+.novel .chead h2{font-family:"Hahmlet",var(--rfont),serif;font-weight:700;font-size:1.25em;margin:.5em 0 0;line-height:1.45;color:var(--reader-ink);letter-spacing:-0.01em}
 .novel .chead .orn{margin-top:1.1em;color:var(--faint);letter-spacing:.6em;font-size:12px}
 .novel mark{border-radius:3px;padding:0 1px;color:inherit;cursor:pointer}
 .novel mark.y{background:var(--hl-y)} .novel mark.g{background:var(--hl-g)} .novel mark.p{background:var(--hl-p)}
@@ -214,7 +214,7 @@ kbd{font-family:var(--ui);font-size:11px;border:1px solid var(--line);border-bot
 .seg button{flex:1;border:0;border-radius:9px;padding:7px 6px;font-size:12.5px;color:var(--sub)}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0 / 12%);font-weight:600}
 .swatches{display:flex;gap:10px}
-.swatches button{width:44px;height:44px;border-radius:50%;padding:0;border:1px solid var(--line);font-size:13px;font-family:"Gowun Batang",serif}
+.swatches button{width:44px;height:44px;border-radius:50%;padding:0;border:1px solid var(--line);font-size:13px;font-family:"Hahmlet",serif}
 .swatches button.on{outline:2px solid var(--accent);outline-offset:2px}
 .stepper{display:flex;align-items:center;gap:8px}
 .stepper output{min-width:42px;text-align:center;font-variant-numeric:tabular-nums;font-size:13px}
@@ -477,14 +477,7 @@ details.fold summary .chev{margin-left:auto}
 
 #pane-nai.ngbusy #ngList,#pane-nai.ngbusy #ngModel{opacity:.6;pointer-events:none}
 
-/* ---------- 자동 스크롤 · 폰 화면 보기 ---------- */
-.aschip{position:absolute;left:50%;bottom:calc(130px + var(--sab));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:4px;padding:5px 6px 5px 14px;border-radius:99px;background:color-mix(in srgb, var(--panel) 92%, transparent);border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums;transition:opacity .3s}
-.aschip[hidden]{display:none}
-.aschip button{border:0;box-shadow:none;background:transparent;padding:4px 10px;border-radius:99px;font-size:13px;min-height:0}
-.aschip button:hover{background:var(--panel-2)}
-.aschip #asStop{color:var(--accent);font-weight:700}
-.immersive .aschip{opacity:.35}
-.immersive .aschip:hover{opacity:1}
+/* ---------- 폰 화면 보기 ---------- */
 .reader.phone:not(.paged) .novel{--ph:620px;max-width:375px;margin:calc(66px + var(--sat)) auto 0;padding:28px 20px 24px;border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);background-image:repeating-linear-gradient(to bottom, transparent 0 calc(var(--ph) - 1px), color-mix(in srgb, var(--accent) 28%, transparent) calc(var(--ph) - 1px) var(--ph));background-origin:border-box}
 .reader.phone:not(.paged) .epend{max-width:375px}
 /* 태블릿 세로(아이패드): 보기 설정은 오른쪽, 회차 목록은 왼쪽 위 단추 아래에 띄운다 */
@@ -585,7 +578,7 @@ a:hover{text-decoration-color:currentColor}
 #studio.noside .st-binder,#studio.noinsp .st-insp{display:none}
 :root[data-theme="dark"] #studio,:root[data-theme="black"] #studio{--desk:#0e0e10}
 .st-rail{grid-row:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:calc(10px + var(--sat)) 6px calc(10px + var(--sab));background:var(--panel);border-right:1px solid var(--line)}
-.st-rail .logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 15px/1 "Gowun Batang",serif;margin:0 0 12px}
+.st-rail .logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 15px/1 "Hahmlet",serif;margin:0 0 12px}
 .st-rail button{flex-direction:column;gap:3px;width:52px;padding:8px 0 6px;border:0;border-radius:12px;font-size:10.5px;color:var(--sub)}
 .st-rail button .i{width:21px;height:21px}
 .st-rail button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
@@ -594,9 +587,9 @@ a:hover{text-decoration-color:currentColor}
 .st-binder{border-right:1px solid var(--line);padding:calc(14px + var(--sat)) 12px calc(16px + var(--sab))}
 .st-insp{border-left:1px solid var(--line);display:flex;flex-direction:column}
 .st-proj{display:flex;gap:10px;align-items:center;margin-bottom:12px}
-.st-cover{width:46px;height:64px;border-radius:6px;flex:none;background:linear-gradient(160deg,hsl(var(--h,30) 35% 80%),hsl(var(--h,30) 30% 58%));background-size:cover;background-position:center;box-shadow:0 2px 8px rgb(0 0 0 / 18%);display:grid;place-items:center;color:#fff;font:700 13px/1.2 "Gowun Batang",serif;text-align:center;padding:4px;overflow:hidden;cursor:pointer}
+.st-cover{width:46px;height:64px;border-radius:6px;flex:none;background:linear-gradient(160deg,hsl(var(--h,30) 35% 80%),hsl(var(--h,30) 30% 58%));background-size:cover;background-position:center;box-shadow:0 2px 8px rgb(0 0 0 / 18%);display:grid;place-items:center;color:#fff;font:700 13px/1.2 "Hahmlet",serif;text-align:center;padding:4px;overflow:hidden;cursor:pointer}
 .st-proj .pi{flex:1;min-width:0}
-.st-proj select{width:100%;border:0;background-color:transparent;font:700 15px/1.3 "Gowun Batang",serif;padding:2px 22px 2px 0;background-position:right 2px center}
+.st-proj select{width:100%;border:0;background-color:transparent;font:700 15px/1.3 "Hahmlet",serif;padding:2px 22px 2px 0;background-position:right 2px center}
 .st-proj .pm{font-size:11.5px;color:var(--faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .st-card{background:var(--panel-2);border-radius:var(--radius-s);padding:10px 12px;font-size:12.5px;line-height:1.75;color:var(--sub)}
 .st-card b{color:var(--ink);font-variant-numeric:tabular-nums}
@@ -635,7 +628,7 @@ a:hover{text-decoration-color:currentColor}
 .st-desk{padding:36px 20px 45vh;display:flex;justify-content:center;min-height:100%}
 .st-page{width:min(100%, calc(var(--col,620px) + 2 * 64px));background:var(--reader-bg);box-shadow:0 1px 2px rgb(0 0 0 / 6%),0 12px 40px rgb(0 0 0 / 9%);border-radius:3px;padding:56px 64px 80px;position:relative;align-self:flex-start;min-height:calc(100vh - 160px)}
 .st-pagehead{display:flex;justify-content:space-between;font:500 11px/1 var(--ui);letter-spacing:.06em;color:var(--faint);margin:-28px 0 28px}
-.st-pagehead .t{font-family:"Gowun Batang",serif;letter-spacing:0;font-size:12px}
+.st-pagehead .t{font-family:"Hahmlet",serif;letter-spacing:0;font-size:12px}
 #stText{display:block;width:100%;min-height:60vh;border:0;border-radius:0;background:transparent;resize:none;outline:none;padding:0;font-family:var(--rfont,"Noto Serif KR",serif);font-size:var(--fs,18px);line-height:var(--lh,1.9);color:var(--reader-ink);font-weight:var(--fw,400);letter-spacing:var(--ls,0em);field-sizing:content;caret-color:var(--accent);overflow:hidden}
 #stText::placeholder{color:var(--faint)}
 #stText::selection{background:color-mix(in srgb, var(--accent) 22%, transparent)}
@@ -650,7 +643,7 @@ a:hover{text-decoration-color:currentColor}
 #studio.focus .st-top:hover,#studio.focus .st-meter:hover,#studio.focus .st-rail:hover{opacity:1}
 #studio.focus .st-page{box-shadow:none;background:transparent}
 .st-wrap{padding:24px;max-width:1200px;margin:0 auto}
-.st-wrap h2{font:700 22px/1.3 "Gowun Batang",serif;margin:4px 0 4px}
+.st-wrap h2{font:700 22px/1.3 "Hahmlet",serif;margin:4px 0 4px}
 .st-wrap .sub{color:var(--sub);font-size:13px;margin:0 0 18px}
 .st-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
 .st-ic{background:#fffdf6;color:#2a2620;border-radius:4px;box-shadow:0 1px 2px rgb(0 0 0 / 8%),0 6px 16px rgb(0 0 0 / 8%);padding:12px 14px 10px;display:flex;flex-direction:column;gap:6px;min-height:170px;border-top:5px solid #c9b27a;cursor:grab;background-image:repeating-linear-gradient(transparent 0 27px,rgb(80 110 170 / 13%) 27px 28px);background-position:0 40px}
@@ -658,9 +651,9 @@ a:hover{text-decoration-color:currentColor}
 .st-ic.drop{outline:2px dashed var(--accent);outline-offset:3px}
 .st-ic .h{display:flex;gap:6px;align-items:baseline}
 .st-ic .h .no{font:700 12px/1 var(--ui);color:#9a8f7c}
-.st-ic .h b{flex:1;font:700 14.5px/1.35 "Gowun Batang",serif;cursor:pointer}
+.st-ic .h b{flex:1;font:700 14.5px/1.35 "Hahmlet",serif;cursor:pointer}
 .st-ic .h b:hover{text-decoration:underline}
-.st-ic textarea{flex:1;border:0;background:transparent;padding:0;min-height:84px;font:14px/28px "Gowun Batang",serif;color:#2a2620;resize:none}
+.st-ic textarea{flex:1;border:0;background:transparent;padding:0;min-height:84px;font:14px/28px "Hahmlet",serif;color:#2a2620;resize:none}
 .st-ic .f{display:flex;justify-content:space-between;font:11px/1 var(--ui);color:#9a8f7c}
 .st-ic.add{border:2px dashed var(--line);background:transparent;box-shadow:none;align-items:center;justify-content:center;color:var(--faint);cursor:pointer;font-size:14px}
 .st-tbl{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
@@ -678,7 +671,7 @@ a:hover{text-decoration-color:currentColor}
 .st-bc .ph{width:72px;height:92px;border-radius:8px;flex:none;background:var(--panel-2) center/cover no-repeat;display:grid;place-items:center;color:var(--faint);font-size:11px;cursor:pointer;border:1px dashed var(--line);text-align:center}
 .st-bc .ph.has{border:0}
 .st-bc .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-.st-bc .meta input{font:700 16px/1.3 "Gowun Batang",serif;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:4px 0}
+.st-bc .meta input{font:700 16px/1.3 "Hahmlet",serif;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:4px 0}
 .st-bc .meta .row{margin:0}
 .st-bc .meta select{padding:3px 24px 3px 8px;font-size:12px;background-position:right 7px center}
 .st-bc textarea{min-height:120px;font-size:13.5px;field-sizing:content}
@@ -752,7 +745,7 @@ a:hover{text-decoration-color:currentColor}
 #stHl mark{color:transparent;background:color-mix(in srgb, var(--hl-y) 70%, transparent);border-bottom:2px solid var(--brass);border-radius:2px}
 #stText{position:relative;z-index:1}
 .st-cmt{border-left:3px solid var(--brass);padding:6px 10px;margin:0 0 8px;background:var(--panel-2);border-radius:0 8px 8px 0;font-size:12.5px}
-.st-cmt .q{color:var(--sub);font-family:"Gowun Batang",serif}
+.st-cmt .q{color:var(--sub);font-family:"Hahmlet",serif}
 .st-cmt .n{margin:3px 0 6px;color:var(--ink)}
 .st-cmt.lost{opacity:.6}
 .st-cmt button{padding:3px 8px;font-size:11.5px}
@@ -765,7 +758,7 @@ a:hover{text-decoration-color:currentColor}
 .st-ref{border-left:3px solid var(--hl-y);padding:6px 10px;margin:0 0 8px;font-size:12.5px;background:var(--panel-2);border-radius:0 8px 8px 0}
 .st-ref.hl-g{border-left-color:var(--hl-g)}.st-ref.hl-p{border-left-color:var(--hl-p)}
 .st-ref .w{font-size:11px;color:var(--faint)}
-.st-ref .q{font-family:"Gowun Batang",serif;margin:3px 0;line-height:1.6}
+.st-ref .q{font-family:"Hahmlet",serif;margin:3px 0;line-height:1.6}
 .st-ref .n{color:var(--sub);margin-bottom:4px}
 .st-ref button{padding:3px 8px;font-size:11.5px}
 .st-diff{background:var(--reader-bg);border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;font-family:var(--rfont,"Noto Serif KR",serif);font-size:16px;line-height:1.85;color:var(--reader-ink);margin-top:10px}
@@ -809,7 +802,7 @@ a:hover{text-decoration-color:currentColor}
 .term{border-bottom:1px dotted currentColor;cursor:help}
 #termPop{position:fixed;z-index:50;max-width:300px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;font-size:12.5px;line-height:1.65;color:var(--ink)}
 #termPop b{display:block;margin-bottom:2px}
-#termPop .ex{color:var(--sub);margin-top:6px;font-family:"Gowun Batang",serif}
+#termPop .ex{color:var(--sub);margin-top:6px;font-family:"Hahmlet",serif}
 [hidden]{display:none!important}
 
 .st-rail button,.st-itabs button,.st-tabs button,.st-it .ud button,.st-bc .del,.st-ic .h b{background:transparent;box-shadow:none}
@@ -887,41 +880,56 @@ body:not(.is-desktop) .nai-only{display:none!important}
   .wt-pages .pg{width:76px}
 }
 
-/* ================= 새 틀 =================
-   원칙: 길은 메뉴 하나, 한 번에 한 판, 글이 주인공. 색은 상아 종이·먹·놋쇠, 장식은 선 하나와 그림자 하나까지만.
-   이 파일은 맨 뒤에 붙어 앞 스타일을 덮는다. */
+/* ================= 새 틀: 먹과 주홍 =================
+   원칙: 길은 메뉴 하나, 한 번에 한 판, 글이 주인공.
+   색은 흰 종이·먹 두 가지에 주홍(도장 빛) 하나만 — 주홍은 '지금 여기'와 '얼마나 왔나'에만 쓴다.
+   글꼴: 제목은 함렛, 읽기는 리디바탕, 화면 글자는 프리텐다드. 이 파일은 맨 뒤에 붙어 앞 스타일을 덮는다. */
+@font-face{font-family:"RIDIBatang";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff") format("woff");font-weight:400;font-display:swap}
 :root{
-  --gw:68px;
-  --bg:#f4f1ea; --panel:#fcfbf8; --panel-2:#efeae0; --ink:#1c1a16; --sub:#6b665c; --faint:#9a9488; --line:#e4ded2; --hairline:#ebe6db;
-  --accent:#23294a; --accent-ink:#fff; --brass:#9c7636; --reader-bg:#fbfaf6;
-  --rail:#151417; --rail-ink:#8e887d; --rail-on:#f1e6cf;
-  --serif:"Gowun Batang","Noto Serif KR",serif;
-  --r:16px; --e1:0 1px 2px rgb(30 24 12 / 5%), 0 8px 24px rgb(30 24 12 / 6%);
+  --gw:72px;
+  --bg:#f5f4f0; --panel:#ffffff; --panel-2:#f0eee9; --ink:#141416; --sub:#5d5d66; --faint:#9b9aa1; --line:#e6e4df; --hairline:#edebe6;
+  --accent:#c9452a; --accent-ink:#fff; --accent-soft:color-mix(in srgb, #c9452a 9%, transparent);
+  --brass:#c9452a; --brass-soft:color-mix(in srgb, #c9452a 9%, transparent); --ok:#2f7d55; --warn:#c9452a;
+  --solid:#141416; --solid-ink:#fff;
+  --reader-bg:#fdfcfa; --reader-ink:#1b1b1e;
+  --hl-y:#fbe7a1; --hl-g:#d4f0dc; --hl-p:#fadbe2;
+  --rail:#ffffff; --rail-ink:#8a8990; --rail-on:#141416;
+  --display:"Hahmlet","Noto Serif KR",serif; --serif:"Hahmlet","Noto Serif KR",serif;
+  --r:18px; --e1:0 1px 2px rgb(20 20 22 / 4%), 0 10px 30px rgb(20 20 22 / 6%);
 }
-:root[data-theme="sepia"]{--bg:#ece2cd; --panel:#f6eedc; --line:#dccfb1; --hairline:#e3d8bf; --rail:#271f15; --rail-ink:#a8987a}
-:root[data-theme="dark"]{--bg:#111114; --panel:#18181c; --panel-2:#202026; --line:#2a2a31; --hairline:#232329; --rail:#0a0a0c; --rail-ink:#77726a; --rail-on:#e9dbbd; --e1:0 1px 2px rgb(0 0 0 / 40%)}
-:root[data-theme="black"]{--bg:#000; --panel:#0d0d0f; --line:#222226; --hairline:#1a1a1d; --rail:#000; --rail-ink:#6d6962; --rail-on:#e9dbbd; --e1:0 0 0 1px #1c1c20}
-body{background:var(--bg)}
-button{border-radius:12px;box-shadow:none;border-color:var(--line);background:var(--panel)}
+:root[data-theme="sepia"]{--bg:#efe7d6; --panel:#faf5ea; --panel-2:#ece3cf; --line:#e0d5bd; --hairline:#e7ddc8; --ink:#2e2619; --sub:#6d604a; --reader-bg:#f7f0e1; --reader-ink:#2e2619; --rail:#faf5ea; --solid:#2e2619}
+:root[data-theme="dark"]{--bg:#0e0e10; --panel:#17171a; --panel-2:#1f1f23; --ink:#ecebe7; --sub:#a3a2a8; --faint:#6f6e75; --line:#2a2a2f; --hairline:#222226;
+  --accent:#ee6548; --brass:#ee6548; --accent-soft:color-mix(in srgb, #ee6548 14%, transparent); --brass-soft:color-mix(in srgb, #ee6548 14%, transparent); --warn:#ee6548; --ok:#6fcf97;
+  --solid:#ecebe7; --solid-ink:#141416; --reader-bg:#121214; --reader-ink:#d9d6d0; --rail:#121214; --rail-ink:#6f6e75; --rail-on:#ecebe7; --e1:0 1px 2px rgb(0 0 0 / 40%);
+  --hl-y:#5a4a14; --hl-g:#1d4630; --hl-p:#56233a}
+:root[data-theme="black"]{--bg:#000; --panel:#0c0c0e; --panel-2:#161619; --ink:#e6e4df; --sub:#9a999f; --faint:#66656b; --line:#212125; --hairline:#18181b;
+  --accent:#ee6548; --brass:#ee6548; --warn:#ee6548; --solid:#e6e4df; --solid-ink:#000; --reader-bg:#000; --reader-ink:#c4c1bb; --rail:#000; --rail-ink:#66656b; --rail-on:#e6e4df; --e1:0 0 0 1px #1c1c20}
+body{background:var(--bg);font-family:var(--ui)}
+button{border-radius:12px;box-shadow:none;border-color:var(--line);background:var(--panel);font-weight:500}
 button:hover{background:var(--panel-2)}
-button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:none;font-weight:600}
-button.primary:hover{filter:none;background:color-mix(in srgb, var(--accent) 88%, #fff)}
-:root[data-theme="dark"] button.primary,:root[data-theme="black"] button.primary{background:var(--rail-on);border-color:var(--rail-on);color:#141210}
-input[type=text],input[type=search],select,textarea{box-shadow:none;border-color:var(--line);background:var(--panel)}
+/* 주 단추는 먹빛(어두운 테마에선 흰빛) — 주홍은 단추에 쓰지 않는다 */
+button.primary{background:var(--solid);border-color:var(--solid);color:var(--solid-ink);box-shadow:none;font-weight:600}
+button.primary:hover{filter:none;background:color-mix(in srgb, var(--solid) 84%, var(--bg))}
+button.on,button.icon.on{background:var(--accent-soft);color:var(--accent)}
+input[type=text],input[type=search],input[type=number],input[type=password],select,textarea{box-shadow:none;border-color:var(--line);background:var(--panel)}
+input[type=checkbox]{accent-color:var(--accent)}
+input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to right, var(--ink) var(--pct,50%), var(--line) var(--pct,50%))}
+::selection{background:color-mix(in srgb, var(--accent) 22%, transparent)}
 
-/* ---------- 메뉴 ---------- */
-#gnav{position:fixed;left:0;top:0;bottom:0;width:var(--gw);z-index:35;background:var(--rail);display:flex;flex-direction:column;align-items:center;gap:2px;padding:calc(16px + var(--sat)) 6px calc(14px + var(--sab));padding-left:calc(6px + var(--sal))}
-#gnav .g-brand{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;margin:0 0 20px;cursor:pointer;background:#c4a467}
-#gnav .g-brand span{font:700 17px/1 var(--serif);color:#17140f}
-#gnav button{all:unset;box-sizing:border-box;width:56px;padding:10px 0 8px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--rail-ink);cursor:pointer;position:relative;transition:color .15s,background .15s}
-#gnav button span{font:600 10.5px/1 var(--ui)}
-#gnav button svg{width:21px;height:21px;stroke-width:1.6}
-#gnav button:hover{color:#e8e2d6}
-#gnav button.on{color:var(--rail-on);background:rgb(255 255 255 / 7%)}
-#gnav button:focus-visible{outline:2px solid var(--rail-on);outline-offset:1px}
+/* ---------- 메뉴: 흰 막대, 지금 있는 곳만 먹빛과 주홍 점 ---------- */
+#gnav{position:fixed;left:0;top:0;bottom:0;width:var(--gw);z-index:35;background:var(--rail);border-right:1px solid var(--hairline);display:flex;flex-direction:column;align-items:center;gap:2px;padding:calc(18px + var(--sat)) 8px calc(14px + var(--sab));padding-left:calc(8px + var(--sal))}
+#gnav .g-brand{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;margin:0 0 22px;cursor:pointer;background:var(--accent);box-shadow:0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);transform:rotate(-4deg)}
+#gnav .g-brand span{font:700 18px/1 var(--display);color:#fff}
+#gnav button{all:unset;box-sizing:border-box;width:56px;padding:10px 0 8px;border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--rail-ink);cursor:pointer;position:relative;transition:color .15s,background .15s}
+#gnav button span{font:600 11px/1 var(--ui);letter-spacing:-0.01em}
+#gnav button svg{width:22px;height:22px;stroke-width:1.6}
+#gnav button:hover{color:var(--ink);background:var(--panel-2)}
+#gnav button.on{color:var(--rail-on);background:var(--panel-2)}
+#gnav button.on::after{content:"";position:absolute;top:8px;right:12px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+#gnav button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 #gnav .g-sp{flex:1}
-#gnav .g-dot{position:absolute;top:8px;right:14px;width:6px;height:6px;border-radius:50%;background:transparent}
-#gnav .g-sync.ok .g-dot{background:#7bc79a}
+#gnav .g-dot{position:absolute;bottom:22px;right:14px;width:6px;height:6px;border-radius:50%;background:transparent}
+#gnav .g-sync.ok .g-dot{background:var(--ok)}
 
 /* 메뉴 자리만큼 비켜 앉고, 옆 서재 칸은 쓰지 않는다 */
 .app{padding-left:calc(var(--gw) + var(--sal))}
@@ -934,7 +942,6 @@ input[type=text],input[type=search],select,textarea{box-shadow:none;border-color
 /* ---------- 판(홈·서재) 공통 ---------- */
 .page{position:absolute;inset:0;z-index:4;overflow:auto;background:var(--bg);display:none;-webkit-overflow-scrolling:touch}
 .at-home .home,.at-lib .libpage{display:block}
-.at-home .bar,.at-lib .bar,.at-home .botbar,.at-lib .botbar,.at-home #mini,.at-lib #mini,.at-home #wmap,.at-lib #wmap,.at-home #coach,.at-lib #coach,.at-home .aschip,.at-lib .aschip{display:none!important}
 .pg-wrap{max-width:960px;margin:0 auto;padding:calc(56px + var(--sat)) 48px calc(56px + var(--sab))}
 .pg-head{margin:0 0 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pg-head h1{font:700 32px/1.25 var(--serif);letter-spacing:-0.03em;margin:6px 0 0;color:var(--ink)}
@@ -1091,6 +1098,102 @@ input[type=text],input[type=search],select,textarea{box-shadow:none;border-color
   #studio .st-binder{left:0!important;right:auto!important}
   #studio .st-insp{left:auto!important;right:0!important}
 }
+
+/* 표지 없는 책: 먹빛에 작품마다 살짝 다른 색만 비치게, 아래에 주홍 도장 하나 */
+.card .cv .ph,.h-book .cv .ph,.h-read .w-resume .cv .ph,.h-pcv{background:linear-gradient(90deg, rgb(0 0 0 / 22%), rgb(0 0 0 / 4%) 6%, transparent 12%), linear-gradient(165deg, hsl(var(--h,30) 16% 30%), hsl(var(--h,30) 12% 20%))!important;color:#f3f1ec!important}
+.card .cv .ph::after{content:"";display:block!important;position:absolute;left:50%;bottom:16px;width:10px;height:10px;margin-left:-5px;border-radius:2px;background:var(--accent);transform:rotate(-4deg);box-shadow:none}
+:root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 30%), transparent 12%), linear-gradient(165deg, hsl(var(--h) 14% 24%), hsl(var(--h) 10% 15%))!important}
+.card .t,.h-book b{font-family:var(--display);font-weight:600}
+#studio .st-cover{background:linear-gradient(90deg, rgb(0 0 0 / 22%), transparent 14%), linear-gradient(165deg, hsl(var(--h,30) 16% 30%), hsl(var(--h,30) 12% 20%));color:#f3f1ec;font-family:var(--display);border-radius:3px 7px 7px 3px}
+#studio .st-cover[style*="url("]{background-size:cover;background-position:center}
+
+/* ---------- 보기 설정: 테마 낱장 + 큰 글자 단추 + 짜임 + 접힌 세부 ---------- */
+#quick{width:min(400px,calc(100% - 24px));padding:16px 18px 20px;border-radius:22px}
+#quick .shh{padding:0 0 10px;border-bottom:1px solid var(--hairline);margin-bottom:12px}
+#quick .shh b{font:700 16px/1 var(--display)}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.swatches .sw{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:11.5px;color:var(--sub)}
+.swatches button{width:100%;height:72px;border-radius:10px;padding:9px 8px;border:1.5px solid var(--line);display:block;text-align:left;font:400 9px/1.7 var(--serif);overflow:hidden;box-shadow:0 2px 6px rgb(20 20 22 / 6%)}
+.swatches button i{display:block;font-style:normal;font-weight:700;font-size:12px;margin-bottom:3px;font-family:var(--display)}
+.swatches button.on{border-color:var(--accent);outline:2px solid var(--accent-soft);outline-offset:0}
+.q-fs{display:flex;align-items:stretch;gap:10px;margin:2px 0 12px}
+.q-fs button{flex:1;font:600 17px/1 var(--display);padding:14px 0;border-radius:14px}
+.q-fs button small{font-size:12px;vertical-align:4px;margin-left:2px;color:var(--sub)}
+.q-fs button.big{font-size:23px}
+.q-fs .q-fsmid{flex:0 0 76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.q-fs output{font:700 21px/1 var(--display);font-variant-numeric:tabular-nums}
+.q-fs span{font-size:10.5px;color:var(--faint)}
+.q-dens{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.q-dens button{flex-direction:column;gap:2px;padding:10px 6px;border-radius:12px;align-items:center}
+.q-dens button b{font-size:13.5px}
+.q-dens button span{font-size:10.5px;color:var(--faint);font-weight:400}
+.q-dens button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.q-dens button.on span{color:var(--accent)}
+.q-more{margin-top:12px;border-top:1px solid var(--hairline)}
+.q-more summary{cursor:pointer;padding:11px 2px;font-size:12.5px;color:var(--sub);list-style:none;display:flex;align-items:center;gap:6px}
+.q-more summary::before{content:"";width:7px;height:7px;border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:rotate(-45deg);transition:transform .15s}
+.q-more[open] summary::before{transform:rotate(45deg)}
+.q-more summary::-webkit-details-marker{display:none}
+.q-chips{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
+.q-chips>button{flex:1;justify-content:center;font-size:12.5px;padding:9px 10px}
+.chip2{flex:1;display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-size:13px;min-width:140px}
+.chip2 small{display:block;font-size:10.5px;color:var(--faint);margin-top:1px}
+.chip2:has(:checked){border-color:var(--accent);background:var(--accent-soft)}
+.chip2 input{width:16px;height:16px}
+
+/* ---------- 읽는 화면 막대: 떠 있는 유리 알약 ---------- */
+.bar{left:12px;right:12px;top:calc(8px + var(--sat));border-radius:18px;border:1px solid var(--hairline);background:color-mix(in srgb, var(--panel) 80%, transparent);backdrop-filter:saturate(1.4) blur(18px);-webkit-backdrop-filter:saturate(1.4) blur(18px);box-shadow:var(--e1);padding:5px 8px}
+.botbar{left:12px;right:12px;bottom:calc(8px + var(--sab));border-radius:18px;border:1px solid var(--hairline);background:color-mix(in srgb, var(--panel) 80%, transparent);backdrop-filter:saturate(1.4) blur(18px);-webkit-backdrop-filter:saturate(1.4) blur(18px);box-shadow:var(--e1);padding:7px 12px}
+.immersive .bar{transform:translateY(calc(-100% - 14px))}
+.immersive .botbar{transform:translateY(calc(100% + 14px))}
+.at-home .bar,.at-lib .bar{border:0;background:transparent;box-shadow:none}
+.epbtn .e{font-size:14.5px}
+.pageind{font-size:11.5px;color:var(--faint)}
+.reader{scroll-padding-top:84px}
+.novel{padding-top:calc(96px + var(--sat))}
+#epDrawer{top:calc(66px + var(--sat));left:12px;border-radius:18px}
+#quick{top:calc(66px + var(--sat));right:12px}
+@media (max-width:700px){ #epDrawer,#quick{top:auto;bottom:calc(72px + var(--sab));left:8px;right:8px} }
+
+/* ---------- 필사 창: 원문 왼쪽, 따라 쓰기 오른쪽 ---------- */
+.fs-pane{position:absolute;top:calc(64px + var(--sat));right:12px;bottom:calc(64px + var(--sab));width:min(42%,520px);z-index:6;display:flex;flex-direction:column;gap:10px;background:var(--panel);border:1px solid var(--hairline);border-radius:18px;box-shadow:var(--e1);padding:14px 16px}
+.fs-pane[hidden]{display:none}
+.fs-on .reader .novel{max-width:none;margin-right:calc(min(42%,520px) + 24px);margin-left:24px}
+.fs-head{display:flex;align-items:center;gap:10px}
+.fs-head b{font:700 15px/1 var(--display)}
+.fs-head .hint{flex:1;text-align:right;font-variant-numeric:tabular-nums}
+.fs-head .icon{width:32px;height:32px}
+.fs-hint{line-height:1.6}
+#fsText{flex:1;min-height:0;resize:none;font:400 15.5px/1.9 var(--rfont,"RIDIBatang",serif);background:var(--reader-bg);border-color:var(--hairline)}
+.fs-foot{display:flex;gap:8px}
+.fs-foot button{flex:1;font-size:12.5px;padding:8px 6px}
+.fs-cmp{max-height:38%;overflow:auto;border-top:1px solid var(--hairline);padding-top:10px;font:400 13.5px/1.8 var(--serif);white-space:pre-wrap}
+.fs-cmp ins{background:var(--hl-g);text-decoration:none}
+.fs-cmp del{background:var(--hl-p)}
+@media (max-width:900px){
+  .fs-pane{left:8px;right:8px;top:auto;height:52%;width:auto;bottom:calc(68px + var(--sab))}
+  .fs-on .reader .novel{margin-right:auto;margin-left:auto;max-width:var(--col,680px)}
+  .fs-on .reader{bottom:54%}
+}
+/* 읽기 과녁 칩 */
+.focus-chip{font:600 11.5px/1 var(--ui);color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:7px 12px;white-space:nowrap;cursor:pointer}
+.fs-cmp p{margin:0 0 2px}
+.fs-cmp p.d{background:var(--hl-p);border-radius:4px;padding:0 3px}
+.fs-cmp p.a{background:var(--hl-g);border-radius:4px;padding:0 3px}
+/* 빈 서재 안내 */
+.lib-empty{margin:48px auto;max-width:460px;text-align:center;color:var(--sub)}
+.lib-empty svg{width:44px;height:44px;stroke-width:1.3;color:var(--faint);margin-bottom:12px}
+.lib-empty>b{display:block;font:700 18px/1.4 var(--display);color:var(--ink);margin-bottom:8px}
+.lib-empty p b{font-weight:700;color:var(--ink)}
+.lib-empty p{font-size:13px;line-height:1.8;margin:0}
+/* 메모 탭 머리 단추 한 줄로 */
+#pane-notes>.row:first-of-type{flex-wrap:nowrap}
+#pane-notes>.row:first-of-type select{min-width:0;flex-shrink:1}
+#pane-notes>.row:first-of-type select:first-child{flex-shrink:0}
+#pane-notes>.row:first-of-type button{white-space:nowrap}
+/* 필사 창 단추: 좁은 화면에서 글자가 꺾이지 않게 */
+.fs-foot button{white-space:nowrap;min-width:0;padding:8px 4px}
+@media (max-width:480px){ .fs-foot button{font-size:11.5px} }
 </style>
 </head>
 <body>
@@ -1176,7 +1279,13 @@ input[type=text],input[type=search],select,textarea{box-shadow:none;border-color
     </section>
     <div id="dim"></div><div id="warm"></div>
     <div class="mini" id="mini"></div>
-    <div class="aschip" id="asChip" hidden><span id="asTxt"></span><button id="asSlow" title="느리게 (↓)">−</button><button id="asFast" title="빠르게 (↑)">+</button><button id="asStop" title="멈추기 (Space)">멈춤</button></div>
+    <section class="fs-pane" id="fsPane" hidden>
+      <div class="fs-head"><b>필사</b><span class="hint" id="fsStat"></span><button class="icon" id="fsClose" title="닫기 (Esc)"><svg class="i"><use href="#i-x"/></svg></button></div>
+      <div class="hint fs-hint">원문을 왼쪽에 두고 따라 써 보세요. 저절로 저장되고, 기기끼리도 맞춰져요. 다 쓰면 <b>원문과 비교</b>로 틀린 곳을 봐요.</div>
+      <textarea id="fsText" placeholder="여기에 따라 씁니다…" spellcheck="false"></textarea>
+      <div class="fs-foot"><button id="fsDiff">원문과 비교</button><button id="fsCopyIdea">좋은 문장으로 보내기</button><button id="fsWipe">지우기</button></div>
+      <div class="fs-cmp" id="fsCmp" hidden></div>
+    </section>
     <div class="coach" id="coach" hidden></div>
     <div id="wmap" title="문단 지도: 진한 색=대사, 주황=긴 문단. 누르면 그 자리로"><canvas></canvas><i></i></div>
 
@@ -1184,7 +1293,7 @@ input[type=text],input[type=search],select,textarea{box-shadow:none;border-color
       <button class="icon" id="tgSide" title="서재로"><svg class="i"><use href="#i-left"/></svg></button>
       <button class="epbtn" id="epBtn" title="회차 목록"><span class="w" id="title">작품을 골라 주세요</span><span class="e"><span id="epTitle"></span><svg class="i" style="width:16px;height:16px"><use href="#i-down"/></svg></span></button>
       <select id="epSel" hidden></select>
-      <button class="icon" id="btnBm" title="책갈피 (B)"><svg class="i"><use href="#i-bm"/></svg></button>
+      <span class="focus-chip" id="focusChip" hidden></span><button class="icon" id="btnBm" title="책갈피 (B)"><svg class="i"><use href="#i-bm"/></svg></button>
       <button class="icon" id="btnTTS" title="읽어 주기 (T)"><svg class="i"><use href="#i-sound"/></svg></button>
       <button class="icon" id="btnQuick" title="보기 설정"><svg class="i"><use href="#i-aa"/></svg></button>
       <button class="icon" id="tgTool" title="분석·글쓰기·Claude (A)"><svg class="i"><use href="#i-panel"/></svg></button>
@@ -1227,32 +1336,34 @@ input[type=text],input[type=search],select,textarea{box-shadow:none;border-color
       <div class="shh"><b>보기 설정</b><button id="qReset">기본값</button><button class="icon" id="qClose" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
       <div class="q-sec"><div class="lab">테마</div>
         <div class="swatches" id="themeSw">
-          <div class="sw"><button data-theme="light" style="background:#fbfaf7;color:#24221f">가</button>밝게</div>
-          <div class="sw"><button data-theme="sepia" style="background:#f5ecd9;color:#3a2e1f">가</button>종이</div>
-          <div class="sw"><button data-theme="dark" style="background:#161618;color:#c9c4ba">가</button>어둡게</div>
-          <div class="sw"><button data-theme="black" style="background:#000;color:#b8b3aa">가</button>검정</div>
+          <div class="sw"><button data-theme="light" style="background:#fdfcfa;color:#141416"><i>가나다</i>라마바사아</button>밝게</div>
+          <div class="sw"><button data-theme="sepia" style="background:#f7f0e1;color:#2e2619"><i>가나다</i>라마바사아</button>종이</div>
+          <div class="sw"><button data-theme="dark" style="background:#121214;color:#d9d6d0"><i>가나다</i>라마바사아</button>어둡게</div>
+          <div class="sw"><button data-theme="black" style="background:#000;color:#c4c1bb"><i>가나다</i>라마바사아</button>검정</div>
         </div>
-        <div class="qrow"><label>화면 어둡게</label><div class="ctl"><input type="range" id="dimLv" min="0" max="70" value="0"><output id="dimOut"></output></div></div>
-        <div class="qrow"><label>따뜻한 색감</label><div class="ctl"><input type="range" id="warmLv" min="0" max="40" value="0"><output id="warmOut"></output></div></div>
-        <div class="qrow"><label><input type="checkbox" id="wake"> 읽는 동안 화면 켜 두기</label></div>
       </div>
-      <div class="q-sec"><div class="lab">보기 방식</div>
-        <select id="mode" style="width:100%"><option value="auto">자동 (작품 종류대로)</option><option value="novel">소설 · 스크롤</option><option value="paged">소설 · 쪽 넘김</option><option value="webtoon">웹툰 · 세로</option><option value="manga">만화 · 펼침</option></select>
-      </div>
-      <div class="q-sec" id="qNovel"><div class="lab">글자</div>
-        <div class="qrow"><label>크기</label><div class="stepper"><button id="fsDown">가−</button><output id="fsOut">18</output><button id="fsUp">가+</button></div></div>
-        <div class="qrow"><label>굵기</label><div class="ctl"><input type="range" id="weight" min="300" max="600" step="50" value="400"><output id="weightOut"></output></div></div>
-        <div class="qrow"><label>자간</label><div class="ctl"><input type="range" id="ls" min="-0.05" max="0.1" step="0.01" value="0"><output id="lsOut"></output></div></div>
-        <div class="qrow"><label>줄간격</label><div class="ctl"><input type="range" id="lh" min="1.3" max="2.6" step="0.05" value="1.9"><output id="lhOut"></output></div></div>
-        <div class="qrow"><label>문단 간격</label><div class="ctl"><input type="range" id="pgap" min="0" max="2" step="0.1" value="0.9"><output id="pgapOut"></output></div></div>
-        <div class="qrow"><label>양옆 여백</label><div class="ctl"><input type="range" id="margin" min="8" max="72" step="2" value="24"><output id="marginOut"></output></div></div>
-        <div class="qrow desk-only"><label>글 폭</label><div class="ctl"><input type="range" id="col" min="420" max="1100" step="20" value="620"><output id="colOut"></output></div></div>
-        <div class="qrow"><label>글꼴</label><select id="rfont"><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option><option value='"NvMine","Noto Serif KR",serif' id="rfontMine" hidden>내 글꼴</option></select></div>
-        <div class="qrow"><label>내 글꼴</label><div class="row tight"><button id="fontAdd" title="TTF·OTF·WOFF 글꼴 파일을 넣어 읽기 글꼴로 써요">글꼴 파일 넣기</button><button id="fontDel" hidden>빼기</button></div><input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/*" hidden></div>
-        <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
-        <div class="qrow"><label><input type="checkbox" id="writerView"> 작가 보기 (문단 글자 수·대사·갈고리·절단·1,000자 눈금, W)</label></div>
-        <div class="qrow"><label><input type="checkbox" id="phoneView"> 폰 화면으로 보기 (독자가 보는 폭과 폰 화면 장수, P)</label></div>
-        <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
+      <div class="q-sec" id="qNovel">
+        <div class="q-fs"><button id="fsDown">가<small>−</small></button><div class="q-fsmid"><output id="fsOut">18</output><span>글자 크기</span></div><button id="fsUp" class="big">가<small>+</small></button></div>
+        <div class="qrow"><label>글꼴</label><select id="rfont" class="grow"><option value='"RIDIBatang","Noto Serif KR",serif'>리디바탕</option><option value='"Hahmlet","Noto Serif KR",serif'>함렛</option><option value='"Noto Serif KR",serif'>본명조</option><option value='"Gowun Batang",serif'>고운바탕</option><option value='"Pretendard Variable",Pretendard,sans-serif'>프리텐다드</option><option value='"MaruBuri","Maru Buri","Noto Serif KR",serif'>마루부리 (기기에 설치된 경우)</option><option value='"NvMine","Noto Serif KR",serif' id="rfontMine" hidden>내 글꼴</option></select></div>
+        <div class="lab" style="margin-top:14px">짜임</div>
+        <div class="q-dens" id="qDens">
+          <button data-dens="airy"><b>여유</b><span>줄 사이 넉넉히</span></button>
+          <button data-dens="std"><b>기본</b><span>연재 표준</span></button>
+          <button data-dens="tight"><b>촘촘</b><span>한눈에 많이</span></button>
+        </div>
+        <details class="q-more" id="qMore"><summary>세부 조정</summary>
+          <div class="qrow"><label>굵기</label><div class="ctl"><input type="range" id="weight" min="300" max="600" step="50" value="400"><output id="weightOut"></output></div></div>
+          <div class="qrow"><label>자간</label><div class="ctl"><input type="range" id="ls" min="-0.05" max="0.1" step="0.01" value="0"><output id="lsOut"></output></div></div>
+          <div class="qrow"><label>줄간격</label><div class="ctl"><input type="range" id="lh" min="1.3" max="2.6" step="0.05" value="1.9"><output id="lhOut"></output></div></div>
+          <div class="qrow"><label>문단 간격</label><div class="ctl"><input type="range" id="pgap" min="0" max="2" step="0.1" value="0.9"><output id="pgapOut"></output></div></div>
+          <div class="qrow"><label>양옆 여백</label><div class="ctl"><input type="range" id="margin" min="8" max="72" step="2" value="24"><output id="marginOut"></output></div></div>
+          <div class="qrow desk-only"><label>글 폭</label><div class="ctl"><input type="range" id="col" min="420" max="1100" step="20" value="620"><output id="colOut"></output></div></div>
+          <div class="qrow"><label>정렬 · 들여쓰기</label><div class="row tight"><select id="align"><option value="left">왼쪽</option><option value="justify">양쪽</option></select><select id="indent"><option value="0">들여쓰기 없음</option><option value="1em">한 글자</option></select></div></div>
+          <div class="qrow"><label>화면 어둡게</label><div class="ctl"><input type="range" id="dimLv" min="0" max="70" value="0"><output id="dimOut"></output></div></div>
+          <div class="qrow"><label>따뜻한 색감</label><div class="ctl"><input type="range" id="warmLv" min="0" max="40" value="0"><output id="warmOut"></output></div></div>
+          <div class="qrow"><label>누르는 곳</label><select id="tapMode"><option value="lr">왼쪽=이전 · 오른쪽=다음</option><option value="next">양쪽 모두 다음 (한 손)</option></select></div>
+          <div class="qrow"><label>내 글꼴</label><div class="row tight"><button id="fontAdd" title="TTF·OTF·WOFF 글꼴 파일을 넣어 읽기 글꼴로 써요">글꼴 파일 넣기</button><button id="fontDel" hidden>빼기</button></div><input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/*" hidden></div>
+        </details>
         <input type="number" id="fs" value="18" hidden>
       </div>
       <div class="q-sec" id="qImg"><div class="lab">웹툰 · 만화</div>
@@ -1263,11 +1374,20 @@ input[type=text],input[type=search],select,textarea{box-shadow:none;border-color
         <div class="qrow"><label><input type="checkbox" id="coverSingle" checked> 표지는 한 쪽</label><label><input type="checkbox" id="splitWide"> 붙은 두 쪽 나누기</label></div>
         <div class="qrow"><label><input type="checkbox" id="crop"> 여백 자르기</label></div>
       </div>
-      <div class="q-sec"><div class="lab">자동</div>
+      <div class="q-sec" id="qTools"><div class="lab">읽는 방법</div>
+        <div class="qrow"><label>보기 방식</label><select id="mode"><option value="auto">자동 (작품 종류대로)</option><option value="novel">소설 · 스크롤</option><option value="paged">소설 · 쪽 넘김</option><option value="webtoon">웹툰 · 세로</option><option value="manga">만화 · 펼침</option></select></div>
         <div class="qrow"><label>회차 끝에서</label><select id="autoNext"><option value="btn">다음 화 카드</option><option value="auto">자동으로 넘김</option></select></div>
-        <div class="qrow"><label>자동 스크롤 속도</label><div class="ctl"><input type="range" id="asSpeed" min="1" max="10" step="1" value="4"><output id="asSpeedOut"></output></div></div>
-        <div class="qrow"><button id="asGo" class="grow">자동 스크롤 시작 (Space)</button></div>
         <div class="qrow"><label>읽어 주기 속도</label><div class="ctl"><input type="range" id="ttsRate" min="0.6" max="2" step="0.1" value="1.1"><output id="ttsRateOut"></output></div></div>
+        <div class="qrow"><label><input type="checkbox" id="wake"> 읽는 동안 화면 켜 두기</label></div>
+      </div>
+      <div class="q-sec" id="qWriter"><div class="lab">작가의 눈</div>
+        <div class="qrow"><label>이번 읽기의 과녁</label><select id="readFocus"><option value="">정하지 않음</option><option value="대사">대사 — 말맛·호흡</option><option value="절단">절단 — 회차 끝내기</option><option value="장면 전환">장면 전환 — 잇는 법</option><option value="문장">문장 — 리듬·어휘</option><option value="감정">감정 — 보여 주는 법</option></select></div>
+        <div class="hint" style="margin:-2px 0 8px">하나만 정하고 읽으면 형광펜이 모여요. 과녁은 작품마다 따로 기억해요.</div>
+        <div class="q-chips">
+          <label class="chip2"><input type="checkbox" id="writerView"><span>작가 보기 <small>문단 수치·절단 (W)</small></span></label>
+          <label class="chip2"><input type="checkbox" id="phoneView"><span>폰 화면 틀 <small>독자가 보는 폭 (P)</small></span></label>
+        </div>
+        <div class="q-chips"><button id="fsOpen"><svg class="i"><use href="#i-pen"/></svg>필사 모드 — 따라 쓰며 익히기</button></div>
       </div>
     </div>
   </main>
@@ -1778,6 +1898,7 @@ input[type=text],input[type=search],select,textarea{box-shadow:none;border-color
       <div class="row tight"><label>그림 모델</label><select id="wtModel" class="grow"><option value="nai-diffusion-5-full">V5 Full · 성인 가능 (권장)</option><option value="nai-diffusion-5-curated">V5 Curated · 일반만</option><option value="nai-diffusion-4-5-full">V4.5 Full</option></select></div>
       <div class="hint" id="wtModelHint"></div>
       <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="custom">직접 쓰기</option></select></div>
+      <div class="row tight"><label class="hint grow" title="노벨AI V5의 글자 그리기(Text:)로 이 컷의 말풍선 글을 그림에 함께 그려요. 영어·일본어가 정확하고 한글은 아직 깨질 수 있어요"><input type="checkbox" id="wtNaiText"> 말풍선 글자도 그림에 그리기</label></div>
       <div class="row tight" id="wtMonoRow" hidden><label>단색</label><select id="wtMono"><option value="cold blue">cold blue · 7년 전 가이드</option><option value="red">red · 명부</option><option value="gold">gold · 흑요룡</option><option value="white and grey">white and grey · 날개</option><option value="teal">teal · 인어</option><option value="amber">amber · 성녀</option><option value="magenta">magenta · 아이돌</option><option value="dusty orange">dusty orange · 백신</option><option value="moonlight blue">moonlight blue · 늑대</option><option value="warm sepia">warm sepia · 캠퍼스</option></select></div>
       <div class="row tight" id="wtFrameRow" hidden><label>액자</label><select id="wtFrame"><option value="mirror">거울 너머</option><option value="photo">젖은 사진 너머</option><option value="tank">수조 유리 너머</option><option value="shutter">셔터 틈 너머</option><option value="fence">철조망 너머</option><option value="booth">녹음 부스 유리 너머</option><option value="none">쓰지 않기</option></select></div>
       <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
@@ -1990,7 +2111,9 @@ function renderLib(){
     }
     grid.append(workCard(w));
   }
-  if (!list.length) lib.insertAdjacentHTML('beforeend', `<div class="hint" style="padding:16px 4px">${works.length ? '찾는 작품이 없어요' : '아직 불러온 작품이 없어요. 위의 폴더 열기나 파일·zip으로 가져오세요.'}</div>`);
+  if (!list.length) lib.insertAdjacentHTML('beforeend', works.length
+    ? '<div class="hint" style="padding:16px 4px">찾는 작품이 없어요</div>'
+    : `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>서재가 비어 있어요</b><p>위의 <b>폴더 열기</b>로 작품 폴더(노벨·만화·웹툰)를 고르거나,<br>txt·epub·zip 파일을 끌어다 놓아도 돼요. OneDrive 폴더를 연결하면 켤 때마다 저절로 들어와요.</p></div>`);
 }
 
 /* ================= EPUB ================= */
@@ -4055,7 +4178,7 @@ for (const id of VIEW_IDS){
   el.addEventListener('change', () => { store.set('set.'+id, el.type === 'checkbox' ? el.checked : el.value); applyView2(); if (id === 'wake') wakeSync(); if (['weight','ls','margin'].includes(id) && $('#reader.paged')) setFrac(getFrac()); });
 }
 for (const id of Object.keys(OUTS)) $('#'+id).addEventListener('input', () => { applyView(); applyView2(); if (['weight','ls','margin'].includes(id) && $('#reader.paged')) setFrac(getFrac()); });
-const VIEW_DEFAULT = {dimLv:'0', warmLv:'0', fs:'18', weight:'400', ls:'0', lh:'1.9', pgap:'0.9', margin:'24', col:'620', rfont:'"Noto Serif KR",serif', align:'left', indent:'0', tapMode:'lr', wcol:'720', gap:'0', spread:'auto', rtl:'1', fit:'h', ttsRate:'1.1'};
+const VIEW_DEFAULT = {dimLv:'0', warmLv:'0', fs:'18', weight:'400', ls:'0', lh:'1.9', pgap:'0.9', margin:'24', col:'620', rfont:'"RIDIBatang","Noto Serif KR",serif', align:'left', indent:'0', tapMode:'lr', wcol:'720', gap:'0', spread:'auto', rtl:'1', fit:'h', ttsRate:'1.1'};
 $('#qReset').onclick = () => {
   for (const [id, v] of Object.entries(VIEW_DEFAULT)){ const el = $('#'+id); if (!el || el.value === v) continue; el.value = v; el.dispatchEvent(new Event('change')); }
   applyView(); toast('보기 설정을 기본값으로 되돌렸어요');
@@ -6301,6 +6424,7 @@ function drawPanels(g, pg, k){
 /* ---------- 그리기: 말풍선·글·효과음·스티커 ----------
    보내 준 웹툰 자료 기준: 말풍선은 '얇은 선 + 울퉁불퉁한 흰 덩어리 + 가벼운 글씨',
    효과음은 '붓글씨 + 두꺼운 흰 테두리 + 그라데이션 + 하트', 뒤에 흰 불꽃 조각을 깐다. */
+const wtAccent = () => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c9452a';   // 고르기 표시는 앱 강조색으로
 const BUB_LINE = 4;                      // 말풍선 선 굵기(쪽 너비 1500 기준)
 const WT_TEXT = '"Noto Sans KR","Pretendard Variable",sans-serif';
 const SFX_FONTS = {brush: '"Nanum Brush Script"', round: '"Gaegu"', heavy: '"Black Han Sans"', pen: '"Nanum Pen Script"', wild: '"Dokdo"'};
@@ -6449,17 +6573,17 @@ function wtRenderPage(g, pg, k, opts = {}){
 }
 function wtDrawUI(g, pg){
   const sel = WT.sel; if (!sel) return;
-  g.save(); g.lineJoin = 'round'; g.setLineDash([16, 10]); g.lineWidth = 4; g.strokeStyle = '#2f6df6';
+  g.save(); g.lineJoin = 'round'; g.setLineDash([16, 10]); g.lineWidth = 4; g.strokeStyle = wtAccent();
   if (sel.t === 'panel'){ const p = pg.panels[sel.i]; if (p){ const pts = polyPx(pg, p); g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); } }
   else if (sel.t === 'item'){
     const it = pg.items[sel.i]; if (it){
       g.translate(it.x, it.y); g.rotate((it.rot || 0) * Math.PI / 180);
       const hw = it._hw || 40, hh = it._hh || 40; g.strokeRect(-hw, -hh, hw * 2, hh * 2); g.setLineDash([]);
-      g.fillStyle = '#fff'; g.strokeStyle = '#2f6df6'; g.lineWidth = 4;
+      g.fillStyle = '#fff'; g.strokeStyle = wtAccent(); g.lineWidth = 4;
       for (const [hx, hy] of [[hw, hh]]){ g.beginPath(); g.rect(hx - 14, hy - 14, 28, 28); g.fill(); g.stroke(); }
       if (it.k !== 'bubble'){ g.beginPath(); g.moveTo(0, -hh); g.lineTo(0, -hh - 36); g.stroke(); g.beginPath(); g.arc(0, -hh - 48, 13, 0, 7); g.fill(); g.stroke(); }
       g.rotate(-(it.rot || 0) * Math.PI / 180); g.translate(-it.x, -it.y);
-      if (it.k === 'bubble' && it.tail){ g.beginPath(); g.arc(it.tail.x, it.tail.y, 14, 0, 7); g.fillStyle = '#2f6df6'; g.fill(); }
+      if (it.k === 'bubble' && it.tail){ g.beginPath(); g.arc(it.tail.x, it.tail.y, 14, 0, 7); g.fillStyle = wtAccent(); g.fill(); }
     }
   }
   g.restore();
@@ -6603,7 +6727,8 @@ document.addEventListener('keydown', e => {
 /* ---------- 글·효과 넣기와 고치기 ---------- */
 function wtCenterFor(pg){ const s = WT.sel; if (s?.t === 'panel'){ const bb = polyBox(polyPx(pg, pg.panels[s.i])); return [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2, bb]; } return [WT_W / 2, pg.h / 2, [0, 0, WT_W, pg.h]]; }
 function wtAddItem(kind, at){
-  const pg = wtPage(), [cx, cy] = at || wtCenterFor(pg); let it;
+  const pg = wtPage(); let [cx, cy] = at || wtCenterFor(pg); let it;
+  if (!at){ const n = pg.items.filter(x => Math.hypot((x.x || 0) - cx, (x.y || 0) - cy) < 180).length; cx += n * 56; cy += n * 56; }   // 같은 자리에 겹쳐 쌓이지 않게 조금씩 비껴 놓는다
   if (['speech', 'round', 'thought', 'shout', 'whisper'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 38, w: 300, line: 'thin', text: kind === 'shout' ? '뭐라고!' : '대사를 적어 주세요', tail: kind === 'shout' ? null : {x: cx + 30, y: cy + 160}};
   else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 38, w: 480, line: 'thin', text: '설명을 적어 주세요', tail: null};
   else if (kind === 'text') it = {k: 'text', x: cx, y: cy, size: 52, w: 520, text: '속마음을 적어 주세요', color: '#ffffff', rot: 0};
@@ -6715,7 +6840,7 @@ const WT_STYLE = {
     fx: '1.2::paint splatter, dripping paint ::',                                   // 전투·각성 컷에서만
     focus: '1.8::his handsome face is the focal point, drawn with obsessive detail ::',
     tail: 'detailed hair strands, beautiful detailed eyes, painterly, high contrast, cinematic composition, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic, absurdres',
-    neg: 'bad face, bad eyes, deformed face, extra fingers, lipstick, makeup, eyeshadow, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face, bright pastel everyday palette',
+    neg: 'child, bad face, bad eyes, deformed face, extra fingers, lipstick, makeup, eyeshadow, smile, grin, smirk, teeth, open mouth, katana, glasses, eyewear, 1girl, female, camera, hand on face, hands near face, bright pastel everyday palette',
   },
   dark: {
     name: '기본 B · 암실 룩',
@@ -6817,47 +6942,70 @@ function wtStyleParts(nsfw){
   return {head: head.filter(Boolean).join(', '), tail, neg: st.neg, focus: st.focus, fx: st.fx, key: k};
 }
 // 그림체 공식대로 base 를 만든다. 인물 자세(pose)는 1.45 로 올리고, 물감 튐은 전투·각성 컷에만 넣는다.
-function wtStyleBase({count, tags, pose, fx, nsfw}){
+// who: {male, female, people} — 그림체가 남자 주인공을 전제로 쓴 말(his handsome face, handsome man)은 남자가 있을 때만,
+// 얼굴·시선 태그는 사람이 있을 때만 붙인다. (인물 없는 풍경 컷에 looking at viewer 가 붙던 것을 막는다)
+const WT_FACE_TAIL = /\b(extremely handsome man|beautiful detailed eyes|half-lidded eyes|looking at viewer|closed mouth|detailed hair strands)\b,?\s*/gi;
+function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: false, people: true}}){
   const P = wtStyleParts(nsfw); const parts = [P.head];
-  if (P.key === 'neon'){ if (fx && P.fx) parts.push(P.fx); if (P.focus) parts.push(P.focus); }
+  if (P.key === 'neon'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
   parts.push(count, tags);
-  if (pose) parts.push(`1.45::${pose} ::`);
-  parts.push(P.tail, 'no text');
-  return parts.filter(Boolean).join(', ').replace(/,\s*,/g, ',');
+  if (pose && who.people) parts.push(`1.45::${pose} ::`);
+  let tail = P.tail || '';
+  if (!who.people) tail = tail.replace(WT_FACE_TAIL, '');
+  else if (!who.male) tail = tail.replace(/\bextremely handsome man,?\s*/i, '');
+  parts.push(tail, 'no text');
+  return parts.filter(Boolean).join(', ').replace(/,\s*,/g, ',').replace(/,\s*$/, '');
 }
 function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 태그
   const k = wtStyleKey();
   if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
   return WT_STYLE[k].head;
 }
-function wtStyleNeg(neg, nsfwArg){
+function wtStyleNeg(neg, nsfwArg, who){
   const k = wtStyleKey(); const st = WT_STYLE[k]; const nsfw = nsfwArg ?? (wtRating() === 'nsfw');
   let out = (st ? [neg, st.neg].filter(Boolean).join(', ') : neg).split(',').map(x => x.trim()).filter(Boolean);
   if (st?.dropNeg) out = out.filter(x => !st.dropNeg.test(x));
+  if (who?.female) out = out.filter(x => !/^(1girl|female)$/i.test(x));   // 여자 인물이 나오는 컷에서 그림체의 '1girl, female' 막기를 푼다
   if (nsfw) out = out.filter(x => !NSFW_DROP_NEG.test(x));   // 성인 컷에서 벌린 입·표정을 막지 않는다
   if (nsfw) out.push(...NSFW_NEG_ADD.split(',').map(x => x.trim()));
   return [...new Set(out)].join(', ');
 }
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
-function wtPanelPrompt(panel){
+const wtNaiTextOn = () => $('#wtNaiText')?.checked ?? store.get('set.wtNaiText', false);
+function wtPanelPrompt(panel, bubbleTexts){
   const rating = wtRating(), dict = wtDict();
   const names = String(panel.chars || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
   const found = names.filter(n => dict.has(n)), n = found.length;
-  const count = n === 0 ? 'no humans' : n === 1 ? (/1girl/.test(dict.get(found[0])) ? '1girl' : '1boy') : `${n}boys`;
-  const tags = (panel.tags || '').trim() || 'upper body, looking at viewer';
-  const base = wtStyleBase({count: names.length ? (n ? count : '') : 'no humans', tags, pose: (panel.pose || '').trim(), fx: !!panel.fx, nsfw: rating === 'nsfw'});
+  // 인원수 태그는 성별대로 센다 (예전엔 두 사람 이상이면 무조건 2boys 였다)
+  const isGirl = x => /\b(\d?girls?|woman|women|female)\b/i.test(x || '');
+  const girls = found.filter(x => isGirl(dict.get(x))).length, boys = n - girls;
+  const count = n === 0 ? 'no humans' : [boys ? (boys === 1 ? '1boy' : `${boys}boys`) : '', girls ? (girls === 1 ? '1girl' : `${girls}girls`) : ''].filter(Boolean).join(', ');
+  const people = names.length > 0;
+  const who = {male: !n || boys > 0, female: girls > 0, people};
+  const tags = (panel.tags || '').trim() || (people ? 'upper body, looking at viewer' : 'scenery, wide shot');
+  const base = wtStyleBase({count: people ? (n ? count : '') : 'no humans', tags, pose: (panel.pose || '').trim(), fx: !!panel.fx, nsfw: rating === 'nsfw', who});
   let neg = [$('#naiNeg').value.trim(), 'speech bubble, text, english text, korean text, subtitle, panel border'].filter(Boolean).join(', ');
-  neg = wtStyleNeg(neg);
+  neg = wtStyleNeg(neg, undefined, who);
   if (rating === 'nsfw') neg = neg.split(',').map(s => s.trim()).filter(s => s && s !== 'nsfw').join(', '); else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
   const cols = n === 1 ? [2] : n === 2 ? [1, 3] : n === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
   const chars = found.slice(0, 6).map((name, i) => ({name, prompt: (rating === 'nsfw' && !/\badult\b/.test(dict.get(name)) ? 'adult, ' : '') + dict.get(name), negative: '', position: `${cols[i]},2`}));
-  return {base, neg, chars, size: '', notes: '', rating};
+  // 노벨AI 글자 그리기: 'no text' 를 빼고 프롬프트 맨 끝에 Text: 를 붙인다 (공식 문법: 맨 끝, 여러 개는 빈 줄로)
+  let base2 = base;
+  const bt = (bubbleTexts || []).map(x => String(x).trim()).filter(Boolean).slice(0, 2);
+  if (wtNaiTextOn() && bt.length){
+    base2 = base2.replace(/,\s*no text\s*$/i, '') + ', text, speech bubble';
+    neg = neg.split(',').map(x => x.trim()).filter(x => x && !/^(speech bubble|text|english text|korean text|subtitle)$/i.test(x)).join(', ');
+    base2 += '\nText: ' + bt.join('\n\n');
+  }
+  return {base: base2, neg, chars, size: '', notes: '', rating};
 }
 function wtSizeKey(pg, panel){ const bb = polyBox(polyPx(pg, panel)), r = (bb[2] - bb[0]) / (bb[3] - bb[1]); return r > 1.3 ? 'landscape' : r < 0.78 ? 'portrait' : 'square'; }
 const wtMinorBlock = p => wtRating() === 'nsfw' && MINOR_RE.test([p.base, ...p.chars.map(c => c.prompt)].join(' '));
 async function wtGenPanel(pg, panel){
-  const p = wtPanelPrompt(panel);
+  const bb = polyBox(polyPx(pg, panel));
+  const bt = (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
+  const p = wtPanelPrompt(panel, bt);
   if (wtMinorBlock(p)) throw new Error('미성년을 떠올리게 하는 태그가 있어서 건너뛰었어요');
   const blob = await naiGenBlob(p, wtSizeKey(pg, panel));
   const id = await wtPutImage(blob); panel.img = id; panel.view = {ox: 0, oy: 0, s: 1}; return id;
@@ -6994,6 +7142,8 @@ $('#wtImgGen').onclick = async () => {
 
 /* ---------- 그림체·인물 사전 칸 ---------- */
 function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark'; $('#wtFrameRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
+$('#wtNaiText').checked = store.get('set.wtNaiText', false);
+$('#wtNaiText').onchange = () => store.set('set.wtNaiText', $('#wtNaiText').checked);
 $('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
 $('#wtStyle').onchange = wtStyleSync;
 $('#wtMono').onchange = () => store.set('set.wtMono', $('#wtMono').value);
@@ -7130,67 +7280,11 @@ $('#naiStyleSel').onchange = () => { $('#wtStyle').value = $('#naiStyleSel').val
 $('#wtStyle').addEventListener('change', () => { $('#naiStyleSel').value = $('#wtStyle').value; naiStyleLabel(); });
 $('#wtMono').addEventListener('change', naiStyleLabel);
 naiStyleLabel();
-/* ================= 읽기 편의 더하기: 자동 스크롤·폰 화면 보기·내 글꼴·방향키 ================= */
+
+window.nvWtPrompt = wtPanelPrompt;   // 시험용
+/* ================= 작가의 뷰어: 폰 화면 보기·내 글꼴·방향키·읽기 과녁·필사 ================= */
 const typing = e => /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
 const overlayOpen = () => !$('#studio').hidden || !$('#wt').hidden || $('#sketch').classList.contains('open');
-
-/* ---------- 자동 스크롤 ----------
-   소설 스크롤·웹툰은 매 화면마다 조금씩 내리고, 쪽 넘김·만화는 몇 초마다 한 쪽씩 넘긴다.
-   화면을 누르거나 휠을 굴리면 멈춘다. 회차 끝에 닿으면 다음 화로 이어 간다. */
-const AS = {on: false, raf: 0, last: 0, pos: 0, acc: 0, endT: 0};
-const asSpeed = () => +$('#asSpeed').value || 4;
-const asPx = () => 4 * Math.pow(1.35, asSpeed()) * ($('#reader .webtoon') ? 3 : 1);   // 1단계 약 5px/초 ~ 10단계 약 80px/초
-const asSec = () => 40 / Math.pow(1.25, asSpeed());                                   // 쪽 넘김 간격: 1단계 32초 ~ 10단계 4초
-const asStepMode = () => !!($('#reader.paged') || $('#reader .manga'));
-function asLabel(){ $('#asTxt').textContent = `자동 스크롤 · 속도 ${asSpeed()}` + (asStepMode() ? ` (${Math.round(asSec())}초마다)` : ''); $('#asSpeedOut').textContent = asSpeed(); }
-function asStart(){
-  if (!cur) return toast('작품을 먼저 열어 주세요');
-  if (AS.on) return;
-  if ($('#btnTTS').classList.contains('on')) stopTTS();
-  AS.on = true; AS.last = 0; AS.acc = 0; AS.endT = 0; AS.pos = $('#reader').scrollTop;
-  $('#asChip').hidden = false; $('#asGo').textContent = '자동 스크롤 멈추기 (Space)'; asLabel();
-  closeSheets(); $('#app').classList.add('immersive');
-  AS.raf = requestAnimationFrame(asTick);
-}
-function asStop(msg){
-  if (!AS.on) return;
-  AS.on = false; cancelAnimationFrame(AS.raf);
-  $('#asChip').hidden = true; $('#asGo').textContent = '자동 스크롤 시작 (Space)';
-  quiet(); $('#app').classList.remove('immersive');   // 멈추면 막대를 다시 보여 준다
-  if (msg) toast(msg);
-}
-function asTick(t){
-  if (!AS.on) return;
-  if (!cur) return asStop();
-  const dt = AS.last ? Math.min(0.1, (t - AS.last) / 1000) : 0; AS.last = t;
-  const r = $('#reader');
-  if (asStepMode()){
-    AS.acc += dt;
-    if (AS.acc >= asSec()){ AS.acc = 0; if ($('#reader .manga')) mangaStep(1); else pageTurn(1); }
-  } else if (r.scrollHeight > r.clientHeight){
-    if (Math.abs(r.scrollTop - AS.pos) > 3) AS.pos = r.scrollTop;   // 회차가 바뀌거나 프로그램이 옮긴 자리를 따라간다
-    const atEnd = r.scrollTop + r.clientHeight >= r.scrollHeight - 2;
-    if (!atEnd){ AS.endT = 0; AS.pos += asPx() * dt; quiet(200); r.scrollTop = AS.pos; }
-    else if (curEp >= cur.eps.length - 1) return asStop('마지막 화 끝까지 읽었어요');
-    else if ($('#autoNext').value !== 'auto'){   // '자동으로 넘김'이면 원래 장치가 넘긴다
-      AS.endT += dt; if (AS.endT > 1.6){ AS.endT = 0; openEp(curEp + 1); }
-    }
-  }
-  AS.raf = requestAnimationFrame(asTick);
-}
-function asNudge(d){ const el = $('#asSpeed'); el.value = Math.min(10, Math.max(1, asSpeed() + d)); el.dispatchEvent(new Event('change')); rangeFill(el); asLabel(); }
-{ const v = store.get('set.asSpeed', null); if (v !== null) $('#asSpeed').value = v; }
-$('#asSpeed').addEventListener('change', () => { store.set('set.asSpeed', $('#asSpeed').value); asLabel(); });
-$('#asSpeed').addEventListener('input', asLabel);
-$('#asGo').onclick = () => AS.on ? asStop() : asStart();
-$('#asStop').onclick = () => asStop();
-$('#asSlow').onclick = () => asNudge(-1);
-$('#asFast').onclick = () => asNudge(1);
-// 사람이 직접 움직이면 멈춘다 (막대·칩을 누르는 건 빼고)
-$('#reader').addEventListener('wheel', () => asStop(), {passive: true});
-$('#reader').addEventListener('pointerdown', () => asStop(), true);
-document.addEventListener('visibilitychange', () => { if (document.hidden) asStop(); });
-asLabel(); rangeFill($('#asSpeed'));
 
 /* ---------- 폰 화면으로 보기 (작가용) ----------
    독자 대부분이 폰으로 읽으니, 375px 폭에서 어떻게 끊기는지와 한 화가 폰 화면 몇 장인지 본다. */
@@ -7258,21 +7352,19 @@ $('#fontDel').onclick = async () => {
 fontIO('readonly', s => s.get('mine')).then(rec => fontApply(rec || null)).catch(() => {});
 
 /* ---------- 키보드 ----------
-   Space 자동 스크롤, ↑↓ 속도(자동 스크롤 중) · 스크롤 보기에서 ←→·PageUp/Down 한 화면, Home/End, +/− 글자 크기, P 폰 화면 */
+   스크롤 보기에서 Space·←→·PageUp/Down 한 화면, Home/End, +/− 글자 크기, P 폰 화면 */
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('#fsPane').hidden && !overlayOpen()){ fsCloseNow(); $('#fsText').blur(); return; }   // 필사 중에도 Esc 로 닫힌다
   if (typing(e) || overlayOpen() || e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key;
-  if (k === ' ' && cur){ e.preventDefault(); if (e.target.tagName === 'BUTTON') e.target.blur(); AS.on ? asStop() : asStart(); return; }
-  if (AS.on && (k === 'ArrowUp' || k === 'ArrowDown')){ e.preventDefault(); asNudge(k === 'ArrowUp' ? 1 : -1); return; }
-  if (AS.on && k === 'Escape') asStop();
   if (k === '+' || k === '='){ $('#fsUp').click(); toast(`글자 크기 ${$('#fs').value}`); return; }
   if (k === '-' || k === '_'){ $('#fsDown').click(); toast(`글자 크기 ${$('#fs').value}`); return; }
   if ((k === 'p' || k === 'P') && cur){ const c = $('#phoneView'); c.checked = !c.checked; c.dispatchEvent(new Event('change')); toast(c.checked ? '폰 화면으로 보기를 켰어요' : '폰 화면으로 보기를 껐어요'); return; }
   // 스크롤 보기(소설·웹툰)에서 한 화면씩
   if (!cur || $('#reader.paged') || $('#reader .manga')) return;
   const r = $('#reader'); const page = r.clientHeight - 110;   // 위아래 막대만큼 겹쳐 둔다
-  const go = y => { asStop(); r.scrollTo({top: y, behavior: 'smooth'}); };
-  if (k === 'ArrowRight' || k === 'PageDown'){ e.preventDefault(); if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2) $('#next').click(); else go(r.scrollTop + page); }
+  const go = y => r.scrollTo({top: y, behavior: 'smooth'});
+  if (k === ' ' || k === 'ArrowRight' || k === 'PageDown'){ e.preventDefault(); if (e.target.tagName === 'BUTTON') e.target.blur(); if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2) $('#next').click(); else go(r.scrollTop + page); }
   else if (k === 'ArrowLeft' || k === 'PageUp'){ e.preventDefault(); go(r.scrollTop - page); }
   else if (k === 'ArrowDown'){ e.preventDefault(); go(r.scrollTop + 80); }
   else if (k === 'ArrowUp'){ e.preventDefault(); go(r.scrollTop - 80); }
@@ -7306,6 +7398,76 @@ function renderResume(){
   box.hidden = false;
 }
 new MutationObserver(renderResume).observe($('#lib'), {childList: true});
+
+/* ---------- 짜임(글 밀도) 프리셋: 줄간격·문단 간격·자간·여백을 한 번에 ---------- */
+const DENS = {airy: {lh: '2.15', pgap: '1.3', ls: '0', margin: '32'}, std: {lh: '1.9', pgap: '0.9', ls: '0', margin: '24'}, tight: {lh: '1.7', pgap: '0.55', ls: '-0.01', margin: '20'}};
+function densSync(){
+  const cur = Object.entries(DENS).find(([, v]) => Math.abs(+$('#lh').value - +v.lh) < 0.03 && Math.abs(+$('#pgap').value - +v.pgap) < 0.06);
+  $$('#qDens [data-dens]').forEach(b => b.classList.toggle('on', b.dataset.dens === cur?.[0]));
+}
+$$('#qDens [data-dens]').forEach(b => b.onclick = () => {
+  for (const [id, v] of Object.entries(DENS[b.dataset.dens])){ const el = $('#' + id); el.value = v; el.dispatchEvent(new Event('change')); rangeFill(el); }
+  applyView(); densSync();
+});
+$('#quick').addEventListener('change', densSync); $('#quick').addEventListener('input', densSync);
+densSync();
+
+/* ---------- 읽기의 과녁 ----------
+   "한 번 읽을 때 기법 하나만 본다" — 작품마다 과녁을 하나 정해 두면 위 막대에 떠 있고, 형광펜 메모와 함께 남는다. */
+function focusKey(){ return cur ? 'focus.' + cur.key : ''; }
+function focusSync(){
+  const v = cur ? store.get(focusKey(), '') : '';
+  if ($('#readFocus').value !== v) $('#readFocus').value = v;
+  const chip = $('#focusChip'); chip.hidden = !v; if (v) chip.textContent = '과녁 · ' + v;
+}
+$('#readFocus').addEventListener('change', () => { if (!cur) return toast('작품을 먼저 열어 주세요'); store.set(focusKey(), $('#readFocus').value); focusSync(); });
+$('#focusChip').onclick = () => { $('#btnQuick').click(); };
+new MutationObserver(focusSync).observe($('#reader'), {childList: true});
+
+/* ---------- 필사 모드 ----------
+   원문을 왼쪽에 두고 따라 쓴다. 회차마다 따로 저장하고(기기 저장소 'texts', 열쇠 fs:작품:회차),
+   집필실 원고와 같은 길로 기기끼리 맞춰진다. '원문과 비교'는 판 비교와 같은 diff 를 쓴다. */
+const FS = {k: '', t: 0};
+const fsK = () => cur ? `fs:${cur.key}:${curEp}` : '';
+async function fsLoad(){
+  const k = fsK(); FS.k = k; if (!k) return;
+  let text = '';
+  try{ await txtReady(); text = TXT.cache.get(k)?.text || ''; }catch{}
+  $('#fsText').value = text; fsStat();
+}
+function fsStat(){
+  const src = (curText || '').replace(/\s/g, '').length, mine = $('#fsText').value.replace(/\s/g, '').length;
+  $('#fsStat').textContent = src ? `원문 ${src.toLocaleString()}자 · 내 필사 ${mine.toLocaleString()}자 (${Math.min(100, Math.round(mine / src * 100))}%)` : '';
+}
+function fsSave(){
+  const k = FS.k; if (!k) return;
+  const r = TXT.cache.get(k) || {k, text: '', t: 0, syncedT: 0};
+  if (r.text === $('#fsText').value) return;
+  r.text = $('#fsText').value; r.t = Date.now(); TXT.cache.set(k, r); TXT.dirty.add(k);
+  clearTimeout(FS.t); FS.t = setTimeout(() => txtFlushNow().catch(() => {}), 900);
+}
+async function fsOpenNow(){
+  if (!cur || !curText) return toast('소설 회차를 먼저 열어 주세요');
+  closeSheets(); $('#app').classList.add('fs-on'); $('#fsPane').hidden = false; $('#fsCmp').hidden = true;
+  await fsLoad(); $('#fsText').focus();
+}
+function fsCloseNow(){ if ($('#fsPane').hidden) return; fsSave(); $('#fsPane').hidden = true; $('#app').classList.remove('fs-on'); }
+$('#fsOpen').onclick = fsOpenNow;
+$('#fsClose').onclick = fsCloseNow;
+$('#fsText').addEventListener('input', () => { fsStat(); fsSave(); });
+$('#fsDiff').onclick = () => {
+  const box = $('#fsCmp'); box.hidden = !box.hidden;
+  if (!box.hidden){ box.innerHTML = diffHTML(curText || '', $('#fsText').value).html; $('#fsDiff').textContent = '비교 닫기'; }
+  else $('#fsDiff').textContent = '원문과 비교';
+};
+$('#fsWipe').onclick = () => { if (!confirm('이 회차의 필사를 지울까요?')) return; $('#fsText').value = ''; fsStat(); fsSave(); };
+$('#fsCopyIdea').onclick = () => {
+  const t = $('#fsText'); const v = t.value.slice(t.selectionStart, t.selectionEnd).trim() || t.value.split('\n').filter(Boolean).at(-1)?.trim() || '';
+  if (!v) return toast('보낼 문장을 골라 주세요');
+  addIdea(v.slice(0, 300) + ' #필사', cur ? cur.name : '');
+};
+// 회차가 바뀌면 그 회차의 필사로 갈아 끼운다
+new MutationObserver(() => { if (!$('#fsPane').hidden){ if (!cur || !curText) fsCloseNow(); else if (fsK() !== FS.k){ fsSave(); fsLoad(); $('#fsCmp').hidden = true; $('#fsDiff').textContent = '원문과 비교'; } } }).observe($('#reader'), {childList: true});
 /* ================= OneDrive: 기기끼리 맞추기 · 작품 폴더 연결 ================= */
 // 로그인은 마이크로소프트 계정(PKCE, 비밀번호 없음). 웹·아이패드는 이 페이지로 돌아오는 방식, 윈도우 프로그램은 기본 브라우저 + localhost.
 // 맞추기 파일은 OneDrive '앱/Novelist' 폴더(approot)에만 쓰고, 작품 폴더는 읽기만 한다.
@@ -7542,7 +7704,7 @@ const atHome = () => $('#app').classList.contains('at-home');
 const atLib = () => $('#app').classList.contains('at-lib');
 function closeOverlays(){ if (!$('#studio').hidden) stClose(); if (!$('#wt').hidden) wtClose(); }
 function showPage(k){
-  closeOverlays(); closeSheets(); asStop();
+  closeOverlays(); closeSheets(); fsCloseNow?.();
   const a = $('#app'); a.classList.toggle('at-home', k === 'home'); a.classList.toggle('at-lib', k === 'lib'); a.classList.remove('show-side', 'show-tool', 'immersive');
   if (k === 'home') renderHome();
   (k === 'home' ? $('#home') : $('#libPage')).scrollTop = 0;
@@ -7652,6 +7814,7 @@ $('#hLibAll').onclick = GO.lib;
 new MutationObserver(() => { if (atHome()){ renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden; } }).observe($('#lib'), {childList: true});
 new MutationObserver(() => { if ($('#studio').hidden && atHome()) renderHome(); }).observe($('#studio'), {attributes: true, attributeFilter: ['hidden']});
 // 처음엔: 쓰거나 읽던 게 있으면 홈, 없으면 책을 들이는 서재부터
+renderLib();   // 첫 실행에도 서재 빈 안내가 보이게
 { const used = stProjects().some(p => stEps(p.id).length) || Object.keys(localStorage).some(k => k.startsWith('nv.pos.')); showPage(used ? 'home' : 'lib'); }
 </script>
 </body>

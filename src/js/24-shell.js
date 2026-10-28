@@ -5,7 +5,7 @@ const atHome = () => $('#app').classList.contains('at-home');
 const atLib = () => $('#app').classList.contains('at-lib');
 function closeOverlays(){ if (!$('#studio').hidden) stClose(); if (!$('#wt').hidden) wtClose(); }
 function showPage(k){
-  closeOverlays(); closeSheets(); asStop();
+  closeOverlays(); closeSheets(); fsCloseNow?.();
   const a = $('#app'); a.classList.toggle('at-home', k === 'home'); a.classList.toggle('at-lib', k === 'lib'); a.classList.remove('show-side', 'show-tool', 'immersive');
   if (k === 'home') renderHome();
   (k === 'home' ? $('#home') : $('#libPage')).scrollTop = 0;
@@ -115,4 +115,5 @@ $('#hLibAll').onclick = GO.lib;
 new MutationObserver(() => { if (atHome()){ renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden; } }).observe($('#lib'), {childList: true});
 new MutationObserver(() => { if ($('#studio').hidden && atHome()) renderHome(); }).observe($('#studio'), {attributes: true, attributeFilter: ['hidden']});
 // 처음엔: 쓰거나 읽던 게 있으면 홈, 없으면 책을 들이는 서재부터
+renderLib();   // 첫 실행에도 서재 빈 안내가 보이게
 { const used = stProjects().some(p => stEps(p.id).length) || Object.keys(localStorage).some(k => k.startsWith('nv.pos.')); showPage(used ? 'home' : 'lib'); }

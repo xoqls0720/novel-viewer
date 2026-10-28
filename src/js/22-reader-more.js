@@ -1,64 +1,6 @@
-/* ================= 읽기 편의 더하기: 자동 스크롤·폰 화면 보기·내 글꼴·방향키 ================= */
+/* ================= 작가의 뷰어: 폰 화면 보기·내 글꼴·방향키·읽기 과녁·필사 ================= */
 const typing = e => /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
 const overlayOpen = () => !$('#studio').hidden || !$('#wt').hidden || $('#sketch').classList.contains('open');
-
-/* ---------- 자동 스크롤 ----------
-   소설 스크롤·웹툰은 매 화면마다 조금씩 내리고, 쪽 넘김·만화는 몇 초마다 한 쪽씩 넘긴다.
-   화면을 누르거나 휠을 굴리면 멈춘다. 회차 끝에 닿으면 다음 화로 이어 간다. */
-const AS = {on: false, raf: 0, last: 0, pos: 0, acc: 0, endT: 0};
-const asSpeed = () => +$('#asSpeed').value || 4;
-const asPx = () => 4 * Math.pow(1.35, asSpeed()) * ($('#reader .webtoon') ? 3 : 1);   // 1단계 약 5px/초 ~ 10단계 약 80px/초
-const asSec = () => 40 / Math.pow(1.25, asSpeed());                                   // 쪽 넘김 간격: 1단계 32초 ~ 10단계 4초
-const asStepMode = () => !!($('#reader.paged') || $('#reader .manga'));
-function asLabel(){ $('#asTxt').textContent = `자동 스크롤 · 속도 ${asSpeed()}` + (asStepMode() ? ` (${Math.round(asSec())}초마다)` : ''); $('#asSpeedOut').textContent = asSpeed(); }
-function asStart(){
-  if (!cur) return toast('작품을 먼저 열어 주세요');
-  if (AS.on) return;
-  if ($('#btnTTS').classList.contains('on')) stopTTS();
-  AS.on = true; AS.last = 0; AS.acc = 0; AS.endT = 0; AS.pos = $('#reader').scrollTop;
-  $('#asChip').hidden = false; $('#asGo').textContent = '자동 스크롤 멈추기 (Space)'; asLabel();
-  closeSheets(); $('#app').classList.add('immersive');
-  AS.raf = requestAnimationFrame(asTick);
-}
-function asStop(msg){
-  if (!AS.on) return;
-  AS.on = false; cancelAnimationFrame(AS.raf);
-  $('#asChip').hidden = true; $('#asGo').textContent = '자동 스크롤 시작 (Space)';
-  quiet(); $('#app').classList.remove('immersive');   // 멈추면 막대를 다시 보여 준다
-  if (msg) toast(msg);
-}
-function asTick(t){
-  if (!AS.on) return;
-  if (!cur) return asStop();
-  const dt = AS.last ? Math.min(0.1, (t - AS.last) / 1000) : 0; AS.last = t;
-  const r = $('#reader');
-  if (asStepMode()){
-    AS.acc += dt;
-    if (AS.acc >= asSec()){ AS.acc = 0; if ($('#reader .manga')) mangaStep(1); else pageTurn(1); }
-  } else if (r.scrollHeight > r.clientHeight){
-    if (Math.abs(r.scrollTop - AS.pos) > 3) AS.pos = r.scrollTop;   // 회차가 바뀌거나 프로그램이 옮긴 자리를 따라간다
-    const atEnd = r.scrollTop + r.clientHeight >= r.scrollHeight - 2;
-    if (!atEnd){ AS.endT = 0; AS.pos += asPx() * dt; quiet(200); r.scrollTop = AS.pos; }
-    else if (curEp >= cur.eps.length - 1) return asStop('마지막 화 끝까지 읽었어요');
-    else if ($('#autoNext').value !== 'auto'){   // '자동으로 넘김'이면 원래 장치가 넘긴다
-      AS.endT += dt; if (AS.endT > 1.6){ AS.endT = 0; openEp(curEp + 1); }
-    }
-  }
-  AS.raf = requestAnimationFrame(asTick);
-}
-function asNudge(d){ const el = $('#asSpeed'); el.value = Math.min(10, Math.max(1, asSpeed() + d)); el.dispatchEvent(new Event('change')); rangeFill(el); asLabel(); }
-{ const v = store.get('set.asSpeed', null); if (v !== null) $('#asSpeed').value = v; }
-$('#asSpeed').addEventListener('change', () => { store.set('set.asSpeed', $('#asSpeed').value); asLabel(); });
-$('#asSpeed').addEventListener('input', asLabel);
-$('#asGo').onclick = () => AS.on ? asStop() : asStart();
-$('#asStop').onclick = () => asStop();
-$('#asSlow').onclick = () => asNudge(-1);
-$('#asFast').onclick = () => asNudge(1);
-// 사람이 직접 움직이면 멈춘다 (막대·칩을 누르는 건 빼고)
-$('#reader').addEventListener('wheel', () => asStop(), {passive: true});
-$('#reader').addEventListener('pointerdown', () => asStop(), true);
-document.addEventListener('visibilitychange', () => { if (document.hidden) asStop(); });
-asLabel(); rangeFill($('#asSpeed'));
 
 /* ---------- 폰 화면으로 보기 (작가용) ----------
    독자 대부분이 폰으로 읽으니, 375px 폭에서 어떻게 끊기는지와 한 화가 폰 화면 몇 장인지 본다. */
@@ -126,21 +68,19 @@ $('#fontDel').onclick = async () => {
 fontIO('readonly', s => s.get('mine')).then(rec => fontApply(rec || null)).catch(() => {});
 
 /* ---------- 키보드 ----------
-   Space 자동 스크롤, ↑↓ 속도(자동 스크롤 중) · 스크롤 보기에서 ←→·PageUp/Down 한 화면, Home/End, +/− 글자 크기, P 폰 화면 */
+   스크롤 보기에서 Space·←→·PageUp/Down 한 화면, Home/End, +/− 글자 크기, P 폰 화면 */
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('#fsPane').hidden && !overlayOpen()){ fsCloseNow(); $('#fsText').blur(); return; }   // 필사 중에도 Esc 로 닫힌다
   if (typing(e) || overlayOpen() || e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key;
-  if (k === ' ' && cur){ e.preventDefault(); if (e.target.tagName === 'BUTTON') e.target.blur(); AS.on ? asStop() : asStart(); return; }
-  if (AS.on && (k === 'ArrowUp' || k === 'ArrowDown')){ e.preventDefault(); asNudge(k === 'ArrowUp' ? 1 : -1); return; }
-  if (AS.on && k === 'Escape') asStop();
   if (k === '+' || k === '='){ $('#fsUp').click(); toast(`글자 크기 ${$('#fs').value}`); return; }
   if (k === '-' || k === '_'){ $('#fsDown').click(); toast(`글자 크기 ${$('#fs').value}`); return; }
   if ((k === 'p' || k === 'P') && cur){ const c = $('#phoneView'); c.checked = !c.checked; c.dispatchEvent(new Event('change')); toast(c.checked ? '폰 화면으로 보기를 켰어요' : '폰 화면으로 보기를 껐어요'); return; }
   // 스크롤 보기(소설·웹툰)에서 한 화면씩
   if (!cur || $('#reader.paged') || $('#reader .manga')) return;
   const r = $('#reader'); const page = r.clientHeight - 110;   // 위아래 막대만큼 겹쳐 둔다
-  const go = y => { asStop(); r.scrollTo({top: y, behavior: 'smooth'}); };
-  if (k === 'ArrowRight' || k === 'PageDown'){ e.preventDefault(); if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2) $('#next').click(); else go(r.scrollTop + page); }
+  const go = y => r.scrollTo({top: y, behavior: 'smooth'});
+  if (k === ' ' || k === 'ArrowRight' || k === 'PageDown'){ e.preventDefault(); if (e.target.tagName === 'BUTTON') e.target.blur(); if (r.scrollTop + r.clientHeight >= r.scrollHeight - 2) $('#next').click(); else go(r.scrollTop + page); }
   else if (k === 'ArrowLeft' || k === 'PageUp'){ e.preventDefault(); go(r.scrollTop - page); }
   else if (k === 'ArrowDown'){ e.preventDefault(); go(r.scrollTop + 80); }
   else if (k === 'ArrowUp'){ e.preventDefault(); go(r.scrollTop - 80); }
@@ -174,3 +114,73 @@ function renderResume(){
   box.hidden = false;
 }
 new MutationObserver(renderResume).observe($('#lib'), {childList: true});
+
+/* ---------- 짜임(글 밀도) 프리셋: 줄간격·문단 간격·자간·여백을 한 번에 ---------- */
+const DENS = {airy: {lh: '2.15', pgap: '1.3', ls: '0', margin: '32'}, std: {lh: '1.9', pgap: '0.9', ls: '0', margin: '24'}, tight: {lh: '1.7', pgap: '0.55', ls: '-0.01', margin: '20'}};
+function densSync(){
+  const cur = Object.entries(DENS).find(([, v]) => Math.abs(+$('#lh').value - +v.lh) < 0.03 && Math.abs(+$('#pgap').value - +v.pgap) < 0.06);
+  $$('#qDens [data-dens]').forEach(b => b.classList.toggle('on', b.dataset.dens === cur?.[0]));
+}
+$$('#qDens [data-dens]').forEach(b => b.onclick = () => {
+  for (const [id, v] of Object.entries(DENS[b.dataset.dens])){ const el = $('#' + id); el.value = v; el.dispatchEvent(new Event('change')); rangeFill(el); }
+  applyView(); densSync();
+});
+$('#quick').addEventListener('change', densSync); $('#quick').addEventListener('input', densSync);
+densSync();
+
+/* ---------- 읽기의 과녁 ----------
+   "한 번 읽을 때 기법 하나만 본다" — 작품마다 과녁을 하나 정해 두면 위 막대에 떠 있고, 형광펜 메모와 함께 남는다. */
+function focusKey(){ return cur ? 'focus.' + cur.key : ''; }
+function focusSync(){
+  const v = cur ? store.get(focusKey(), '') : '';
+  if ($('#readFocus').value !== v) $('#readFocus').value = v;
+  const chip = $('#focusChip'); chip.hidden = !v; if (v) chip.textContent = '과녁 · ' + v;
+}
+$('#readFocus').addEventListener('change', () => { if (!cur) return toast('작품을 먼저 열어 주세요'); store.set(focusKey(), $('#readFocus').value); focusSync(); });
+$('#focusChip').onclick = () => { $('#btnQuick').click(); };
+new MutationObserver(focusSync).observe($('#reader'), {childList: true});
+
+/* ---------- 필사 모드 ----------
+   원문을 왼쪽에 두고 따라 쓴다. 회차마다 따로 저장하고(기기 저장소 'texts', 열쇠 fs:작품:회차),
+   집필실 원고와 같은 길로 기기끼리 맞춰진다. '원문과 비교'는 판 비교와 같은 diff 를 쓴다. */
+const FS = {k: '', t: 0};
+const fsK = () => cur ? `fs:${cur.key}:${curEp}` : '';
+async function fsLoad(){
+  const k = fsK(); FS.k = k; if (!k) return;
+  let text = '';
+  try{ await txtReady(); text = TXT.cache.get(k)?.text || ''; }catch{}
+  $('#fsText').value = text; fsStat();
+}
+function fsStat(){
+  const src = (curText || '').replace(/\s/g, '').length, mine = $('#fsText').value.replace(/\s/g, '').length;
+  $('#fsStat').textContent = src ? `원문 ${src.toLocaleString()}자 · 내 필사 ${mine.toLocaleString()}자 (${Math.min(100, Math.round(mine / src * 100))}%)` : '';
+}
+function fsSave(){
+  const k = FS.k; if (!k) return;
+  const r = TXT.cache.get(k) || {k, text: '', t: 0, syncedT: 0};
+  if (r.text === $('#fsText').value) return;
+  r.text = $('#fsText').value; r.t = Date.now(); TXT.cache.set(k, r); TXT.dirty.add(k);
+  clearTimeout(FS.t); FS.t = setTimeout(() => txtFlushNow().catch(() => {}), 900);
+}
+async function fsOpenNow(){
+  if (!cur || !curText) return toast('소설 회차를 먼저 열어 주세요');
+  closeSheets(); $('#app').classList.add('fs-on'); $('#fsPane').hidden = false; $('#fsCmp').hidden = true;
+  await fsLoad(); $('#fsText').focus();
+}
+function fsCloseNow(){ if ($('#fsPane').hidden) return; fsSave(); $('#fsPane').hidden = true; $('#app').classList.remove('fs-on'); }
+$('#fsOpen').onclick = fsOpenNow;
+$('#fsClose').onclick = fsCloseNow;
+$('#fsText').addEventListener('input', () => { fsStat(); fsSave(); });
+$('#fsDiff').onclick = () => {
+  const box = $('#fsCmp'); box.hidden = !box.hidden;
+  if (!box.hidden){ box.innerHTML = diffHTML(curText || '', $('#fsText').value).html; $('#fsDiff').textContent = '비교 닫기'; }
+  else $('#fsDiff').textContent = '원문과 비교';
+};
+$('#fsWipe').onclick = () => { if (!confirm('이 회차의 필사를 지울까요?')) return; $('#fsText').value = ''; fsStat(); fsSave(); };
+$('#fsCopyIdea').onclick = () => {
+  const t = $('#fsText'); const v = t.value.slice(t.selectionStart, t.selectionEnd).trim() || t.value.split('\n').filter(Boolean).at(-1)?.trim() || '';
+  if (!v) return toast('보낼 문장을 골라 주세요');
+  addIdea(v.slice(0, 300) + ' #필사', cur ? cur.name : '');
+};
+// 회차가 바뀌면 그 회차의 필사로 갈아 끼운다
+new MutationObserver(() => { if (!$('#fsPane').hidden){ if (!cur || !curText) fsCloseNow(); else if (fsK() !== FS.k){ fsSave(); fsLoad(); $('#fsCmp').hidden = true; $('#fsDiff').textContent = '원문과 비교'; } } }).observe($('#reader'), {childList: true});

@@ -61,7 +61,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   console.log('scraps after import:', await p.$$eval('#scrapList .card', e => e.length));
   // 다른 앱 파일: 굿노트 PDF(위에서 만든 것), RLE 압축 PSD, .procreate 미리보기
   const fx = path.join(__dirname, 'out', 'fx'); fs.mkdirSync(fx, {recursive: true});
-  require('child_process').execFileSync(process.platform === 'win32' ? 'python' : 'python3', ['-I', '-c', `
+  require('child_process').execFileSync(process.platform === 'win32' ? 'python' : 'python3', ['-c', `
 from PIL import Image
 from psd_tools import PSDImage
 import zipfile, io
