@@ -1194,6 +1194,13 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 /* 필사 창 단추: 좁은 화면에서 글자가 꺾이지 않게 */
 .fs-foot button{white-space:nowrap;min-width:0;padding:8px 4px}
 @media (max-width:480px){ .fs-foot button{font-size:11.5px} }
+
+/* 같은 와이파이 주소 줄 */
+.lan-addr{display:flex;align-items:center;gap:8px;margin:8px 0 0}
+.lan-addr code{flex:1;min-width:0;font:600 13px/1.5 ui-monospace,Consolas,monospace;background:var(--panel-2);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere;user-select:all}
+.lan-addr button{flex:none;padding:7px 12px;font-size:12px}
+/* 손님(아이패드·폰)으로 열렸을 때: 넣기·연결 단추는 숨긴다 (읽기 전용) */
+.lan-guest #lpActs,.lan-guest #gnav [data-g=toon]{display:none!important}
 </style>
 </head>
 <body>
@@ -1590,6 +1597,12 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
           </ol>
           <div class="krow"><input type="text" id="odClient" placeholder="애플리케이션(클라이언트) ID  예: 1a2b3c4d-…" autocomplete="off"><button id="odSave">저장</button></div>
         </details>
+      </div>
+      <div class="od-box desktop-only" hidden id="lanBox">
+        <div class="od-head"><b>같은 와이파이로 보여 주기</b><span class="od-tag">아이패드·폰</span></div>
+        <div class="hint">켜 두면 같은 와이파이의 아이패드·폰 사파리에서 아래 주소를 열어 이 컴퓨터의 서재를 바로 봐요. 폴더 연결도 로그인도 필요 없어요. 이 컴퓨터가 켜져 있는 동안만 보여요. 진도·형광펜은 그 기기 안에만 남아요.</div>
+        <div class="row" style="margin-top:10px"><label class="hint"><input type="checkbox" id="lanOn"> 켜 두기</label></div>
+        <div id="lanAddrs"></div>
       </div>
       <details class="gd-box"><summary>구글 드라이브로 맞추기 (예전 방식)</summary>
       <div class="hint" style="margin:8px 0">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰요. OneDrive를 쓰면 이건 꺼 두세요.</div>
@@ -4014,7 +4027,8 @@ function mergeOrdered(newer, older, dead){
 }
 async function gdSyncTexts(files, rIdx, dead){
   await txtReady(); try{ stFlush(); }catch{} await txtFlushNow();
-  const fname = k => 'txt-' + k.replace('/', '_') + '.txt'; const res = {up: 0, down: 0, conflict: 0};
+  const fname = k => 'txt-' + k.replace(/[:/\\]/g, '_') + '.txt';   // OneDrive 가 ':' 를 거부해서 전부 '_' 로 (필사 열쇠 fs:작품:회차)
+  const res = {up: 0, down: 0, conflict: 0};
   const getText = async k => { const b = await gdGet(files, fname(k), 'blob'); return b ? await b.text() : null; };
   for (const k of dead){ if (TXT.cache.has(k)){ TXT.cache.delete(k); await idb.tx('readwrite', s => s.delete(k), 'texts'); } if (files.has(fname(k))) await gdDel(files, fname(k)); delete rIdx[k]; }
   for (const k of new Set([...TXT.cache.keys(), ...Object.keys(rIdx)])){
@@ -7466,6 +7480,7 @@ $('#fsCopyIdea').onclick = () => {
   if (!v) return toast('보낼 문장을 골라 주세요');
   addIdea(v.slice(0, 300) + ' #필사', cur ? cur.name : '');
 };
+window.nvTxtGet = async k => { await txtReady(); return TXT.cache.get(k)?.text || ''; };   // 시험용
 // 회차가 바뀌면 그 회차의 필사로 갈아 끼운다
 new MutationObserver(() => { if (!$('#fsPane').hidden){ if (!cur || !curText) fsCloseNow(); else if (fsK() !== FS.k){ fsSave(); fsLoad(); $('#fsCmp').hidden = true; $('#fsDiff').textContent = '원문과 비교'; } } }).observe($('#reader'), {childList: true});
 /* ================= OneDrive: 기기끼리 맞추기 · 작품 폴더 연결 ================= */
@@ -7816,6 +7831,51 @@ new MutationObserver(() => { if ($('#studio').hidden && atHome()) renderHome(); 
 // 처음엔: 쓰거나 읽던 게 있으면 홈, 없으면 책을 들이는 서재부터
 renderLib();   // 첫 실행에도 서재 빈 안내가 보이게
 { const used = stProjects().some(p => stEps(p.id).length) || Object.keys(localStorage).some(k => k.startsWith('nv.pos.')); showPage(used ? 'home' : 'lib'); }
+/* ================= 같은 와이파이로 보여 주기 =================
+   노트북(윈도우 프로그램)이 작은 서버를 켜고, 아이패드·폰은 그 주소를 열면 폴더 연결 없이 서재가 보인다.
+   읽기 전용: 진도·형광펜은 그 기기 안에만 남는다(기기끼리 맞추려면 OneDrive 를 쓴다). */
+
+// ---------- 손님 쪽: /t/<열쇠>/ 주소로 열렸으면 노트북 서재를 불러온다 ----------
+const LAN_BASE = (location.pathname.match(/^(\/t\/[^/]+)\//) || [])[1] || '';
+async function lanLoad(){
+  if (!LAN_BASE) return;
+  try{
+    const list = await (await fetch(LAN_BASE + '/lan/scan')).json();
+    const files = list.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel,
+      get: async () => { const r = await fetch(LAN_BASE + '/lan/file?p=' + encodeURIComponent(f.rel)); if (!r.ok) throw new Error('읽지 못했어요'); return r.blob(); }}), {remote: true}));
+    await addFiles(files, {persist: false, quiet: true});
+    toast(`노트북 서재에서 작품 ${works.length}개를 불러왔어요`);
+    renderHome();
+  }catch{ toast('노트북 서재를 불러오지 못했어요. 노트북의 Novelist가 켜져 있는지 봐 주세요'); }
+}
+if (LAN_BASE){
+  document.documentElement.classList.add('lan-guest');
+  setTimeout(lanLoad, 400);
+}
+
+// ---------- 노트북 쪽: 설정에서 켜고, 주소를 보여 준다 ----------
+async function lanUI(){
+  if (!DESKTOP || !window.nvDesktop.lanInfo) return;
+  const info = await window.nvDesktop.lanInfo();
+  $('#lanOn').checked = !!info.on;
+  const box = $('#lanAddrs'); box.innerHTML = '';
+  if (info.on && info.urls.length){
+    for (const u of info.urls){
+      const d = document.createElement('div'); d.className = 'lan-addr';
+      d.innerHTML = `<code></code><button data-cp>복사</button>`;
+      d.querySelector('code').textContent = u;
+      d.querySelector('[data-cp]').onclick = () => copy(u);
+      box.append(d);
+    }
+  } else if (info.on) box.innerHTML = '<div class="hint">와이파이 주소를 찾지 못했어요. 와이파이에 연결돼 있는지 봐 주세요.</div>';
+}
+$('#lanOn')?.addEventListener('change', async () => {
+  const r = await window.nvDesktop.lanSet($('#lanOn').checked).catch(() => null);
+  if (!r?.ok && $('#lanOn').checked){ $('#lanOn').checked = false; toast('서버를 켜지 못했어요' + (r?.err ? ` (${r.err})` : '')); }
+  else toast($('#lanOn').checked ? '켰어요. 아이패드 사파리에 아래 주소를 쳐 보세요' : '껐어요');
+  lanUI();
+});
+if (DESKTOP) lanUI();
 </script>
 </body>
 </html>

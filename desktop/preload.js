@@ -16,4 +16,6 @@ contextBridge.exposeInMainWorld('nvDesktop', {
   odToken: (id, scope) => ipcRenderer.invoke('od-token', id, scope),
   odLogin: (id, scope) => ipcRenderer.invoke('od-login', id, scope),
   odLogout: () => ipcRenderer.invoke('od-logout'),
+  lanInfo: () => ipcRenderer.invoke('lan-info'),
+  lanSet: on => ipcRenderer.invoke('lan-set', on),
 });

@@ -182,5 +182,6 @@ $('#fsCopyIdea').onclick = () => {
   if (!v) return toast('보낼 문장을 골라 주세요');
   addIdea(v.slice(0, 300) + ' #필사', cur ? cur.name : '');
 };
+window.nvTxtGet = async k => { await txtReady(); return TXT.cache.get(k)?.text || ''; };   // 시험용
 // 회차가 바뀌면 그 회차의 필사로 갈아 끼운다
 new MutationObserver(() => { if (!$('#fsPane').hidden){ if (!cur || !curText) fsCloseNow(); else if (fsK() !== FS.k){ fsSave(); fsLoad(); $('#fsCmp').hidden = true; $('#fsDiff').textContent = '원문과 비교'; } } }).observe($('#reader'), {childList: true});

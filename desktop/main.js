@@ -81,6 +81,28 @@ async function tokenRequest(params){
 }
 ipcMain.handle('version', () => app.getVersion());
 
+/* ---------- 같은 와이파이로 보여 주기 (desktop/lan-server.js) ---------- */
+const {createLanServer} = require('./lan-server.js');
+const LAN_CFG = () => path.join(app.getPath('userData'), 'lan.json');
+const lanCfg = () => { try{ return JSON.parse(fs.readFileSync(LAN_CFG(), 'utf8')); }catch{ return {on: false, token: ''}; } };
+let lan = null;
+async function lanStart(){
+  if (lan) return true;
+  const cfg = lanCfg();
+  if (!cfg.token){ cfg.token = crypto.randomBytes(5).toString('hex'); fs.writeFileSync(LAN_CFG(), JSON.stringify(cfg)); }
+  lan = createLanServer({appDir: APP_DIR, roots: libRoots, token: cfg.token, port: 8787});
+  try{ await lan.start(); return true; }catch(e){ lan = null; throw e; }
+}
+ipcMain.handle('lan-info', () => { const cfg = lanCfg(); return {on: !!lan, urls: lan ? lan.urls() : [], token: cfg.token}; });
+ipcMain.handle('lan-set', async (_e, on) => {
+  try{
+    if (on) await lanStart(); else if (lan){ await lan.stop(); lan = null; }
+    const cfg = lanCfg(); cfg.on = !!on; fs.writeFileSync(LAN_CFG(), JSON.stringify(cfg));
+    return {ok: true};
+  }catch(e){ return {ok: false, err: String(e.message || e)}; }
+});
+app.whenReady().then(() => { if (lanCfg().on) lanStart().catch(() => {}); });
+
 /* ---------- 작품 폴더 연결 ---------- */
 const ROOTS = () => path.join(app.getPath('userData'), 'library-roots.json');
 const libRoots = () => { try{ return JSON.parse(fs.readFileSync(ROOTS(), 'utf8')); }catch{ return []; } };

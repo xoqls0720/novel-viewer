@@ -393,6 +393,12 @@
           <div class="krow"><input type="text" id="odClient" placeholder="애플리케이션(클라이언트) ID  예: 1a2b3c4d-…" autocomplete="off"><button id="odSave">저장</button></div>
         </details>
       </div>
+      <div class="od-box desktop-only" hidden id="lanBox">
+        <div class="od-head"><b>같은 와이파이로 보여 주기</b><span class="od-tag">아이패드·폰</span></div>
+        <div class="hint">켜 두면 같은 와이파이의 아이패드·폰 사파리에서 아래 주소를 열어 이 컴퓨터의 서재를 바로 봐요. 폴더 연결도 로그인도 필요 없어요. 이 컴퓨터가 켜져 있는 동안만 보여요. 진도·형광펜은 그 기기 안에만 남아요.</div>
+        <div class="row" style="margin-top:10px"><label class="hint"><input type="checkbox" id="lanOn"> 켜 두기</label></div>
+        <div id="lanAddrs"></div>
+      </div>
       <details class="gd-box"><summary>구글 드라이브로 맞추기 (예전 방식)</summary>
       <div class="hint" style="margin:8px 0">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰요. OneDrive를 쓰면 이건 꺼 두세요.</div>
       <div class="krow"><input type="text" id="gdClient" placeholder="OAuth 클라이언트 ID (….apps.googleusercontent.com)" autocomplete="off"><button id="gdSave">저장</button></div>

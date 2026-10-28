@@ -94,14 +94,21 @@ async function mockRoutes(ctx){
   await A.click('#epBtn'); await A.click('#epList .it >> nth=2'); await A.waitForTimeout(500);
   await A.click('#tgTool').catch(() => {}); await A.evaluate(() => { document.querySelector('.tabs [data-tab=notes]').click(); });
   await A.fill('#ideaIn', '검은 눈이 내리는 성문 #장면'); await A.click('#ideaAdd'); await A.waitForTimeout(300);
+  // 필사도 함께 맞춰지는지: 한 줄 쓰고 동기화
+  await A.keyboard.press('Escape'); await A.click('#btnQuick'); await A.waitForTimeout(250); await A.click('#fsOpen'); await A.waitForTimeout(400);
+  await A.fill('#fsText', '청명은 고개를 들었다.'); await A.waitForTimeout(1300); await A.keyboard.press('Escape'); await A.waitForTimeout(200);
+  await A.click('#tgTool').catch(() => {});
   await A.evaluate(() => { document.querySelector('.tabs [data-tab=set]').click(); }); await A.click('#odNow'); await A.waitForTimeout(2500);
   const st = JSON.parse(APPROOT.get('state.json').body.toString());
   console.log('A synced idea:', /검은 눈/.test(st.ls.ideas || ''), '| pos in state:', !!st.ls['pos.소설/hwasan'], '| no token in state:', !JSON.stringify(st).includes('RT'), '| device-only kept out:', !('od.client' in st.ls) && !('sync.backend' in st.ls));
+  const odNames = [...APPROOT.keys()];
+  console.log('fisa synced:', odNames.some(n => /^txt-fs_/.test(n)), '| no bad chars:', odNames.every(n => !/[:\\/]/.test(n)));
   console.log('A status:', await A.textContent('#odStatus'));
   // ---- B: 아이패드 (같은 계정) ----
   const B = await device('B', {width: 820, height: 1180});
   await B.click('#tgTool'); await B.click('.tabs [data-tab=set]'); await B.waitForTimeout(200);
   await B.click('#odConnect'); await B.waitForTimeout(3000);
+  console.log('B got fisa:', await B.evaluate(() => nvTxtGet('fs:소설/hwasan:2')));
   console.log('B got idea:', await B.evaluate(() => (JSON.parse(localStorage.getItem('nv.ideas') || '[]')[0] || {}).text), '| B pos:', await B.evaluate(() => JSON.parse(localStorage.getItem('nv.pos.소설/hwasan') || 'null')?.ep));
   // B: OneDrive 작품 폴더 연결 — '문서/novel' 을 고르면 노벨·웹툰이 따로 연결된다(메모 폴더는 빠진다)
   await B.click('#toolClose').catch(() => {}); await B.click('#gnav [data-g=lib]'); await B.waitForTimeout(200); await B.click('#btnLink'); await B.waitForTimeout(200);

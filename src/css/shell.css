@@ -313,3 +313,10 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 /* 필사 창 단추: 좁은 화면에서 글자가 꺾이지 않게 */
 .fs-foot button{white-space:nowrap;min-width:0;padding:8px 4px}
 @media (max-width:480px){ .fs-foot button{font-size:11.5px} }
+
+/* 같은 와이파이 주소 줄 */
+.lan-addr{display:flex;align-items:center;gap:8px;margin:8px 0 0}
+.lan-addr code{flex:1;min-width:0;font:600 13px/1.5 ui-monospace,Consolas,monospace;background:var(--panel-2);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere;user-select:all}
+.lan-addr button{flex:none;padding:7px 12px;font-size:12px}
+/* 손님(아이패드·폰)으로 열렸을 때: 넣기·연결 단추는 숨긴다 (읽기 전용) */
+.lan-guest #lpActs,.lan-guest #gnav [data-g=toon]{display:none!important}

@@ -77,7 +77,8 @@ function mergeOrdered(newer, older, dead){
 }
 async function gdSyncTexts(files, rIdx, dead){
   await txtReady(); try{ stFlush(); }catch{} await txtFlushNow();
-  const fname = k => 'txt-' + k.replace('/', '_') + '.txt'; const res = {up: 0, down: 0, conflict: 0};
+  const fname = k => 'txt-' + k.replace(/[:/\\]/g, '_') + '.txt';   // OneDrive 가 ':' 를 거부해서 전부 '_' 로 (필사 열쇠 fs:작품:회차)
+  const res = {up: 0, down: 0, conflict: 0};
   const getText = async k => { const b = await gdGet(files, fname(k), 'blob'); return b ? await b.text() : null; };
   for (const k of dead){ if (TXT.cache.has(k)){ TXT.cache.delete(k); await idb.tx('readwrite', s => s.delete(k), 'texts'); } if (files.has(fname(k))) await gdDel(files, fname(k)); delete rIdx[k]; }
   for (const k of new Set([...TXT.cache.keys(), ...Object.keys(rIdx)])){
