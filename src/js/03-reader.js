@@ -1,7 +1,7 @@
 /* ================= 열기 ================= */
 async function openWork(w){
   stopTTS();
-  cur = w; chats.ai.reset(); $('#mode').value = 'auto'; $('#app').classList.remove('nowork');
+  cur = w; chats.ai.reset(); $('#mode').value = 'auto'; $('#app').classList.remove('nowork'); $('#app').classList.add('opening');
   if (!w._expanded && w.kind !== 'manga' && w.eps.some(e => e.type === 'epub')){
     toast('epub 여는 중…');
     const out = []; let comic = 0;
@@ -17,13 +17,13 @@ async function openWork(w){
     w.eps = out; if (comic && comic === out.length) w.kind = 'manga';
     w._expanded = true;
   }
-  await splitWorkTxt(w);
-  if (cur !== w) return;
+  try{ await splitWorkTxt(w); }catch(e){ $('#app').classList.remove('opening'); throw e; }
+  if (cur !== w) return $('#app').classList.remove('opening');
   $('#title').textContent = w.name; closeSheets();
   const sel = $('#epSel'); sel.innerHTML = '';
   w.eps.forEach((e,i)=>{ e.label = prettyEp(e.name); const o=document.createElement('option'); o.value=i; o.textContent=e.label; sel.append(o); });
   const pos = store.get('pos.'+w.key, {ep:0});
-  await openEp(Math.min(pos.ep || 0, w.eps.length-1), pos);
+  try{ await openEp(Math.min(pos.ep || 0, w.eps.length-1), pos); }finally{ $('#app').classList.remove('opening'); }
   renderLib(); renderWorkStats(); renderNotes();
   if (isMobile()) $('#app').classList.remove('show-side');
 }

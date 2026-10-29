@@ -14,7 +14,7 @@ function createWindow(){
   let st = {}; try{ st = JSON.parse(fs.readFileSync(STATE(), 'utf8')); }catch{}
   win = new BrowserWindow({
     width: st.width || 1400, height: st.height || 900, x: st.x, y: st.y, minWidth: 360, minHeight: 480,
-    title: 'Novelist', icon: path.join(APP_DIR, 'icon-512.png'), backgroundColor: '#f7f5f0', autoHideMenuBar: true, show: false,
+    title: 'Novelist', icon: path.join(APP_DIR, 'icon-512.png'), backgroundColor: '#f5f4f0', autoHideMenuBar: true, show: false,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, spellcheck: false },
   });
   if (st.max) win.maximize();

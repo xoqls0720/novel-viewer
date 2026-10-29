@@ -1250,6 +1250,28 @@ body:has(#studio:not([hidden])) #coach,body:has(#wt:not([hidden])) #coach{displa
 /* 웹툰 만들기 오른쪽 판: 머리글을 판 머리글답게 */
 .wt-side h4{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--brass,var(--sub));font-weight:700;letter-spacing:.07em;margin:20px 0 8px}
 .wt-side h4::after{content:"";flex:1;height:1px;background:var(--hairline)}
+
+/* ---------- 프로그램 틀 다듬기 ---------- */
+*{-webkit-tap-highlight-color:transparent}
+::selection{background:color-mix(in srgb, var(--accent) 24%, transparent)}
+:focus-visible{outline:2px solid color-mix(in srgb, var(--accent) 60%, transparent);outline-offset:2px}
+#gnav,.bar,.tabs,.sk-head,.pg-head,.h-k,h3,h4,button,label{-webkit-user-select:none;user-select:none}
+button:not(:disabled):active{transform:scale(.98)}
+
+/* 스크롤 막대: 윈도우 기본 회색 대신 얇고 조용하게 */
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb, var(--ink) 24%, transparent) transparent}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb, var(--ink) 20%, transparent);border-radius:99px;border:3px solid transparent;background-clip:content-box;min-height:40px}
+::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb, var(--ink) 36%, transparent);border:3px solid transparent;background-clip:content-box}
+
+/* 판이 바뀔 때 살짝 떠오르기 */
+.at-home .home,.at-lib .libpage{animation:nvpage .22s ease both}
+@keyframes nvpage{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* 작품 펼치는 중 */
+#app.opening::after{content:"펼치는 중…";position:fixed;left:50%;top:44%;transform:translateX(-50%) translateY(6px);padding:10px 20px;border-radius:99px;background:var(--panel);border:1px solid var(--hairline);box-shadow:0 10px 32px rgb(0 0 0 / 16%);font-size:13px;color:var(--sub);z-index:60;opacity:0;animation:nvopen .3s ease .18s forwards}
+@keyframes nvopen{to{opacity:1;transform:translateX(-50%)}}
 </style>
 </head>
 <body>
@@ -2219,7 +2241,7 @@ async function readEpub(file){
 /* ================= 열기 ================= */
 async function openWork(w){
   stopTTS();
-  cur = w; chats.ai.reset(); $('#mode').value = 'auto'; $('#app').classList.remove('nowork');
+  cur = w; chats.ai.reset(); $('#mode').value = 'auto'; $('#app').classList.remove('nowork'); $('#app').classList.add('opening');
   if (!w._expanded && w.kind !== 'manga' && w.eps.some(e => e.type === 'epub')){
     toast('epub 여는 중…');
     const out = []; let comic = 0;
@@ -2235,13 +2257,13 @@ async function openWork(w){
     w.eps = out; if (comic && comic === out.length) w.kind = 'manga';
     w._expanded = true;
   }
-  await splitWorkTxt(w);
-  if (cur !== w) return;
+  try{ await splitWorkTxt(w); }catch(e){ $('#app').classList.remove('opening'); throw e; }
+  if (cur !== w) return $('#app').classList.remove('opening');
   $('#title').textContent = w.name; closeSheets();
   const sel = $('#epSel'); sel.innerHTML = '';
   w.eps.forEach((e,i)=>{ e.label = prettyEp(e.name); const o=document.createElement('option'); o.value=i; o.textContent=e.label; sel.append(o); });
   const pos = store.get('pos.'+w.key, {ep:0});
-  await openEp(Math.min(pos.ep || 0, w.eps.length-1), pos);
+  try{ await openEp(Math.min(pos.ep || 0, w.eps.length-1), pos); }finally{ $('#app').classList.remove('opening'); }
   renderLib(); renderWorkStats(); renderNotes();
   if (isMobile()) $('#app').classList.remove('show-side');
 }
