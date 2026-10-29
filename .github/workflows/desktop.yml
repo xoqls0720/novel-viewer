@@ -21,6 +21,13 @@ jobs:
         working-directory: desktop
         shell: bash
         run: npm pkg set version="${GITHUB_REF_NAME#v}"
+      - name: 릴리스 미리 만들기(업로드 경쟁으로 릴리스가 두 개 생기는 것 방지)
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -s -X POST -H "Authorization: Bearer $GH_TOKEN"             -d "{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"$GITHUB_REF_NAME\"}"             "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" > /dev/null || true
       - run: npm ci
         working-directory: desktop
       - run: npm run publish
