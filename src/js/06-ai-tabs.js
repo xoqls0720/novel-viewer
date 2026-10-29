@@ -186,14 +186,18 @@ function renderNai(p, el = $('#naiOut')){
 }
 function renderNaiHist(){
   const list = $('#naiHist'); const h = store.get('naiHist', []); list.innerHTML = '';
-  if (!h.length){ list.innerHTML = '<div class="hint" style="padding:8px">아직 없어요</div>'; return; }
+  const clear = $('#naiHistClear'); if (clear) clear.hidden = !h.length;
+  if (!h.length){ list.innerHTML = '<div class="hint" style="padding:8px">아직 없어요. 위에서 만들면 여기에 모여요.</div>'; return; }
   for (const it of h){
-    const d = document.createElement('div'); d.className = 'item';
-    d.innerHTML = `<div class="e">${new Date(it.t).toLocaleString('ko-KR')}</div><div class="q">${esc(it.desc.slice(0, 80))}</div>`;
+    const d = document.createElement('div'); d.className = 'item nh';
+    d.innerHTML = `<div class="nh-top"><span class="e">${new Date(it.t).toLocaleString('ko-KR', {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span><span class="nh-acts"><button data-a="copy">복사</button><button data-a="del">지우기</button></span></div><div class="q">${esc(it.desc.slice(0, 90))}</div>`;
     d.onclick = () => { $('#naiIn').value = it.desc; renderNai(it.p); $('#pane-nai').scrollTop = 0; $('#naiOut').scrollIntoView({block:'start'}); };
+    d.querySelector('[data-a=copy]').onclick = async e => { e.stopPropagation(); try{ await navigator.clipboard.writeText([it.p.base, ...(it.p.chars || []).map(c => c.prompt)].join(' | ')); toast('프롬프트를 복사했어요'); }catch{ toast('복사하지 못했어요'); } };
+    d.querySelector('[data-a=del]').onclick = e => { e.stopPropagation(); store.set('naiHist', store.get('naiHist', []).filter(x => x.t !== it.t)); renderNaiHist(); };
     list.append(d);
   }
 }
+$('#naiHistClear') && ($('#naiHistClear').onclick = () => { if (!confirm('최근 만든 프롬프트를 모두 비울까요?')) return; store.set('naiHist', []); renderNaiHist(); toast('모두 비웠어요'); });
 $('#naiGo').onclick = async () => {
   const desc = $('#naiIn').value.trim(); if (!desc) return toast('어떤 그림인지 적어 주세요');
   if (naiState.abort) return toast('만드는 중이에요');

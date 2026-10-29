@@ -1233,6 +1233,23 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 /* 필기 머리줄: 스케치로 그리기 */
 #skNaiBox{display:flex;gap:6px;align-items:center}
 #skNaiBox select{max-width:124px;font-size:12px}
+
+/* 최근 만든 프롬프트: 복사·지우기 */
+.pane h3 .h3act{font-size:11px;padding:3px 10px;border-radius:99px}
+#naiHist .nh{cursor:pointer}
+#naiHist .nh .nh-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#naiHist .nh .nh-acts{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+#naiHist .nh:hover .nh-acts,#naiHist .nh:focus-within .nh-acts{opacity:1}
+@media (pointer:coarse){#naiHist .nh .nh-acts{opacity:1}}
+#naiHist .nh .nh-acts button{font-size:11px;padding:3px 9px}
+
+/* 읽기 안내 말풍선: 읽는 화면이 아닐 때는 숨긴다 */
+.at-home #coach,.at-lib #coach{display:none!important}
+body:has(#studio:not([hidden])) #coach,body:has(#wt:not([hidden])) #coach{display:none!important}
+
+/* 웹툰 만들기 오른쪽 판: 머리글을 판 머리글답게 */
+.wt-side h4{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--brass,var(--sub));font-weight:700;letter-spacing:.07em;margin:20px 0 8px}
+.wt-side h4::after{content:"";flex:1;height:1px;background:var(--hairline)}
 </style>
 </head>
 <body>
@@ -1563,7 +1580,7 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
       <textarea id="naiStyle" style="min-height:60px" placeholder="예) masterpiece, best quality, very aesthetic, (내가 쓰는 화가·화풍 태그)"></textarea>
       <h3>기본 네거티브</h3>
       <textarea id="naiNeg" style="min-height:60px">lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, cropped, worst quality, low quality, jpeg artifacts, signature, watermark, username, blurry, text, logo</textarea>
-      <h3>최근 만든 프롬프트</h3>
+      <h3>최근 만든 프롬프트 <span class="hint">· 누르면 다시 불러와요</span><button id="naiHistClear" class="h3act" hidden>모두 비우기</button></h3>
       <div class="list" id="naiHist"></div>
     </div>
 
@@ -3181,14 +3198,18 @@ function renderNai(p, el = $('#naiOut')){
 }
 function renderNaiHist(){
   const list = $('#naiHist'); const h = store.get('naiHist', []); list.innerHTML = '';
-  if (!h.length){ list.innerHTML = '<div class="hint" style="padding:8px">아직 없어요</div>'; return; }
+  const clear = $('#naiHistClear'); if (clear) clear.hidden = !h.length;
+  if (!h.length){ list.innerHTML = '<div class="hint" style="padding:8px">아직 없어요. 위에서 만들면 여기에 모여요.</div>'; return; }
   for (const it of h){
-    const d = document.createElement('div'); d.className = 'item';
-    d.innerHTML = `<div class="e">${new Date(it.t).toLocaleString('ko-KR')}</div><div class="q">${esc(it.desc.slice(0, 80))}</div>`;
+    const d = document.createElement('div'); d.className = 'item nh';
+    d.innerHTML = `<div class="nh-top"><span class="e">${new Date(it.t).toLocaleString('ko-KR', {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span><span class="nh-acts"><button data-a="copy">복사</button><button data-a="del">지우기</button></span></div><div class="q">${esc(it.desc.slice(0, 90))}</div>`;
     d.onclick = () => { $('#naiIn').value = it.desc; renderNai(it.p); $('#pane-nai').scrollTop = 0; $('#naiOut').scrollIntoView({block:'start'}); };
+    d.querySelector('[data-a=copy]').onclick = async e => { e.stopPropagation(); try{ await navigator.clipboard.writeText([it.p.base, ...(it.p.chars || []).map(c => c.prompt)].join(' | ')); toast('프롬프트를 복사했어요'); }catch{ toast('복사하지 못했어요'); } };
+    d.querySelector('[data-a=del]').onclick = e => { e.stopPropagation(); store.set('naiHist', store.get('naiHist', []).filter(x => x.t !== it.t)); renderNaiHist(); };
     list.append(d);
   }
 }
+$('#naiHistClear') && ($('#naiHistClear').onclick = () => { if (!confirm('최근 만든 프롬프트를 모두 비울까요?')) return; store.set('naiHist', []); renderNaiHist(); toast('모두 비웠어요'); });
 $('#naiGo').onclick = async () => {
   const desc = $('#naiIn').value.trim(); if (!desc) return toast('어떤 그림인지 적어 주세요');
   if (naiState.abort) return toast('만드는 중이에요');

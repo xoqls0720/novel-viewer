@@ -352,3 +352,20 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 /* 필기 머리줄: 스케치로 그리기 */
 #skNaiBox{display:flex;gap:6px;align-items:center}
 #skNaiBox select{max-width:124px;font-size:12px}
+
+/* 최근 만든 프롬프트: 복사·지우기 */
+.pane h3 .h3act{font-size:11px;padding:3px 10px;border-radius:99px}
+#naiHist .nh{cursor:pointer}
+#naiHist .nh .nh-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#naiHist .nh .nh-acts{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+#naiHist .nh:hover .nh-acts,#naiHist .nh:focus-within .nh-acts{opacity:1}
+@media (pointer:coarse){#naiHist .nh .nh-acts{opacity:1}}
+#naiHist .nh .nh-acts button{font-size:11px;padding:3px 9px}
+
+/* 읽기 안내 말풍선: 읽는 화면이 아닐 때는 숨긴다 */
+.at-home #coach,.at-lib #coach{display:none!important}
+body:has(#studio:not([hidden])) #coach,body:has(#wt:not([hidden])) #coach{display:none!important}
+
+/* 웹툰 만들기 오른쪽 판: 머리글을 판 머리글답게 */
+.wt-side h4{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--brass,var(--sub));font-weight:700;letter-spacing:.07em;margin:20px 0 8px}
+.wt-side h4::after{content:"";flex:1;height:1px;background:var(--hairline)}
