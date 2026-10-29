@@ -348,3 +348,7 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 .tool .tabs::-webkit-scrollbar{display:none}
 .tool .tabs button{white-space:nowrap}
 .pane{padding:18px 16px calc(26px + var(--sab))}
+
+/* 필기 머리줄: 스케치로 그리기 */
+#skNaiBox{display:flex;gap:6px;align-items:center}
+#skNaiBox select{max-width:124px;font-size:12px}

@@ -57,6 +57,18 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
   console.log('saved scraps:', scraps.length, '| names:', [...new Set(scraps.map(s => s.slice(0, 6)))].sort());
   console.log('in scrap list:', (await p.$$('#scrapList .card')).length >= 4 || await p.evaluate(() => document.querySelectorAll('#scrapList .card').length));
   // 틀린 토큰이면 멈춘다
+  // 구도 스케치를 밑그림으로 (img2img): 메모를 비우면 마지막 프롬프트로 그린다
+  await p.click('#naiSketch'); await p.waitForTimeout(500);
+  console.log('sketch nai btn:', await p.isVisible('#skNai'));
+  await p.evaluate(() => { window.__nai = []; }); await p.fill('#skNote', '');
+  await p.click('#skNai');
+  for (let i = 0; i < 40; i++){ if (await p.evaluate(() => window.__nai.length)) break; await p.waitForTimeout(250); }
+  await p.waitForTimeout(800);
+  const skq = await p.evaluate(() => window.__nai[0]?.body);
+  console.log('img2img:', skq?.action === 'img2img', '| has image:', !!skq?.parameters.image, '| strength:', skq?.parameters.strength, '| noise:', skq?.parameters.noise, '| size:', skq?.parameters.width + 'x' + skq?.parameters.height);
+  const skScrap = await p.evaluate(() => new Promise(res => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('scraps').objectStore('scraps').getAll(); g.onsuccess = () => res(g.result.sort((a, b) => b.t - a.t)[0]?.epName || ''); }; }));
+  console.log('sketch scrap saved:', /스케치 따라/.test(skScrap));
+  await p.click('#skCancel').catch(() => {}); await p.waitForTimeout(300);
   await p.evaluate(() => { window.__nai = []; });
   await p.fill('#naiKey', 'wrong'); await p.click('#ngSave'); await p.fill('#ngList', '한 장면'); await p.fill('#ngEach', '3'); await p.click('#ngGo');
   for (let i = 0; i < 40; i++){ if (/끝났어요/.test(await p.textContent('#ngStat'))) break; await p.waitForTimeout(400); }

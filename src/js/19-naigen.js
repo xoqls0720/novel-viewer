@@ -44,14 +44,15 @@ function naiBody(p, seed, sizeKey){
 }
 // 한 장 그려서 장면 노트에 저장
 // 한 장 그려서 그림(PNG blob)만 돌려준다. 웹툰 만들기에서도 쓴다.
-async function naiGenBlob(p, sizeKey){
-  const r = await window.nvDesktop.naiGen(naiToken(), naiBody(p, undefined, sizeKey));
+async function naiGenBlob(p, sizeKey, edit){
+  const body = naiBody(p, undefined, sizeKey); if (edit) edit(body);
+  const r = await window.nvDesktop.naiGen(naiToken(), body);
   if (!r?.ok) throw new Error(r?.status === 401 ? '토큰이 맞지 않아요 (노벨AI 토큰을 다시 넣어 주세요)' : r?.status === 402 ? '남은 생성 수가 없어요' : r?.status === 429 ? '너무 자주 보냈어요. 잠시 뒤 다시 해 주세요' : (r?.text || '실패'));
   if (r.images?.length) return new Blob([Uint8Array.from(atob(r.images[0]), c => c.charCodeAt(0))], {type: 'image/png'});
   const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'});
 }
-async function naiOne(p, desc){
-  const blob = await naiGenBlob(p);
+async function naiOne(p, desc){ return naiSaveBlob(await naiGenBlob(p), desc); }
+async function naiSaveBlob(blob, desc){
   const im = await loadImgEl(blob);
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);
   const tc = document.createElement('canvas'); const ts = Math.min(1, 360 / c.width); tc.width = Math.round(c.width * ts); tc.height = Math.round(c.height * ts); tc.getContext('2d').drawImage(c, 0, 0, tc.width, tc.height);
@@ -141,3 +142,40 @@ if (!store.get('set.ngV5', false)){
 for (const id of ['ngModel', 'ngSteps', 'ngScale', 'ngSize']){ const el = $('#' + id); const v = store.get('set.' + id, null); if (v !== null) el.value = v; el.addEventListener('change', () => store.set('set.' + id, el.value)); }
 if (store.get('set.ngTpl', null)) ngStat('노벨AI에서 가져온 설정을 쓰고 있어요');
 if (DESKTOP) $$('.nai-desktop').forEach(el => el.hidden = false); else $('#ngWeb').hidden = false;
+
+/* ---------- 구도 스케치를 밑그림으로 그리기 (img2img) ---------- */
+// 스케치의 가로세로에 맞는 노벨AI 크기를 고르고, 스케치를 그 크기에 꽉 차게 얹는다.
+if ($('#skNaiBox')) $('#skNaiBox').hidden = !DESKTOP;
+$('#skNai') && ($('#skNai').onclick = async () => {
+  if (!DESKTOP) return toast('윈도우 프로그램에서만 돼요');
+  if (!naiToken()){ openTool('nai'); return toast('노벨AI 토큰을 먼저 넣어 주세요'); }
+  const btn = $('#skNai'); if (btn.disabled) return;
+  const note = $('#skNote').value.trim();
+  if ($('#naiRating').value === 'nsfw' && !adultGuard(note + '\n' + naiCharsDict().join('\n'), 'adult')) return;
+  btn.disabled = true; const t0 = btn.textContent;
+  try{
+    let p = null;
+    if (note){ btn.textContent = '프롬프트 만드는 중…'; p = await naiPromptFor(note); renderNai(p); }
+    else if (naiState.last) p = naiState.last;
+    else { toast('아래 메모 칸에 장면을 한 줄 적어 주세요 (비워 두면 마지막 프롬프트를 써요)'); return; }
+    btn.textContent = '노벨AI가 그리는 중…';
+    const cv = $('#skCanvas'); const r = cv.width / cv.height;
+    const key = r > 1.3 ? 'landscape' : r < 0.78 ? 'portrait' : 'square';
+    const [w, h] = NAI_SIZE[key];
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
+    const sc = Math.max(w / cv.width, h / cv.height);
+    g.drawImage(cv, (w - cv.width * sc) / 2, (h - cv.height * sc) / 2, cv.width * sc, cv.height * sc);
+    const img = c.toDataURL('image/png').split(',')[1];
+    const blob = await naiGenBlob(p, key, body => {
+      body.action = 'img2img';
+      body.parameters.image = img;
+      body.parameters.strength = +$('#skNaiStr').value || 0.65;
+      body.parameters.noise = 0;
+      body.parameters.extra_noise_seed = Math.floor(Math.random() * 4294967295);
+    });
+    await naiSaveBlob(blob, (note || $('#naiIn').value.trim() || '구도 스케치').slice(0, 30) + ' · 스케치 따라');
+    toast('스케치를 따라 그렸어요 — 장면 노트에 저장됐어요. 더 다르게 하려면 "자유롭게"로 다시 눌러 보세요');
+  }catch(e){ toast('그리지 못했어요: ' + String(e.message || e).slice(0, 60)); }
+  finally{ btn.disabled = false; btn.textContent = t0; }
+});
