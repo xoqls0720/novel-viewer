@@ -118,7 +118,14 @@ function workCard(w){
   const cu = coverUrl(w);
   d.innerHTML = `<div class="cv">${cu ? `<img alt="" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${({novel:'소설',webtoon:'웹툰',manga:'만화'})[w.kind]}</span>${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
   d.querySelector('.t').textContent = w.name;
-  const ph = d.querySelector('.ph'); if (ph){ ph.textContent = w.name; ph.style.setProperty('--h', hueOf(w.name)); }   // 표지 없는 작품은 이름으로 색
+  const ph = d.querySelector('.ph'); if (ph){   // 표지 없는 작품: 이름으로 고른 깊은 색 + 활자 표지
+    const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8];   // 책 표지에 어울리는 열 가지 색
+    let n = 0; for (const ch of w.name) n = (n * 31 + ch.codePointAt(0)) >>> 0;
+    ph.style.setProperty('--h', String(HS[n % HS.length]));
+    ph.innerHTML = '<i></i><b></b>';
+    ph.querySelector('i').textContent = ({novel:'소설',webtoon:'웹툰',manga:'만화'})[w.kind] || '';
+    ph.querySelector('b').textContent = w.name;
+  }
   d.onclick = () => openWork(w);
   return d;
 }

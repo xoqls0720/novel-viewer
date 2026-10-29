@@ -143,7 +143,6 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 .card .cv{box-shadow:0 1px 2px rgb(30 24 12 / 10%), 0 8px 18px rgb(30 24 12 / 12%)}
 .card:hover .cv{transform:translateY(-2px);box-shadow:0 2px 4px rgb(30 24 12 / 12%), 0 14px 28px rgb(30 24 12 / 16%)}
 .card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 20%), rgb(0 0 0 / 4%) 6%, transparent 12%), hsl(var(--h) 30% 34%);color:hsl(var(--h) 40% 92%);padding:14px 12px 14px 16px;font:700 14px/1.45 var(--serif);text-shadow:none}
-.card .cv .ph::before,.card .cv .ph::after{display:none}
 :root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 30%), transparent 12%), hsl(var(--h) 22% 24%)}
 .card .cv .kind{display:none}
 .card .t{font:700 13.5px/1.4 var(--serif);margin-top:10px}
@@ -219,9 +218,7 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 }
 
 /* 표지 없는 책: 먹빛에 작품마다 살짝 다른 색만 비치게, 아래에 주홍 도장 하나 */
-.card .cv .ph,.h-book .cv .ph,.h-read .w-resume .cv .ph,.h-pcv{background:linear-gradient(90deg, rgb(0 0 0 / 22%), rgb(0 0 0 / 4%) 6%, transparent 12%), linear-gradient(165deg, hsl(var(--h,30) 16% 30%), hsl(var(--h,30) 12% 20%))!important;color:#f3f1ec!important}
-.card .cv .ph::after{content:"";display:block!important;position:absolute;left:50%;bottom:16px;width:10px;height:10px;margin-left:-5px;border-radius:2px;background:var(--accent);transform:rotate(-4deg);box-shadow:none}
-:root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{background:linear-gradient(90deg, rgb(0 0 0 / 30%), transparent 12%), linear-gradient(165deg, hsl(var(--h) 14% 24%), hsl(var(--h) 10% 15%))!important}
+.h-book .cv .ph,.h-read .w-resume .cv .ph,.h-pcv{background:linear-gradient(90deg, rgb(0 0 0 / 22%), rgb(0 0 0 / 4%) 6%, transparent 12%), linear-gradient(165deg, hsl(var(--h,30) 16% 30%), hsl(var(--h,30) 12% 20%))!important;color:#f3f1ec!important}
 .card .t,.h-book b{font-family:var(--display);font-weight:600}
 #studio .st-cover{background:linear-gradient(90deg, rgb(0 0 0 / 22%), transparent 14%), linear-gradient(165deg, hsl(var(--h,30) 16% 30%), hsl(var(--h,30) 12% 20%));color:#f3f1ec;font-family:var(--display);border-radius:3px 7px 7px 3px}
 #studio .st-cover[style*="url("]{background-size:cover;background-position:center}
@@ -320,3 +317,34 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
 .lan-addr button{flex:none;padding:7px 12px;font-size:12px}
 /* 손님(아이패드·폰)으로 열렸을 때: 넣기·연결 단추는 숨긴다 (읽기 전용) */
 .lan-guest #lpActs,.lan-guest #gnav [data-g=toon]{display:none!important}
+
+/* ---------- 다듬기: 표지 없는 작품은 활자 표지 ---------- */
+.card .cv .ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:18px 12px 22px 17px;text-align:center;
+  background:
+    linear-gradient(90deg, rgb(0 0 0 / 30%), rgb(0 0 0 / 7%) 6%, transparent 13%),
+    radial-gradient(130% 90% at 50% -15%, hsl(var(--h) 45% 52% / .5), transparent 58%),
+    linear-gradient(hsl(var(--h) 36% 31%), hsl(var(--h) 40% 23%));
+  color:hsl(var(--h) 48% 94%)}
+.card .cv .ph::before{content:"";position:absolute;inset:9px 8px 9px 15px;border:1px solid hsl(var(--h) 55% 92% / .38);outline:1px solid hsl(var(--h) 55% 92% / .12);outline-offset:3px;border-radius:0;box-shadow:none;background:none;pointer-events:none}
+.card .cv .ph::after{content:"◆";position:absolute;left:0;right:0;top:auto;bottom:14px;width:auto;height:auto;margin:0;background:none;border:none;text-align:center;transform:translateX(3px);font-size:8px;line-height:1;opacity:.55;color:hsl(var(--h) 55% 90%)}
+.card .cv .ph i{font:600 10px/1 var(--ui);font-style:normal;letter-spacing:.38em;text-indent:.38em;opacity:.78}
+.card .cv .ph i:empty{display:none}
+.card .cv .ph b{font:700 16px/1.55 var(--serif);max-width:100%;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all;text-wrap:balance}
+:root[data-theme="dark"] .card .cv .ph,:root[data-theme="black"] .card .cv .ph{color:hsl(var(--h) 42% 90%);background:
+    linear-gradient(90deg, rgb(0 0 0 / 38%), rgb(0 0 0 / 10%) 6%, transparent 13%),
+    radial-gradient(130% 90% at 50% -15%, hsl(var(--h) 40% 42% / .45), transparent 58%),
+    linear-gradient(hsl(var(--h) 30% 23%), hsl(var(--h) 34% 16%))}
+
+/* 홈 '이어 읽기' 빈 칸: 가운데 정돈 */
+.h-read .h-none{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;height:100%;min-height:150px;color:var(--sub)}
+.h-read .h-none .i{width:22px;height:22px;opacity:.4}
+.h-read .h-none p{margin:0;line-height:1.75}
+
+/* 서재 묶음 머리글(소설·만화·웹툰): 또렷하게 */
+.lib h4{font:700 14px/1 var(--serif);color:var(--ink);letter-spacing:.05em;gap:12px;margin:32px 2px 14px}
+
+/* 도구 판: 탭이 많아도 한 줄로 밀어 보기, 안쪽 숨통 */
+.tool .tabs{overflow-x:auto;scrollbar-width:none}
+.tool .tabs::-webkit-scrollbar{display:none}
+.tool .tabs button{white-space:nowrap}
+.pane{padding:18px 16px calc(26px + var(--sab))}
