@@ -136,14 +136,36 @@ function renderLib(){
   let list = works.filter(w => !q || w.name.includes(q));
   const recent = works.filter(w => store.get('pos.'+w.key, null)).sort((a,b)=>(store.get('pos.'+b.key,{t:0}).t||0)-(store.get('pos.'+a.key,{t:0}).t||0)).slice(0, 8);
   if (!q && recent.length && sort === 'name'){
-    const h = document.createElement('h4'); h.textContent = '이어 읽기'; lib.append(h);
-    const row = document.createElement('div'); row.className = 'cont'; recent.forEach(w => row.append(workCard(w))); lib.append(row);
+    // 읽던 책: 큰 카드 하나로, 한 번에 이어 읽기 (전문 뷰어들의 hero 패턴)
+    const hw = recent[0]; const hp = store.get('pos.'+hw.key, {ep: 0});
+    const htotal = hp?.n || hw.eps.length;
+    const hpct = Math.min(100, Math.round(((hp.ep + (hp.f || 0)) / (htotal || 1)) * 100));
+    const days = Math.floor((Date.now() - (hp.t || Date.now())) / 86400000);
+    const when = days <= 0 ? '오늘' : days === 1 ? '어제' : days < 30 ? `${days}일 전` : new Date(hp.t).toLocaleDateString('ko-KR', {month: 'long', day: 'numeric'});
+    const hero = document.createElement('div'); hero.className = 'lib-hero'; hero.setAttribute('role', 'button');
+    const hcu = coverUrl(hw);
+    hero.innerHTML = `<div class="cv">${hcu ? `<img alt="" src="${hcu}">` : '<div class="ph"><b></b></div>'}</div>
+      <div class="hx"><div class="hk">읽던 책</div><b class="ht"></b>
+      <div class="hm">${Math.min(hp.ep + 1, htotal)} / ${htotal}화 · ${hpct}% · ${when}</div>
+      <div class="pb"><i style="width:${hpct}%"></i></div></div>
+      <button class="primary hgo">이어 읽기</button>`;
+    hero.querySelector('.ht').textContent = hw.name;
+    const hph = hero.querySelector('.ph b'); if (hph){ hph.textContent = hw.name;
+      const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8]; let n = 0; for (const ch of hw.name) n = (n * 31 + ch.codePointAt(0)) >>> 0;
+      hero.querySelector('.ph').style.setProperty('--h', String(HS[n % HS.length])); }
+    hero.onclick = () => openWork(hw);
+    lib.append(hero);
+    if (recent.length > 1){
+      const h = document.createElement('h4'); h.textContent = '최근'; lib.append(h);
+      const row = document.createElement('div'); row.className = 'cont'; recent.slice(1).forEach(w => row.append(workCard(w))); lib.append(row);
+    }
   }
   if (sort === 'recent') list = [...list].sort((a,b)=>(store.get('pos.'+b.key,{t:0}).t||0)-(store.get('pos.'+a.key,{t:0}).t||0));
   let lastTop = null, grid = null;
+  const counts = {}; for (const w of list) counts[w.top] = (counts[w.top] || 0) + 1;
   for (const w of list){
     if (!grid || (sort === 'name' && w.top !== lastTop)){
-      if (sort === 'name'){ const h = document.createElement('h4'); h.textContent = w.top; lib.append(h); }
+      if (sort === 'name'){ const h = document.createElement('h4'); h.innerHTML = `<span></span><em>${counts[w.top]}권</em>`; h.querySelector('span').textContent = w.top; lib.append(h); }
       grid = document.createElement('div'); grid.className = 'grid'; lib.append(grid); lastTop = w.top;
     }
     grid.append(workCard(w));

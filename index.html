@@ -1272,6 +1272,34 @@ button:not(:disabled):active{transform:scale(.98)}
 /* 작품 펼치는 중 */
 #app.opening::after{content:"펼치는 중…";position:fixed;left:50%;top:44%;transform:translateX(-50%) translateY(6px);padding:10px 20px;border-radius:99px;background:var(--panel);border:1px solid var(--hairline);box-shadow:0 10px 32px rgb(0 0 0 / 16%);font-size:13px;color:var(--sub);z-index:60;opacity:0;animation:nvopen .3s ease .18s forwards}
 @keyframes nvopen{to{opacity:1;transform:translateX(-50%)}}
+
+/* ---------- 서재: 읽던 책 큰 카드 ---------- */
+.lib-hero{display:flex;align-items:center;gap:20px;padding:18px;margin:4px 0 10px;background:var(--panel);border:1px solid var(--hairline);border-radius:16px;cursor:pointer;transition:box-shadow .18s,transform .18s}
+.lib-hero:hover{box-shadow:0 2px 4px rgb(30 24 12 / 10%), 0 14px 30px rgb(30 24 12 / 14%);transform:translateY(-1px)}
+.lib-hero .cv{position:relative;flex:0 0 92px;height:131px;border-radius:3px 8px 8px 3px;overflow:hidden;box-shadow:0 6px 18px rgb(0 0 0 / 18%)}
+.lib-hero .cv img{width:100%;height:100%;object-fit:cover;display:block}
+.lib-hero .cv .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px 8px 10px 12px;text-align:center;
+  background:linear-gradient(90deg, rgb(0 0 0 / 30%), rgb(0 0 0 / 7%) 8%, transparent 16%), linear-gradient(hsl(var(--h) 36% 31%), hsl(var(--h) 40% 23%));color:hsl(var(--h) 48% 94%)}
+.lib-hero .cv .ph b{font:700 12.5px/1.5 var(--serif);word-break:keep-all;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.lib-hero .hx{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.lib-hero .hk{font:700 10.5px/1 var(--ui);letter-spacing:.3em;text-indent:.3em;color:var(--accent)}
+.lib-hero .ht{font:700 21px/1.35 var(--serif);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-hero .hm{font-size:12.5px;color:var(--sub)}
+.lib-hero .pb{height:3px;border-radius:99px;background:var(--panel-2);overflow:hidden;max-width:340px}
+.lib-hero .pb i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.lib-hero .hgo{flex:none;padding:12px 22px;border-radius:12px;font-weight:700}
+@media (max-width:640px){
+  .lib-hero{gap:14px;padding:14px}
+  .lib-hero .cv{flex-basis:72px;height:103px}
+  .lib-hero .ht{font-size:17px}
+  .lib-hero .hgo{padding:10px 14px}
+}
+/* 서가 머리글 권수 */
+.lib h4 em{font:600 11px/1 var(--ui);font-style:normal;color:var(--faint);letter-spacing:0}
+/* 최근 선반: 가로로 민다 */
+.lib .cont{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.lib .cont::-webkit-scrollbar{display:none}
+.lib .cont .card{flex:0 0 118px}
 </style>
 </head>
 <body>
@@ -2190,14 +2218,36 @@ function renderLib(){
   let list = works.filter(w => !q || w.name.includes(q));
   const recent = works.filter(w => store.get('pos.'+w.key, null)).sort((a,b)=>(store.get('pos.'+b.key,{t:0}).t||0)-(store.get('pos.'+a.key,{t:0}).t||0)).slice(0, 8);
   if (!q && recent.length && sort === 'name'){
-    const h = document.createElement('h4'); h.textContent = '이어 읽기'; lib.append(h);
-    const row = document.createElement('div'); row.className = 'cont'; recent.forEach(w => row.append(workCard(w))); lib.append(row);
+    // 읽던 책: 큰 카드 하나로, 한 번에 이어 읽기 (전문 뷰어들의 hero 패턴)
+    const hw = recent[0]; const hp = store.get('pos.'+hw.key, {ep: 0});
+    const htotal = hp?.n || hw.eps.length;
+    const hpct = Math.min(100, Math.round(((hp.ep + (hp.f || 0)) / (htotal || 1)) * 100));
+    const days = Math.floor((Date.now() - (hp.t || Date.now())) / 86400000);
+    const when = days <= 0 ? '오늘' : days === 1 ? '어제' : days < 30 ? `${days}일 전` : new Date(hp.t).toLocaleDateString('ko-KR', {month: 'long', day: 'numeric'});
+    const hero = document.createElement('div'); hero.className = 'lib-hero'; hero.setAttribute('role', 'button');
+    const hcu = coverUrl(hw);
+    hero.innerHTML = `<div class="cv">${hcu ? `<img alt="" src="${hcu}">` : '<div class="ph"><b></b></div>'}</div>
+      <div class="hx"><div class="hk">읽던 책</div><b class="ht"></b>
+      <div class="hm">${Math.min(hp.ep + 1, htotal)} / ${htotal}화 · ${hpct}% · ${when}</div>
+      <div class="pb"><i style="width:${hpct}%"></i></div></div>
+      <button class="primary hgo">이어 읽기</button>`;
+    hero.querySelector('.ht').textContent = hw.name;
+    const hph = hero.querySelector('.ph b'); if (hph){ hph.textContent = hw.name;
+      const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8]; let n = 0; for (const ch of hw.name) n = (n * 31 + ch.codePointAt(0)) >>> 0;
+      hero.querySelector('.ph').style.setProperty('--h', String(HS[n % HS.length])); }
+    hero.onclick = () => openWork(hw);
+    lib.append(hero);
+    if (recent.length > 1){
+      const h = document.createElement('h4'); h.textContent = '최근'; lib.append(h);
+      const row = document.createElement('div'); row.className = 'cont'; recent.slice(1).forEach(w => row.append(workCard(w))); lib.append(row);
+    }
   }
   if (sort === 'recent') list = [...list].sort((a,b)=>(store.get('pos.'+b.key,{t:0}).t||0)-(store.get('pos.'+a.key,{t:0}).t||0));
   let lastTop = null, grid = null;
+  const counts = {}; for (const w of list) counts[w.top] = (counts[w.top] || 0) + 1;
   for (const w of list){
     if (!grid || (sort === 'name' && w.top !== lastTop)){
-      if (sort === 'name'){ const h = document.createElement('h4'); h.textContent = w.top; lib.append(h); }
+      if (sort === 'name'){ const h = document.createElement('h4'); h.innerHTML = `<span></span><em>${counts[w.top]}권</em>`; h.querySelector('span').textContent = w.top; lib.append(h); }
       grid = document.createElement('div'); grid.className = 'grid'; lib.append(grid); lastTop = w.top;
     }
     grid.append(workCard(w));
