@@ -6,10 +6,10 @@
      lan/scan  lan/file?p=  (Range: 영상 넘기기·큰 EPUB 구간 읽기)   lan/info
      tr/…      PC 번역 엔진(127.0.0.1:8790)으로 이어 준다. 꺼져 있으면 켠다
      moa/…     모아받기(47616)    toki/…  토끼 다운로더(47615) — 폰에서 눌러도 PC 에서 받는다 */
-const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
+const http = require('http'), fs = require('fs'), path = require('path'), os = require('os'), zlib = require('zlib'), crypto = require('crypto');
 
 const MIME = {html: 'text/html; charset=utf-8', js: 'text/javascript', css: 'text/css', json: 'application/json', webmanifest: 'application/manifest+json',
-  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', bmp: 'image/bmp', ico: 'image/x-icon', svg: 'image/svg+xml',
+  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', avif: 'image/avif', gif: 'image/gif', bmp: 'image/bmp', ico: 'image/x-icon', svg: 'image/svg+xml',
   txt: 'text/plain; charset=utf-8', epub: 'application/epub+zip', zip: 'application/zip', woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf', otf: 'font/otf', bat: 'text/plain',
   mp4: 'video/mp4', m4v: 'video/mp4', webm: 'video/webm', mkv: 'video/x-matroska', mov: 'video/quicktime', mp3: 'audio/mpeg', m4a: 'audio/mp4',
   vtt: 'text/vtt; charset=utf-8', srt: 'text/plain; charset=utf-8', pdf: 'application/pdf'};
@@ -147,7 +147,7 @@ async function waitPort(port, ms){
 /* apps: {moa: {port, start()}, toki: {port, start()}}  start 는 켜는 명령만, 기다리기는 여기서
    tr: {port, start()}  번역 엔진 */
 // sync: {list(), get(name), put(name, buf), del(name)} — PC로 맞추기 칸 (main.js 의 pcStore). onSync: 폰이 바꾸면 부른다
-function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, tr = null, sync = null, onSync = null, trPages = null}){
+function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, tr = null, sync = null, onSync = null, trPages = null, cacheFile = null, resize = null, thumbDir = null}){
   const getApps = () => (typeof appsIn === 'function' ? appsIn() : appsIn) || {};
   const normRoots = () => (typeof roots === 'function' ? roots() : roots).map(r => path.normalize(r));
   // rel('노벨/작품/0001.txt', '성인/만화/…') → 연결 폴더 안의 실제 경로. 폴더 밖은 null.
@@ -175,6 +175,82 @@ function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, 
     for (const r of normRoots()) await walk(r, rootBase(r));
     return out;
   }
+  // 서재 목록은 한 번 읽어 두고(디스크에도) 곧바로 준다. 폰은 열자마자 서재를 보고, 바뀐 것은 뒤에서 다시 읽어 다음에 반영된다.
+  // ETag 가 같으면 304(받을 것 없음), gzip 으로 4MB → 0.5MB.
+  let memo = null, memoAt = 0, scanning = null;
+  const pack = body => ({body, etag: '"' + crypto.createHash('sha1').update(body).digest('base64url') + '"', gz: zlib.gzipSync(body)});
+  function rescan(){
+    return scanning ||= scan().then(list => {
+      const body = JSON.stringify(list); memoAt = Date.now();
+      if (!memo || memo.body !== body){ memo = pack(body); if (cacheFile) fs.promises.writeFile(cacheFile, body).catch(() => {}); }
+      return memo;
+    }).finally(() => { scanning = null; });
+  }
+  async function scanMemo(fresh){
+    if (!memo && cacheFile){ try{ memo = pack(fs.readFileSync(cacheFile, 'utf8')); }catch{} }
+    if (!memo || (fresh && Date.now() - memoAt > 15000)) return rescan();
+    if (Date.now() - memoAt > 30000) rescan().catch(() => {});
+    return memo;
+  }
+  // EPUB·zip 은 PC 가 안을 미리 읽어(목록·쪽 글) 한 번에 준다. 폰은 그 뒤 그림 하나에 요청 하나 (예전엔 쪽마다 구간 요청 두 번씩)
+  const zipMemo = new Map(), gzMemo = new Map();
+  const ZIP_TEXT = /\.(xhtml|html?|xml|opf|ncx)$/i;
+  const nameDec = (b, utf) => { if (utf) return b.toString('utf8'); try{ return new TextDecoder('utf-8', {fatal: true}).decode(b); }catch{ try{ return new TextDecoder('euc-kr').decode(b); }catch{ return b.toString('latin1'); } } };
+  async function zipIndex(abs){
+    const st = fs.statSync(abs); const k = abs + '|' + st.mtimeMs + '|' + st.size;
+    if (zipMemo.has(k)) return zipMemo.get(k);
+    const fh = await fs.promises.open(abs, 'r');
+    try{
+      const rd = async (a, n) => { const b = Buffer.alloc(n); const {bytesRead} = await fh.read(b, 0, n, a); return b.subarray(0, bytesRead); };
+      const tailN = Math.min(st.size, 66000); const tail = await rd(st.size - tailN, tailN);
+      let e = -1; for (let i = tail.length - 22; i >= 0; i--) if (tail.readUInt32LE(i) === 0x06054b50){ e = i; break; }
+      if (e < 0) throw new Error('zip 이 아니에요');
+      let count = tail.readUInt16LE(e + 10), cdSize = tail.readUInt32LE(e + 12), cdOff = tail.readUInt32LE(e + 16);
+      if (cdOff === 0xFFFFFFFF || count === 0xFFFF){   // ZIP64
+        const loc = e - 20; if (loc >= 0 && tail.readUInt32LE(loc) === 0x07064b50){ const h = await rd(Number(tail.readBigUInt64LE(loc + 8)), 56); count = Number(h.readBigUInt64LE(32)); cdSize = Number(h.readBigUInt64LE(40)); cdOff = Number(h.readBigUInt64LE(48)); }
+      }
+      const cd = await rd(cdOff, cdSize); const ents = {};
+      for (let p = 0, i = 0; i < count && p + 46 <= cd.length; i++){
+        if (cd.readUInt32LE(p) !== 0x02014b50) break;
+        const m = cd.readUInt16LE(p + 10); let c = cd.readUInt32LE(p + 20), u = cd.readUInt32LE(p + 24);
+        const nl = cd.readUInt16LE(p + 28), xl = cd.readUInt16LE(p + 30), cl = cd.readUInt16LE(p + 32); let o = cd.readUInt32LE(p + 42);
+        const name = nameDec(cd.subarray(p + 46, p + 46 + nl), cd.readUInt16LE(p + 8) & 0x800);
+        if (c === 0xFFFFFFFF || u === 0xFFFFFFFF || o === 0xFFFFFFFF){   // ZIP64 추가 필드
+          for (let q = p + 46 + nl, qe = q + xl; q + 4 <= qe; ){ const id = cd.readUInt16LE(q), sz = cd.readUInt16LE(q + 2);
+            if (id === 1){ let r = q + 4; if (u === 0xFFFFFFFF){ u = Number(cd.readBigUInt64LE(r)); r += 8; } if (c === 0xFFFFFFFF){ c = Number(cd.readBigUInt64LE(r)); r += 8; } if (o === 0xFFFFFFFF) o = Number(cd.readBigUInt64LE(r)); break; }
+            q += 4 + sz; }
+        }
+        if (!name.endsWith('/')) ents[name] = {m, c, u, o};
+        p += 46 + nl + xl + cl;
+      }
+      for (const x of Object.values(ents)){ const lh = await rd(x.o, 30); x.s = x.o + 30 + lh.readUInt16LE(26) + lh.readUInt16LE(28); }
+      const texts = {};
+      for (const [n, x] of Object.entries(ents)) if (ZIP_TEXT.test(n) && x.u < 4e6){ try{ texts[n] = (await zipEntry(abs, x)).toString('utf8'); }catch{} }
+      const body = JSON.stringify({ents: Object.fromEntries(Object.entries(ents).map(([n, x]) => [n, x.u])), texts});
+      const out = {ents, gz: zlib.gzipSync(body), body};
+      zipMemo.set(k, out); while (zipMemo.size > 20) zipMemo.delete(zipMemo.keys().next().value);
+      return out;
+    } finally { await fh.close(); }
+  }
+  async function zipEntry(abs, x){
+    const fh = await fs.promises.open(abs, 'r');
+    try{ const raw = Buffer.alloc(x.c); await fh.read(raw, 0, x.c, x.s); return x.m === 8 ? zlib.inflateRawSync(raw) : raw; } finally { await fh.close(); }
+  }
+  // 폰에 맞게 줄인 그림: jpg·png 는 PC 가 줄여서(디스크에 남겨 두고) 보낸다. avif·webp 는 이미 작아서 그대로
+  const IMG_SMALL = /\.(jpe?g|png)$/i;
+  let resizing = Promise.resolve();
+  async function smallImg(abs, w, ent = null){
+    if (!resize || !thumbDir || !IMG_SMALL.test(ent ? ent.name : abs)) return null;
+    const st = fs.statSync(abs); if ((ent ? ent.x.u : st.size) < 150 * 1024) return null;   // 작은 그림은 줄여도 얻는 게 없다
+    const key = crypto.createHash('sha1').update(abs + '|' + st.mtimeMs + '|' + st.size + '|' + (ent ? ent.name : '') + '|' + w).digest('hex');
+    const out = path.join(thumbDir, key.slice(0, 2), key + '.jpg');
+    if (fs.existsSync(out)) return out;
+    if (fs.existsSync(out + '.orig')) return null;   // 이미 작아서 원본을 쓰기로 한 그림
+    const job = resizing.then(async () => { if (fs.existsSync(out)) return; const buf = await resize(ent ? await zipEntry(abs, ent.x) : abs, w); fs.mkdirSync(path.dirname(out), {recursive: true}); fs.writeFileSync(buf ? out : out + '.orig', buf || ''); });
+    resizing = job.catch(() => {});   // 한 번에 하나씩 (PC 가 버벅이지 않게)
+    await job.catch(() => {});
+    return fs.existsSync(out) ? out : null;
+  }
   const starting = {};
   const badTries = new Map();   // 열쇠를 자꾸 틀리는 곳은 10분 막는다 (인터넷 주소일 때 대비)
   const starter = (name, cfg) => () => (starting[name] ||= (async () => { try{ await cfg.start(); return await waitPort(cfg.port, cfg.wait || 25000); } finally{ setTimeout(() => { delete starting[name]; }, 1000); } })());
@@ -194,7 +270,33 @@ function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, 
       if (!m || m[1] !== token){ badTries.set(who, {n: (bad && Date.now() - bad.t < 10 * 60000 ? bad.n : 0) + 1, t: Date.now()}); res.writeHead(403); return res.end('forbidden'); }
       const rawRest = m[2] || '/';
       let p = decodeURIComponent(rawRest);
-      if (p === '/lan/scan'){ const list = await scan(); res.writeHead(200, {'Content-Type': MIME.json, 'Cache-Control': 'no-store'}); return res.end(JSON.stringify(list)); }
+      if (p === '/lan/scan'){
+        const s = await scanMemo(u.searchParams.has('fresh'));
+        if (req.headers['if-none-match'] === s.etag){ res.writeHead(304, {ETag: s.etag, 'Cache-Control': 'no-cache'}); return res.end(); }
+        const gz = /\bgzip\b/.test(req.headers['accept-encoding'] || '');
+        res.writeHead(200, {'Content-Type': MIME.json, 'Cache-Control': 'no-cache', ETag: s.etag, ...(gz ? {'Content-Encoding': 'gzip'} : {})});
+        return res.end(gz ? s.gz : s.body);
+      }
+      // EPUB·zip: 목록과 쪽 글 한 번에 / 안의 파일 하나 (그림은 폰 폭에 맞춰 줄여서)
+      if (p === '/lan/zip' || p === '/lan/zent'){
+        const abs = resolveRel(u.searchParams.get('p') || '');
+        if (!abs || !fs.existsSync(abs) || fs.statSync(abs).isDirectory()){ res.writeHead(404); return res.end('not found'); }
+        const ix = await zipIndex(abs); const keep = {'Cache-Control': 'private, max-age=31536000, immutable'};
+        if (p === '/lan/zip'){ const gz = /\bgzip\b/.test(req.headers['accept-encoding'] || ''); res.writeHead(200, {'Content-Type': MIME.json, ...keep, ...(gz ? {'Content-Encoding': 'gzip'} : {})}); return res.end(gz ? ix.gz : ix.body); }
+        const name = u.searchParams.get('e') || ''; const x = ix.ents[name]; if (!x){ res.writeHead(404); return res.end('not found'); }
+        const w = Number(u.searchParams.get('w')) || 0;
+        const small = w ? await smallImg(abs, Math.max(120, Math.min(2400, w)), {name, x}).catch(() => null) : null;
+        if (small) return sendFile(req, res, small, keep);
+        const buf = await zipEntry(abs, x); res.writeHead(200, {'Content-Type': mimeOf(name), 'Content-Length': buf.length, ...keep}); return res.end(buf);
+      }
+      // 그림: 폰 화면 폭에 맞춰 줄인 것 (주소에 v=고친 시각이 있어 폰이 오래 담아 둔다)
+      if (p === '/lan/img'){
+        const abs = resolveRel(u.searchParams.get('p') || '');
+        if (!abs || !fs.existsSync(abs) || fs.statSync(abs).isDirectory()){ res.writeHead(404); return res.end('not found'); }
+        const w = Math.max(120, Math.min(2400, Number(u.searchParams.get('w')) || 1200));
+        const small = await smallImg(abs, w).catch(() => null);
+        return sendFile(req, res, small || abs, {'Cache-Control': 'private, max-age=31536000, immutable'});
+      }
       if (p === '/lan/info'){ res.writeHead(200, {'Content-Type': MIME.json, 'Cache-Control': 'no-store'}); let ver = 0; try{ ver = Math.round(fs.statSync(path.join(appDir, 'index.html')).mtimeMs); }catch{} return res.end(JSON.stringify({apps: Object.keys(getApps()), tr: !!tr, sync: !!sync, ver})); }
       // 번역해 둔 쪽 (엔진 없이 PC 디스크에서): 하나 읽기 / 여러 열쇠가 있는지
       if (trPages && p === '/lan/trcache'){
@@ -216,7 +318,7 @@ function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, 
       if (p === '/lan/file'){
         const abs = resolveRel(u.searchParams.get('p') || '');
         if (!abs || !fs.existsSync(abs) || fs.statSync(abs).isDirectory()){ res.writeHead(404); return res.end('not found'); }
-        return sendFile(req, res, abs, {'Cache-Control': 'private, max-age=3600'});
+        return sendFile(req, res, abs, {'Cache-Control': u.searchParams.has('v') ? 'private, max-age=31536000, immutable' : 'private, max-age=3600'});
       }
       // 번역 엔진: 폰은 PC 경로를 모르니 'lan:<rel>' 을 실제 경로로 바꿔 준다
       if (tr && (p === '/tr' || p.startsWith('/tr/'))){
@@ -245,7 +347,14 @@ function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, 
       if (p === '/' || p === '') p = '/index.html';
       const file = path.normalize(path.join(appDir, p));
       if (!file.startsWith(path.normalize(appDir)) || !fs.existsSync(file) || fs.statSync(file).isDirectory()){ res.writeHead(404); return res.end('not found'); }
-      res.writeHead(200, {'Content-Type': mimeOf(file), 'Cache-Control': 'no-cache'});
+      // 바뀌지 않았으면 304, 글 파일(index.html 750KB)은 gzip 으로 (폰이 열 때마다 통째로 받지 않게)
+      const st = fs.statSync(file), etag = `"${st.size}-${Math.round(st.mtimeMs)}"`;
+      if (req.headers['if-none-match'] === etag){ res.writeHead(304, {ETag: etag, 'Cache-Control': 'no-cache'}); return res.end(); }
+      if (/\.(html|js|css|json|webmanifest|svg)$/i.test(file) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')){
+        let g = gzMemo.get(file); if (!g || g.etag !== etag){ g = {etag, buf: zlib.gzipSync(fs.readFileSync(file))}; gzMemo.set(file, g); }
+        res.writeHead(200, {'Content-Type': mimeOf(file), 'Cache-Control': 'no-cache', ETag: etag, 'Content-Encoding': 'gzip', 'Content-Length': g.buf.length}); return res.end(g.buf);
+      }
+      res.writeHead(200, {'Content-Type': mimeOf(file), 'Cache-Control': 'no-cache', ETag: etag});
       fs.createReadStream(file).pipe(res);
     }catch(e){ try{ res.writeHead(500); res.end(String(e.message || e)); }catch{} }
   });
@@ -257,6 +366,7 @@ function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, 
     urls: () => { const pr = server.address()?.port || port; return lanIps().map(ip => `http://${ip}:${pr}/t/${token}/`); },
     outsideUrls: () => { const pr = server.address()?.port || port; return tailscaleIps().map(ip => `http://${ip}:${pr}/t/${token}/`); },
     resolveRel,
+    invalidate: () => { memoAt = 0; rescan().catch(() => {}); },   // 작품 폴더가 바뀌었을 때 (main.js 의 지켜보기)
   };
 }
 

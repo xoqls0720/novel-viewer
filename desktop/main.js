@@ -1,5 +1,5 @@
 // 노벨 뷰어 윈도우 프로그램: 웹 앱을 app:// 주소로 띄우고, 구글 로그인·자동 업데이트를 맡는다
-const { app, BrowserWindow, protocol, net, shell, ipcMain, Menu, safeStorage, dialog } = require('electron');
+const { app, BrowserWindow, protocol, net, shell, ipcMain, Menu, safeStorage, dialog, nativeImage } = require('electron');
 const path = require('path'), fs = require('fs'), http = require('http'), crypto = require('crypto'), os = require('os');
 const { pathToFileURL } = require('url');
 
@@ -87,7 +87,7 @@ function watchRoots(){
     try{
       const w = fs.watch(r, { recursive: true }, (_ev, file) => {
         if (file && /(^|[\\/])\.|\.part$|\.tmp$|desktop\.ini$/i.test(String(file))) return;   // 받는 중인 조각·숨김 파일은 빼고
-        clearTimeout(t); t = setTimeout(() => { if (win && !win.isDestroyed()) win.webContents.send('lib-changed', r); }, 6000);
+        clearTimeout(t); t = setTimeout(() => { lan?.invalidate?.(); if (win && !win.isDestroyed()) win.webContents.send('lib-changed', r); }, 6000);
       });
       w.on('error', () => { watchers.delete(r); });
       watchers.set(r, w);
@@ -290,7 +290,10 @@ async function lanStart(){
   if (!cfg.token || cfg.token.length < 32){ cfg.token = crypto.randomBytes(16).toString('hex'); fs.writeFileSync(LAN_CFG(), JSON.stringify(cfg)); }
   // 번역 엔진: 폰에서 처음 부르면 PC 가 엔진(과 Ollama)을 켠다
   const tr = fs.existsSync(path.join(TR_HOME(), 'installed.json')) ? {port: 8790, wait: 40000, start: async () => { if (!(await ollamaUp())) ollamaStart(); const r = await trStart(); if (!r.ok) throw new Error(r.err); }} : null;
-  lan = createLanServer({appDir: APP_DIR, roots: libRoots, token: cfg.token, port: LAN_PORT, apps: lanApps, tr, sync: pcStore, onSync: pcSyncChanged, trPages});
+  // 폰에 보낼 그림은 화면 폭에 맞춰 줄인다(jpg·png). 줄인 것은 userData/lan-img 에 남겨 다음엔 바로
+  const resize = async (src, w) => { const im = Buffer.isBuffer(src) ? nativeImage.createFromBuffer(src) : nativeImage.createFromPath(src); if (im.isEmpty()) return null; const sz = im.getSize(); if (sz.width <= w) return null; return im.resize({width: w, quality: 'good'}).toJPEG(82); };
+  lan = createLanServer({appDir: APP_DIR, roots: libRoots, token: cfg.token, port: LAN_PORT, apps: lanApps, tr, sync: pcStore, onSync: pcSyncChanged, trPages,
+    cacheFile: path.join(app.getPath('userData'), 'lan-scan.json'), resize, thumbDir: path.join(app.getPath('userData'), 'lan-img')});
   try{ await lan.start(); return true; }catch(e){ lan = null; throw e; }
 }
 // Tailscale Funnel: 사용자가 'tailscale funnel --bg 8787' 을 켜 두었으면 그 고정 https 주소를 찾는다 (읽기만 한다)

@@ -31,6 +31,33 @@ const { createLanServer } = require(path.join(ROOT, 'desktop', 'lan-server.js'))
   console.log('adult rel:', scanned.filter(f => f.rel.startsWith('성인/')).map(f => f.rel).join(','));
   const vr = await fetch(tok + 'lan/file?p=' + encodeURIComponent('성인/만화/artistZ/clip.mp4'), {headers: {Range: 'bytes=100-199'}});
   console.log('range:', vr.status, vr.headers.get('content-range'), (await vr.arrayBuffer()).byteLength, vr.headers.get('content-type'));
+  // 빠르게: 목록은 ETag(바뀌지 않았으면 304)·gzip, 앱 파일도 304
+  { const r1 = await fetch(tok + 'lan/scan'); const et = r1.headers.get('etag'); await r1.arrayBuffer();
+    const r2 = await fetch(tok + 'lan/scan', {headers: {'If-None-Match': et}}); const r3 = await fetch(tok, {headers: {'If-None-Match': (await fetch(tok)).headers.get('etag')}});
+    console.log('fast scan: etag', !!et, '| gzip', r1.headers.get('content-encoding'), '| 304', r2.status, '| app 304', r3.status); }
+  // 줄인 그림(가짜 줄이기)·EPUB 안 읽기
+  { const zlib = require('zlib'); const dir = path.join(__dirname, 'out', 'lan-data', '빠른'); const thumbs = path.join(__dirname, 'out', 'lan-data', 'thumbs');
+    fs.rmSync(thumbs, {recursive: true, force: true}); fs.mkdirSync(path.join(dir, '책'), {recursive: true});
+    fs.writeFileSync(path.join(dir, '책', 'big.jpg'), Buffer.alloc(200 * 1024, 1)); fs.writeFileSync(path.join(dir, '책', 'tiny.jpg'), Buffer.alloc(100, 1));
+    // 작은 EPUB: 글(xhtml)은 deflate, 그림은 그대로
+    const ents = [['META-INF/container.xml', '<container><rootfiles><rootfile full-path="OEBPS/c.opf"/></rootfiles></container>', 8], ['OEBPS/p1.xhtml', '<html><body><p>첫 쪽</p></body></html>', 8], ['OEBPS/a.jpg', Buffer.alloc(300 * 1024, 2), 0]];
+    const crcT = Array.from({length: 256}, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+    const crc = b => { let c = 0xFFFFFFFF; for (const x of b) c = crcT[(c ^ x) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+    const parts = [], cen = []; let off = 0;
+    for (const [name, d0, m] of ents){ const raw = Buffer.from(d0), data = m ? zlib.deflateRawSync(raw) : raw, nm = Buffer.from(name);
+      const h = Buffer.alloc(30); h.writeUInt32LE(0x04034b50, 0); h.writeUInt16LE(20, 4); h.writeUInt16LE(0x800, 6); h.writeUInt16LE(m, 8); h.writeUInt32LE(crc(raw), 14); h.writeUInt32LE(data.length, 18); h.writeUInt32LE(raw.length, 22); h.writeUInt16LE(nm.length, 26);
+      const c = Buffer.alloc(46); c.writeUInt32LE(0x02014b50, 0); c.writeUInt16LE(20, 4); c.writeUInt16LE(20, 6); c.writeUInt16LE(0x800, 8); c.writeUInt16LE(m, 10); c.writeUInt32LE(crc(raw), 16); c.writeUInt32LE(data.length, 20); c.writeUInt32LE(raw.length, 24); c.writeUInt16LE(nm.length, 28); c.writeUInt32LE(off, 42);
+      parts.push(h, nm, data); cen.push(c, nm); off += 30 + nm.length + data.length; }
+    const cd = Buffer.concat(cen); const e = Buffer.alloc(22); e.writeUInt32LE(0x06054b50, 0); e.writeUInt16LE(ents.length, 8); e.writeUInt16LE(ents.length, 10); e.writeUInt32LE(cd.length, 12); e.writeUInt32LE(off, 16);
+    fs.writeFileSync(path.join(dir, '책', '책.epub'), Buffer.concat([...parts, cd, e]));
+    let resized = 0; const L3 = createLanServer({appDir: ROOT, roots: [dir], token: 'k3', port: 0, thumbDir: thumbs, resize: async (src, w) => { resized++; return Buffer.from('small' + w + (Buffer.isBuffer(src) ? 'buf' : 'file')); }});
+    const b3 = `http://127.0.0.1:${await L3.start()}/t/k3/`; const q = n => encodeURIComponent('빠른/책/' + n);
+    const s1 = await (await fetch(b3 + 'lan/img?w=400&p=' + q('big.jpg'))).text(); const s2 = await (await fetch(b3 + 'lan/img?w=400&p=' + q('big.jpg'))).text(); const t1 = (await (await fetch(b3 + 'lan/img?w=400&p=' + q('tiny.jpg'))).arrayBuffer()).byteLength;
+    console.log('small img:', s1, s2 === s1, '| resized once:', resized === 1, '| tiny kept:', t1);
+    const zj = await (await fetch(b3 + 'lan/zip?p=' + q('책.epub'))).json(); const zt = await (await fetch(b3 + 'lan/zent?p=' + q('책.epub') + '&e=' + encodeURIComponent('OEBPS/p1.xhtml'))).text();
+    const zi = await (await fetch(b3 + 'lan/zent?w=600&p=' + q('책.epub') + '&e=' + encodeURIComponent('OEBPS/a.jpg'))).text();
+    console.log('epub index:', Object.keys(zj.ents).length, '| text sent:', /첫 쪽/.test(zj.texts['OEBPS/p1.xhtml']), '| entry inflated:', /첫 쪽/.test(zt), '| entry img small:', zi);
+    await L3.stop(); }
   const tj = await (await fetch(tok + 'tr/video', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path: 'lan:성인/만화/artistZ/clip.mp4'})})).json();
   console.log('tr proxy: started', trStarted, '| id', tj.id, '| abs path', trBody && trBody.path === path.join(ADULT, 'artistZ', 'clip.mp4'));
   const page = await (await fetch(tok + 'moa/')).text();
@@ -64,7 +91,7 @@ const { createLanServer } = require(path.join(ROOT, 'desktop', 'lan-server.js'))
   console.log('guest webtoon imgs:', await p.$$eval('#reader .webtoon img', e => e.length));
   // 다시 열어도(새로 고침) 저절로 다시 불러온다
   await p.reload(); await p.waitForTimeout(2500);
-  console.log('guest reload works:', (await p.$$eval('#lib .grid .card', e => e.length)) >= 3);
+  console.log('guest reload works:', (await p.$$eval('#lib .grid .card', e => e.length)) >= 3, '| list kept on phone:', await p.evaluate(() => new Promise(ok => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('dcache').objectStore('dcache').get('lanscan:/t/tok123'); g.onsuccess = () => ok(!!g.result?.list?.length && !!g.result.etag); g.onerror = () => ok(false); }; })));
   const tc1 = await fetch(tok + 'lan/trcache?k=' + encodeURIComponent('만화/a|1화|001.jpg')).then(r => r.json());
   const tc2 = await fetch(tok + 'lan/trcache', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({keys: ['만화/a|1화|001.jpg', 'x']})}).then(r => r.json());
   console.log('trcache:', tc1.image, JSON.stringify(tc2), (await fetch(tok + 'lan/trcache?k=none')).status);

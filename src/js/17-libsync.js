@@ -11,7 +11,7 @@ const h53 = (str, seed = 0) => {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 };
 const libBytes = n => n >= 1073741824 ? (n / 1073741824).toFixed(1) + 'GB' : n >= 1048576 ? Math.round(n / 1048576) + 'MB' : Math.max(1, Math.round(n / 1024)) + 'KB';
-const IMG_MIME = {jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', bmp: 'image/bmp'};
+const IMG_MIME = {jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', avif: 'image/avif', gif: 'image/gif', bmp: 'image/bmp'};
 const workFiles = w => [w.cover, w.info, ...w.eps.flatMap(e => e.file ? [e.file] : e.files || [])].filter(Boolean);
 // 올리는 동안 원본이 바뀌어도 한 파일이 어긋나지 않게, 100MB 아래는 메모리로 복사해서 올린다
 const libSnap = async b => b.size <= 100e6 ? new Blob([await b.arrayBuffer()], {type: b.type}) : b;

@@ -147,6 +147,7 @@ function prettyEp(n){
 function coverUrl(w){
   // 표지 파일이 없는 작품(성인 작가 폴더 등)은 첫 그림을 표지로 보여 준다 (w.cover 는 그대로: 동기화가 쓰는 값)
   const cv = w.cover || w.eps.find(e => e.type === 'imgs')?.files?.[0] || w.eps.find(e => e.type === 'video' && e.cover)?.cover;
+  if (cv?.thumbUrl) return cv.thumbUrl;   // PC 서재: PC 가 줄여 준 작은 표지를 바로 (다시 그리지 않는다)
   if (cv?.isLazy && !w.coverUrl){ if (!w._coverP) w._coverP = cv.blob().then(b => { w.coverUrl = URL.createObjectURL(b); renderLib(); }).catch(() => {}); return ''; }
   if (cv && !w.coverUrl) w.coverUrl = URL.createObjectURL(cv); return w.coverUrl || '';
 }
@@ -166,7 +167,7 @@ function workCard(w){
   const pct = pos ? Math.min(100, Math.round(((pos.ep + (pos.f||0)) / total) * 100)) : 0;
   const d = document.createElement('div'); d.className = 'card' + (w===cur?' on':'');
   const cu = coverUrl(w);
-  d.innerHTML = `<div class="cv">${cu ? `<img alt="" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
+  d.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" decoding="async" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
   d.querySelector('.t').textContent = w.name;
   const ph = d.querySelector('.ph'); if (ph){   // 표지 없는 작품: 이름으로 고른 깊은 색 + 활자 표지
     const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8];   // 책 표지에 어울리는 열 가지 색
@@ -272,12 +273,28 @@ const RangeZip = {
       return {name: n, async async(kind){ const u = await read(ent); return kind === 'string' ? dec.decode(u) : kind === 'uint8array' ? u : kind === 'arraybuffer' ? u.buffer : new Blob([u], {type: type(n)}); }}; }};
   }
 };
+// PC 서재(폰)의 EPUB·zip: PC 가 읽어 둔 목록·쪽 글을 한 번에 받고, 안의 파일은 하나씩 (그림은 폰 폭으로 줄여서, 폰이 담아 둔다)
+const LanZip = {
+  async open(f){
+    const r = await fetch(f.lanZip); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status);
+    const j = await r.json(); const files = {};
+    for (const [n, usize] of Object.entries(j.ents)) files[n] = {name: n, dir: false, usize};
+    return {files, file(n){ if (!files[n]) return null;
+      return {name: n, async async(kind){
+        if (kind === 'string' && n in j.texts) return j.texts[n];
+        const r = await fetch(f.lanEnt + encodeURIComponent(n) + (IMG.test(n) ? '&w=' + f.lanW : '')); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status);
+        if (kind === 'string') return r.text();
+        const b = await r.blob(); if (kind === 'blob') return b;
+        const ab = await b.arrayBuffer(); return kind === 'uint8array' ? new Uint8Array(ab) : ab;
+      }}; }};
+  }
+};
 const epubCache = new Map();
 async function readEpub(file){
   if (epubCache.has(file)) return epubCache.get(file);
   // 내 컴퓨터 폴더의 EPUB 은 통째로 읽지 않고 필요한 부분만(목차, 그 회차 그림) 디스크에서 바로 읽는다.
   // 수 GB 짜리 웹툰 EPUB 도 열리고, 여는 데 걸리는 시간도 크기와 상관없다.
-  const zip = file.streamUrl ? await RangeZip.open(file.streamUrl, file.size) : await JSZip.loadAsync(await realBlob(file));
+  const zip = file.lanZip ? await LanZip.open(file) : file.streamUrl ? await RangeZip.open(file.streamUrl, file.size) : await JSZip.loadAsync(await realBlob(file));
   const container = await zip.file('META-INF/container.xml').async('string');
   const opfPath = container.match(/full-path="([^"]+)"/)[1];
   const base = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/')+1) : '';

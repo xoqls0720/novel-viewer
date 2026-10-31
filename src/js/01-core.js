@@ -12,10 +12,11 @@ const store = {
   }
 };
 function tomb(kind, id){ const t = store.get('__tomb', {notes:[], scraps:[]}); t[kind] = [...new Set([...(t[kind]||[]), id])].slice(-2000); store.set('__tomb', t); window.gdSoon?.(); }
-const IMG = /\.(jpe?g|png|webp|gif|bmp)$/i;
+const IMG = /\.(jpe?g|png|webp|avif|gif|bmp)$/i;
 const VID = /\.(mp4|webm|mkv|mov|m4v)$/i;   // 영상 회차 (브라우저가 재생할 수 있는 것)
 const SUB = /\.(srt|vtt)$/i;
-const natural = (a,b) => a.localeCompare(b, 'ko', {numeric:true, sensitivity:'base'});
+const NAT = new Intl.Collator('ko', {numeric:true, sensitivity:'base'});   // 한 번 만들어 두고 쓴다 (localeCompare 는 부를 때마다 새로 만들어 수만 개를 정렬하면 느리다)
+const natural = (a,b) => NAT.compare(a, b);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
 function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('show'), 2600); }
 const isMobile = () => matchMedia('(max-width:1100px)').matches;   // CSS의 덮개 배치 기준과 같아야 한다

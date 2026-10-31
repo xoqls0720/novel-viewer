@@ -92,6 +92,10 @@ sketch 시험은 가짜 PSD를 만들려고 파이썬 `pillow`·`psd-tools` 가 
 - 열쇠는 128비트. PC 가 인터넷 주소를 바로 쓰면 바깥에서도 닿으니, 열쇠를 20번 틀린 곳은 10분 막는다. QR 은 공유기 안 주소 → 인터넷 주소 → VPN(WARP 등) 순서로 고른다. Tailscale(100.64/10) 주소는 따로 "밖에서 볼 때" QR.
 - 어디서나 열기(설정의 체크, 기본 꺼짐): main.js 가 cloudflared 빠른 터널을 연다(설치된 것 → 없으면 userData/bin 에 공식 릴리스를 받음). 끊기면 다시 열고, 5분마다 바깥 주소로 확인. 주소는 PC 를 켤 때마다 바뀌어서 화면이 동기화 설정 `pcRemote` 에 적고, 웹 버전(다른 기기)은 서재 위에 **PC 서재 열기** 단추를 둔다. 터널 손님은 `cf-connecting-ip` 로 구분하고, 다운로더 화면의 EventSource 는 묻기 방식(`?__poll=1&cid=&since=`)으로 바꿔 넘긴다. 시험: `NOVELIST_CF_BIN`·`NOVELIST_CF_PRE`(가짜 터널), `NOVELIST_LAN_PORT`.
 - 다운로더 폴더 잇기: 토끼 설정의 saveDir(기본 다운로더 폴더 옆) 아래 만화·웹툰·노벨·영상·갤러리·성인 중 있는 것을 켤 때마다 연결(`lib-dl-folders`·`lib-dl-link`), 저장 폴더를 지켜보다 새 종류 폴더가 생기면 바로 잇는다(`lib-dl-new`).
+- 폰이 빨리 열리게: PC 는 서재 목록을 한 번 읽어 두고(`userData/lan-scan.json`) 곧바로 준다. ETag 가 같으면 304, gzip(4MB → 0.5MB). 폴더가 바뀌면 `lan.invalidate()`. 폰은 지난 목록을 IndexedDB(`dcache` 의 `lanscan:<주소>`)에 두고 먼저 보인 뒤 `?fresh=1` 로 바뀐 것만 받는다.
+- 그림: `lan/img?w=` 는 jpg·png(150KB 넘는 것)를 폰 폭으로 줄여(nativeImage) `userData/lan-img` 에 남긴다. 표지는 w=480. 주소에 `v=고친 시각` 이 있어 폰이 오래 담아 둔다(immutable).
+- EPUB·zip: `lan/zip?p=` 가 안 목록과 쪽 글(xhtml·opf·ncx)을 한 번에, `lan/zent?p=&e=&w=` 가 안의 파일 하나(그림은 줄여서). 폰은 `LanZip`(02-library.js)으로 읽는다. 예전엔 쪽마다 구간 요청 두 번씩이라 큰 웹툰 EPUB 이 8초 넘게 걸렸다.
+- 앱 파일(index.html)도 ETag·gzip. 폰 흉내(CPU 4배 느리게·LTE)로 잰 실제 서재: 다시 열 때 서재 6.3초 → 2.1초, 웹툰 EPUB 첫 쪽 8초 → 0.7초.
 - 시험: `node tests/run.cjs lan`
 
 ## 성인 폴더 · 영상 · 번역 (26-media.js)

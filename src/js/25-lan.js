@@ -4,18 +4,37 @@
 
 // ---------- 손님 쪽: /t/<열쇠>/ 주소로 열렸으면 노트북 서재를 불러온다 ----------
 const LAN_BASE = (location.pathname.match(/^(\/t\/[^/]+)\//) || [])[1] || '';
+// e북 앱처럼: 지난번 목록(이 기기 IndexedDB)으로 서재를 곧바로 보이고, PC 에 바뀐 게 있을 때만 새로 받는다(ETag).
+// 그림은 PC 가 폰 화면 폭에 맞춰 줄여 주고, 주소에 고친 시각(v)이 있어 한 번 본 것은 폰이 담아 둔다.
+const LAN_KEY = 'lanscan:' + LAN_BASE;
+const lanW = () => Math.min(2400, Math.ceil(Math.min(screen.width || 400, 1400) * Math.min(devicePixelRatio || 1, 3) / 400) * 400);
+// PC 서재의 파일 하나. 주소는 쓸 때 만든다 (수만 개를 불러올 때 빠르게)
+class LanFile extends LazyFile {
+  constructor(f, W){ super({name: f.rel.slice(f.rel.lastIndexOf('/') + 1), size: f.size, mtime: f.mtime, rel: f.rel}); this._get = () => this.fetchBlob(); this.lan = f; this.lanW = W; this.remote = true; this.lanRel = f.rel; }
+  get q(){ return encodeURIComponent(this.lan.rel) + '&v=' + Math.round(this.lan.mtime || 0); }
+  get img(){ return IMG.test(this.lan.rel); }
+  get streamUrl(){ return LAN_BASE + '/lan/file?p=' + encodeURIComponent(this.lan.rel); }   // 영상·큰 파일은 필요한 구간만 (Range)
+  get thumbUrl(){ return this.img ? LAN_BASE + '/lan/img?w=480&p=' + this.q : undefined; }
+  // EPUB·zip: PC 가 읽어 둔 목록을 한 번에, 안의 그림은 하나씩 (readEpub 의 LanZip)
+  get lanZip(){ return /\.(epub|zip|cbz)$/i.test(this.lan.rel) ? LAN_BASE + '/lan/zip?p=' + this.q : undefined; }
+  get lanEnt(){ return LAN_BASE + '/lan/zent?p=' + this.q + '&e='; }
+  async fetchBlob(){ const r = await fetch(LAN_BASE + (this.img ? `/lan/img?w=${this.lanW}&p=` : '/lan/file?p=') + this.q); if (!r.ok) throw new Error('읽지 못했어요'); return r.blob(); }
+}
+function lanFiles(list){ const W = lanW(); return list.map(f => new LanFile(f, W)); }
+async function lanShow(list){ works = []; await addFiles(lanFiles(list), {persist: false, quiet: true}); renderLib(); renderHome(); }
 async function lanLoad(){
   if (!LAN_BASE) return;
+  let cached = null; try{ cached = await idb.tx('readonly', s => s.get(LAN_KEY), 'dcache'); }catch{}
+  if (cached?.list?.length) await lanShow(cached.list);
   try{
-    const list = await (await fetch(LAN_BASE + '/lan/scan')).json();
-    const files = list.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel,
-      get: async () => { const r = await fetch(LAN_BASE + '/lan/file?p=' + encodeURIComponent(f.rel)); if (!r.ok) throw new Error('읽지 못했어요'); return r.blob(); }}),
-      // 영상·큰 EPUB 은 통째로 받지 않고 필요한 구간만 (Range)
-      {remote: true, lanRel: f.rel, streamUrl: LAN_BASE + '/lan/file?p=' + encodeURIComponent(f.rel)}));
-    await addFiles(files, {persist: false, quiet: true});
-    toast(`노트북 서재에서 작품 ${works.length}개를 불러왔어요`);
-    renderHome();
-  }catch{ toast('노트북 서재를 불러오지 못했어요. 노트북의 Novelist가 켜져 있는지 봐 주세요'); }
+    const r = await fetch(LAN_BASE + '/lan/scan' + (cached ? '?fresh=1' : ''), {cache: 'no-store', headers: cached?.etag ? {'If-None-Match': cached.etag} : {}});
+    if (r.status === 304) return;   // 그대로: 이미 보이는 서재가 최신
+    if (!r.ok) throw new Error('scan ' + r.status);
+    const list = await r.json();
+    idb.tx('readwrite', s => s.put({id: LAN_KEY, list, etag: r.headers.get('ETag') || ''}), 'dcache').catch(() => {});
+    await lanShow(list);
+    if (!cached) toast(`PC 서재에서 작품 ${works.length}개를 불러왔어요`);
+  }catch{ toast(cached ? 'PC 에 닿지 않아 지난번 목록을 보여 줘요. PC 의 Novelist 가 켜져 있어야 책이 열려요' : 'PC 서재를 불러오지 못했어요. PC 의 Novelist가 켜져 있는지 봐 주세요'); }
 }
 // 폰·아이패드: PC 의 Novelist 가 새 버전으로 바뀌었으면, 앱으로 돌아올 때 저절로 새로 불러온다(읽던 자리는 저장돼 있다)
 let lanVer = null;
@@ -29,7 +48,7 @@ if (LAN_BASE){
   document.documentElement.classList.add('lan-guest');
   lanCheckVer();
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') lanCheckVer(); });
-  setTimeout(lanLoad, 400);
+  setTimeout(lanLoad, 0);   // 지난번 목록으로 곧바로
   setTimeout(lanGuestApps, 600);
 }
 // 폰에서 다운로더 열기: 누르면 PC 가 받는다 (받은 작품은 PC 폴더에 쌓이고, 여기서 새로 고침하면 보인다)
