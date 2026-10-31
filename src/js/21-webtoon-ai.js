@@ -294,13 +294,12 @@ $('#wtAutoGo').onclick = async () => {
   wtGenSync();
 };
 
-/* ---------- 컷 그림 일괄 생성(컴퓨터 프로그램) ---------- */
+/* ---------- 컷 그림 일괄 생성 (프로그램·폰 모두, 노벨AI) ---------- */
 function wtTodo(){ const out = []; for (const pg of WT.proj?.pages || []) for (const pn of pg.panels) if (!pn.img && !pn.inset) out.push([pg, pn]); return out; }
-function wtGenSync(){ const n = wtTodo().length; const b = $('#wtGenAll'); if (b){ b.disabled = !DESKTOP || !n; b.textContent = n ? `그림 없는 컷 ${n}개 모두 만들기 (노벨AI)` : '모든 컷에 그림이 있어요'; } }
+function wtGenSync(){ const n = wtTodo().length; const b = $('#wtGenAll'); if (b){ b.disabled = !n; b.textContent = n ? `그림 없는 컷 ${n}개 모두 만들기 (노벨AI)` : '모든 컷에 그림이 있어요'; } }
 let wtGenAbort = false;
 $('#wtGenStop').onclick = () => { wtGenAbort = true; wtAutoStat('멈추는 중… (그리던 한 컷은 끝나요)'); };
 $('#wtGenAll').onclick = async () => {
-  if (!DESKTOP) return toast('윈도우 프로그램에서만 돼요');
   if (!naiToken()){ $('#wtAutoBox').hidden = true; $('#wtClose').click(); openTool('nai'); return toast('노벨AI 탭에서 토큰을 먼저 넣어 주세요'); }
   const todo = wtTodo(); if (!todo.length) return;
   if (!wtDict().size && todo.some(([, pn]) => String(pn.chars).trim()) && !confirm('인물 사전이 비어 있어서 인물이 매번 다르게 나와요. 그래도 만들까요?')) return;
@@ -318,7 +317,6 @@ $('#wtGenAll').onclick = async () => {
 };
 // 선택한 컷 하나만 (다시) 뽑기
 $('#wtImgGen').onclick = async () => {
-  if (!DESKTOP) return toast('윈도우 프로그램에서만 돼요');
   if (!naiToken()){ $('#wtClose').click(); openTool('nai'); return toast('노벨AI 탭에서 토큰을 먼저 넣어 주세요'); }
   const s = WT.sel, pg = wtPage(); if (s?.t !== 'panel') return toast('컷을 먼저 눌러 골라 주세요');
   const b = $('#wtImgGen'); b.disabled = true; const t0 = b.textContent; b.textContent = '만드는 중…';

@@ -42,16 +42,68 @@ function naiBody(p, seed, sizeKey){
     },
   };
 }
+// 노벨AI 그림 요청: 윈도우 프로그램은 프로그램이, 폰·아이패드(웹)는 브라우저가 바로 보낸다(노벨AI 가 다른 사이트에서의 요청을 허락한다).
+// V4 이후 모델은 흘려 받기(msgpack) 끝 장면만, 옛 모델(V3)은 zip.
+async function naiFetch(token, body){
+  if (DESKTOP) return window.nvDesktop.naiGen(token, body);
+  const stream = /nai-diffusion-(?:[4-9]|\d\d)/.test(String(body?.model || ''));
+  if (stream) body = {...body, parameters: {...body.parameters, stream: 'msgpack'}};
+  let r;
+  try{ r = await fetch('https://image.novelai.net/ai/generate-image' + (stream ? '-stream' : ''), {method: 'POST', headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Accept: stream ? 'application/x-msgpack' : 'application/zip'}, body: JSON.stringify(body)}); }
+  catch(e){ return {ok: false, status: 0, text: e.message}; }
+  const raw = new Uint8Array(await r.arrayBuffer());
+  if (!r.ok) return {ok: false, status: r.status, text: new TextDecoder().decode(raw.subarray(0, 400))};
+  if (!stream) return {ok: true, zipBytes: raw};
+  const imgs = msgpackFinals(raw);
+  return imgs.length ? {ok: true, blobs: imgs.map(b => new Blob([b], {type: 'image/png'}))} : {ok: false, status: r.status, text: '그림을 받지 못했어요 (' + raw.length + '바이트)'};
+}
+// 흘려 받은 조각들(4바이트 길이 + msgpack) 중 event_type 'final' 의 그림만 (main.js 와 같은 읽개)
+function msgpackFinals(buf){
+  const out = [], dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength), dec = new TextDecoder();
+  const read = p => {
+    const t = buf[p];
+    if (t < 0x80) return [t, p + 1];
+    if (t >= 0xe0) return [t - 256, p + 1];
+    if (t <= 0x8f) return map(p + 1, t - 0x80);
+    if (t <= 0x9f) return arr(p + 1, t - 0x90);
+    if (t <= 0xbf) return str(p + 1, t - 0xa0);
+    switch (t){
+      case 0xc0: return [null, p + 1]; case 0xc2: return [false, p + 1]; case 0xc3: return [true, p + 1];
+      case 0xc4: return bin(p + 2, buf[p + 1]); case 0xc5: return bin(p + 3, dv.getUint16(p + 1)); case 0xc6: return bin(p + 5, dv.getUint32(p + 1));
+      case 0xca: return [dv.getFloat32(p + 1), p + 5]; case 0xcb: return [dv.getFloat64(p + 1), p + 9];
+      case 0xcc: return [buf[p + 1], p + 2]; case 0xcd: return [dv.getUint16(p + 1), p + 3]; case 0xce: return [dv.getUint32(p + 1), p + 5]; case 0xcf: return [Number(dv.getBigUint64(p + 1)), p + 9];
+      case 0xd0: return [dv.getInt8(p + 1), p + 2]; case 0xd1: return [dv.getInt16(p + 1), p + 3]; case 0xd2: return [dv.getInt32(p + 1), p + 5]; case 0xd3: return [Number(dv.getBigInt64(p + 1)), p + 9];
+      case 0xd9: return str(p + 2, buf[p + 1]); case 0xda: return str(p + 3, dv.getUint16(p + 1)); case 0xdb: return str(p + 5, dv.getUint32(p + 1));
+      case 0xdc: return arr(p + 3, dv.getUint16(p + 1)); case 0xdd: return arr(p + 5, dv.getUint32(p + 1));
+      case 0xde: return map(p + 3, dv.getUint16(p + 1)); case 0xdf: return map(p + 5, dv.getUint32(p + 1));
+    }
+    throw new Error('msgpack 0x' + t.toString(16));
+  };
+  const str = (p, n) => [dec.decode(buf.subarray(p, p + n)), p + n];
+  const bin = (p, n) => [buf.slice(p, p + n), p + n];
+  const arr = (p, n) => { const o = []; for (let i = 0; i < n; i++){ const [v, q] = read(p); o.push(v); p = q; } return [o, p]; };
+  const map = (p, n) => { const o = {}; for (let i = 0; i < n; i++){ const [k, q] = read(p); const [v, r] = read(q); o[k] = v; p = r; } return [o, p]; };
+  for (let at = 0; at + 4 <= buf.length; ){
+    const len = dv.getUint32(at); at += 4;
+    if (!len || at + len > buf.length) break;
+    try{ const [obj] = read(at); if (obj && obj.event_type === 'final' && obj.image) out.push(obj.image); }catch{}
+    at += len;
+  }
+  return out;
+}
 // 한 장 그려서 장면 노트에 저장
 // 한 장 그려서 그림(PNG blob)만 돌려준다. 웹툰 만들기에서도 쓴다.
 async function naiGenBlob(p, sizeKey, edit){
   const body = naiBody(p, undefined, sizeKey); if (edit) edit(body);
-  const r = await window.nvDesktop.naiGen(naiToken(), body);
+  const r = await naiFetch(naiToken(), body);
   if (!r?.ok) throw new Error(r?.status === 401 ? '토큰이 맞지 않아요 (노벨AI 토큰을 다시 넣어 주세요)' : r?.status === 402 ? '남은 생성 수가 없어요' : r?.status === 429 ? '너무 자주 보냈어요. 잠시 뒤 다시 해 주세요' : (r?.text || '실패'));
+  if (r.blobs?.length) return r.blobs[0];
+  if (r.zipBytes){ const z = await JSZip.loadAsync(r.zipBytes); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'}); }
   if (r.images?.length) return new Blob([Uint8Array.from(atob(r.images[0]), c => c.charCodeAt(0))], {type: 'image/png'});
   const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'});
 }
 async function naiOne(p, desc){ return naiSaveBlob(await naiGenBlob(p), desc); }
+window.nvNai = {one: naiOne};   // 시험용
 async function naiSaveBlob(blob, desc){
   const im = await loadImgEl(blob);
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);
@@ -83,7 +135,6 @@ ${desc}`}];
 /* ---------- 묶음 돌리기 ---------- */
 $('#ngGo').onclick = async () => {
   if (NG.run) return;
-  if (!DESKTOP) return toast('그림 바로 만들기는 윈도우 프로그램에서만 돼요');
   if (!naiToken()) { openTool('nai'); return toast('노벨AI 토큰을 먼저 넣어 주세요'); }
   const lines = $('#ngList').value.split('\n').map(s => s.trim()).filter(Boolean);
   const each = Math.max(1, Math.min(8, +$('#ngEach').value || 1));
@@ -141,13 +192,13 @@ if (!store.get('set.ngV5', false)){
 }
 for (const id of ['ngModel', 'ngSteps', 'ngScale', 'ngSize']){ const el = $('#' + id); const v = store.get('set.' + id, null); if (v !== null) el.value = v; el.addEventListener('change', () => store.set('set.' + id, el.value)); }
 if (store.get('set.ngTpl', null)) ngStat('노벨AI에서 가져온 설정을 쓰고 있어요');
-if (DESKTOP) $$('.nai-desktop').forEach(el => el.hidden = false); else $('#ngWeb').hidden = false;
+$$('.nai-desktop').forEach(el => el.hidden = false);   // 폰·아이패드에서도 바로 그린다
+if (!DESKTOP) $('#ngGrab').hidden = true;   // 노벨AI 창을 띄워 설정 가져오기는 프로그램에서만 (토큰은 기기끼리 맞춰진다)
 
 /* ---------- 구도 스케치를 밑그림으로 그리기 (img2img) ---------- */
 // 스케치의 가로세로에 맞는 노벨AI 크기를 고르고, 스케치를 그 크기에 꽉 차게 얹는다.
-if ($('#skNaiBox')) $('#skNaiBox').hidden = !DESKTOP;
+if ($('#skNaiBox')) $('#skNaiBox').hidden = false;
 $('#skNai') && ($('#skNai').onclick = async () => {
-  if (!DESKTOP) return toast('윈도우 프로그램에서만 돼요');
   if (!naiToken()){ openTool('nai'); return toast('노벨AI 토큰을 먼저 넣어 주세요'); }
   const btn = $('#skNai'); if (btn.disabled) return;
   const note = $('#skNote').value.trim();
