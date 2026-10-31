@@ -2,9 +2,9 @@
 // 로그인은 마이크로소프트 계정(PKCE, 비밀번호 없음). 웹·아이패드는 이 페이지로 돌아오는 방식, 윈도우 프로그램은 기본 브라우저 + localhost.
 // 맞추기 파일은 OneDrive '앱/Novelist' 폴더(approot)에만 쓰고, 작품 폴더는 읽기만 한다.
 // 다시 쓰는 토큰(refresh token)은 'nv.' 밖에 둬서 백업·동기화 파일에 섞이지 않게 한다.
-const OD_CLIENT_ID = 'ff9f05a4-fea1-4696-b178-4978ba3d2a01';   // 앱 등록 후 여기에 넣으면 기기마다 ID를 넣지 않아도 된다(비밀 값이 아니다)
+function OD_DEFAULT_ID(){ return 'ff9f05a4-fea1-4696-b178-4978ba3d2a01'; }   // 앞 파일의 시작 코드(맞추기)에서 불려도 되게 const 대신 함수   // 앱 등록 후 여기에 넣으면 기기마다 ID를 넣지 않아도 된다(비밀 값이 아니다)
 var OD = {token: null, exp: 0, warned: false};
-function odClient(){ return store.get('od.client', '') || OD_CLIENT_ID; }
+function odClient(){ return store.get('od.client', '') || OD_DEFAULT_ID(); }
 function odAuthBase(){ return 'https://login.microsoftonline.com/consumers/oauth2/v2.0'; }
 function odGraph(){ return 'https://graph.microsoft.com/v1.0'; }
 function odScope(){ return 'Files.Read Files.ReadWrite.AppFolder offline_access'; }
@@ -202,7 +202,7 @@ function odUI(){
   const linked = odLinked();
   $('#odClient').value = store.get('od.client', '');
   $('#odRedirWeb').textContent = odWebOk() ? odRedirect() : 'https://xoqls0720.github.io/novel-viewer/';
-  $('#odSetup').hidden = !!OD_CLIENT_ID && !store.get('od.client', '');
+  $('#odSetup').hidden = !!OD_DEFAULT_ID() && !store.get('od.client', '');
   $('#odConnect').hidden = linked; $('#odNow').hidden = !linked; $('#odOut').hidden = !linked;
   $('#odUse').checked = SYNC_OD();
   if (linked) store.set('od.everLinked', true);

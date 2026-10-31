@@ -7,8 +7,12 @@ function libSave(list){ store.set('lib.sources', list); renderSources(); }
 /* ---------- 내 컴퓨터 폴더 (윈도우 프로그램) ---------- */
 async function diskFiles(src){
   const list = await window.nvDesktop.libScan(src.path);
-  return list.map(f => new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel,
-    get: async () => { const r = await fetch('app://novel/__disk/?p=' + encodeURIComponent(f.abs)); if (!r.ok) throw new Error('읽지 못했어요'); return r.blob(); }}));
+  // 성인 폴더 안의 '만화'·'영상'을 따로 연결했으면 경로 앞에 '성인/' 을 붙여 성인 칸으로 모은다
+  const parent = src.path.split(/[\\/]/).slice(-2, -1)[0];
+  if (parent === '성인') for (const f of list) f.rel = '성인/' + f.rel;
+  // abs: 영상은 통째로 읽지 않고 이 주소로 흘려 보며 재생한다(앞뒤로 넘기기 됨)
+  return list.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel,
+    get: async () => { const r = await fetch('app://novel/__disk/?p=' + encodeURIComponent(f.abs)); if (!r.ok) throw new Error('읽지 못했어요'); return r.blob(); }}), {abs: f.abs, streamUrl: 'app://novel/__disk/?p=' + encodeURIComponent(f.abs)}));
 }
 
 /* ---------- 구글 드라이브 폴더 ---------- */
@@ -140,12 +144,11 @@ $('#srcDisk').onclick = async () => {
 // 드라이브 폴더 고르기: 내 드라이브(또는 공유 문서함)에서 폴더를 따라 들어가 '이 폴더 연결'
 const DRV = {stack: []};
 $('#srcDrive').onclick = async () => {
-  if (!store.get('gd.client', '')) return toast('설정 탭의 구글 드라이브 동기화에서 클라이언트 ID를 먼저 넣어 주세요');
-  if (!gdReady()) return toast(DESKTOP ? '설정 탭에 클라이언트 보안 비밀번호도 넣어 주세요' : '구글 드라이브는 https 주소(설치한 앱)에서 연결할 수 있어요');
+  if (!gdReady()) return toast(!gdClientId() ? '설정 → 기기끼리 맞추기 → 고급에 구글 클라이언트 ID를 넣어 주세요' : '구글 드라이브는 https 주소(설치한 앱)에서 연결할 수 있어요');
   // 읽기 권한을 함께 받도록 임시로 표시해 두고 로그인
   store.set('lib.sources', [...libSources(), {id: '__pending', kind: 'drive'}]);
-  try{ GD.token = null; sessionStorage.removeItem('nv.gdTok'); await gdToken(true); }
-  catch(e){ store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); return toast('구글 로그인을 마치지 못했어요 (' + e.message + ')'); }
+  try{ gdForget(); await gdToken(true); }
+  catch(e){ store.set('lib.sources', libSources().filter(s => s.id !== '__pending')); return /nosecret/.test(e.message) ? gdNeedSecret() : toast('구글 로그인을 마치지 못했어요 (' + e.message + ')'); }
   DRV.kind = 'drive'; DRV.stack = [{id: 'root', name: '내 드라이브'}]; $('#drvBrowse').hidden = false; drvRender();
 };
 async function drvRender(){

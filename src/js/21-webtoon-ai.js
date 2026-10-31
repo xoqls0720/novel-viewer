@@ -19,6 +19,23 @@ const WT_STYLE = {
     neg: 'bishounen, child, smile, grin, smirk, teeth, lipstick, makeup, katana, glasses, eyewear, 1girl, female',
     dropNeg: /\bfilm grain\b/gi,   // 암실 룩은 필름 그레인을 살린다
   },
+  comic: {
+    name: '기본 C · 성인 웹코믹 셀 음영',
+    // 받아 둔 성인 만화(준호·아카데미·용사)의 결. 노벨AI(V4.5)로 뽑아 비교하며 맞췄다(2026-10-30):
+    // 처음엔 피부가 번들거리고 일본 애니 얼굴이 됐다 → 중간 굵기 선, 셀 + 부드러운 에어브러시 홍조, 무광 피부, 한국 웹툰 얼굴, 흐린 단순 배경으로.
+    head: 'korean webtoon, manhwa, digital comic art, 1.3::clean medium-weight black lineart ::, 1.3::cel shading with soft airbrushed gradients on skin, soft blush gradients ::, 1.2::semi-realistic proportions, korean male face, natural narrow eyes ::, muted desaturated warm palette, matte skin, 1.2::simple painted background, low-detail background, soft focus background ::, 1.1::mature male, adult man ::',
+    tail: 'expressive face, clean composition, masterpiece, best quality, very aesthetic',
+    neg: 'shiny skin, oily skin, glossy skin, specular highlights, anime style, sketch, rough lines, watercolor, 3d, realistic, photorealistic, detailed background, chibi, bishounen, child, young, aged down, shota, 1girl, female',
+  },
+  sketch: {
+    name: '기본 D · 성인 웹코믹 손그림',
+    // 노벨AI(V4.5)로 뽑아 비교: 연필 선·평평한 남색·밝은 배경·홍조·입김이 받아 둔 만화와 잘 맞아 그대로 둔다(2026-10-30)
+    // 받아 둔 성인 만화(직장동료 류x최·최요원)의 결: 연필 같은 거친 손그림 선(굵기 들쭉날쭉), 거의 평평한 채색에 마른 붓 결 그림자,
+    // 남색·회색 위주로 가라앉은 색, 밝고 단순한 배경, 볼·코끝 홍조, 작은 땀방울, 입김. 화가 이름은 쓰지 않는다
+    head: 'korean webtoon, manhwa, 1.3::rough sketchy lineart, uneven hand-drawn line weight, pencil-like strokes ::, 1.3::flat colors, minimal shading, soft dry brush texture in shadows ::, 1.1::muted desaturated palette, navy and grey tones ::, bright simple background, light airy atmosphere, 1.2::rosy blush across cheeks and nose tip ::, small sweat drops, faint breath steam, 1.1::mature male, adult man ::',
+    tail: 'expressive eyes, detailed hands, masterpiece, best quality, very aesthetic',
+    neg: 'cel shading, hard shadows, glossy skin, 3d, realistic, high contrast, heavy shadows, neon, child, young, aged down, shota, 1girl, female',
+  },
 };
 const WT_FRAME = {mirror: 'a mirror', photo: 'a wet photograph', tank: 'aquarium glass', shutter: 'a gap in the shutters', fence: 'barbed wire', booth: 'recording booth glass', none: ''};
 const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];

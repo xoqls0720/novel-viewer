@@ -18,7 +18,7 @@ new MutationObserver(() => { if (cur) leavePages(); }).observe($('#reader'), {ch
 function gnavSync(){
   const k = !$('#studio').hidden ? 'write' : !$('#wt').hidden ? 'toon' : atHome() ? 'home' : 'lib';
   $$('#gnav [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === k));
-  const on = SYNC_OD() ? odLinked() : (gdReady() && !!store.get('gd.last', 0));
+  const on = SYNC_OD() ? odLinked() : gdLinked();
   $('#gnav .g-sync').classList.toggle('ok', !!on);
   $('#gnav .g-sync').title = on ? `설정 · ${SYNC_OD() ? 'OneDrive' : '구글 드라이브'}로 맞추는 중` : '설정 · 기기끼리 맞추기는 아직 연결 전';
 }
@@ -32,6 +32,8 @@ const GO = {
   set(){ closeOverlays(); openTool('set'); },
 };
 window.nvGo = k => GO[k]();   // 시험·단축용
+// 폰에서 집필실 나가기: 아래 탭 줄이 숨겨져 있어서 위쪽 단추로 홈에 간다(쓰던 글은 저절로 저장돼 있다)
+document.querySelectorAll('.st-exit').forEach(b => b.onclick = () => { try{ stFlush(); }catch{} GO.home(); });
 $$('#gnav [data-g]').forEach(b => b.onclick = () => GO[b.dataset.g]());
 $('#gnav .g-brand').onclick = GO.home;
 $('#tgSide').onclick = GO.lib;   // 읽는 화면 왼쪽 위 ← 는 서재로

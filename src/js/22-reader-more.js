@@ -102,7 +102,8 @@ document.addEventListener('click', e => {
 function renderResume(){
   const box = $('#wResume'); if (!box) return;
   let best = null, bt = 0;
-  for (const w of works){ const p = store.get('pos.' + w.key, null); if (p && (p.t || 0) > bt){ bt = p.t; best = {w, p}; } }
+  // 성인 작품은 첫 화면 '이어 읽기'에 내놓지 않는다 (서재의 '성인' 칸에서만 이어 읽기)
+  for (const w of (window.nvAllWorks?.() || works)){ if (isAdult(w)) continue; const p = store.get('pos.' + w.key, null); if (p && (p.t || 0) > bt){ bt = p.t; best = {w, p}; } }
   if (!best){ box.hidden = true; return; }
   const {w, p} = best; const total = p.n || w.eps.length; const ep = w.eps[Math.min(p.ep, w.eps.length - 1)];
   const pct = Math.min(100, Math.round(((p.ep + (p.f || 0)) / total) * 100)); const cu = coverUrl(w);

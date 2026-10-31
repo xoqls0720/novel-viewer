@@ -4,6 +4,8 @@
   <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-scroll" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M12 7v6m-2.5-2.5L12 13l2.5-2.5"/></symbol>
+  <symbol id="i-trans" viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2m3 0c-.8 4-3.6 7-7.5 8.5M6 9c1.3 2 3.3 3.6 5.5 4.5M13 21l4-9 4 9m-6.8-2.5h5.6"/></symbol>
   <symbol id="i-aa" viewBox="0 0 24 24"><path d="M3 19 8 5l5 14M4.8 14h6.4M15 19l3-8 3 8M15.9 16.6h4.2"/></symbol>
   <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M14.5 4v16M17 8.5h1.5M17 11.5h1.5"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
@@ -54,6 +56,7 @@
       <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
       <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
+      <div class="lib-kinds" id="libKinds" role="tablist" aria-label="작품 종류"></div>
     </div>
     <div class="lib" id="lib"></div>
   </aside>
@@ -63,6 +66,7 @@
     <section class="page home" id="home" aria-label="홈">
       <div class="pg-wrap">
         <header class="pg-head"><div class="h-date" id="hDate"></div><h1 id="hHello">오늘도 한 줄부터.</h1></header>
+        <div class="gd-hello" hidden><div class="grow"><b>다른 기기와 이어 읽고 쓰기</b><span class="hint">구글 계정으로 한 번만 시작하면 진도·메모·원고가 저절로 맞춰져요.</span></div><button class="primary gd-start">구글로 시작하기</button><button class="gd-later">나중에</button></div>
         <div class="h-two">
           <section class="h-card h-write" id="hDesk"></section>
           <section class="h-card h-read"><div class="h-k">이어 읽기</div><div class="w-resume" id="wResume" hidden></div><div class="h-none" id="hReadNone"><svg class="i"><use href="#i-book"/></svg><p>아직 읽은 작품이 없어요.<br>서재의 책을 열면 여기로 이어져요.</p><button class="h-link" id="hLibAll">서재로 가기 →</button></div></section>
@@ -76,6 +80,8 @@
     <section class="page libpage" id="libPage" aria-label="서재">
       <div class="pg-wrap">
         <header class="pg-head lp-head"><div><div class="h-date">서재</div><h1>읽을 책</h1></div><div class="lp-acts" id="lpActs"></div></header>
+        <div class="lan-apps" id="lanGuestApps" hidden></div>
+        <div class="gd-hello" hidden><div class="grow"><b>다른 기기와 이어 읽고 쓰기</b><span class="hint">구글 계정으로 한 번만 시작하면 진도·메모·원고가 저절로 맞춰져요.</span></div><button class="primary gd-start">구글로 시작하기</button><button class="gd-later">나중에</button></div>
         <div id="lpBody"></div>
       </div>
     </section>
@@ -96,6 +102,8 @@
       <button class="epbtn" id="epBtn" title="회차 목록"><span class="w" id="title">작품을 골라 주세요</span><span class="e"><span id="epTitle"></span><svg class="i" style="width:16px;height:16px"><use href="#i-down"/></svg></span></button>
       <select id="epSel" hidden></select>
       <span class="focus-chip" id="focusChip" hidden></span><button class="icon" id="btnBm" title="책갈피 (B)"><svg class="i"><use href="#i-bm"/></svg></button>
+      <button class="icon" id="btnFlow" title="세로로 이어서 스크롤 (V)" hidden><svg class="i"><use href="#i-scroll"/></svg></button>
+      <button class="icon" id="btnTrans" title="이 쪽 번역 (내 컴퓨터 AI, 무료)"><svg class="i"><use href="#i-trans"/></svg></button>
       <button class="icon" id="btnTTS" title="읽어 주기 (T)"><svg class="i"><use href="#i-sound"/></svg></button>
       <button class="icon" id="btnQuick" title="보기 설정"><svg class="i"><use href="#i-aa"/></svg></button>
       <button class="icon" id="tgTool" title="분석·글쓰기·Claude (A)"><svg class="i"><use href="#i-panel"/></svg></button>
@@ -294,6 +302,8 @@
       <div class="hint">한국어로 장면을 말하면 NovelAI(V4.5·V5) 프롬프트로 바꿔요. 인물 사전과 하우스 스타일은 저장돼서 매번 같은 그림체·외형으로 나와요.</div>
       <h3>장면</h3>
       <textarea id="naiIn" style="min-height:100px" placeholder="예) 무너진 성당, 자정. 라파엘이 한쪽 날개만 편 채 무릎 꿇은 {{user}}에게 장검을 겨눈다. 달빛, 금빛 균열 효과, 세로 표지 구도"></textarea>
+      <div class="row tight"><label>바로 쓰는 틀</label><select id="naiPreset" class="grow"><option value="">고르기…</option></select></div>
+      <div class="hint">틀을 고르면 AI 없이 바로 프롬프트가 나와요. 인물 외형은 아래 인물 사전의 1·2번째 줄을 써요. 그림체는 아래에서 고른 것을 붙여요(받아 둔 성인 만화 그림체: <b>기본 C</b>는 준호·아카데미·용사처럼 굵은 선과 셀 음영, <b>기본 D</b>는 직장동료 류x최처럼 거친 손그림 선과 평평한 채색).</div>
       <div class="row"><label>등급</label><select id="naiRating"><option value="safe">일반</option><option value="nsfw">성인(nsfw)</option></select>
         <label>용도</label><select id="naiUse"><option value="cover">표지(세로)</option><option value="scene">상황 이미지</option><option value="profile">프로필(얼굴·상반신)</option><option value="wide">가로 배경</option></select></div>
       <div class="row"><label><input type="checkbox" id="naiImg"> 지금 보는 그림 참고</label></div>
@@ -318,9 +328,11 @@
       <div class="row"><button id="naiOpen">노벨AI에서 만들기</button><button id="naiImport">만든 그림 가져오기</button><button id="naiSketch">구도 스케치</button></div>
       <div class="hint">노벨AI는 다른 사이트에서 바로 그림을 요청할 수 없어요. '노벨AI에서 만들기'를 누르면 프롬프트가 복사되고 노벨AI가 열려요. 만든 그림을 가져오면 장면 노트로 보관되고, 거기서 프로크리에이트로 보내 고쳐 그릴 수 있어요.</div>
       <h3>인물 사전 <span class="hint">· 한 줄에 한 명: 이름: 외형 태그</span></h3>
+      <div class="row tight"><label>인물 틀</label><select id="naiCast" class="grow"><option value="">고르기…</option></select></div>
+      <div class="hint">받아 둔 성인 만화의 인물 유형(체형·머리·분위기)을 본떠 새로 만든 인물들이에요. 고르면 아래 사전 맨 위 두 줄로 들어가고, 위의 장면 틀이 그 두 사람으로 다시 나와요.</div>
       <textarea id="naiChars" style="min-height:90px" placeholder="라파엘: 1boy, adult, tall, long silver hair, golden eyes, one white wing, scar on left cheek, black priest coat&#10;세라온: 1boy, adult, short black hair, red eyes, horns, black armor"></textarea>
       <h3>그림체</h3>
-      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
+      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
       <div class="hint" id="naiStyleNow"></div>
       <h3>하우스 스타일 (직접 쓰기일 때 쓰는 칸)</h3>
       <textarea id="naiStyle" style="min-height:60px" placeholder="예) masterpiece, best quality, very aesthetic, (내가 쓰는 화가·화풍 태그)"></textarea>
@@ -378,8 +390,20 @@
       <div class="row" style="margin-top:6px"><label>누적 사용</label><span id="spent" class="hint grow"></span><button id="spentReset" class="mini-act">초기화</button></div>
 
       <h3>기기끼리 맞추기</h3>
+      <div class="od-box" id="gdBox">
+        <div class="od-head"><b>구글 드라이브</b><span class="od-tag">추천</span><span class="hint grow" id="gdStatus" style="text-align:right"></span></div>
+        <div class="hint">구글 계정으로 한 번만 시작하면 진도·형광펜·메모·장면 노트·집필실 원고가 드라이브의 <b>앱 전용 숨은 칸</b>에 맞춰져요. 그다음부터는 켤 때, 앱으로 돌아올 때, 고칠 때 저절로 맞춰요.</div>
+        <div class="row" style="margin-top:10px"><button class="primary" id="gdConnect">구글로 시작하기</button><button id="gdNow" hidden>지금 맞추기</button><button id="gdOut" hidden>연결 끊기</button>
+          <span id="gdOpts" hidden><label class="hint"><input type="checkbox" id="gdAuto"> 자동</label> <label class="hint" title="Claude·Gemini·Groq 키를 다른 기기에도 넣어 줘요. 구글 드라이브의 이 앱 전용 칸에만 저장돼요"><input type="checkbox" id="gdKeys"> API 키도</label></span></div>
+        <details class="od-setup" id="gdAdv"><summary>고급</summary>
+          <div class="hint" style="margin:4px 0 6px">보통은 건드리지 않아도 돼요. 다른 구글 클라우드 프로젝트를 쓸 때만 바꿔요.</div>
+          <div class="krow"><input type="text" id="gdClient" placeholder="OAuth 클라이언트 ID (….apps.googleusercontent.com)" autocomplete="off"><button id="gdSave">저장</button></div>
+          <div class="krow desktop-only" hidden style="margin-top:6px"><input type="password" id="gdSecret" placeholder="클라이언트 보안 비밀번호 (GOCSPX-…) · 이 PC에만 암호화해 저장" autocomplete="off"></div>
+          <div class="hint" style="margin-top:6px">등록할 주소(승인된 JavaScript 원본): <b id="gdOrigin"></b></div>
+        </details>
+      </div>
       <div class="od-box">
-        <div class="od-head"><b>OneDrive</b><span class="od-tag">추천</span><span class="hint grow" id="odStatus" style="text-align:right"></span></div>
+        <div class="od-head"><b>OneDrive</b><span class="hint grow" id="odStatus" style="text-align:right"></span></div>
         <div class="hint">마이크로소프트 계정으로 한 번 로그인하면 진도·형광펜·메모·장면 노트·집필실 원고가 OneDrive의 <b>앱 전용 폴더(앱/Novelist)</b>에 맞춰져요. 작품 폴더도 OneDrive에서 바로 연결해 아이패드에서 열 때 그 화만 받아요.</div>
         <div class="row" style="margin-top:10px"><button class="primary" id="odConnect">Microsoft 계정으로 연결</button><button id="odNow" hidden>지금 맞추기</button><button id="odOut" hidden>연결 끊기</button><label class="hint"><input type="checkbox" id="odUse"> 이걸로 맞추기</label></div>
         <details class="od-setup" id="odSetup"><summary>처음 한 번: 앱 등록 (클라이언트 ID)</summary>
@@ -395,17 +419,21 @@
       </div>
       <div class="od-box desktop-only" hidden id="lanBox">
         <div class="od-head"><b>같은 와이파이로 보여 주기</b><span class="od-tag">아이패드·폰</span></div>
-        <div class="hint">켜 두면 같은 와이파이의 아이패드·폰 사파리에서 아래 주소를 열어 이 컴퓨터의 서재를 바로 봐요. 폴더 연결도 로그인도 필요 없어요. 이 컴퓨터가 켜져 있는 동안만 보여요. 진도·형광펜은 그 기기 안에만 남아요.</div>
+        <div class="hint">처음부터 켜져 있어요. 같은 와이파이의 폰·아이패드에서 아래 QR 을 찍거나 주소를 열면 이 컴퓨터의 서재를 바로 봐요(영상·번역 포함). 폴더 연결도 로그인도 필요 없어요. 이 컴퓨터가 켜져 있는 동안만 보여요. 진도·형광펜은 그 기기 안에만 남아요.</div>
         <div class="row" style="margin-top:10px"><label class="hint"><input type="checkbox" id="lanOn"> 켜 두기</label></div>
         <div id="lanAddrs"></div>
+        <div class="lan-out" id="lanRemoteBox">
+          <b>어디서나 열기 (Cloudflare 터널)</b>
+          <div class="hint">켜면 와이파이·데이터·WARP 와 상관없이 폰에서 열려요. 폰에는 아무것도 설치하지 않아도 돼요. 대신 서재와 다운로더가 인터넷에 열리고, 주소 속 긴 열쇠만이 남을 막아요(https 로 암호화). 주소는 남에게 보내지 마세요. 주소는 PC 를 다시 켜면 바뀌어요: 폰에서는 웹 버전 Novelist 를 홈 화면에 두고 <b>PC 서재 열기</b>를 누르면 늘 지금 주소로 가요(구글 드라이브 맞추기를 켜 둔 경우).</div>
+          <div class="row" style="margin-top:8px"><label class="hint"><input type="checkbox" id="lanRemoteOn"> 어디서나 열기 켜기</label> <span class="hint" id="lanRemoteState"></span></div>
+          <div id="lanRemoteAddr"></div>
+        </div>
       </div>
-      <details class="gd-box"><summary>구글 드라이브로 맞추기 (예전 방식)</summary>
-      <div class="hint" style="margin:8px 0">메모·형광펜·진도·장면 노트·집필실 원고를 드라이브의 앱 전용 숨은 폴더에 맞춰요. OneDrive를 쓰면 이건 꺼 두세요.</div>
-      <div class="krow"><input type="text" id="gdClient" placeholder="OAuth 클라이언트 ID (….apps.googleusercontent.com)" autocomplete="off"><button id="gdSave">저장</button></div>
-      <div class="krow desktop-only" hidden style="margin-top:6px"><input type="password" id="gdSecret" placeholder="클라이언트 보안 비밀번호 (GOCSPX-…)" autocomplete="off"></div>
-      <div class="row" style="margin-top:8px"><button class="primary" id="gdConnect">연결</button><button id="gdNow">지금 동기화</button><label class="hint"><input type="checkbox" id="gdAuto"> 자동</label><label class="hint" title="Claude·Gemini·Groq 키를 다른 기기에도 넣어 줘요. 구글 드라이브의 이 앱 전용 칸에만 저장돼요"><input type="checkbox" id="gdKeys"> API 키도</label><span class="hint grow" id="gdStatus" style="text-align:right"></span></div>
-      <div class="hint">등록할 주소(승인된 JavaScript 원본): <b id="gdOrigin"></b></div>
-      </details>
+      <div class="od-box" id="pcSyncBox">
+        <div class="od-head"><b>PC로 맞추기</b><span class="od-tag">메모·AI 키</span></div>
+        <div class="hint">이 PC와, PC 주소(같은 와이파이·Tailscale·어디서나 열기)로 연 폰·아이패드가 메모·형광펜·진도·집필실 원고·장면 노트·설정·AI 키를 저절로 맞춰요. 고치면 몇 초 안에, 그 밖에는 30초마다 맞춰요. 로그인이 필요 없고 PC 밖으로 나가지 않아요.</div>
+        <div class="row" style="margin-top:8px"><button id="pcSyncNow">지금 맞추기</button><span class="hint grow" id="pcSyncStat"></span></div>
+      </div>
 
       <h3>이 기기에 저장</h3>
       <div class="row"><label class="hint grow"><input type="checkbox" id="keepLocal"> 가져온 작품을 이 기기에 저장해 다음에도 바로 열기</label></div>

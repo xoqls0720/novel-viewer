@@ -1,0 +1,62 @@
+/* 영상 회차 · 번역 칸 · 세로/펼침 단추 (26-media.js) */
+#reader.vid { overflow: hidden; }
+.vbox { display: flex; flex-direction: column; height: 100%; background: #000; padding: 56px 0 64px; box-sizing: border-box; }
+.vbox video { flex: 1; min-height: 0; width: 100%; background: #000; outline: none; }
+.vinfo { order: -1; display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: #111; color: #ddd; font-size: 13px; }
+.vinfo b { font-weight: 600; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vinfo button { padding: 5px 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #eee; cursor: pointer; }
+.vinfo button:hover { background: #333; }
+.trbox { position: fixed; right: 18px; bottom: 76px; width: min(420px, calc(100vw - 36px)); max-height: 56vh; display: none; flex-direction: column;
+  background: var(--bg, #fff); color: var(--ink, #222); border: 1px solid rgba(0,0,0,.12); border-radius: 14px; box-shadow: 0 14px 40px rgba(0,0,0,.25); z-index: 80; }
+.trbox.show { display: flex; }
+.trbox .trh { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,.08); font-size: 13px; }
+.trbox .trh button { border: 0; background: transparent; cursor: pointer; padding: 3px 7px; border-radius: 6px; color: inherit; }
+.trbox .trh button:hover { background: rgba(0,0,0,.06); }
+.trbox .trh label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.trbox .trb { overflow: auto; padding: 10px 14px; font-size: 14.5px; line-height: 1.6; }
+.trbox .trb p { margin: 0 0 8px; }
+.trbox .trb .o { display: block; font-size: 12px; opacity: .55; }
+.trbox .trb .k { display: block; }
+.trbox .trf { padding: 8px 12px; border-top: 1px solid rgba(0,0,0,.08); font-size: 11.5px; }
+.trbox .trf input { width: 130px; font-size: 11.5px; padding: 2px 5px; }
+#btnAdult { white-space: nowrap; }
+/* 서재 종류 칸 */
+.lib-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 2px; }
+.lib-kinds .kind-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(0,0,0,.12); background: transparent; color: inherit; font-size: 13px; cursor: pointer; }
+.lib-kinds .kind-tab em { font-style: normal; font-size: 11px; opacity: .55; }
+.lib-kinds .kind-tab.on { background: var(--ink, #222); color: var(--bg, #fff); border-color: transparent; }
+.lib-kinds .kind-tab.adult { margin-left: auto; }
+/* 성인 작품을 읽다가 서재·홈으로 나오면 뒤의 읽는 화면을 가린다 */
+#app.hide-adult #reader, #app.hide-adult .bar .epbtn, #app.hide-adult .botbar { visibility: hidden; }
+.trbox .trf { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.trbox .trf label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.trbox .trf button, .trbox .trf select { font-size: 11.5px; padding: 3px 7px; border-radius: 6px; }
+.trbox .trlog { font-size: 11px; max-height: 90px; overflow: auto; white-space: pre-wrap; opacity: .7; margin: 6px 0 0; }
+.trbox .trbar { height: 6px; border-radius: 3px; background: rgba(0,0,0,.08); overflow: hidden; margin: 6px 0; }
+.trbox .trbar i { display: block; height: 100%; background: var(--accent, #6d5df5); transition: width .4s; }
+.vinfo select { background: #222; color: #eee; border: 1px solid #444; border-radius: 8px; padding: 4px 6px; }
+.vinfo .vt { font-variant-numeric: tabular-nums; }
+.vinfo button:disabled { opacity: .5; }
+.trbox .trai { justify-content: space-between; }
+.trbox .trai select { max-width: 210px; }
+.trbox .trcfg { padding: 6px 12px 10px; border-top: 1px solid rgba(0,0,0,.08); font-size: 11.5px; display: grid; gap: 6px; }
+.trbox .trcfg[hidden], .trbox .trcfg [hidden] { display: none !important; }
+.trbox .trcfg .trrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.trbox .trcfg label { display: flex; align-items: center; gap: 4px; }
+.trbox .trcfg input:not([type=checkbox]) { width: 170px; font-size: 11.5px; padding: 3px 6px; }
+.trbox .trcfg select { max-width: 200px; font-size: 11.5px; }
+.trbox .trcfg a { color: var(--accent, #4a7); font-size: 11px; }
+.trbox .trcfg .hint { margin: 0; line-height: 1.45; }
+/* 그림 목차 */
+.eplist.epgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;align-content:start}
+.eplist.epgrid .it.ept{display:block;padding:6px;border-radius:12px}
+.eplist.epgrid .ept .th{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;background:var(--panel-2)}
+.eplist.epgrid .ept.v .th{aspect-ratio:16/10}
+.eplist.epgrid .ept .th img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .2s}
+.eplist.epgrid .ept.has .th img{opacity:1}
+.eplist.epgrid .ept .th .pl{position:absolute;left:6px;bottom:4px;font-size:15px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.eplist.epgrid .ept .cap{display:flex;gap:6px;align-items:baseline;margin-top:6px;font-size:12.5px;line-height:1.35}
+.eplist.epgrid .ept .cap .no{min-width:auto}
+.eplist.epgrid .ept .cap .nm{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.eplist.epgrid .ept.cur .th{outline:2px solid var(--accent)}
+.eplist.epgrid .ept.read .cap{opacity:.6}

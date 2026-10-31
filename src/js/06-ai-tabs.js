@@ -160,7 +160,10 @@ const SYSTEM_NAI = `너는 NovelAI Diffusion V4.5·V5 프롬프트 전문가다.
 - {{user}}처럼 얼굴을 정하지 않는 인물은 얼굴이 드러나지 않게(faceless, from behind, cropped head 등) 처리한다.
 - 판타지 무기는 서양식 장검(longsword) 등을 쓰고 katana는 쓰지 않는다.
 - 하우스 스타일 태그는 내가 앞에 붙이므로 화풍·화가 태그는 넣지 않는다.
-- size는 용도에 맞게: 표지·상황·프로필은 832x1216, 가로 배경은 1216x832.`;
+- size는 용도에 맞게: 표지·상황·프로필은 832x1216, 가로 배경은 1216x832.
+- 잘 나오는 짜임(사용자가 모아 둔 프롬프트에서): 장소를 소품까지 겹겹이(가구·바닥·창밖·흩어진 물건), 빛을 두세 겹(주 조명 색·창빛·림라이트·작은 불빛), 분위기 한두 단어. 꼭 나와야 할 자세·표정·소품만 1.3::…:: ~ 1.6::…:: 로 묶고, 묶음 안에 같은 뜻 태그를 2~4개 겹친다.
+- 한 장에 두 장면을 대비시킬 때는 base 에 2panels, two equal-sized panels stacked vertically, clear black border 와 [top panel]: … [bottom panel]: … 을 쓴다. 표지는 여러 컷 콜라주 + 빈 제목 띠(empty title banner)로 하고 글자는 넣지 않는다.
+- 성인 등급이면: 성인 남성 몸(mature male, broad shoulders, defined muscles)과 땀·홍조·숨결·젖은 피부 같은 결을 넣고, 두 사람 장면은 source#/target#/mutual# 로 누가 무엇을 하는지 정한다. 서로 원하는 관계로 보이게(껴안기·손깍지·다정한 표정) 그린다. 학교·학생·교복·나이 어린 느낌 태그는 절대 쓰지 않는다.`;
 const naiState = {abort: null};
 function naiCharsDict(){ return $('#naiChars').value.split('\n').map(l => l.trim()).filter(Boolean); }
 function naiPack(res){

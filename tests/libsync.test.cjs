@@ -37,7 +37,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   // ── 기기 A: 작품을 불러오고 올린다
   const A = (await mk()).p;
   await A.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await A.waitForTimeout(1200);
-  await A.click('#gdConnect').catch(()=>{}); await A.waitForTimeout(1500);
+  await A.evaluate(() => document.querySelector('#gdConnect').click());   // 구글로 시작하기 await A.waitForTimeout(1500);
   await A.click('#btnLink'); await A.waitForTimeout(300);
   await A.check('#libSyncOn'); await A.waitForTimeout(500);
   for (let i = 0; i < 40; i++){ const t = await A.textContent('#libSyncStat'); if (/클라우드에 있어요/.test(t)) break; await A.waitForTimeout(500); }
@@ -58,7 +58,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   console.log('keys file:', [...DB.values()].some(f => f.name === 'keys.json'), '| key not in state.json:', !stateTxt.includes('AIza-sync-test'));
   // ── 기기 B: 처음 켠 기기. 구글 로그인만 해도 작품이 보인다
   const B = (await mk()).p;
-  await B.click('#gdConnect').catch(()=>{}); await B.waitForTimeout(2500);
+  await B.evaluate(() => document.querySelector('#gdConnect').click());   // 구글로 시작하기 await B.waitForTimeout(2500);
   for (let i = 0; i < 20; i++){ if ((await B.$$('.grid .card')).length >= 4) break; await B.waitForTimeout(400); }
   console.log('B works:', await B.$$eval('.grid .card .t', e => e.map(x => x.textContent).sort()));
   console.log('B got key:', await B.evaluate(() => JSON.parse(localStorage.getItem('nv.gemKey') || '""')), '| status:', /API 키 받음 1/.test(await B.textContent('#gdStatus')));

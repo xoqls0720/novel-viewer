@@ -1,7 +1,7 @@
 /* ================= 열기 ================= */
 async function openWork(w){
   stopTTS();
-  cur = w; chats.ai.reset(); $('#mode').value = 'auto'; $('#app').classList.remove('nowork'); $('#app').classList.add('opening');
+  cur = w; chats.ai.reset(); $('#mode').value = store.get('set.mode.' + w.kind, 'auto'); $('#app').classList.remove('nowork'); $('#app').classList.add('opening');
   if (!w._expanded && w.kind !== 'manga' && w.eps.some(e => e.type === 'epub')){
     toast('epub 여는 중…');
     const out = []; let comic = 0;
@@ -9,12 +9,16 @@ async function openWork(w){
       if (ep.type !== 'epub'){ out.push(ep); continue; }
       try{
         const e = await readEpub(ep.file);
+        // 웹툰 EPUB(작품 통째): 목차대로 화별로 나눈다. 만화는 권 그대로 둔다
+        if (e.isComic && e.parts.length > 1 && (w.kind === 'webtoon' || /웹툰/.test(w.top))){ e.parts.forEach((p, i) => { const name = p.title || `${i + 1}화`; if (!out.some(o => o.type === 'epubpart' && o.name === name)) out.push({name, type: 'epubpart', file: ep.file, idx: i}); }); comic++; continue; }   // 같은 작품 EPUB 이 둘(사본)이어도 같은 화는 한 번만
         if (e.isComic){ out.push(ep); comic++; continue; }
         const many = w.eps.length > 1;
+        const n0 = out.length;
         e.chapters.forEach((c,i) => { if (c.text.length > 20) out.push({name: (many ? ep.name + ' · ' : '') + (c.title || `${i+1}장`), type:'epubch', file:ep.file, idx:i}); });
+        if (out.length === n0) out.push(ep);   // 글 장이 하나도 없으면(그림 몇 장뿐인 EPUB) 통째로 남긴다 — 사라지지 않게
       }catch{ out.push(ep); }
     }
-    w.eps = out; if (comic && comic === out.length) w.kind = 'manga';
+    w.eps = out; if (comic && comic === out.length && w.kind !== 'webtoon') w.kind = 'manga';
     w._expanded = true;
   }
   try{ await splitWorkTxt(w); }catch(e){ $('#app').classList.remove('opening'); throw e; }
@@ -54,8 +58,13 @@ async function openEp(i, pos = {}, jump = null){
   let mode = viewMode();
   let text = '', imgs = [];
   if (isText(ep)) text = await epText(ep);
+  else if (ep.type === 'video'){ /* 영상은 아래에서 플레이어로 */ }
   else {
     if (ep.type === 'imgs') imgs = ep.files.map(f => f.isLazy ? {lazy: () => f.blob(), name: f.name} : {blob: f, name: f.name});
+    else if (ep.type === 'epubpart'){
+      const e = await readEpub(ep.file);
+      for (const p of e.parts[ep.idx]?.imgs || []) imgs.push({lazy: () => e.zip.file(p).async('blob'), name: p});
+    }
     else if (ep.type === 'epub'){
       const e = await readEpub(ep.file);
       for (const c of e.chapters) for (const p of c.imgs) imgs.push({lazy: () => e.zip.file(p).async('blob'), name:p});
@@ -67,8 +76,10 @@ async function openEp(i, pos = {}, jump = null){
   if (i === curEp + 1) markRead(curEp);   // 다음 화로 넘어가면 앞 화는 읽음
   freeUrls();
   curEp = i; $('#epSel').value = i; $('#epTitle').textContent = ep.label || ep.name; $('#epTitle').title = ep.name; curText = text; curParas = text ? splitParas(text) : []; curImgs = imgs; mangaPos = 0;
-  const r = $('#reader'); r.classList.remove('paged');
-  if (text){
+  const r = $('#reader'); r.classList.remove('paged'); r.classList.toggle('vid', ep.type === 'video');
+  if (ep.type === 'video'){
+    await renderVideo(ep, pos);
+  } else if (text){
     renderNovel(mode === 'paged'); renderEpStats();
   } else {
     if (mode === 'manga'){
@@ -82,9 +93,11 @@ async function openEp(i, pos = {}, jump = null){
   await new Promise(requestAnimationFrame);
   if (tok !== openToken) return;
   if (jump) gotoRange(jump);
+  else if (ep.type === 'video'){ /* 영상은 renderVideo 가 이어 보기 자리를 맞춘다 */ }
   else if ($('#reader .webtoon')) await restoreWebtoon(pos);
   else if (!$('#reader .manga')) setFrac(pos.end ? 1 : (pos.f || 0));
   updateProgress(); savePos(); wakeSync(); coach();
+  updateFlowBtn(); trMaybe();
 }
 
 /* ---------- 소설 ---------- */
@@ -170,6 +183,7 @@ function savePos(){
   if (!cur) return;
   const w = cur, ep = curEp, tok = openToken;
   const p = {ep, f:getFrac(), t:Date.now(), n:w.eps.length};
+  const v = $('#reader video'); if (v) p.vt = Math.floor(v.currentTime || 0);
   if ($('#reader .manga')) p.page = mangaPos;
   if ($('#reader .webtoon')) Object.assign(p, webtoonAnchor());
   clearTimeout(posT);
@@ -444,7 +458,7 @@ async function renderManga(){
   if (rtl) srcs.reverse();
   for (const s of srcs){ const im = document.createElement('img'); im.src = s; im.alt = ''; box.append(im); }
   for (let k = mangaPos + mangaShown; k < Math.min(curImgs.length, mangaPos + mangaShown + 3); k++) imgSrc(curImgs[k]);
-  r.scrollTop = 0; updateProgress(); savePos();
+  r.scrollTop = 0; updateProgress(); savePos(); trMaybe();
 }
 async function mangaStep(d){
   if (mangaBusy || !cur) return; mangaBusy = true;

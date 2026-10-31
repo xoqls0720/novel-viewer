@@ -65,11 +65,11 @@ $('#olTest').onclick = async () => {
 $('#spentReset').onclick = () => { store.set('spent', {in:0,out:0,cache:0,n:0}); showSpent(); };
 $('#storeClear').onclick = async () => { if (!confirm('이 기기에 저장한 작품 파일을 모두 지울까요? (메모·진도·설정은 남아요)')) return; await idb.clear(); showStore(); toast('지웠어요'); };
 $('#bkOut').onclick = () => {
-  const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret)$/.test(k)) data[k] = localStorage.getItem(k); }
+  const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret|gd\.tok|tr\.key\..*)$/.test(k)) data[k] = localStorage.getItem(k); }
   download('Novelist_백업.json', JSON.stringify(data), 'application/json');
 };
 $('#bkIn').onclick = () => $('#bkFile').click();
-$('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
+$('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret|gd\.tok|tr\.key\..*)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
 
 function openTool(tab){
   const a = $('#app');
@@ -104,7 +104,7 @@ drop.ondrop = async e => {
 $('#epSel').onchange = e => openEp(+e.target.value);
 $('#prev').onclick = () => cur && curEp > 0 && openEp(curEp-1);
 $('#next').onclick = () => cur && curEp < cur.eps.length-1 && openEp(curEp+1);
-$('#mode').onchange = () => { if (!cur) return; if (cur.kind === 'novel') store.set('set.pagedDefault', $('#mode').value === 'paged'); openEp(curEp, {f: getFrac()}); };
+$('#mode').onchange = () => { if (!cur) return; store.set('set.mode.' + cur.kind, $('#mode').value); if (cur.kind === 'novel') store.set('set.pagedDefault', $('#mode').value === 'paged'); flowSwitchTo($('#mode').value); };
 $('#tgSide').onclick = () => { const a=$('#app'); if (isMobile()) a.classList.toggle('show-side'); else a.classList.toggle('hide-side'); };
 $('#sideClose').onclick = () => $('#app').classList.remove('show-side');
 $('#tgTool').onclick = () => { const a=$('#app'); if (isMobile()) a.classList.toggle('show-tool'); else a.classList.toggle('hide-tool'); };

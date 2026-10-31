@@ -142,7 +142,7 @@ async function libBuildCached(){ try{ const c = await idb.tx('readonly', s => s.
 
 /* ---------- 돌리기 ---------- */
 async function libRun(files){
-  if (LS.busy || !gdReady()) return; LS.busy = true; LS.cancel = false; renderLibSync();
+  if (LS.busy || !gdLinked()) return; LS.busy = true; LS.cancel = false; renderLibSync();
   try{
     files = files || await gdList(); LS.files = files;
     await libPull(files);
@@ -154,13 +154,13 @@ async function libRun(files){
   }finally{ LS.busy = false; renderLibSync(); }
 }
 window.libAfterSync = files => { libRun(files); if (DESKTOP && store.get('lib.sync', null) === null && !LS.asked && works.some(libMine)){ LS.asked = true; setTimeout(() => libEnable(), 800); } };
-window.libSoon = () => { if (!gdReady() || !store.get('lib.sync', false)) return; clearTimeout(LS.timer); LS.timer = setTimeout(() => libRun(), 20000); };
+window.libSoon = () => { if (!gdLinked() || !store.get('lib.sync', false)) return; clearTimeout(LS.timer); LS.timer = setTimeout(() => libRun(), 20000); };
 
 /* ---------- 화면 ---------- */
 async function libQuota(){ try{ const q = (await (await gdFetch(`${GD_API}/about?fields=storageQuota`)).json()).storageQuota; return q?.limit ? {free: +q.limit - +q.usage} : null; }catch{ return null; } }
 async function libEnable(){
   const ex = new Set(store.get('lib.exclude', [])); const mine = works.filter(w => libMine(w) && !ex.has(w.key)); const total = mine.reduce((s, w) => s + libSize(w), 0);
-  if (!gdReady()) { toast('먼저 설정 탭에서 구글 드라이브 동기화를 연결해 주세요'); $('#libSyncOn').checked = false; return false; }
+  if (!gdLinked()) { toast('먼저 설정 → 기기끼리 맞추기에서 "구글로 시작하기"를 눌러 주세요'); $('#libSyncOn').checked = false; return false; }
   if (!mine.length){ store.set('lib.sync', true); toast('올릴 작품이 생기면 저절로 올려요'); renderLibSync(); return true; }
   const q = await libQuota();
   const ok = confirm(`작품 ${mine.length}개(${libBytes(total)})를 구글 드라이브의 앱 전용 칸에 올려요.\n다른 기기에서도 같은 작품이 보이고, 기기마다 열 때 그 화만 받아요.` + (q ? `\n\n드라이브 남은 공간: ${libBytes(Math.max(0, q.free))}` + (q.free < total ? '\n⚠ 남은 공간이 올릴 용량보다 적어요. 일부 작품만 골라 올리는 편이 좋아요.' : '') : '') + '\n\n올릴까요? (용량이 크면 몇 시간 걸려요. 컴퓨터를 켜 둔 채로 두면 이어서 올라가요)');
@@ -169,7 +169,7 @@ async function libEnable(){
 function renderLibSync(){
   const on = $('#libSyncOn'); if (!on) return; on.checked = !!store.get('lib.sync', false);
   $('#libSyncStop').hidden = !LS.busy; $('#libSyncNow').disabled = LS.busy;
-  if (!LS.status && !gdReady()) libStatus('설정 탭에서 구글 드라이브 동기화를 먼저 연결해 주세요');
+  if (!LS.status && !gdLinked()) libStatus('설정 → 기기끼리 맞추기에서 "구글로 시작하기"를 먼저 눌러 주세요');
   const ex = new Set(store.get('lib.exclude', [])); const idx = LS.idx?.works || {}; const box = $('#libSyncList'); box.innerHTML = '';
   const row = (w, mine) => {
     const e = idx[w.key]; const st = LS.state.get(w.key); const d = document.createElement('div'); d.className = 'lsw';
@@ -196,7 +196,7 @@ async function libCloudDelete(key, name, mine){
   renderLibSync();
 }
 $('#libSyncOn').onchange = () => { if ($('#libSyncOn').checked) libEnable(); else { store.set('lib.sync', false); LS.cancel = true; renderLibSync(); } };
-$('#libSyncNow').onclick = () => { if (!gdReady()) return toast('먼저 설정 탭에서 구글 드라이브 동기화를 연결해 주세요'); libRun(); };
+$('#libSyncNow').onclick = () => { if (!gdLinked()) return toast('먼저 설정 → 기기끼리 맞추기에서 "구글로 시작하기"를 눌러 주세요'); libRun(); };
 $('#libSyncStop').onclick = () => { LS.cancel = true; libStatus('멈추는 중… (올리던 파일이 끝나면 멈춰요)'); };
 $('#btnLink').addEventListener('click', renderLibSync);
 setTimeout(libBuildCached, 700);
