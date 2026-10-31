@@ -27,8 +27,11 @@ async function driveList(q){
 }
 // 폴더 아래를 모두 훑어 파일 목록(경로 포함)을 만든다. 한 번 만든 목록은 기기에 저장해 다음엔 바로 쓴다.
 // 폴더 40개를 한 번에 묻는다(parents 로 어느 폴더 것인지 가른다): 폴더 2천 개 서재도 요청 수십 번이면 끝난다
+const DRV_KIND = /^(성인|노벨|소설|novel|웹툰|webtoon|만화|망가|manga|comic|영상|video|갤러리)$/i;
 async function driveIndex(src, onProgress){
-  const files = [], seen = new Set(); let level = [{id: src.folderId, path: src.name}], folders = 0;
+  // 연결한 폴더가 '만화'·'웹툰' 같은 종류 폴더가 아니면(예: 서재를 통째로 담은 '노벨리스트') 경로에서 빼서, PC 와 같은 '만화/작품' 경로·열쇠가 되게 한다
+  // (예전엔 '노벨리스트' 의 '노벨' 때문에 그 안의 만화·웹툰이 모두 소설로 잡혔다)
+  const files = [], seen = new Set(); let level = [{id: src.folderId, path: DRV_KIND.test(src.name) ? src.name : ''}], folders = 0;
   while (level.length){
     const next = [], groups = []; for (let i = 0; i < level.length; i += 40) groups.push(level.slice(i, i + 40));
     let gi = 0;
@@ -39,9 +42,10 @@ async function driveIndex(src, onProgress){
         for (const f of await driveList('(' + g.map(x => `'${x.id}' in parents`).join(' or ') + ') and trashed=false')){
           const parent = (f.parents || []).find(p => pathOf.has(p)); if (!parent) continue; const path = pathOf.get(parent);
           const target = f.mimeType === 'application/vnd.google-apps.shortcut' ? f.shortcutDetails : null;
-          if (f.mimeType === DRIVE_FOLDER || target?.targetMimeType === DRIVE_FOLDER){ next.push({id: target?.targetId || f.id, path: path + '/' + f.name}); continue; }
+          const sub = path ? path + '/' + f.name : f.name;
+          if (f.mimeType === DRIVE_FOLDER || target?.targetMimeType === DRIVE_FOLDER){ next.push({id: target?.targetId || f.id, path: sub}); continue; }
           if (target || f.mimeType.startsWith('application/vnd.google-apps.')) continue;   // 구글 문서 등은 건너뛴다
-          files.push({id: f.id, rel: path + '/' + f.name, size: +f.size || 0, mtime: Date.parse(f.modifiedTime) || 0});
+          files.push({id: f.id, rel: path ? sub : '낱개/' + f.name, size: +f.size || 0, mtime: Date.parse(f.modifiedTime) || 0});
         }
         onProgress?.(folders, files.length);
       }
@@ -70,10 +74,10 @@ async function driveBlob0(f){
 }
 async function driveFiles(src, refresh){
   let idx = null;
-  if (!refresh){ try{ idx = (await idb.tx('readonly', s => s.get('__idx:' + src.id), 'dcache'))?.files; }catch{} }
+  if (!refresh){ try{ idx = (await idb.tx('readonly', s => s.get('__idx2:' + src.id), 'dcache'))?.files; }catch{} }
   if (!idx){
     idx = await driveIndex(src, (d, n) => srcStatus(src.id, `목록 받는 중… 폴더 ${d}개 · 파일 ${n}개`));
-    try{ await idb.tx('readwrite', s => s.put({id: '__idx:' + src.id, files: idx, t: Date.now()}), 'dcache'); }catch{}
+    try{ await idb.tx('readwrite', s => s.put({id: '__idx2:' + src.id, files: idx, t: Date.now()}), 'dcache'); }catch{}
   }
   return idx.map(f => { const lf = Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true});
     // 큰 EPUB·zip 은 필요한 구간만 (통째로 받지 않는다). 영상도 이 주소로 흘려 본다
@@ -134,7 +138,7 @@ function renderSources(){
     d.querySelector('[data-a=rm]').onclick = async () => {
       if (!confirm(`'${s.name}' 연결을 끊을까요? (원래 파일은 그대로 있어요. 메모·진도도 남아요)`)) return;
       libSave(libSources().filter(x => x.id !== s.id));
-      if (s.kind === 'drive' || s.kind === 'onedrive') try{ await idb.tx('readwrite', st => st.delete('__idx:' + s.id), 'dcache'); }catch{}
+      if (s.kind === 'drive' || s.kind === 'onedrive') try{ await idb.tx('readwrite', st => st.delete('__idx2:' + s.id), 'dcache'); }catch{}
       toast('연결을 끊었어요. 다시 켜면 목록에서 빠져요');
     };
     box.append(d);
