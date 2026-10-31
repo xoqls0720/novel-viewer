@@ -416,7 +416,17 @@ function trimBox(bmp, sx, sy, sw, sh){
   if ((r-l) < W*0.5 || (b-t) < H*0.5) return {x:sx, y:sy, w:sw, h:sh};
   return {x: sx + l/s, y: sy + t/s, w: (r-l+1)/s, h: (b-t+1)/s};
 }
-async function loadImg(im){
+// 그림은 앞(위)에서부터 네 장씩: 한꺼번에 수십 장을 부르면 지금 볼 첫 장이 늦게 뜬다(멀리 있는 드라이브·PC 서재에서)
+const IMGQ = {wait: [], run: 0};
+function loadImg(im){ return new Promise(done => { IMGQ.wait.push({im, done}); imgPump(); }); }
+function imgPump(){
+  while (IMGQ.run < 4 && IMGQ.wait.length){
+    IMGQ.wait.sort((a, b) => (+a.im.dataset.i || 0) - (+b.im.dataset.i || 0));
+    const {im, done} = IMGQ.wait.shift(); if (!im.isConnected){ done(); continue; }   // 다른 화로 넘어갔으면 건너뛴다
+    IMGQ.run++; loadImg0(im).catch(() => {}).finally(() => { IMGQ.run--; done(); imgPump(); });
+  }
+}
+async function loadImg0(im){
   if (!im.getAttribute('src') && im.dataset.i){ const it = curImgs[+im.dataset.i]; if (it) im.src = await imgSrc(it); }
   if (im.getAttribute('src') && !im.complete) await new Promise(res => { im.addEventListener('load', res, {once:true}); im.addEventListener('error', res, {once:true}); });
   im.style.minHeight = '';

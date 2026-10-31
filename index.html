@@ -2433,10 +2433,12 @@ function renderLib(){
 // 그림은 보통 압축 없이(store), 글(xhtml)은 deflate 로 들어 있다. ZIP64(4GB 넘는 zip)도 읽는다.
 const RangeZip = {
   // url: 주소 또는 주소를 돌려주는 함수(구글 드라이브처럼 토큰이 바뀌는 곳은 읽을 때마다 새로)
-  async open(url, size){
+  // known: 지난번에 읽어 둔 중앙 목록(files). 있으면 끝부분·목록을 다시 받지 않는다
+  async open(url, size, known = null){
     const at = async () => typeof url === 'function' ? await url() : url;
     const get = async (a, b) => { const r = await fetch(await at(), {headers: {Range: `bytes=${a}-${b}`}}); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status); return new Uint8Array(await r.arrayBuffer()); };
     if (!size){ const r = await fetch(await at(), {headers: {Range: 'bytes=0-0'}}); size = +((r.headers.get('content-range') || '').split('/')[1] || 0); }
+    if (known) return this.make(get, known);
     const tailN = Math.min(size, 66000); const tail = await get(size - tailN, size - 1); const dv = new DataView(tail.buffer);
     let e = -1; for (let i = tailN - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50){ e = i; break; }
     if (e < 0) throw new Error('zip 이 아니에요');
@@ -2459,19 +2461,39 @@ const RangeZip = {
         let q = p + 46 + nl; const qe = q + xl;
         while (q + 4 <= qe){ const id = cv.getUint16(q, true), sz = cv.getUint16(q + 2, true); if (id === 1){ let r = q + 4; if (usize === 0xFFFFFFFF){ usize = Number(cv.getBigUint64(r, true)); r += 8; } if (csize === 0xFFFFFFFF){ csize = Number(cv.getBigUint64(r, true)); r += 8; } if (off === 0xFFFFFFFF) off = Number(cv.getBigUint64(r, true)); } q += 4 + sz; }
       }
-      files[name] = {name, dir: name.endsWith('/'), method, csize, usize, off};
+      files[name] = {name, dir: name.endsWith('/'), method, csize, usize, off, nl, xl};
       p += 46 + nl + xl + cl;
     }
+    return this.make(get, files);
+  },
+  make(get, files){
+    const dec = new TextDecoder(), pre = new Map();
+    // 지역 머리말(30바이트 + 이름 + 덧붙임) 뒤가 내용. 덧붙임 길이는 중앙 목록 것과 다를 수 있어 넉넉히 받고 맞지 않으면 다시
+    const slice = (buf, base, ent) => { const dv = new DataView(buf.buffer, buf.byteOffset); const o = ent.off - base; if (o + 30 > buf.length) return null;
+      const s = o + 30 + dv.getUint16(o + 26, true) + dv.getUint16(o + 28, true); return s + ent.csize <= buf.length ? buf.subarray(s, s + ent.csize) : null; };
+    const span = ent => 30 + (ent.nl ?? 256) + (ent.xl ?? 0) + 64 + ent.csize;
+    const raw = async ent => {
+      if (pre.has(ent.name)){ const r = pre.get(ent.name); pre.delete(ent.name); return r; }
+      const buf = await get(ent.off, ent.off + span(ent) - 1); const r = slice(buf, ent.off, ent); if (r) return r;
+      const lh = new DataView((await get(ent.off, ent.off + 29)).buffer); const start = ent.off + 30 + lh.getUint16(26, true) + lh.getUint16(28, true);
+      return ent.csize ? await get(start, start + ent.csize - 1) : new Uint8Array(0);
+    };
     const read = async ent => {
-      const lh = new DataView((await get(ent.off, ent.off + 29)).buffer);
-      const start = ent.off + 30 + lh.getUint16(26, true) + lh.getUint16(28, true);
-      const raw = ent.csize ? await get(start, start + ent.csize - 1) : new Uint8Array(0);
-      if (ent.method === 0) return raw;
-      const out = new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw')));
+      const r = await raw(ent);
+      if (ent.method === 0) return r;
+      const out = new Response(new Blob([r]).stream().pipeThrough(new DecompressionStream('deflate-raw')));
       return new Uint8Array(await out.arrayBuffer());
     };
     const type = n => /\.png$/i.test(n) ? 'image/png' : /\.gif$/i.test(n) ? 'image/gif' : /\.webp$/i.test(n) ? 'image/webp' : /\.avif$/i.test(n) ? 'image/avif' : /\.jpe?g$/i.test(n) ? 'image/jpeg' : '';
-    return {files, file(n){ const ent = files[n]; if (!ent || ent.dir) return null;
+    // 여러 파일을 미리: 디스크에서 붙어 있는 것끼리 묶어(사이 64KB 안·한 묶음 8MB 안) 몇 번에 받는다
+    const prefetch = async names => {
+      const ents = names.map(n => files[n]).filter(e => e && !e.dir && !pre.has(e.name)).sort((a, b) => a.off - b.off);
+      const groups = []; for (const e of ents){ const g = groups.at(-1); const end = e.off + span(e);
+        if (g && e.off - g.end < 65536 && end - g.start < 8 * 1048576){ g.ents.push(e); g.end = Math.max(g.end, end); } else groups.push({start: e.off, end, ents: [e]}); }
+      let gi = 0; await Promise.all(Array.from({length: 4}, async () => { while (gi < groups.length){ const g = groups[gi++];
+        try{ const buf = await get(g.start, g.end - 1); for (const e of g.ents){ const r = slice(buf, g.start, e); if (r) pre.set(e.name, r); } }catch{} } }));
+    };
+    return {files, prefetch, file(n){ const ent = files[n]; if (!ent || ent.dir) return null;
       return {name: n, async async(kind){ const u = await read(ent); return kind === 'string' ? dec.decode(u) : kind === 'uint8array' ? u : kind === 'arraybuffer' ? u.buffer : new Blob([u], {type: type(n)}); }}; }};
   }
 };
@@ -2496,11 +2518,16 @@ async function readEpub(file){
   if (epubCache.has(file)) return epubCache.get(file);
   // 내 컴퓨터 폴더의 EPUB 은 통째로 읽지 않고 필요한 부분만(목차, 그 회차 그림) 디스크에서 바로 읽는다.
   // 수 GB 짜리 웹툰 EPUB 도 열리고, 여는 데 걸리는 시간도 크기와 상관없다.
-  const zip = file.lanZip ? await LanZip.open(file) : file.rangeUrl ? await RangeZip.open(file.rangeUrl, file.size) : file.streamUrl ? await RangeZip.open(file.streamUrl, file.size) : await JSZip.loadAsync(await realBlob(file));
-  const container = await zip.file('META-INF/container.xml').async('string');
+  // 멀리 있는 EPUB(구글 드라이브 등)은 중앙 목록·쪽 글을 이 기기에 저장해 두고 다음엔 요청 없이 연다
+  const ekey = file.remote && (file.rangeUrl || file.streamUrl) ? 'ez:' + relPath(file) + '|' + file.size + '|' + file.lastModified : '';
+  let saved = null; if (ekey){ try{ const r = await idb.tx('readonly', s => s.get(ekey), 'dcache'); if (r?.files) saved = r; }catch{} }   // 없으면 요청 객체가 돌아오니 files 로 확인
+  const zip = file.lanZip ? await LanZip.open(file) : file.rangeUrl ? await RangeZip.open(file.rangeUrl, file.size, saved?.files) : file.streamUrl ? await RangeZip.open(file.streamUrl, file.size, saved?.files) : await JSZip.loadAsync(await realBlob(file));
+  const texts = {}; const zstr = async n => (texts[n] = saved?.texts?.[n] ?? await zip.file(n).async('string'));
+  if (!saved && zip.prefetch) await zip.prefetch(Object.keys(zip.files).filter(n => /\.(xml|opf|ncx|x?html?)$/i.test(n)));   // 처음: 글 파일을 몇 번에 묶어 받기
+  const container = await zstr('META-INF/container.xml');
   const opfPath = container.match(/full-path="([^"]+)"/)[1];
   const base = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/')+1) : '';
-  const opf = new DOMParser().parseFromString(await zip.file(opfPath).async('string'), 'application/xml');
+  const opf = new DOMParser().parseFromString(await zstr(opfPath), 'application/xml');
   const items = {}; for (const it of opf.querySelectorAll('manifest > item')) items[it.getAttribute('id')] = it.getAttribute('href');
   const spine = [...opf.querySelectorAll('spine > itemref')].map(r => items[r.getAttribute('idref')]).filter(Boolean);
   const join = (dir, href) => { const out=[]; for (const p of (dir + decodeURIComponent(href.split('#')[0])).split('/')){ if(p==='..') out.pop(); else if(p!=='.' && p!=='') out.push(p);} return out.join('/'); };
@@ -2514,7 +2541,7 @@ async function readEpub(file){
     if (it){
       const np = join(base, it.getAttribute('href'));
       const ndir = np.includes('/') ? np.slice(0, np.lastIndexOf('/')+1) : '';
-      const nd = new DOMParser().parseFromString(await zip.file(np).async('string'), navIt ? 'text/html' : 'application/xml');
+      const nd = new DOMParser().parseFromString(await zstr(np), navIt ? 'text/html' : 'application/xml');
       if (navIt) for (const a of nd.querySelectorAll('nav a[href]')){ const t = join(ndir, a.getAttribute('href')); if (!tocStart.has(t)) tocStart.set(t, a.textContent.trim()); }
       else for (const p of nd.querySelectorAll('navPoint')){ const src = p.querySelector('content')?.getAttribute('src'); const t = src && join(ndir, src); if (t && !tocStart.has(t)) tocStart.set(t, p.querySelector('navLabel text')?.textContent.trim() || ''); }
     }
@@ -2522,7 +2549,7 @@ async function readEpub(file){
   const parts = [];   // 그림 EPUB 의 회차: 목차가 가리키는 쪽에서 새 회차가 시작한다
   const chapters = [];
   // 쪽 글(xhtml)을 16개씩 함께 읽어 둔다 (디스크에서 구간으로 읽을 때 수천 쪽도 빨리)
-  const pageText = new Map(); { let k = 0; const paths = spine.map(h => join(base, h)); await Promise.all(Array.from({length: 16}, async () => { while (k < paths.length){ const p = paths[k++]; const f = zip.file(p); if (f) pageText.set(p, await f.async('string')); } })); }
+  const pageText = new Map(); { let k = 0; const paths = spine.map(h => join(base, h)); await Promise.all(Array.from({length: 16}, async () => { while (k < paths.length){ const p = paths[k++]; const f = zip.file(p); if (f) pageText.set(p, await zstr(p)); } })); }
   for (const href of spine){
     const path = join(base, href);
     if (!pageText.has(path)) continue;
@@ -2540,6 +2567,7 @@ async function readEpub(file){
   const textChars = chapters.reduce((s,c)=>s+c.text.length, 0);
   const imgCount = chapters.reduce((s,c)=>s+c.imgs.length, 0);
   const res = {zip, chapters: chapters.filter(c => c.text.length > 20 || c.imgs.length), parts: tocStart.size > 1 ? parts : [], isComic: (imgCount > 10 || (imgCount > 0 && tocStart.size > 1)) && textChars / Math.max(1,imgCount) < 200};
+  if (ekey && !saved) idb.tx('readwrite', s => s.put({id: ekey, files: zip.files, texts}), 'dcache').catch(() => {});
   epubCache.set(file, res);
   while (epubCache.size > 3) epubCache.delete(epubCache.keys().next().value);
   return res;
@@ -2963,7 +2991,17 @@ function trimBox(bmp, sx, sy, sw, sh){
   if ((r-l) < W*0.5 || (b-t) < H*0.5) return {x:sx, y:sy, w:sw, h:sh};
   return {x: sx + l/s, y: sy + t/s, w: (r-l+1)/s, h: (b-t+1)/s};
 }
-async function loadImg(im){
+// 그림은 앞(위)에서부터 네 장씩: 한꺼번에 수십 장을 부르면 지금 볼 첫 장이 늦게 뜬다(멀리 있는 드라이브·PC 서재에서)
+const IMGQ = {wait: [], run: 0};
+function loadImg(im){ return new Promise(done => { IMGQ.wait.push({im, done}); imgPump(); }); }
+function imgPump(){
+  while (IMGQ.run < 4 && IMGQ.wait.length){
+    IMGQ.wait.sort((a, b) => (+a.im.dataset.i || 0) - (+b.im.dataset.i || 0));
+    const {im, done} = IMGQ.wait.shift(); if (!im.isConnected){ done(); continue; }   // 다른 화로 넘어갔으면 건너뛴다
+    IMGQ.run++; loadImg0(im).catch(() => {}).finally(() => { IMGQ.run--; done(); imgPump(); });
+  }
+}
+async function loadImg0(im){
   if (!im.getAttribute('src') && im.dataset.i){ const it = curImgs[+im.dataset.i]; if (it) im.src = await imgSrc(it); }
   if (im.getAttribute('src') && !im.complete) await new Promise(res => { im.addEventListener('load', res, {once:true}); im.addEventListener('error', res, {once:true}); });
   im.style.minHeight = '';
