@@ -67,6 +67,13 @@ npm run dist         # 윈도우 설치 파일 → desktop/dist/ (리눅스에�
 - 구글 클라우드 콘솔(같은 클라이언트): 승인된 JavaScript 원본 `https://xoqls0720.github.io`, 승인된 리디렉션 URI `http://127.0.0.1:53682/`.
 - 시험: `node tests/run.cjs gstart`
 
+## 구글 드라이브 작품 폴더 (15-sources.js)
+
+- 폰에서 PC 없이 읽는 길: 서재를 `G:\내 드라이브\노벨리스트` 에 두고(`D:
+ovel\드라이브_올리기.ps1` 이 복사) 웹 버전에서 '폴더 연결 → 구글 드라이브'로 그 폴더를 잇는다. 경로가 `노벨리스트/웹툰/작품` 이라 작품 열쇠가 PC 와 같아서 진도가 이어진다.
+- 목록: 폴더 40개씩 묶어 묻는다(`'a' in parents or 'b' in parents`, parents 로 가름). 폴더 2천 개도 요청 수십 번. 한 번 만든 목록은 `dcache` 의 `__idx:<연결 id>`.
+- 큰 EPUB·zip·영상: `rangeUrl`/`streamUrl` 이 `files/<id>?alt=media&access_token=` 주소라 RangeZip·<video> 가 필요한 구간만 읽는다(토큰이 바뀌면 rangeUrl 이 새로 받는다).
+
 ## OneDrive
 
 `sync.backend` 가 `od` 이면 09-sync.js 의 `gdList/gdPut/gdGet/gdDel` 이 23-onedrive.js 의 같은 모양 함수로 넘어가요(합치는 규칙은 하나). 맞추기 파일은 OneDrive `앱/Novelist`(approot)에만 쓰고, 작품 폴더는 `Files.Read` 로 읽기만 해요.

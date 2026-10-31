@@ -18,9 +18,9 @@ async function expandZips(list){
     if (!/\.zip$/i.test(f.name)){ out.push(f); continue; }
     toast(`${f.name} 푸는 중…`);
     // 폴더·PC 서재의 zip: 목록만 읽고, 그림은 볼 때 그 부분만 (수백 MB 를 통째로 받지 않는다)
-    if (f.streamUrl){
+    if (f.rangeUrl || f.streamUrl){
       try{
-        const zip = await RangeZip.open(f.streamUrl, f.size);
+        const zip = await RangeZip.open(f.rangeUrl || f.streamUrl, f.size);
         const base = relPath(f).replace(/\.zip$/i, '');
         const dir = base.includes('/') ? base.slice(0, base.lastIndexOf('/')+1) : '';
         const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
@@ -232,9 +232,11 @@ function renderLib(){
 // 큰 zip 을 구간(Range) 요청으로 읽는 가벼운 읽개. JSZip 과 같은 모양(zip.file(이름).async('string'|'blob'))만 갖춘다.
 // 그림은 보통 압축 없이(store), 글(xhtml)은 deflate 로 들어 있다. ZIP64(4GB 넘는 zip)도 읽는다.
 const RangeZip = {
+  // url: 주소 또는 주소를 돌려주는 함수(구글 드라이브처럼 토큰이 바뀌는 곳은 읽을 때마다 새로)
   async open(url, size){
-    const get = async (a, b) => { const r = await fetch(url, {headers: {Range: `bytes=${a}-${b}`}}); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status); return new Uint8Array(await r.arrayBuffer()); };
-    if (!size){ const r = await fetch(url, {headers: {Range: 'bytes=0-0'}}); size = +((r.headers.get('content-range') || '').split('/')[1] || 0); }
+    const at = async () => typeof url === 'function' ? await url() : url;
+    const get = async (a, b) => { const r = await fetch(await at(), {headers: {Range: `bytes=${a}-${b}`}}); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status); return new Uint8Array(await r.arrayBuffer()); };
+    if (!size){ const r = await fetch(await at(), {headers: {Range: 'bytes=0-0'}}); size = +((r.headers.get('content-range') || '').split('/')[1] || 0); }
     const tailN = Math.min(size, 66000); const tail = await get(size - tailN, size - 1); const dv = new DataView(tail.buffer);
     let e = -1; for (let i = tailN - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50){ e = i; break; }
     if (e < 0) throw new Error('zip 이 아니에요');
@@ -294,7 +296,7 @@ async function readEpub(file){
   if (epubCache.has(file)) return epubCache.get(file);
   // 내 컴퓨터 폴더의 EPUB 은 통째로 읽지 않고 필요한 부분만(목차, 그 회차 그림) 디스크에서 바로 읽는다.
   // 수 GB 짜리 웹툰 EPUB 도 열리고, 여는 데 걸리는 시간도 크기와 상관없다.
-  const zip = file.lanZip ? await LanZip.open(file) : file.streamUrl ? await RangeZip.open(file.streamUrl, file.size) : await JSZip.loadAsync(await realBlob(file));
+  const zip = file.lanZip ? await LanZip.open(file) : file.rangeUrl ? await RangeZip.open(file.rangeUrl, file.size) : file.streamUrl ? await RangeZip.open(file.streamUrl, file.size) : await JSZip.loadAsync(await realBlob(file));
   const container = await zip.file('META-INF/container.xml').async('string');
   const opfPath = container.match(/full-path="([^"]+)"/)[1];
   const base = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/')+1) : '';

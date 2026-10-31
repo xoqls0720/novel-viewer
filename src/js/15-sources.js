@@ -20,32 +20,41 @@ const DRIVE_FOLDER = 'application/vnd.google-apps.folder';
 async function driveList(q){
   const out = []; let page = '';
   do{
-    const r = await gdFetch(`${GD_API}/files?q=${encodeURIComponent(q)}&fields=nextPageToken,files(id,name,mimeType,size,modifiedTime,shortcutDetails)&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true${page ? '&pageToken=' + page : ''}`);
+    const r = await gdFetch(`${GD_API}/files?q=${encodeURIComponent(q)}&fields=nextPageToken,files(id,name,mimeType,size,modifiedTime,shortcutDetails,parents)&pageSize=1000&supportsAllDrives=true&includeItemsFromAllDrives=true${page ? '&pageToken=' + page : ''}`);
     const j = await r.json(); out.push(...(j.files || [])); page = j.nextPageToken || '';
   } while (page);
   return out;
 }
 // 폴더 아래를 모두 훑어 파일 목록(경로 포함)을 만든다. 한 번 만든 목록은 기기에 저장해 다음엔 바로 쓴다.
+// 폴더 40개를 한 번에 묻는다(parents 로 어느 폴더 것인지 가른다): 폴더 2천 개 서재도 요청 수십 번이면 끝난다
 async function driveIndex(src, onProgress){
-  const files = [], queue = [{id: src.folderId, path: src.name}], seen = new Set();
-  let folders = 0;
-  const worker = async () => {
-    while (queue.length){
-      const {id, path} = queue.shift(); if (seen.has(id)) continue; seen.add(id); folders++;
-      for (const f of await driveList(`'${id}' in parents and trashed=false`)){
-        const target = f.mimeType === 'application/vnd.google-apps.shortcut' ? f.shortcutDetails : null;
-        if (f.mimeType === DRIVE_FOLDER || target?.targetMimeType === DRIVE_FOLDER){ queue.push({id: target?.targetId || f.id, path: path + '/' + f.name}); continue; }
-        if (target || f.mimeType.startsWith('application/vnd.google-apps.')) continue;   // 구글 문서 등은 건너뛴다
-        files.push({id: f.id, rel: path + '/' + f.name, size: +f.size || 0, mtime: Date.parse(f.modifiedTime) || 0});
+  const files = [], seen = new Set(); let level = [{id: src.folderId, path: src.name}], folders = 0;
+  while (level.length){
+    const next = [], groups = []; for (let i = 0; i < level.length; i += 40) groups.push(level.slice(i, i + 40));
+    let gi = 0;
+    const worker = async () => {
+      while (gi < groups.length){
+        const g = groups[gi++].filter(x => !seen.has(x.id)); if (!g.length) continue; g.forEach(x => seen.add(x.id)); folders += g.length;
+        const pathOf = new Map(g.map(x => [x.id, x.path]));
+        for (const f of await driveList('(' + g.map(x => `'${x.id}' in parents`).join(' or ') + ') and trashed=false')){
+          const parent = (f.parents || []).find(p => pathOf.has(p)); if (!parent) continue; const path = pathOf.get(parent);
+          const target = f.mimeType === 'application/vnd.google-apps.shortcut' ? f.shortcutDetails : null;
+          if (f.mimeType === DRIVE_FOLDER || target?.targetMimeType === DRIVE_FOLDER){ next.push({id: target?.targetId || f.id, path: path + '/' + f.name}); continue; }
+          if (target || f.mimeType.startsWith('application/vnd.google-apps.')) continue;   // 구글 문서 등은 건너뛴다
+          files.push({id: f.id, rel: path + '/' + f.name, size: +f.size || 0, mtime: Date.parse(f.modifiedTime) || 0});
+        }
+        onProgress?.(folders, files.length);
       }
-      onProgress?.(folders, files.length);
-    }
-  };
-  await Promise.all([worker(), worker(), worker(), worker()]);
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    level = next;
+  }
   // 같은 이름이 겹치면 뒤에 번호를 붙인다
   const used = new Set(); for (const f of files){ let r = f.rel, k = 2; while (used.has(r)) r = f.rel.replace(/(\.[^./]+)?$/, ` (${k++})$1`); f.rel = r; used.add(r); }
   return files;
 }
+// 드라이브 파일을 구간(Range)으로 읽는 주소: 토큰을 주소에 붙여서 <video> 와 구간 읽기가 그대로 쓴다 (토큰은 한 시간짜리)
+const driveMediaUrl = id => `${GD_API}/files/${id}?alt=media&supportsAllDrives=true&access_token=${encodeURIComponent(GD.token)}`;
 // 한 번 받은 파일은 기기(IndexedDB 'dcache')에 남겨서 다음엔 인터넷 없이도 연다
 const DRV_INFLIGHT = new Map();
 function driveBlob(f){
@@ -66,7 +75,11 @@ async function driveFiles(src, refresh){
     idx = await driveIndex(src, (d, n) => srcStatus(src.id, `목록 받는 중… 폴더 ${d}개 · 파일 ${n}개`));
     try{ await idb.tx('readwrite', s => s.put({id: '__idx:' + src.id, files: idx, t: Date.now()}), 'dcache'); }catch{}
   }
-  return idx.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true}));
+  return idx.map(f => { const lf = Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true});
+    // 큰 EPUB·zip 은 필요한 구간만 (통째로 받지 않는다). 영상도 이 주소로 흘려 본다
+    lf.rangeUrl = async () => { await gdToken(false); return driveMediaUrl(f.id); };
+    Object.defineProperty(lf, 'streamUrl', {get: () => GD.token && Date.now() < GD.exp - 60000 ? driveMediaUrl(f.id) : undefined});
+    return lf; });
 }
 
 /* ---------- 불러오기 ---------- */

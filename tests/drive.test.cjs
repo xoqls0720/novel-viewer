@@ -12,7 +12,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   const D = {root: [{id: 'F1', name: '노벨', mimeType: 'application/vnd.google-apps.folder'}, {id: 'F9', name: '웹툰', mimeType: 'application/vnd.google-apps.folder'}],
     F1: [{id: 'F2', name: '화산귀환', mimeType: 'application/vnd.google-apps.folder'}, {id: 'D1', name: '메모', mimeType: 'application/vnd.google-apps.document'}],
     F2: [{id: 'T1', name: '0001 ep.txt', mimeType: 'text/plain', size: '40', modifiedTime: '2026-10-01T00:00:00Z'}, {id: 'T2', name: '0002 ep.txt', mimeType: 'text/plain', size: '40', modifiedTime: '2026-10-01T00:00:00Z'}]};
-  const MEDIA = {T1: '“거기 서라.”\n\n드라이브에서 온 1화.', T2: '드라이브에서 온 2화.'}; let mediaHits = 0, online = true;
+  const MEDIA = {T1: '“거기 서라.”\n\n드라이브에서 온 1화.', T2: '드라이브에서 온 2화.'}; let mediaHits = 0, online = true, folderQs = 0;
   await ctx.route('https://www.googleapis.com/drive/v3/files**', r => {
     if (!online) return r.abort();
     const u = new URL(r.request().url()); const auth = r.request().headers()['authorization'];
@@ -20,8 +20,9 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
     const m = u.pathname.match(/files\/(\w+)$/);
     if (m && u.searchParams.get('alt') === 'media'){ mediaHits++; return r.fulfill({status: 200, contentType: 'text/plain', body: MEDIA[m[1]]}); }
     const q = u.searchParams.get('q') || ''; if (!q.includes(' in parents') && !q.includes('sharedWithMe')) return r.fulfill({status: 200, contentType: 'application/json', body: '{"files":[]}'});
-    const id = (q.match(/'(\w+)' in parents/) || [])[1];
-    let files = D[id] || []; if (q.includes("mimeType='application/vnd.google-apps.folder'")) files = files.filter(f => f.mimeType.endsWith('folder'));
+    // 폴더 여러 개를 한 번에 물어도 (parents 로 어느 폴더 것인지 알려 준다)
+    const ids = [...q.matchAll(/'(\w+)' in parents/g)].map(m => m[1]); folderQs++;
+    let files = ids.flatMap(id => (D[id] || []).map(f => ({...f, parents: [id]}))); if (q.includes("mimeType='application/vnd.google-apps.folder'")) files = files.filter(f => f.mimeType.endsWith('folder'));
     r.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({files})});
   });
   await p.goto('https://nv.test/index.html'); await p.waitForTimeout(800);
