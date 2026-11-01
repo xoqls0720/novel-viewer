@@ -90,7 +90,7 @@ async function mockRoutes(ctx){
   console.log('A state uploaded:', APPROOT.has('state.json'));
   // A 에서 작품을 읽고, 떠오른 문장 하나 남기고 맞춘다
   await A.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await A.waitForTimeout(800);
-  await A.evaluate(() => nvGo('lib')); await A.click('.grid .card:has-text("hwasan")'); await A.waitForTimeout(600);
+  await A.evaluate(() => nvGo('lib')); await A.click(':is(.grid,.shelf) .card:has-text("hwasan")'); await A.waitForTimeout(600);
   await A.click('#epBtn'); await A.click('#epList .it >> nth=2'); await A.waitForTimeout(500);
   await A.click('#tgTool').catch(() => {}); await A.evaluate(() => { document.querySelector('.tabs [data-tab=notes]').click(); });
   await A.fill('#ideaIn', '검은 눈이 내리는 성문 #장면'); await A.click('#ideaAdd'); await A.waitForTimeout(300);
@@ -120,16 +120,16 @@ async function mockRoutes(ctx){
   const srcs = await B.evaluate(() => JSON.parse(localStorage.getItem('nv.lib.sources') || '[]').map(s => s.kind + ':' + s.name));
   console.log('B sources:', srcs, '| delta calls:', stats.delta);
   await B.click('#linkClose').catch(() => {}); await B.click('#tgSide').catch(() => {}); await B.waitForTimeout(300);
-  const names = await B.$$eval('#lib .grid .card .t', e => e.map(x => x.textContent));
+  const names = await B.$$eval('#lib :is(.grid,.shelf) .card .t', e => e.map(x => x.textContent));
   console.log('B works:', names.sort());
-  await B.evaluate(() => { const c = [...document.querySelectorAll('#lib .grid .card')].find(x => x.textContent.includes('화산')); c.click(); }); await B.waitForTimeout(1200);
+  await B.evaluate(() => { const c = [...document.querySelectorAll('#lib :is(.grid,.shelf) .card')].find(x => x.textContent.includes('화산')); c.click(); }); await B.waitForTimeout(1200);
   console.log('B novel text:', /청명이 돌아왔다/.test(await B.textContent('#reader')), '| ep:', await B.textContent('#epTitle'));
   stats.downloads = 0; stats.batch = 0; stats.batchItems = 0;
-  await B.evaluate(() => { const c = [...document.querySelectorAll('#lib .grid .card')].find(x => x.textContent.includes('미생')); c.click(); }); await B.waitForTimeout(2500);
+  await B.evaluate(() => { const c = [...document.querySelectorAll('#lib :is(.grid,.shelf) .card')].find(x => x.textContent.includes('미생')); c.click(); }); await B.waitForTimeout(2500);
   console.log('B webtoon imgs:', await B.$$eval('#reader .webtoon img', e => e.length), '| batched:', stats.batch, 'batches for', stats.batchItems, 'urls | downloads:', stats.downloads);
   // B 를 다시 켜면(웹은 다시 쓰는 토큰으로) 로그인 창 없이 맞춘다
   const before = stats.auth.length; await B.reload(); await B.waitForTimeout(4500);
-  console.log('B reload: refresh used', stats.refresh > 0, '| new login page:', stats.auth.length - before, '| works after reload:', (await B.$$eval('#lib .grid .card', e => e.length)) >= 2);
+  console.log('B reload: refresh used', stats.refresh > 0, '| new login page:', stats.auth.length - before, '| works after reload:', (await B.$$eval('#lib :is(.grid,.shelf) .card', e => e.length)) >= 2);
   // 연결 끊기
   await B.click('#tgTool').catch(() => {}); await B.evaluate(() => document.querySelector('.tabs [data-tab=set]').click()); await B.click('#odOut'); await B.waitForTimeout(300);
   console.log('B logout:', await B.evaluate(() => !localStorage.getItem('nvod.rt')), await B.isVisible('#odConnect'));

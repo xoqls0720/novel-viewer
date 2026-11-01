@@ -8,7 +8,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   const errs = []; p.on('pageerror', e => errs.push('pageerror ' + e.message)); p.on('console', m => m.type() === 'error' && !/ERR_|net::/.test(m.text()) && errs.push('console ' + m.text()));
   await p.goto(APP); await p.waitForTimeout(1200);
   await p.setInputFiles('#pickFolder', path.join(DATA, 'vt2')); await p.waitForTimeout(800);
-  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(800);
+  await p.evaluate(() => nvGo('lib')); await p.click(':is(.grid,.shelf) .card:has-text("hwasan")'); await p.waitForTimeout(800);
   if (await p.isVisible('#coachOk')) await p.click('#coachOk');
   const mainW = () => p.$eval('main', m => Math.round(m.getBoundingClientRect().width));
   // 옆 서재 칸은 없다: 읽기 화면은 메뉴 옆 전체, 도구를 열면 그만큼만 줄고, 닫으면 돌아온다

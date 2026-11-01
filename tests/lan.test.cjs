@@ -83,15 +83,15 @@ const { createLanServer } = require(path.join(ROOT, 'desktop', 'lan-server.js'))
   const b = await chromium.launch(); const ctx = await b.newContext({viewport: {width: 820, height: 1180}, hasTouch: true}); const p = await ctx.newPage();
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(base); await p.waitForTimeout(2500);
-  console.log('guest works:', (await p.$$eval('#lib .grid .card .t', e => e.map(x => x.textContent))).sort().join(','));
+  console.log('guest works:', (await p.$$eval('#lib :is(.grid,.shelf) .card .t', e => e.map(x => x.textContent))).sort().join(','));
   console.log('guest hides add buttons:', await p.$eval('#lpActs', el => getComputedStyle(el).display) === 'none');
-  await p.tap('.grid .card:has-text("hwasan")'); await p.waitForTimeout(1500);
+  await p.tap(':is(.grid,.shelf) .card:has-text("hwasan")'); await p.waitForTimeout(1500);
   console.log('guest novel text:', /청명|거기 서라/.test(await p.textContent('#reader')));
-  await p.evaluate(() => nvGo('lib')); await p.tap('.grid .card:has-text("misaeng")'); await p.waitForTimeout(2000);
+  await p.evaluate(() => nvGo('lib')); await p.tap(':is(.grid,.shelf) .card:has-text("misaeng")'); await p.waitForTimeout(2000);
   console.log('guest webtoon imgs:', await p.$$eval('#reader .webtoon img', e => e.length));
   // 다시 열어도(새로 고침) 저절로 다시 불러온다
   await p.reload(); await p.waitForTimeout(2500);
-  console.log('guest reload works:', (await p.$$eval('#lib .grid .card', e => e.length)) >= 3, '| list kept on phone:', await p.evaluate(() => new Promise(ok => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('dcache').objectStore('dcache').get('lanscan:/t/tok123'); g.onsuccess = () => ok(!!g.result?.list?.length && !!g.result.etag); g.onerror = () => ok(false); }; })));
+  console.log('guest reload works:', (await p.$$eval('#lib :is(.grid,.shelf) .card', e => e.length)) >= 3, '| list kept on phone:', await p.evaluate(() => new Promise(ok => { const r = indexedDB.open('nv'); r.onsuccess = () => { const g = r.result.transaction('dcache').objectStore('dcache').get('lanscan:/t/tok123'); g.onsuccess = () => ok(!!g.result?.list?.length && !!g.result.etag); g.onerror = () => ok(false); }; })));
   const tc1 = await fetch(tok + 'lan/trcache?k=' + encodeURIComponent('만화/a|1화|001.jpg')).then(r => r.json());
   const tc2 = await fetch(tok + 'lan/trcache', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({keys: ['만화/a|1화|001.jpg', 'x']})}).then(r => r.json());
   console.log('trcache:', tc1.image, JSON.stringify(tc2), (await fetch(tok + 'lan/trcache?k=none')).status);

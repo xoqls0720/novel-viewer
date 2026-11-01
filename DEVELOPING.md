@@ -141,14 +141,49 @@ ovel` 의 `다운로더`. 찾으면 `dlDir` 로 기억한다(서재를 G: 로 �
 - `translator/server.py` — `127.0.0.1:8790`. `POST /page {image(base64), lang, model, context}` → 번역해 그린 그림(base64 JPEG)과 대사 목록. `POST /video {path}` → 작업 번호, `GET /job?id=` 로 진행·결과(VTT). 결과는 `cache/` 에 남고, 영상 자막은 영상 옆 `이름.ko.vtt` 로도 저장한다.
   - 만화 한 쪽: 글자 찾기(긴 웹툰은 겹쳐 잘라서) → 블록을 글자 덩어리까지 넓히고 겹친 블록 합치기 → 원문 읽기(일본어 manga-ocr, 영어·중국어 RapidOCR, 말풍선마다 언어 판별) → 읽는 순서(일본어는 오른쪽부터) → 한 쪽 통째로 + 앞 쪽 문맥 번역(Ollama JSON, 가나·영어가 남은 줄은 앞뒤 대사와 다시) → 원문 지우기(고른 바탕은 그 색, 그림 위는 LaMa) → 말풍선 찾기(테두리를 벽으로 두껍게 해 채우기) → 남은 글자 조각 지우기 → 말풍선 안 직사각형에 맑은 고딕 굵게(크기·줄바꿈 자동, 문장부호 줄머리 금지).
   - 영상: faster-whisper large-v3-turbo(GPU) → 25줄씩 문맥을 이어 번역.
+  - 화면 자막(입힌 자막): 소리가 없거나 말소리를 못 찾았거나 '화면 자막 읽기'(`mode: 'ocr'`)면 `hardsub_items` — 0.5초마다 화면 아래 38%·위 20% 띠가 바뀐 때만 RapidOCR(일본어는 manga-ocr 로 다시)로 읽는다. 숫자·시각·한 글자 조각, 영상의 40% 넘게 남아 있는 줄(로고)은 버리고, 60% 넘게 같은 글자는 한 줄로 묶어 가장 많이 읽힌 글자를 쓴다. 시험 영상(ffmpeg drawtext, 소리 없음)에서 두 줄을 시간 맞춰 옮기는 것을 확인했다(`VERSION` 17).
   - 그리는 법을 바꾸면 `VERSION` 을 올린다(캐시 열쇠).
 - 번역 AI 고르기: 화면이 `provider: {id, key, model, base, region}` 를 같이 보낸다. `local`(Ollama) 외에 gemini·groq·openrouter·cerebras·mistral·github(OpenAI 형식), claude(anthropic SDK), deepl·microsoft(기계 번역), custom(OpenAI 형식 주소). 거절·한도·오류면 그 쪽은 Ollama 가 옮기고 결과의 `by` 에 적는다. 성인 작품은 `set.trAdultCloud` 를 켜지 않으면 늘 `local`. 키는 `tr.key.*`·`gemKey`·`grKey`·`apiKey` 에 기기에만(백업·동기화 제외). `POST /models {provider}` 로 모델 목록, `POST /subs {vtt, provider}` 로 자막 파일 번역.
 - desktop/main.js 의 `tr-status`·`tr-install`·`tr-start` 가 설치·켜기를 맡고, 화면(26-media.js)은 8790 으로 바로 요청한다. 설치 파일에는 `extraResources` 로 `resources/translator/*.py` 가 들어간다.
+
+## 성인 웹툰 줄거리 (21-webtoon-ai.js)
+
+- 톤(`#wtAdultTone`, 성인일 때만): 치정(진지·끈적) / 뽕빨(가볍고 과장된 개그 + 노골). `#wtTone` 은 원래 있던 '컷 느낌'이라 이름이 다르다.
+- `WT_NATURAL`: AI 티 나는 말(그 순간·마치 ~처럼·하나가 되었다 등) 금지, 짧은 구어체, 끊기는 대사, 설명 대신 장면. 줄거리·대본 지침 모두에 붙는다.
+- 문체 참고(`#wtRef`): 내 서재의 글 작품(성인 먼저)에서 앞·가운데·뒤 화를 읽어 대사·소리·말줄임이 많은 대목 두 군데(700자씩)를 '말투·리듬만 배우고 베끼지 말 것'으로 붙인다(`wtRefText`, 작품마다 한 번만 읽는다).
+- '맛깔나게 다시 쓰기'(`wtSynRun('spice')`): 같은 사건·인물·순서로 다시 쓴다. 이전 줄거리는 `WT.proj.synPrev`.
+- 바꿀 수 없는 선: 모든 인물 20세 이상, 미성년 연상 표현 금지(`adultGuard` 도 막는다), 실존 인물 금지. 시험: `node tests/run.cjs wtadult`
+
+## 보는 그림체로 노벨AI (30-style-pick.js)
+
+- 노벨AI 탭 '지금 보는 그림체 가져오기': 읽는 화면 가운데에 보이는 그림을 1024px JPEG 로 줄여 노벨AI 탭의 AI(`#naiProv`)에게 보이고, 그림체 태그만 받는다(`SP_SYS`). 내용 태그(인물 수·머리·옷·배경 등)가 섞이면 `SP_CONTENT` 로 걸러 낸다. 확인을 받고 하우스 스타일 칸에 `masterpiece, best quality, very aesthetic, …` 로 넣고 그림체를 '직접 쓰기'로 바꾼다. 바꾸기 전 칸은 `set.naiStyle.prev`(되돌리기), 가져온 것은 `naiStylePicks`(10개).
+- 그림을 볼 수 있는 AI 여야 한다: Claude·Gemini, Ollama 는 qwen2.5vl 같은 그림 모델. 시험: `node tests/run.cjs stylepick`
+
+## 영상 보기 (26-media.js)
+
+- 폰: 영상 아래에 제목·시간 한 줄, 단추는 가로로 넘겨 보기(예전엔 단추 글자가 세로로 쪼개졌다).
+- 드라이브 영상: 서비스 워커가 아직 화면을 맡지 않았으면 4초까지 기다린 뒤 `./__drv/` 로 흘려 본다(바로 통째로 받으면 멈춘 것처럼 보였다).
+- 마리망(myreadingmanga): 주소로 받기는 토끼가 받는다. 제목·작가 검색은 Cloudflare 사람 확인을 자동으로 넘겨야 해서 만들지 않았다.
 
 ## 큰 EPUB · 웹툰 화 나누기
 
 - 내 컴퓨터 폴더의 EPUB 은 `RangeZip`(02-library.js)이 `app://novel/__disk/` 에 구간(Range) 요청을 보내 필요한 부분만 읽는다. 수 GB 웹툰 EPUB(JSZip 으로는 2GB 넘으면 못 읽던 것)도 바로 열린다. 구글 드라이브·OneDrive·끌어다 놓은 파일은 예전처럼 JSZip.
 - 웹툰 EPUB 은 목차(nav.xhtml·toc.ncx)대로 `epubpart` 회차로 나눈다. 만화 권 EPUB 은 권 그대로.
+
+## 서재 정리 (02-library.js · 26-media.js)
+
+- **전체** 칸(이름순·찾기 없음)은 종류마다 가로 한 줄(`.cont.shelf`, 14개 + '+N'): 소설 · 웹툰 · 만화 · 영상 순. 줄 제목을 누르면 그 종류 칸으로(`libGoKind`). 다른 종류 칸은 그 종류만 격자로.
+- **성인** 칸은 다시 성인 만화(웹툰 포함) · 성인 영상 · 성인 소설로 나뉜다(`adultSub`, `set.libAdultSub`). 영상은 영상끼리만.
+- **작가 모음**(`w.author`): 성인 폴더의 작가 묶음(성인/만화/작가/글), 또는 회차 폴더 이름의 절반 넘게 '[작가] 제목' 꼬리표가 붙은 묶음. 종류 칸에서 '작가별 모음'으로 따로 모이고, 누르면 `authorPick` 미리보기(표지는 보일 때만 받는다)에서 고른 작품만 연다. 시험: `node tests/run.cjs author`
+- 이름으로 성인: `ADULT_NAME` 에 메스가키·메스카키·mesugaki·말포이.
+- 폰: 서재 머리 단추(폴더 열기·파일·폴더 연결)를 한 줄로 작게.
+- 시험에서 카드 찾기는 `:is(.grid,.shelf) .card` (전체 칸은 줄, 다른 칸은 격자).
+
+## 독서 기록 · 사전 · EPUB 내보내기 (29-reading.js · 13-studio-tools.js)
+
+- 독서 기록: 읽는 화면이 보이고 2분 안에 넘기거나 누른 동안만 15초씩 센다. 1분마다 `rstat.<기기 꼬리표>`(`nv.devTag`)에 {days, works} 로 적고(기기끼리 맞춰지되 서로 덮지 않게), 홈의 '독서 기록' 카드가 모두 더해 오늘·7일·연속·4주 달력·많이 읽은 작품(성인 제외)을 보인다.
+- 사전: 글을 고르면 나오는 띠의 '사전' → 네이버 사전 통합 검색.
+- 집필실 '작품 전체 epub'(`saveEpub`): EPUB 3(mimetype 맨 앞·압축 없음, nav 목차). 시험: `node tests/run.cjs reading` (만든 EPUB 을 이 뷰어로 다시 열어 화 2개 확인).
 
 ## 새 회차 · 정렬 (02-library.js)
 

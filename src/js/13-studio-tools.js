@@ -362,6 +362,24 @@ async function saveDocx(name, blocks){
 }
 $('#stExpDocx').onclick = () => { stFlush(); saveDocx(`${safeName(stProj()?.name || '작품')}_${safeName($('#stTitle').value || '회차')}.docx`, epBlocks($('#stExpTitle').checked ? $('#stTitle').value : '', $('#stText').value)); };
 $('#stExpDocxAll').onclick = () => { stFlush(); const p = stProj(); const blocks = []; for (const e of stEps()) blocks.push(...epBlocks(e.title, stEpText(e.id))); saveDocx(`${safeName(p.name)}_전체.docx`, blocks); };
+// EPUB: 작품 전체를 전자책 한 권으로 (스크리브너의 '컴파일'처럼). 리디·구글 플레이 북·애플 북스·이 뷰어에서 열린다
+async function saveEpub(name, title, author, chapters){
+  const zip = new JSZip(); const id = 'urn:uuid:' + (crypto.randomUUID?.() || uid());
+  zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
+  zip.file('META-INF/container.xml', '<?xml version="1.0" encoding="UTF-8"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+  const css = 'body{font-family:serif;line-height:1.8;margin:0 5%;word-break:keep-all}h1{font-size:1.3em;text-align:center;margin:2em 0 1.5em}p{margin:0 0 .8em;text-indent:1em}';
+  zip.file('OEBPS/style.css', css);
+  const page = (t, body) => `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="ko" xml:lang="ko"><head><meta charset="utf-8"/><title>${xmlEsc(t)}</title><link rel="stylesheet" href="style.css"/></head><body>${body}</body></html>`;
+  chapters.forEach((c, i) => zip.file(`OEBPS/c${i + 1}.xhtml`, page(c.title, `<h1>${xmlEsc(c.title)}</h1>` + stExport(c.text, '').split('\n').filter(l => l.trim()).map(l => `<p>${xmlEsc(l)}</p>`).join(''))));
+  zip.file('OEBPS/nav.xhtml', page('목차', `<nav epub:type="toc" id="toc"><h1>목차</h1><ol>${chapters.map((c, i) => `<li><a href="c${i + 1}.xhtml">${xmlEsc(c.title)}</a></li>`).join('')}</ol></nav>`));
+  zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bid" xml:lang="ko"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="bid">${id}</dc:identifier><dc:title>${xmlEsc(title)}</dc:title><dc:creator>${xmlEsc(author || '')}</dc:creator><dc:language>ko</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="css" href="style.css" media-type="text/css"/>${chapters.map((_, i) => `<item id="c${i + 1}" href="c${i + 1}.xhtml" media-type="application/xhtml+xml"/>`).join('')}</manifest><spine>${chapters.map((_, i) => `<itemref idref="c${i + 1}"/>`).join('')}</spine></package>`);
+  const blob = await zip.generateAsync({type: 'blob', mimeType: 'application/epub+zip'});
+  const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  toast('전자책(EPUB)으로 저장했어요');
+  return blob;
+}
+window.nvSaveEpub = saveEpub;   // 시험용
+$('#stExpEpubAll') && ($('#stExpEpubAll').onclick = () => { stFlush(); const p = stProj(); saveEpub(`${safeName(p.name)}.epub`, p.name, store.get('st.author', ''), stEps().map(e => ({title: e.title || '회차', text: stEpText(e.id)}))); });
 // PDF: 인쇄 화면을 띄워 'PDF로 저장'을 고르면 된다(컴퓨터·아이폰·아이패드 공통)
 $('#stPrint').onclick = () => {
   stFlush(); const title = $('#stTitle').value || ''; const text = stExport($('#stText').value, '');

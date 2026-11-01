@@ -27,7 +27,12 @@ async function renderVideo(ep, pos = {}){
   const v = document.createElement('video'); v.controls = true; v.playsInline = true; v.preload = 'metadata'; v.tabIndex = -1;
   const f = ep.file;
   // 드라이브 영상: 서비스 워커를 거쳐 구간으로 흘려 본다(통째로 받으면 폰이 멈춘다). 토큰이 끝났으면 새로 받고 다시
-  let src = f.streamUrl; if (!src && f.rangeUrl){ try{ await gdToken(false); src = f.streamUrl; }catch{} }
+  let src = f.streamUrl;
+  if (!src && f.rangeUrl){
+    // 앱을 막 연 참이라 서비스 워커가 아직 이 화면을 맡지 않았으면 잠깐(4초까지) 기다린다 — 안 그러면 영상을 통째로 받느라 멈춘 것처럼 보인다
+    if ('serviceWorker' in navigator && !navigator.serviceWorker.controller) await Promise.race([new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, {once: true})), new Promise(r => setTimeout(r, 4000))]);
+    try{ await gdToken(false); src = f.streamUrl; }catch{}
+  }
   v.src = src || url(await realBlob(f));
   v.playbackRate = store.get('set.vRate', 1);
   // 그 글의 표지 그림을 재생 전 화면으로 (만화 칸에 따로 나오던 영상 표지)
@@ -35,15 +40,16 @@ async function renderVideo(ep, pos = {}){
   box.append(v);
   // 위 줄: 제목 · 10초 뒤로 · 재생 · 10초 앞으로 · 속도 · 자막 · 번역 · 전체 화면 · 다음
   const bar = document.createElement('div'); bar.className = 'vinfo';
-  bar.innerHTML = `<b></b><span class="vt hint">0:00 / 0:00</span><span style="flex:1"></span>
+  bar.innerHTML = `<b></b><span class="vt hint">0:00 / 0:00</span><span style="flex:1"></span><div class="vbtns">
     <button data-a="back" title="10초 뒤로 (← 또는 J)">« 10초</button>
     <button data-a="play" title="재생·멈춤 (스페이스 또는 K)">▶</button>
     <button data-a="fwd" title="10초 앞으로 (→ 또는 L)">10초 »</button>
     <select id="vRate" title="재생 속도">${[0.5, 0.75, 1, 1.25, 1.5, 2].map(x => `<option value="${x}">${x}배</option>`).join('')}</select>
     <select id="vSub" title="자막" hidden></select>
-    <button data-a="tr" title="이 영상을 한국어 자막으로 (내 컴퓨터 AI, 무료)">한국어 자막 만들기</button>
+    <button data-a="tr" title="이 영상을 한국어 자막으로 (내 컴퓨터 AI, 무료). 소리가 없으면 화면 자막을 읽어요">한국어 자막 만들기</button>
+    <button data-a="ocr" title="화면에 입혀진 외국어 자막을 읽어 한국어 자막으로 (소리가 있어도)">화면 자막 읽기</button>
     <button data-a="full" title="전체 화면 (Enter)">전체 화면</button>
-    <button data-a="next" title="다음 영상 ( ] )">다음</button>`;
+    <button data-a="next" title="다음 영상 ( ] )">다음</button></div>`;
   bar.querySelector('b').textContent = ep.label || ep.name;
   bar.querySelector('#vRate').value = String(v.playbackRate);
   bar.onclick = e => {
@@ -53,6 +59,7 @@ async function renderVideo(ep, pos = {}){
     else if (a === 'full') (document.fullscreenElement ? document.exitFullscreen() : v.requestFullscreen?.());
     else if (a === 'next') openEp(curEp + 1);
     else if (a === 'tr') translateVideo(ep, v, e.target.closest('button'));
+    else if (a === 'ocr') translateVideo(ep, v, e.target.closest('button'), 'ocr');
   };
   bar.querySelector('#vRate').onchange = e => { v.playbackRate = +e.target.value; store.set('set.vRate', v.playbackRate); };
   bar.querySelector('#vSub').onchange = e => { [...v.textTracks].forEach((t, i) => t.mode = i === +e.target.value ? 'showing' : 'disabled'); };
@@ -473,16 +480,17 @@ $('#reader').addEventListener('click', trMaybe);
 document.addEventListener('keydown', e => { if ((e.key === 'o' || e.key === 'O') && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && curImgs.some(it => it.trSrc)){ e.preventDefault(); trToggleShow(); } });
 
 /* 영상 */
-async function translateVideo(ep, video, btn){
+// mode: 'auto'(음성 → 말소리가 없으면 화면 자막) · 'ocr'(화면에 입힌 자막을 읽는다)
+async function translateVideo(ep, video, btn, mode = 'auto'){
   if (!ep) return;
-  if ((ep.subs || []).length) return translateSubs(ep, video, btn);   // 자막 파일이 있으면 그것을 옮긴다
+  if (mode !== 'ocr' && (ep.subs || []).length) return translateSubs(ep, video, btn);   // 자막 파일이 있으면 그것을 옮긴다
   const p = ep.file?.abs || (TRS !== 'http://127.0.0.1:8790' && ep.file?.lanRel ? 'lan:' + ep.file.lanRel : '');   // 폰·아이패드: PC 가 경로를 찾는다
-  if (!p){ trShow('영상', '<p>내 컴퓨터 폴더의 영상만 음성을 들어 자막을 만들 수 있어요.</p>'); return; }
+  if (!p){ trShow('영상', '<p>내 컴퓨터 폴더의 영상만 자막을 만들 수 있어요(PC 의 번역 엔진이 영상 파일을 읽어요).</p>'); return; }
   trShow('영상 자막', '<p class="hint">번역 엔진 준비 중…</p>');
   if (!(await trEnsure())) return;
   if (btn) btn.disabled = true;
   try{
-    const {id, error} = await fetch(TRS + '/video', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path: p, model: trModel('local'), provider: trProvCfg(), adult: isAdult(cur)})}).then(r => r.json());
+    const {id, error} = await fetch(TRS + '/video', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path: p, mode, lang: trLang(), model: trModel('local'), provider: trProvCfg(), adult: isAdult(cur)})}).then(r => r.json());
     if (!id) throw new Error(error || '시작하지 못했어요');
     for (;;){
       await new Promise(r => setTimeout(r, 1500));
@@ -579,7 +587,13 @@ window.nvDesktop?.onLibDlNew?.(() => linkDownloaderFolders());
 // 프로그램을 켤 때마다 '전체'로 돌아간다(누가 서재를 열어도 곤란하지 않게).
 const LIB_KINDS = [['all', '전체'], ['novel', '소설'], ['webtoon', '웹툰'], ['manga', '만화'], ['video', '영상'], ['adult', '성인']];
 let libKind = (() => { const k = store.get('set.libKind', 'all'); return k === 'adult' ? 'all' : k; })();
-const inKind = (w, k = libKind) => k === 'adult' ? isAdult(w) : !isAdult(w) && (k === 'all' || w.kind === k);
+// 성인 칸 안에서도 종류를 나눈다: 만화(웹툰 포함) · 영상 · 소설 — 영상은 영상끼리
+let adultSub = store.get('set.libAdultSub', 'manga');
+const ADULT_SUB = [['manga', '만화'], ['video', '영상'], ['novel', '소설']];
+const adultSubOf = w => w.kind === 'video' ? 'video' : w.kind === 'novel' ? 'novel' : 'manga';
+const inKind = (w, k = libKind) => k === 'adult' ? isAdult(w) && adultSubOf(w) === adultSub : !isAdult(w) && (k === 'all' || w.kind === k);
+window.libShelf = () => libKind === 'all';
+window.libGoKind = k => { libKind = k; store.set('set.libKind', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
 const allWorks = () => works;
 window.nvAllWorks = allWorks;
 const _renderLib0 = renderLib;
@@ -590,7 +604,9 @@ renderLib = function(){
 };
 function renderKinds(){
   const box = $('#libKinds'); if (!box) return;
-  const n = k => works.filter(w => inKind(w, k)).length;
+  const n = k => k === 'adult' ? works.filter(isAdult).length : works.filter(w => inKind(w, k)).length;
+  // 성인 칸의 고른 종류가 비었으면 있는 종류로
+  if (libKind === 'adult' && !works.some(w => isAdult(w) && adultSubOf(w) === adultSub)){ const s = ADULT_SUB.find(([k]) => works.some(w => isAdult(w) && adultSubOf(w) === k)); if (s){ adultSub = s[0]; return renderLib(); } }
   box.innerHTML = '';
   for (const [k, label] of LIB_KINDS){
     const c = n(k); if (k !== 'all' && !c) continue;   // 없는 종류는 칸을 만들지 않는다
@@ -599,6 +615,17 @@ function renderKinds(){
     b.innerHTML = `<span></span><em>${c}</em>`; b.querySelector('span').textContent = label;
     b.onclick = () => { libKind = k; store.set('set.libKind', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
     box.append(b);
+  }
+  if (libKind === 'adult'){
+    const row = document.createElement('div'); row.className = 'lib-sub';
+    for (const [k, label] of ADULT_SUB){
+      const c = works.filter(w => isAdult(w) && adultSubOf(w) === k).length; if (!c) continue;
+      const b = document.createElement('button'); b.className = 'kind-tab' + (k === adultSub ? ' on' : '');
+      b.innerHTML = `<span>성인 ${label}</span><em>${c}</em>`;
+      b.onclick = () => { adultSub = k; store.set('set.libAdultSub', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
+      row.append(b);
+    }
+    box.append(row);
   }
 }
 // 성인 작품을 읽다가 서재·홈으로 나오면 읽던 화면도 비운다(뒤에 비쳐 보이지 않게)

@@ -59,21 +59,21 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   // ── 기기 B: 처음 켠 기기. 구글 로그인만 해도 작품이 보인다
   const B = (await mk()).p;
   await B.evaluate(() => document.querySelector('#gdConnect').click());   // 구글로 시작하기 await B.waitForTimeout(2500);
-  for (let i = 0; i < 20; i++){ if ((await B.$$('.grid .card')).length >= 4) break; await B.waitForTimeout(400); }
-  console.log('B works:', await B.$$eval('.grid .card .t', e => e.map(x => x.textContent).sort()));
+  for (let i = 0; i < 20; i++){ if ((await B.$$(':is(.grid,.shelf) .card')).length >= 4) break; await B.waitForTimeout(400); }
+  console.log('B works:', await B.$$eval(':is(.grid,.shelf) .card .t', e => e.map(x => x.textContent).sort()));
   console.log('B got key:', await B.evaluate(() => JSON.parse(localStorage.getItem('nv.gemKey') || '""')), '| status:', /API 키 받음 1/.test(await B.textContent('#gdStatus')));
   // B에서 지우면 A에서도 지워진다
   await B.evaluate(() => document.querySelector('[data-kdel=gemKey]').click()); await B.evaluate(() => document.querySelector('#gdNow').click()); await B.waitForTimeout(2000);
   await A.evaluate(() => document.querySelector('#gdNow').click()); await A.waitForTimeout(2000);
   console.log('A key after B deleted:', JSON.stringify(await A.evaluate(() => JSON.parse(localStorage.getItem('nv.gemKey') || '"x"'))));
   const g0 = mediaGets;
-  await B.evaluate(() => nvGo('lib')); await B.click('.grid .card:has-text("hwasan")'); await B.waitForTimeout(1500); 
+  await B.evaluate(() => nvGo('lib')); await B.click(':is(.grid,.shelf) .card:has-text("hwasan")'); await B.waitForTimeout(1500); 
   console.log('B novel text:', (await B.textContent('#reader .novel')).length > 20, '| downloads:', mediaGets - g0);
-  await B.evaluate(() => nvGo('lib')); await B.click('.grid .card:has-text("misaeng")').catch(async () => { await B.click('#btnLib').catch(()=>{}); await B.evaluate(() => nvGo('lib')); await B.click('.grid .card:has-text("misaeng")'); }); await B.waitForTimeout(2000);
+  await B.evaluate(() => nvGo('lib')); await B.click(':is(.grid,.shelf) .card:has-text("misaeng")').catch(async () => { await B.click('#btnLib').catch(()=>{}); await B.evaluate(() => nvGo('lib')); await B.click(':is(.grid,.shelf) .card:has-text("misaeng")'); }); await B.waitForTimeout(2000);
   console.log('B webtoon imgs:', await B.$$eval('#reader img', e => e.filter(i => i.complete && i.naturalWidth > 0).length));
   // 새로 켜도(인터넷 없이) 목록이 그대로
   await B.context().setOffline(true); await B.reload(); await B.waitForTimeout(1500);
-  console.log('B offline works:', await B.$$eval('.grid .card .t', e => e.map(x => x.textContent).sort()));
+  console.log('B offline works:', await B.$$eval(':is(.grid,.shelf) .card .t', e => e.map(x => x.textContent).sort()));
   await B.context().setOffline(false);
   // 클라우드에서 지우기
   await A.click('#libSyncList .lsw:has-text("deathnote") [data-a=del]'); await A.waitForTimeout(1500);

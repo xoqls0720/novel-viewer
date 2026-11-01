@@ -60,3 +60,17 @@
 .eplist.epgrid .ept .cap .nm{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .eplist.epgrid .ept.cur .th{outline:2px solid var(--accent)}
 .eplist.epgrid .ept.read .cap{opacity:.6}
+/* 성인 칸 안의 종류(만화 · 영상 · 소설) */
+.lib-kinds .lib-sub { flex-basis: 100%; display: flex; gap: 6px; flex-wrap: wrap; padding-top: 4px; }
+.lib-kinds .lib-sub .kind-tab { font-size: 12px; padding: 4px 10px; }
+/* 버튼 글자가 세로로 쪼개지지 않게. 폰: 영상 아래에 두 줄(제목·시간 / 단추는 가로로 넘겨 보기) */
+.vinfo button, .vinfo select, .vinfo .vt { white-space: nowrap; flex: 0 0 auto; }
+@media (max-width: 700px) {
+  .vbox { padding: 52px 0 60px; }
+  .vinfo { order: 1; flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+  .vinfo b { flex: 1 1 60%; max-width: none; }
+  .vinfo > span[style*="flex:1"] { display: none; }
+  .vinfo button, .vinfo select { padding: 6px 9px; font-size: 12px; }
+  .vinfo .vbtns { display: flex; gap: 6px; overflow-x: auto; flex: 1 1 100%; scrollbar-width: none; }
+}
+.vinfo .vbtns { display: flex; align-items: center; gap: 10px; }

@@ -72,7 +72,7 @@ const APP = process.env.APP || 'file://' + ROOT + '/index.html'; const DATA = pa
   // 11) 자료실 합본 나누기
   await p.click('#gnav [data-g=lib]'); await p.waitForTimeout(300);
   await p.setInputFiles('#pickFolder', path.join(DATA, 'vt3a')); await p.waitForTimeout(800);
-  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hapbon")'); await p.waitForTimeout(1200);
+  await p.evaluate(() => nvGo('lib')); await p.click(':is(.grid,.shelf) .card:has-text("hapbon")'); await p.waitForTimeout(1200);
   await p.click('#epBtn'); await p.waitForTimeout(300); console.log('reader split eps:', await p.$$eval('#epList .it', e => e.length), '| btn:', await p.textContent('#epSplit'));
   await p.click('#epSplit'); await p.waitForTimeout(1000); await p.click('#epBtn'); await p.waitForTimeout(300); console.log('after off:', await p.$$eval('#epList .it', e => e.length));
   await p.keyboard.press('Escape');

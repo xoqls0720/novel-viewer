@@ -65,17 +65,17 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
   for (const f of fileList){
     const rel = relPath(f).split('/');
     if (rel.some(p => p.startsWith('.'))) continue;
-    let workPath, epName = null;
+    let workPath, epName = null, author = false;
     const media = IMG.test(f.name) || VID.test(f.name) || SUB.test(f.name);   // 자막도 영상과 같은 회차 자리로
     // 성인 폴더(모아받기): 성인/만화/작가/0001 제목/그림, 성인/영상/작가 (번호)/글번호 제목/영상 → 작품=작가, 회차=그 아래 폴더
     const ai = rel.findIndex(p => p === '성인');
-    if (ai >= 0 && media && rel.length >= ai + 5) { workPath = rel.slice(0, ai + 3).join('/'); epName = rel.slice(ai + 3, -1).join(' · '); }
+    if (ai >= 0 && media && rel.length >= ai + 5) { workPath = rel.slice(0, ai + 3).join('/'); epName = rel.slice(ai + 3, -1).join(' · '); author = true; }
     // 웹툰·만화 회차 폴더: 작품/0001 1화/이미지, 작품/001/이미지, 작품/1화/이미지
     // HakuNeko·HaruNeko 처럼 'Ch.001'·'Chapter 1'·'Vol.2'·'제3화'·'#4' 로 시작하는 회차 폴더도
     else if (media && rel.length >= 3 && /^(\d{1,4}(?:\D|$)|(?:ch(?:apter)?|ep(?:isode)?|vol(?:ume)?|제)\.?\s*\d|#\d)/i.test(rel[rel.length-2])) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
     else workPath = rel.length > 1 ? rel.slice(0,-1).join('/') : '낱개/' + f.name.replace(/\.[^.]+$/, '');
     if (!groups.has(workPath)) groups.set(workPath, {files:[], imgEps:new Map(), vidEps:[], subs:[], paths:[]});
-    const g = groups.get(workPath); g.paths.push(relPath(f));
+    const g = groups.get(workPath); g.paths.push(relPath(f)); if (author) g.author = true;
     if (VID.test(f.name)) g.vidEps.push({name: epName ? `${epName} · ${f.name.replace(/\.[^.]+$/, '')}` : f.name.replace(/\.[^.]+$/, ''), type: 'video', file: f, post: epName});
     else if (SUB.test(f.name)) g.subs.push(f);
     else if (epName && IMG.test(f.name)){ if(!g.imgEps.has(epName)) g.imgEps.set(epName, []); g.imgEps.get(epName).push(f); }
@@ -123,7 +123,10 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     const shown = guess ? '성인 ' + (kind === 'video' ? '영상' : kind === 'novel' ? '소설' : '만화') : topName || top;
     // n0: 처음 묶었을 때의 화 수(EPUB 을 펼치기 전) — '새 회차' 표시에 쓴다. added: 가장 최근 파일 시각 — '최근 추가순'
     const lastT = g.files.concat(...[...g.imgEps.values()].map(fs => fs.slice(-1)), g.vidEps.map(v => v.file)).reduce((m, f) => Math.max(m, f.lastModified || 0), 0);
-    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths, n0: finalEps.length, added: lastT};
+    // 작가 모음: 성인 폴더의 작가 묶음, 또는 회차 폴더 이름이 대부분 '[작가] 제목' 같은 따로따로 작품인 것 → 누르면 미리보기에서 고른다
+    const tagged = finalEps.filter(e => /\[[^\]]+\]/.test(e.name)).length;
+    const author = kind !== 'novel' && (!!g.author || (finalEps.length >= 1 && tagged >= Math.max(1, finalEps.length * 0.5)));
+    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths, n0: finalEps.length, added: lastT, author};
     const old = works.findIndex(x=>x.key===w.key);
     if (old >= 0){ if (works[old].coverUrl) URL.revokeObjectURL(works[old].coverUrl); works[old] = w; } else works.push(w);
     added++;
@@ -160,7 +163,7 @@ function coverUrl(w){
   if (cv && !w.coverUrl) w.coverUrl = URL.createObjectURL(cv); return w.coverUrl || '';
 }
 // 성인 폴더 밖에 있어도 성인으로 보는 이름: 후원 사이트에서 받은 폴더, 성인 애니 제작사, 동인지 쪽수 표기((37P)+PDF), 커플링(_가x나_)
-const ADULT_NAME = /pawchive|fanbox|pixiv|patreon|fantia|kemono|hentai|hitomi|\bR-?18\b|19금|mobneko|danzi ?engine|dnazi|luxsumildo|\(\d+\s*P\s*(\+\s*PDF)?\)|\d+\s*P\s*\+\s*PDF|_[^_/]{1,4}x[^_/]{1,4}_|\[(Korean|Japanese|English)[,\]]/i;
+const ADULT_NAME = /메스[가카]키|mesugaki|말포이|pawchive|fanbox|pixiv|patreon|fantia|kemono|hentai|hitomi|\bR-?18\b|19금|mobneko|danzi ?engine|dnazi|luxsumildo|\(\d+\s*P\s*(\+\s*PDF)?\)|\d+\s*P\s*\+\s*PDF|_[^_/]{1,4}x[^_/]{1,4}_|\[(Korean|Japanese|English)[,\]]/i;
 // 이름으로 못 알아본 작품은 카드를 오른쪽 클릭(길게 누르기)해 성인 칸으로 보내거나 되돌린다. 고른 것은 기기끼리 맞춰진다
 const isAdult = w => !!w && (store.get('adultMark', {})[w.key] ?? !!w.adult);
 function adultToggle(w){
@@ -188,9 +191,37 @@ function workCard(w){
     ph.querySelector('i').textContent = KIND_LABEL[w.kind] || '';
     ph.querySelector('b').textContent = w.name;
   }
-  d.onclick = () => openWork(w);
+  if (w.author){ d.classList.add('author'); d.querySelector('.m').textContent = `작가 · ${w.eps.length}편`; }
+  d.onclick = () => w.author ? authorPick(w) : openWork(w);
   d.oncontextmenu = e => { e.preventDefault(); adultToggle(w); };
   return d;
+}
+// 작가 모음 미리보기: 작가의 작품(회차 폴더)을 표지와 함께 늘어놓고, 고른 것만 연다. 표지는 화면에 보일 때만 받는다
+function authorPick(w){
+  document.querySelector('.apick')?.remove();
+  const box = document.createElement('div'); box.className = 'apick'; box.setAttribute('role', 'dialog');
+  const read = new Set(store.get('read.' + w.key, []));
+  box.innerHTML = `<div class="ap-in"><div class="ap-head"><div><div class="hint">작가 모음 · ${w.eps.length}편</div><b></b></div><button class="icon ap-x" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div><div class="ap-grid"></div></div>`;
+  box.querySelector('b').textContent = w.name;
+  const grid = box.querySelector('.ap-grid');
+  const io = new IntersectionObserver(es => { for (const e of es){ if (!e.isIntersecting) continue; io.unobserve(e.target); const ep = w.eps[+e.target.dataset.i];
+    const f = ep.type === 'imgs' ? ep.files?.[0] : ep.cover; if (!f) continue;
+    const put = u => { const im = document.createElement('img'); im.alt = ''; im.src = u; e.target.querySelector('.cv').append(im); };
+    if (f.thumbUrl) put(f.thumbUrl); else Promise.resolve(f.isLazy ? f.blob() : f).then(b => put(URL.createObjectURL(b))).catch(() => {}); } }, {root: grid, rootMargin: '300px'});
+  w.eps.forEach((ep, i) => {
+    const it = document.createElement('button'); it.className = 'ap-it' + (read.has(i) ? ' read' : ''); it.dataset.i = i;
+    const n = ep.type === 'imgs' ? `${ep.files.length}장` : ep.type === 'video' ? '영상' : ep.type === 'epub' ? 'EPUB' : '';
+    it.innerHTML = `<div class="cv"><span class="ph">${ep.type === 'video' ? '▶' : ''}</span></div><div class="t"></div><div class="m">${n}</div>`;
+    // 앞의 번호와 작가 이름 꼬리표([작가A])는 빼고 제목만
+    it.querySelector('.t').textContent = (ep.label || ep.name).replace(/^\d{1,5}\s+/, '').replace(/^\[([^\]]*)\]\s*/, (m, t) => t.toLowerCase().includes(w.name.toLowerCase()) || w.name.toLowerCase().includes(t.toLowerCase()) ? '' : m) || ep.name;
+    it.onclick = async () => { close(); const p0 = store.get('pos.' + w.key, null); store.set('pos.' + w.key, {...(p0 || {}), ep: i, f: 0, t: Date.now()}); await openWork(w); if (curEp !== i) openEp(i); };   // 고른 작품부터 바로 (앞 화를 먼저 열지 않게)
+    grid.append(it); io.observe(it);
+  });
+  const close = () => { io.disconnect(); box.remove(); removeEventListener('keydown', esc, true); };
+  const esc = e => { if (e.key === 'Escape'){ e.stopPropagation(); close(); } };
+  box.querySelector('.ap-x').onclick = close; box.onclick = e => { if (e.target === box) close(); };
+  addEventListener('keydown', esc, true);
+  document.body.append(box);
 }
 function renderLib(){
   const q = $('#libSearch').value.trim();
@@ -227,14 +258,27 @@ function renderLib(){
   if (sort === 'added') list = [...list].sort((a, b) => (b.added || 0) - (a.added || 0));
   // 새 회차: 새 화가 생긴 작품만, 많이 늘어난 순 (다른 뷰어의 '업데이트' 칸)
   if (sort === 'new') list = list.filter(w => newEps(w)).sort((a, b) => (newEps(b) || 0.5) - (newEps(a) || 0.5) || (b.added || 0) - (a.added || 0));
-  let lastTop = null, grid = null;
-  const counts = {}; for (const w of list) counts[w.top] = (counts[w.top] || 0) + 1;
+  // '전체' 칸: 종류마다 한 줄(소설 · 웹툰 · 만화 · 영상)로 가로로 넘겨 보고, 제목을 누르면 그 종류 칸으로 (섞인 큰 목록 대신)
+  const shelf = sort === 'name' && !q && !!window.libShelf?.();
+  const ORDER = ['novel', 'webtoon', 'manga', 'video'];
+  if (shelf) list = [...list].sort((a, b) => ((ORDER.indexOf(a.kind) + 1) || 9) - ((ORDER.indexOf(b.kind) + 1) || 9));
+  const SHELF_N = 14;
+  let lastTop = null, grid = null, inRow = 0;
+  const gkey = w => shelf ? w.kind : w.author ? '작가별 모음' : w.top;
+  if (sort === 'name' && !shelf) list = [...list].sort((a, b) => (a.author ? 1 : 0) - (b.author ? 1 : 0));   // 작가 모음은 작품 뒤에 따로
+  const counts = {}; for (const w of list) counts[gkey(w)] = (counts[gkey(w)] || 0) + 1;
   for (const w of list){
-    if (!grid || (sort === 'name' && w.top !== lastTop)){
-      if (sort === 'name'){ const h = document.createElement('h4'); h.innerHTML = `<span></span><em>${counts[w.top]}권</em>`; h.querySelector('span').textContent = w.top; lib.append(h); }
-      grid = document.createElement('div'); grid.className = 'grid'; lib.append(grid); lastTop = w.top;
+    if (!grid || (sort === 'name' && gkey(w) !== lastTop)){
+      if (sort === 'name'){
+        const h = document.createElement('h4'); h.innerHTML = `<span></span><em>${counts[gkey(w)]}${w.kind === 'video' ? '편' : '권'}</em>`;
+        h.querySelector('span').textContent = shelf ? KIND_LABEL[w.kind] || w.top : gkey(w);
+        if (shelf){ h.className = 'shelf-h'; h.insertAdjacentHTML('beforeend', '<b class="more">모두 보기 ›</b>'); h.onclick = () => window.libGoKind?.(w.kind); }
+        lib.append(h);
+      }
+      grid = document.createElement('div'); grid.className = shelf ? 'cont shelf' : 'grid'; lib.append(grid); lastTop = gkey(w); inRow = 0;
     }
-    grid.append(workCard(w));
+    if (shelf && inRow >= SHELF_N){ if (inRow === SHELF_N){ const m = document.createElement('button'); m.className = 'shelf-more'; m.textContent = `+${counts[gkey(w)] - SHELF_N}`; m.title = '모두 보기'; const k = w.kind; m.onclick = () => window.libGoKind?.(k); grid.append(m); } inRow++; continue; }
+    grid.append(workCard(w)); inRow++;
   }
   if (!list.length) lib.insertAdjacentHTML('beforeend', works.length
     ? `<div class="hint" style="padding:16px 4px">${sort === 'new' && !q ? '새로 들어온 회차가 없어요. 다 따라 읽었어요' : '찾는 작품이 없어요'}</div>`

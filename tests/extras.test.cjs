@@ -13,7 +13,7 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   console.log('mobile css@1024:', await p.evaluate(() => matchMedia('(max-width:1100px)').matches));
   await p.click('#gnav [data-g=lib]'); await p.waitForTimeout(200); console.log('side open:', await p.isVisible('#libPage'));   // 서재는 이제 옆 칸이 아니라 한 판
   await p.setInputFiles('#pickFolder', path.join(DATA,'vt2')); await p.waitForTimeout(900);
-  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("hwasan")'); await p.waitForTimeout(900); await p.click('#coachOk').catch(()=>{});
+  await p.evaluate(() => nvGo('lib')); await p.click(':is(.grid,.shelf) .card:has-text("hwasan")'); await p.waitForTimeout(900); await p.click('#coachOk').catch(()=>{});
   await p.click('#tgTool'); await p.waitForTimeout(300); console.log('tool open@1024:', await p.evaluate(() => getComputedStyle(document.querySelector('.tool')).display) !== 'none');
   await p.screenshot({path:'ux/ipad_tool.png'});
   // 떠오른 문장

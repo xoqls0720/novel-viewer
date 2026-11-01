@@ -19,7 +19,7 @@ os.environ.setdefault('HF_HOME', os.path.join(MODELS, 'hf'))
 os.environ.setdefault('LAMA_MODEL', os.path.join(MODELS, 'big-lama.pt'))
 PORT = int(os.environ.get('NV_TR_PORT', '8790'))
 OLLAMA = os.environ.get('NV_OLLAMA', 'http://127.0.0.1:11434').rstrip('/')
-VERSION = 12   # 결과 캐시 열쇠에 들어간다(그리는 법을 바꾸면 올린다)
+VERSION = 17   # 결과 캐시 열쇠에 들어간다(그리는 법을 바꾸면 올린다)
 
 # CUDA 라이브러리(cuDNN·cuBLAS)는 torch 가 함께 깐 nvidia 패키지 안에 있다 → faster-whisper(CTranslate2)도 찾게 한다
 if os.name == 'nt':
@@ -730,30 +730,103 @@ SYS_SUB = SYS_MANGA.replace('만화와 웹툰을', '영상(애니메이션·드�
 def vtt_time(s):
     h = int(s // 3600); m = int(s % 3600 // 60); x = s - h * 3600 - m * 60
     return f'{h:02d}:{m:02d}:{x:06.3f}'
+# ---------------------------------------------------------------- 화면 자막(입힌 자막) 읽기
+# 소리가 없거나 말소리가 없는 영상, 또는 '화면 자막 읽기'를 고른 영상: 0.5초마다 화면 아래(62%~)·위(~20%)를 보고,
+# 그 띠가 바뀐 때만 글자를 읽는다(RapidOCR 가 글자 줄을 찾고, 일본어면 manga-ocr 로 다시 읽는다).
+# 처음부터 끝까지 그대로 있는 글자(방송사 로고·워터마크)는 뺀다. 같은 글자가 이어진 동안을 한 줄 자막으로 묶는다.
+def has_audio(path):
+    try:
+        import av
+        with av.open(path) as c: return len(c.streams.audio) > 0
+    except Exception: return True
+def frame_lines(rgb, lang_hint):
+    h, w = rgb.shape[:2]; out = []
+    for y0, y1 in ((int(h * 0.62), h), (0, int(h * 0.2))):
+        crop = rgb[y0:y1]
+        if crop.size == 0: continue
+        res, _ = rapid()(crop)
+        for box, txt, sc in sorted(res or [], key=lambda r: min(p[1] for p in r[0])):
+            if sc < 0.5: continue
+            xs, ys = [p[0] for p in box], [p[1] for p in box]
+            bh = max(ys) - min(ys)
+            if bh < h * 0.02: continue   # 너무 작은 글자(화면 속 간판 글씨 등)는 자막이 아니다
+            t = nfkc(txt)
+            if lang_hint == 'ja' or (lang_hint in ('', 'auto') and KANA.search(t)):
+                b = {'x0': int(min(xs)), 'x1': int(max(xs)), 'y0': int(min(ys)) + y0, 'y1': int(max(ys)) + y0}
+                t = ocr_block(rgb, b, 'ja') or t
+            # 숫자·시각·기호만 있는 줄(화면 시계·쪽수 등)과 한 글자 조각은 자막이 아니다
+            if t and not re.fullmatch(r'[\d\s:.,\-/|#%]+', t) and not re.search(r'\d{1,2}:\d{2}(:\d{2}|\.\d{2,3})', t) and len(re.sub(r'\W', '', t)) >= 2: out.append(t)
+    return out
+def hardsub_items(J, path, lang_hint='', step=0.5):
+    import av, difflib
+    J.update(msg='화면 자막 읽는 중…')
+    c = av.open(path); vs = c.streams.video[0]; vs.thread_type = 'AUTO'
+    dur = (c.duration / 1e6) if c.duration else (float(vs.duration * vs.time_base) if vs.duration else 1) or 1
+    samples, prev, last, nxt = [], None, [], 0.0
+    for fr in c.decode(vs):
+        if J.get('cancel'): c.close(); raise RuntimeError('멈췄어요')
+        t = float(fr.pts * fr.time_base) if fr.pts is not None else nxt
+        if t + 1e-6 < nxt: continue
+        nxt = t + step
+        rgb = fr.to_ndarray(format='rgb24'); h, w = rgb.shape[:2]
+        band = np.concatenate([rgb[int(h * 0.62):], rgb[:int(h * 0.2)]])
+        small = cv2.resize(cv2.cvtColor(band, cv2.COLOR_RGB2GRAY), (192, max(8, int(192 * band.shape[0] / w)))).astype(np.int16)
+        if prev is None or np.abs(small - prev).mean() > 3.5: last = frame_lines(rgb, lang_hint)
+        prev = small; samples.append((t, last))
+        J.update(progress=min(0.65, 0.65 * t / dur), msg=f'화면 자막 읽는 중… {vtt_time(t)[:8]} / {vtt_time(dur)[:8]}')
+    c.close()
+    # 영상의 40% 넘게 그대로 있는 줄은 자막이 아니라 로고·워터마크
+    cnt = {}
+    for _, ls in samples:
+        for l in set(ls): cnt[l] = cnt.get(l, 0) + 1
+    stuck = {l for l, n in cnt.items() if len(samples) >= 6 and n > 0.4 * len(samples)}
+    # 같은 자막이 이어진 동안을 한 줄로: 글자를 조금 잘못 읽은 것(60% 넘게 같으면)도 같은 줄로 보고, 가장 많이 읽힌 글자를 쓴다
+    items, cur = [], None
+    def close(c):
+        if c: c['t'] = max(c['v'], key=c['v'].get); items.append(c)
+    for t, ls in samples:
+        text = ' '.join(l for l in ls if l not in stuck).strip()
+        if cur and text and difflib.SequenceMatcher(None, max(cur['v'], key=cur['v'].get), text).ratio() > 0.6:
+            cur['b'] = t + step; cur['v'][text] = cur['v'].get(text, 0) + 1; continue
+        close(cur); cur = {'a': t, 'b': t + step, 'v': {text: 1}} if text else None
+    close(cur)
+    items = [{'a': it['a'], 'b': it['b'], 't': it['t']} for it in items if it['b'] - it['a'] >= 0.45]
+    alltext = ' '.join(it['t'] for it in items)
+    lang = 'ja' if len(KANA.findall(alltext)) >= 2 else 'ko' if len(HANGUL.findall(alltext)) > 0.6 * max(1, len(alltext.replace(' ', ''))) else 'en' if len(LATIN.findall(alltext)) >= len(CJK.findall(alltext)) else 'zh'
+    return items, lang
+
 def video_job(job_id, path, model_want, prov=None, adult=False):
     J = JOBS[job_id]
     try:
         st = os.stat(path)
         pv = prov or {}
-        key = hashlib.sha1(f"{path}|{st.st_size}|{int(st.st_mtime)}|{VERSION}|{pv.get('id')}|{pv.get('model')}".encode()).hexdigest()
+        mode = J.get('mode') or 'auto'
+        key = hashlib.sha1(f"{path}|{st.st_size}|{int(st.st_mtime)}|{VERSION}|{pv.get('id')}|{pv.get('model')}|{mode}".encode()).hexdigest()
         cv = os.path.join(CACHE, 'video', key + '.vtt'); os.makedirs(os.path.dirname(cv), exist_ok=True)
         if os.path.exists(cv):
             J.update(state='done', progress=1, vtt=open(cv, encoding='utf-8').read(), msg='저장해 둔 자막'); return
-        J.update(msg='음성 듣는 중…')
-        with GPU:
-            from faster_whisper import WhisperModel
-            dev = device()
-            wm = WhisperModel('large-v3-turbo', device=dev, compute_type='float16' if dev == 'cuda' else 'int8', download_root=os.path.join(MODELS, 'hf', 'whisper'))
-            segs, info = wm.transcribe(path, vad_filter=True, beam_size=5, condition_on_previous_text=True)
-            dur = info.duration or 1; items = []
-            for s in segs:
-                if J.get('cancel'): raise RuntimeError('멈췄어요')
-                t = s.text.strip()
-                if t: items.append({'a': s.start, 'b': s.end, 't': t})
-                J.update(progress=min(0.7, 0.7 * s.end / dur), msg=f'음성 듣는 중… {vtt_time(s.end)[:8]} / {vtt_time(dur)[:8]}')
-            lang = info.language
-            del wm; free_gpu()
-        if not items: raise RuntimeError('말소리를 찾지 못했어요')
+        items, lang = [], ''
+        if mode == 'ocr' or not has_audio(path):
+            items, lang = hardsub_items(J, path, J.get('lang') or '')
+            if not items: raise RuntimeError('화면에서 자막을 찾지 못했어요')
+        else:
+            J.update(msg='음성 듣는 중…')
+            with GPU:
+                from faster_whisper import WhisperModel
+                dev = device()
+                wm = WhisperModel('large-v3-turbo', device=dev, compute_type='float16' if dev == 'cuda' else 'int8', download_root=os.path.join(MODELS, 'hf', 'whisper'))
+                segs, info = wm.transcribe(path, vad_filter=True, beam_size=5, condition_on_previous_text=True)
+                dur = info.duration or 1; items = []
+                for s in segs:
+                    if J.get('cancel'): raise RuntimeError('멈췄어요')
+                    t = s.text.strip()
+                    if t: items.append({'a': s.start, 'b': s.end, 't': t})
+                    J.update(progress=min(0.7, 0.7 * s.end / dur), msg=f'음성 듣는 중… {vtt_time(s.end)[:8]} / {vtt_time(dur)[:8]}')
+                lang = info.language
+                del wm; free_gpu()
+            # 말소리가 없으면(음악·효과음만) 화면 자막을 읽는다
+            if not items: items, lang = hardsub_items(J, path, J.get('lang') or '')
+        if not items: raise RuntimeError('말소리도 화면 자막도 찾지 못했어요')
         if lang != 'ko':
             model = model_for(model_want, adult, prov); ctx = []
             for i in range(0, len(items), 25):
@@ -817,9 +890,9 @@ class H(BaseHTTPRequestHandler):
                 d = self._body(); p = d.get('path') or ''
                 if not os.path.isfile(p) or not re.search(r'\.(mp4|m4v|mkv|webm|mov|avi|ts|wmv|flv|mp3|m4a|wav)$', p, re.I): return self._send(400, {'error': '영상 파일을 찾지 못했어요'})
                 for jid, J in JOBS.items():
-                    if J.get('path') == p and J['state'] == 'running': return self._send(200, {'id': jid})
+                    if J.get('path') == p and J['state'] == 'running' and J.get('mode') == (d.get('mode') or 'auto'): return self._send(200, {'id': jid})
                 jid = uuid.uuid4().hex[:10]
-                JOBS[jid] = {'id': jid, 'path': p, 'state': 'running', 'progress': 0, 'msg': '준비 중…'}
+                JOBS[jid] = {'id': jid, 'path': p, 'state': 'running', 'progress': 0, 'msg': '준비 중…', 'mode': d.get('mode') or 'auto', 'lang': d.get('lang') if d.get('lang') not in (None, 'auto') else ''}
                 threading.Thread(target=video_job, args=(jid, p, d.get('model', ''), d.get('provider'), bool(d.get('adult'))), daemon=True).start()
                 return self._send(200, {'id': jid})
             if u.path == '/models':

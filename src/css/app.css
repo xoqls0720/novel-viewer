@@ -559,3 +559,25 @@ a{color:var(--accent);text-underline-offset:2px;text-decoration-color:color-mix(
 a:hover{text-decoration-color:currentColor}
 /* 새 회차 표시 (+3화 · NEW) */
 .card .cv .new{position:absolute;top:6px;left:6px;background:#e8603c;color:#fff;font:700 11px/1 var(--ui);padding:4px 6px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+/* '전체' 칸: 종류마다 가로 한 줄 */
+#lib h4.shelf-h{cursor:pointer;display:flex;align-items:baseline;gap:8px}
+#lib h4.shelf-h .more{margin-left:auto;font-size:12px;font-weight:600;color:var(--sub)}
+.cont.shelf .card{flex:0 0 118px}
+.shelf-more{flex:0 0 70px;align-self:center;height:70px;border-radius:50%;font-weight:700;color:var(--sub)}
+@media (max-width:700px){ .cont.shelf .card{flex:0 0 104px} }
+/* 작가 모음 미리보기 */
+.card.author .cv::after{content:'작가';position:absolute;bottom:6px;left:6px;font:700 10px/1 var(--ui);padding:4px 6px;border-radius:5px;background:rgb(0 0 0 / 60%);color:#fff}
+.apick{position:fixed;inset:0;z-index:60;background:rgb(0 0 0 / 45%);display:flex;align-items:center;justify-content:center;padding:max(16px,var(--sat)) 16px max(16px,var(--sab))}
+.ap-in{background:var(--panel);color:var(--ink);border-radius:18px;width:min(980px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow)}
+.ap-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ap-head b{font-family:var(--display);font-size:17px}
+.ap-head .ap-x{margin-left:auto}
+.ap-grid{overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px 12px}
+.ap-it{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:0;border:0;background:none;text-align:left;height:auto;cursor:pointer;color:inherit}
+.ap-it .cv{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;background:var(--panel-2);display:flex;align-items:center;justify-content:center}
+.ap-it .cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ap-it .ph{font-size:22px;color:var(--sub)}
+.ap-it .t{font-size:12.5px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ap-it .m{font-size:11px;color:var(--sub)}
+.ap-it.read .cv{opacity:.55}
+@media (max-width:700px){ .ap-grid{grid-template-columns:repeat(3,1fr);gap:12px 8px;padding:10px} .apick{padding:0;align-items:stretch} .ap-in{border-radius:0} }

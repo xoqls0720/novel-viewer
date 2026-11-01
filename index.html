@@ -579,6 +579,28 @@ a{color:var(--accent);text-underline-offset:2px;text-decoration-color:color-mix(
 a:hover{text-decoration-color:currentColor}
 /* 새 회차 표시 (+3화 · NEW) */
 .card .cv .new{position:absolute;top:6px;left:6px;background:#e8603c;color:#fff;font:700 11px/1 var(--ui);padding:4px 6px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+/* '전체' 칸: 종류마다 가로 한 줄 */
+#lib h4.shelf-h{cursor:pointer;display:flex;align-items:baseline;gap:8px}
+#lib h4.shelf-h .more{margin-left:auto;font-size:12px;font-weight:600;color:var(--sub)}
+.cont.shelf .card{flex:0 0 118px}
+.shelf-more{flex:0 0 70px;align-self:center;height:70px;border-radius:50%;font-weight:700;color:var(--sub)}
+@media (max-width:700px){ .cont.shelf .card{flex:0 0 104px} }
+/* 작가 모음 미리보기 */
+.card.author .cv::after{content:'작가';position:absolute;bottom:6px;left:6px;font:700 10px/1 var(--ui);padding:4px 6px;border-radius:5px;background:rgb(0 0 0 / 60%);color:#fff}
+.apick{position:fixed;inset:0;z-index:60;background:rgb(0 0 0 / 45%);display:flex;align-items:center;justify-content:center;padding:max(16px,var(--sat)) 16px max(16px,var(--sab))}
+.ap-in{background:var(--panel);color:var(--ink);border-radius:18px;width:min(980px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow)}
+.ap-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ap-head b{font-family:var(--display);font-size:17px}
+.ap-head .ap-x{margin-left:auto}
+.ap-grid{overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px 12px}
+.ap-it{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:0;border:0;background:none;text-align:left;height:auto;cursor:pointer;color:inherit}
+.ap-it .cv{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;background:var(--panel-2);display:flex;align-items:center;justify-content:center}
+.ap-it .cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ap-it .ph{font-size:22px;color:var(--sub)}
+.ap-it .t{font-size:12.5px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ap-it .m{font-size:11px;color:var(--sub)}
+.ap-it.read .cv{opacity:.55}
+@media (max-width:700px){ .ap-grid{grid-template-columns:repeat(3,1fr);gap:12px 8px;padding:10px} .apick{padding:0;align-items:stretch} .ap-in{border-radius:0} }
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -1072,7 +1094,7 @@ input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to r
   .pg-wrap{padding:calc(36px + var(--sat)) 18px calc(96px + var(--sab))}
   .pg-head h1{font-size:26px}
   .h-two{grid-template-columns:1fr}
-  .lp-acts{width:100%} .lp-acts button{flex:1}
+  .lp-acts{width:100%;flex-wrap:nowrap;gap:6px} .lp-acts button{flex:1 1 0;min-width:0;padding:7px 6px;font-size:12px;overflow:hidden;text-overflow:ellipsis}   /* 폰: 한 줄로 작게(서재가 바로 보이게) */
   #lpBody .grid{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:22px 14px}
 }
 .home .pg-head{display:block}
@@ -1346,6 +1368,20 @@ button:not(:disabled):active{transform:scale(.98)}
 .dl-dirs-h{margin-top:12px}
 .dl-url{display:flex;flex-direction:column;gap:8px;max-width:760px}
 .dl-url textarea{width:100%;font:14px/1.5 var(--ui);resize:vertical}
+/* 홈: 독서 기록 */
+.h-stats{margin-top:14px}
+.rs-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}
+.rs-row b{display:block;font-family:var(--display);font-size:20px}
+.rs-row span{font-size:12px;color:var(--sub)}
+.rs-cal{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;max-width:420px}
+.rs-cal i{aspect-ratio:1;border-radius:3px;background:var(--panel-2)}
+.rs-cal i.l1{background:color-mix(in srgb,#e8603c 30%,var(--panel-2))}
+.rs-cal i.l2{background:color-mix(in srgb,#e8603c 55%,var(--panel-2))}
+.rs-cal i.l3{background:color-mix(in srgb,#e8603c 78%,var(--panel-2))}
+.rs-cal i.l4{background:#e8603c}
+.rs-top{margin:12px 0 0;padding-left:18px;font-size:13px}
+.rs-top li{display:flex;gap:8px}
+.rs-top em{margin-left:auto;font-style:normal;color:var(--sub);font-size:12px}
 /* 영상 회차 · 번역 칸 · 세로/펼침 단추 (26-media.js) */
 #reader.vid { overflow: hidden; }
 .vbox { display: flex; flex-direction: column; height: 100%; background: #000; padding: 56px 0 64px; box-sizing: border-box; }
@@ -1408,6 +1444,20 @@ button:not(:disabled):active{transform:scale(.98)}
 .eplist.epgrid .ept .cap .nm{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .eplist.epgrid .ept.cur .th{outline:2px solid var(--accent)}
 .eplist.epgrid .ept.read .cap{opacity:.6}
+/* 성인 칸 안의 종류(만화 · 영상 · 소설) */
+.lib-kinds .lib-sub { flex-basis: 100%; display: flex; gap: 6px; flex-wrap: wrap; padding-top: 4px; }
+.lib-kinds .lib-sub .kind-tab { font-size: 12px; padding: 4px 10px; }
+/* 버튼 글자가 세로로 쪼개지지 않게. 폰: 영상 아래에 두 줄(제목·시간 / 단추는 가로로 넘겨 보기) */
+.vinfo button, .vinfo select, .vinfo .vt { white-space: nowrap; flex: 0 0 auto; }
+@media (max-width: 700px) {
+  .vbox { padding: 52px 0 60px; }
+  .vinfo { order: 1; flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+  .vinfo b { flex: 1 1 60%; max-width: none; }
+  .vinfo > span[style*="flex:1"] { display: none; }
+  .vinfo button, .vinfo select { padding: 6px 9px; font-size: 12px; }
+  .vinfo .vbtns { display: flex; gap: 6px; overflow-x: auto; flex: 1 1 100%; scrollbar-width: none; }
+}
+.vinfo .vbtns { display: flex; align-items: center; gap: 10px; }
 </style>
 </head>
 <body>
@@ -1485,6 +1535,7 @@ button:not(:disabled):active{transform:scale(.98)}
           <section class="h-card h-write" id="hDesk"></section>
           <section class="h-card h-read"><div class="h-k">이어 읽기</div><div class="w-resume" id="wResume" hidden></div><div class="h-none" id="hReadNone"><svg class="i"><use href="#i-book"/></svg><p>아직 읽은 작품이 없어요.<br>서재의 책을 열면 여기로 이어져요.</p><button class="h-link" id="hLibAll">서재로 가기 →</button></div></section>
         </div>
+        <section class="h-card h-stats" id="hStats" hidden></section>
         <section class="h-memo"><input type="text" id="hIdeaIn" placeholder="떠오른 문장을 한 줄 남겨 두세요" autocomplete="off"><button id="hIdeaAdd">남기기</button></section>
         <div class="h-ideas" id="hIdeas"></div>
         <section class="h-projs-wrap"><div class="pg-sub"><h2>내 작품</h2><button class="h-link" id="wStudio">집필실 열기</button></div><div class="h-projs" id="hProjs"></div></section>
@@ -2000,7 +2051,7 @@ button:not(:disabled):active{transform:scale(.98)}
         <div class="full"><label><input type="checkbox" id="stStartHere"> 앱을 열면 홈 대신 집필실부터 보여 주기</label></div>
       </div></div>
       <div class="st-sec"><h3>자동 백업</h3><div class="hint" id="stBkStat" style="margin-bottom:8px"></div><div class="row tight"><button id="stBkDir">백업 폴더 정하기</button></div></div>
-      <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpDocxAll">작품 전체 docx</button><button id="stExpHwpxAll">작품 전체 hwpx</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
+      <div class="st-sec"><h3>내보내기 · 정리</h3><div class="row"><button id="stExpAll">작품 전체 txt</button><button id="stExpDocxAll">작품 전체 docx</button><button id="stExpHwpxAll">작품 전체 hwpx</button><button id="stExpEpubAll">작품 전체 epub</button><button id="stExpBackup">작품 백업 json</button><button id="stImpBackup">백업 불러오기</button><input type="file" id="stImpBackupFile" accept=".json,application/json" hidden><button class="danger" id="stProjDel">작품 지우기</button></div></div>
     </div></div>
 
     <aside class="st-refpane" id="stRefPane" hidden>
@@ -2157,11 +2208,13 @@ button:not(:disabled):active{transform:scale(.98)}
       <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요.</div>
       <div class="row tight"><label>등급</label><select id="wtRating"><option value="safe">일반</option><option value="nsfw">성인 (19금)</option></select>
         <label>수위</label><select id="wtHeat"><option value="tease">은근하게 · 분위기와 암시</option><option value="mid" selected>보통 · 직접적이되 절제</option><option value="hard">직접적으로 · 노골적인 묘사</option></select></div>
+      <div class="row tight" id="wtToneRow" hidden><label>톤</label><select id="wtAdultTone"><option value="drama">치정 · 진지하고 끈적하게</option><option value="pong">뽕빨 · 가볍고 노골적, 개그 섞어</option></select></div>
+      <div class="row tight"><label>문체 참고</label><select id="wtRef" class="grow"><option value="">없음</option></select></div>
       <div class="hint" id="wtRatingHint"></div>
       <div class="hint" id="wtProvWarn" hidden></div>
       <div class="row tight" id="wtActRow" hidden><label>컷 성인 태그</label><input type="text" id="wtAct" class="grow" placeholder="성인 컷 그림에 늘 더할 영어 태그 (예: yaoi, two boys, kissing, bare chest)" autocomplete="off"></div>
       <div class="row tight"><label>줄거리 분량</label><select id="wtSynLen"><option value="short">짧게 · 3~6문장</option><option value="mid" selected>보통 · 10문장 안팎</option><option value="long">길게 · 장면마다 한 줄씩</option><option value="arc">아주 길게 · 화 나누기까지</option></select></div>
-      <div class="row"><button id="wtSynGo" class="grow">줄거리 길게 쓰기</button><button id="wtSynMore">이어서 더 쓰기</button><button id="wtSynStop" hidden>멈추기</button></div>
+      <div class="row"><button id="wtSynGo" class="grow">줄거리 길게 쓰기</button><button id="wtSynMore">이어서 더 쓰기</button><button id="wtSynSpice" title="같은 사건·인물로, 덜 딱딱하고 더 맛깔나게 다시 써요">맛깔나게 다시 쓰기</button><button id="wtSynStop" hidden>멈추기</button></div>
       <div class="hint">줄거리만 먼저 늘려 보고, 마음에 들면 아래에서 대본으로 넘기면 돼요.</div>
       <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
       <div id="wtSynBox" hidden>
@@ -2327,17 +2380,17 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
   for (const f of fileList){
     const rel = relPath(f).split('/');
     if (rel.some(p => p.startsWith('.'))) continue;
-    let workPath, epName = null;
+    let workPath, epName = null, author = false;
     const media = IMG.test(f.name) || VID.test(f.name) || SUB.test(f.name);   // 자막도 영상과 같은 회차 자리로
     // 성인 폴더(모아받기): 성인/만화/작가/0001 제목/그림, 성인/영상/작가 (번호)/글번호 제목/영상 → 작품=작가, 회차=그 아래 폴더
     const ai = rel.findIndex(p => p === '성인');
-    if (ai >= 0 && media && rel.length >= ai + 5) { workPath = rel.slice(0, ai + 3).join('/'); epName = rel.slice(ai + 3, -1).join(' · '); }
+    if (ai >= 0 && media && rel.length >= ai + 5) { workPath = rel.slice(0, ai + 3).join('/'); epName = rel.slice(ai + 3, -1).join(' · '); author = true; }
     // 웹툰·만화 회차 폴더: 작품/0001 1화/이미지, 작품/001/이미지, 작품/1화/이미지
     // HakuNeko·HaruNeko 처럼 'Ch.001'·'Chapter 1'·'Vol.2'·'제3화'·'#4' 로 시작하는 회차 폴더도
     else if (media && rel.length >= 3 && /^(\d{1,4}(?:\D|$)|(?:ch(?:apter)?|ep(?:isode)?|vol(?:ume)?|제)\.?\s*\d|#\d)/i.test(rel[rel.length-2])) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
     else workPath = rel.length > 1 ? rel.slice(0,-1).join('/') : '낱개/' + f.name.replace(/\.[^.]+$/, '');
     if (!groups.has(workPath)) groups.set(workPath, {files:[], imgEps:new Map(), vidEps:[], subs:[], paths:[]});
-    const g = groups.get(workPath); g.paths.push(relPath(f));
+    const g = groups.get(workPath); g.paths.push(relPath(f)); if (author) g.author = true;
     if (VID.test(f.name)) g.vidEps.push({name: epName ? `${epName} · ${f.name.replace(/\.[^.]+$/, '')}` : f.name.replace(/\.[^.]+$/, ''), type: 'video', file: f, post: epName});
     else if (SUB.test(f.name)) g.subs.push(f);
     else if (epName && IMG.test(f.name)){ if(!g.imgEps.has(epName)) g.imgEps.set(epName, []); g.imgEps.get(epName).push(f); }
@@ -2385,7 +2438,10 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     const shown = guess ? '성인 ' + (kind === 'video' ? '영상' : kind === 'novel' ? '소설' : '만화') : topName || top;
     // n0: 처음 묶었을 때의 화 수(EPUB 을 펼치기 전) — '새 회차' 표시에 쓴다. added: 가장 최근 파일 시각 — '최근 추가순'
     const lastT = g.files.concat(...[...g.imgEps.values()].map(fs => fs.slice(-1)), g.vidEps.map(v => v.file)).reduce((m, f) => Math.max(m, f.lastModified || 0), 0);
-    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths, n0: finalEps.length, added: lastT};
+    // 작가 모음: 성인 폴더의 작가 묶음, 또는 회차 폴더 이름이 대부분 '[작가] 제목' 같은 따로따로 작품인 것 → 누르면 미리보기에서 고른다
+    const tagged = finalEps.filter(e => /\[[^\]]+\]/.test(e.name)).length;
+    const author = kind !== 'novel' && (!!g.author || (finalEps.length >= 1 && tagged >= Math.max(1, finalEps.length * 0.5)));
+    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths, n0: finalEps.length, added: lastT, author};
     const old = works.findIndex(x=>x.key===w.key);
     if (old >= 0){ if (works[old].coverUrl) URL.revokeObjectURL(works[old].coverUrl); works[old] = w; } else works.push(w);
     added++;
@@ -2422,7 +2478,7 @@ function coverUrl(w){
   if (cv && !w.coverUrl) w.coverUrl = URL.createObjectURL(cv); return w.coverUrl || '';
 }
 // 성인 폴더 밖에 있어도 성인으로 보는 이름: 후원 사이트에서 받은 폴더, 성인 애니 제작사, 동인지 쪽수 표기((37P)+PDF), 커플링(_가x나_)
-const ADULT_NAME = /pawchive|fanbox|pixiv|patreon|fantia|kemono|hentai|hitomi|\bR-?18\b|19금|mobneko|danzi ?engine|dnazi|luxsumildo|\(\d+\s*P\s*(\+\s*PDF)?\)|\d+\s*P\s*\+\s*PDF|_[^_/]{1,4}x[^_/]{1,4}_|\[(Korean|Japanese|English)[,\]]/i;
+const ADULT_NAME = /메스[가카]키|mesugaki|말포이|pawchive|fanbox|pixiv|patreon|fantia|kemono|hentai|hitomi|\bR-?18\b|19금|mobneko|danzi ?engine|dnazi|luxsumildo|\(\d+\s*P\s*(\+\s*PDF)?\)|\d+\s*P\s*\+\s*PDF|_[^_/]{1,4}x[^_/]{1,4}_|\[(Korean|Japanese|English)[,\]]/i;
 // 이름으로 못 알아본 작품은 카드를 오른쪽 클릭(길게 누르기)해 성인 칸으로 보내거나 되돌린다. 고른 것은 기기끼리 맞춰진다
 const isAdult = w => !!w && (store.get('adultMark', {})[w.key] ?? !!w.adult);
 function adultToggle(w){
@@ -2450,9 +2506,37 @@ function workCard(w){
     ph.querySelector('i').textContent = KIND_LABEL[w.kind] || '';
     ph.querySelector('b').textContent = w.name;
   }
-  d.onclick = () => openWork(w);
+  if (w.author){ d.classList.add('author'); d.querySelector('.m').textContent = `작가 · ${w.eps.length}편`; }
+  d.onclick = () => w.author ? authorPick(w) : openWork(w);
   d.oncontextmenu = e => { e.preventDefault(); adultToggle(w); };
   return d;
+}
+// 작가 모음 미리보기: 작가의 작품(회차 폴더)을 표지와 함께 늘어놓고, 고른 것만 연다. 표지는 화면에 보일 때만 받는다
+function authorPick(w){
+  document.querySelector('.apick')?.remove();
+  const box = document.createElement('div'); box.className = 'apick'; box.setAttribute('role', 'dialog');
+  const read = new Set(store.get('read.' + w.key, []));
+  box.innerHTML = `<div class="ap-in"><div class="ap-head"><div><div class="hint">작가 모음 · ${w.eps.length}편</div><b></b></div><button class="icon ap-x" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div><div class="ap-grid"></div></div>`;
+  box.querySelector('b').textContent = w.name;
+  const grid = box.querySelector('.ap-grid');
+  const io = new IntersectionObserver(es => { for (const e of es){ if (!e.isIntersecting) continue; io.unobserve(e.target); const ep = w.eps[+e.target.dataset.i];
+    const f = ep.type === 'imgs' ? ep.files?.[0] : ep.cover; if (!f) continue;
+    const put = u => { const im = document.createElement('img'); im.alt = ''; im.src = u; e.target.querySelector('.cv').append(im); };
+    if (f.thumbUrl) put(f.thumbUrl); else Promise.resolve(f.isLazy ? f.blob() : f).then(b => put(URL.createObjectURL(b))).catch(() => {}); } }, {root: grid, rootMargin: '300px'});
+  w.eps.forEach((ep, i) => {
+    const it = document.createElement('button'); it.className = 'ap-it' + (read.has(i) ? ' read' : ''); it.dataset.i = i;
+    const n = ep.type === 'imgs' ? `${ep.files.length}장` : ep.type === 'video' ? '영상' : ep.type === 'epub' ? 'EPUB' : '';
+    it.innerHTML = `<div class="cv"><span class="ph">${ep.type === 'video' ? '▶' : ''}</span></div><div class="t"></div><div class="m">${n}</div>`;
+    // 앞의 번호와 작가 이름 꼬리표([작가A])는 빼고 제목만
+    it.querySelector('.t').textContent = (ep.label || ep.name).replace(/^\d{1,5}\s+/, '').replace(/^\[([^\]]*)\]\s*/, (m, t) => t.toLowerCase().includes(w.name.toLowerCase()) || w.name.toLowerCase().includes(t.toLowerCase()) ? '' : m) || ep.name;
+    it.onclick = async () => { close(); const p0 = store.get('pos.' + w.key, null); store.set('pos.' + w.key, {...(p0 || {}), ep: i, f: 0, t: Date.now()}); await openWork(w); if (curEp !== i) openEp(i); };   // 고른 작품부터 바로 (앞 화를 먼저 열지 않게)
+    grid.append(it); io.observe(it);
+  });
+  const close = () => { io.disconnect(); box.remove(); removeEventListener('keydown', esc, true); };
+  const esc = e => { if (e.key === 'Escape'){ e.stopPropagation(); close(); } };
+  box.querySelector('.ap-x').onclick = close; box.onclick = e => { if (e.target === box) close(); };
+  addEventListener('keydown', esc, true);
+  document.body.append(box);
 }
 function renderLib(){
   const q = $('#libSearch').value.trim();
@@ -2489,14 +2573,27 @@ function renderLib(){
   if (sort === 'added') list = [...list].sort((a, b) => (b.added || 0) - (a.added || 0));
   // 새 회차: 새 화가 생긴 작품만, 많이 늘어난 순 (다른 뷰어의 '업데이트' 칸)
   if (sort === 'new') list = list.filter(w => newEps(w)).sort((a, b) => (newEps(b) || 0.5) - (newEps(a) || 0.5) || (b.added || 0) - (a.added || 0));
-  let lastTop = null, grid = null;
-  const counts = {}; for (const w of list) counts[w.top] = (counts[w.top] || 0) + 1;
+  // '전체' 칸: 종류마다 한 줄(소설 · 웹툰 · 만화 · 영상)로 가로로 넘겨 보고, 제목을 누르면 그 종류 칸으로 (섞인 큰 목록 대신)
+  const shelf = sort === 'name' && !q && !!window.libShelf?.();
+  const ORDER = ['novel', 'webtoon', 'manga', 'video'];
+  if (shelf) list = [...list].sort((a, b) => ((ORDER.indexOf(a.kind) + 1) || 9) - ((ORDER.indexOf(b.kind) + 1) || 9));
+  const SHELF_N = 14;
+  let lastTop = null, grid = null, inRow = 0;
+  const gkey = w => shelf ? w.kind : w.author ? '작가별 모음' : w.top;
+  if (sort === 'name' && !shelf) list = [...list].sort((a, b) => (a.author ? 1 : 0) - (b.author ? 1 : 0));   // 작가 모음은 작품 뒤에 따로
+  const counts = {}; for (const w of list) counts[gkey(w)] = (counts[gkey(w)] || 0) + 1;
   for (const w of list){
-    if (!grid || (sort === 'name' && w.top !== lastTop)){
-      if (sort === 'name'){ const h = document.createElement('h4'); h.innerHTML = `<span></span><em>${counts[w.top]}권</em>`; h.querySelector('span').textContent = w.top; lib.append(h); }
-      grid = document.createElement('div'); grid.className = 'grid'; lib.append(grid); lastTop = w.top;
+    if (!grid || (sort === 'name' && gkey(w) !== lastTop)){
+      if (sort === 'name'){
+        const h = document.createElement('h4'); h.innerHTML = `<span></span><em>${counts[gkey(w)]}${w.kind === 'video' ? '편' : '권'}</em>`;
+        h.querySelector('span').textContent = shelf ? KIND_LABEL[w.kind] || w.top : gkey(w);
+        if (shelf){ h.className = 'shelf-h'; h.insertAdjacentHTML('beforeend', '<b class="more">모두 보기 ›</b>'); h.onclick = () => window.libGoKind?.(w.kind); }
+        lib.append(h);
+      }
+      grid = document.createElement('div'); grid.className = shelf ? 'cont shelf' : 'grid'; lib.append(grid); lastTop = gkey(w); inRow = 0;
     }
-    grid.append(workCard(w));
+    if (shelf && inRow >= SHELF_N){ if (inRow === SHELF_N){ const m = document.createElement('button'); m.className = 'shelf-more'; m.textContent = `+${counts[gkey(w)] - SHELF_N}`; m.title = '모두 보기'; const k = w.kind; m.onclick = () => window.libGoKind?.(k); grid.append(m); } inRow++; continue; }
+    grid.append(workCard(w)); inRow++;
   }
   if (!list.length) lib.insertAdjacentHTML('beforeend', works.length
     ? `<div class="hint" style="padding:16px 4px">${sort === 'new' && !q ? '새로 들어온 회차가 없어요. 다 따라 읽었어요' : '찾는 작품이 없어요'}</div>`
@@ -6046,6 +6143,24 @@ async function saveDocx(name, blocks){
 }
 $('#stExpDocx').onclick = () => { stFlush(); saveDocx(`${safeName(stProj()?.name || '작품')}_${safeName($('#stTitle').value || '회차')}.docx`, epBlocks($('#stExpTitle').checked ? $('#stTitle').value : '', $('#stText').value)); };
 $('#stExpDocxAll').onclick = () => { stFlush(); const p = stProj(); const blocks = []; for (const e of stEps()) blocks.push(...epBlocks(e.title, stEpText(e.id))); saveDocx(`${safeName(p.name)}_전체.docx`, blocks); };
+// EPUB: 작품 전체를 전자책 한 권으로 (스크리브너의 '컴파일'처럼). 리디·구글 플레이 북·애플 북스·이 뷰어에서 열린다
+async function saveEpub(name, title, author, chapters){
+  const zip = new JSZip(); const id = 'urn:uuid:' + (crypto.randomUUID?.() || uid());
+  zip.file('mimetype', 'application/epub+zip', {compression: 'STORE'});
+  zip.file('META-INF/container.xml', '<?xml version="1.0" encoding="UTF-8"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+  const css = 'body{font-family:serif;line-height:1.8;margin:0 5%;word-break:keep-all}h1{font-size:1.3em;text-align:center;margin:2em 0 1.5em}p{margin:0 0 .8em;text-indent:1em}';
+  zip.file('OEBPS/style.css', css);
+  const page = (t, body) => `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="ko" xml:lang="ko"><head><meta charset="utf-8"/><title>${xmlEsc(t)}</title><link rel="stylesheet" href="style.css"/></head><body>${body}</body></html>`;
+  chapters.forEach((c, i) => zip.file(`OEBPS/c${i + 1}.xhtml`, page(c.title, `<h1>${xmlEsc(c.title)}</h1>` + stExport(c.text, '').split('\n').filter(l => l.trim()).map(l => `<p>${xmlEsc(l)}</p>`).join(''))));
+  zip.file('OEBPS/nav.xhtml', page('목차', `<nav epub:type="toc" id="toc"><h1>목차</h1><ol>${chapters.map((c, i) => `<li><a href="c${i + 1}.xhtml">${xmlEsc(c.title)}</a></li>`).join('')}</ol></nav>`));
+  zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bid" xml:lang="ko"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="bid">${id}</dc:identifier><dc:title>${xmlEsc(title)}</dc:title><dc:creator>${xmlEsc(author || '')}</dc:creator><dc:language>ko</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="css" href="style.css" media-type="text/css"/>${chapters.map((_, i) => `<item id="c${i + 1}" href="c${i + 1}.xhtml" media-type="application/xhtml+xml"/>`).join('')}</manifest><spine>${chapters.map((_, i) => `<itemref idref="c${i + 1}"/>`).join('')}</spine></package>`);
+  const blob = await zip.generateAsync({type: 'blob', mimeType: 'application/epub+zip'});
+  const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  toast('전자책(EPUB)으로 저장했어요');
+  return blob;
+}
+window.nvSaveEpub = saveEpub;   // 시험용
+$('#stExpEpubAll') && ($('#stExpEpubAll').onclick = () => { stFlush(); const p = stProj(); saveEpub(`${safeName(p.name)}.epub`, p.name, store.get('st.author', ''), stEps().map(e => ({title: e.title || '회차', text: stEpText(e.id)}))); });
 // PDF: 인쇄 화면을 띄워 'PDF로 저장'을 고르면 된다(컴퓨터·아이폰·아이패드 공통)
 $('#stPrint').onclick = () => {
   stFlush(); const title = $('#stTitle').value || ''; const text = stExport($('#stText').value, '');
@@ -7771,7 +7886,12 @@ const SYSTEM_WT_BASE = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽�
 - 말투: 받은 말투 설명이 있으면 그 인물의 대사는 반드시 그 말투로 쓴다(존대·반말, 길이, 말버릇, 호칭). 말투가 없는 인물은 cast 에 적은 말투를 따른다. 인물마다 말이 달라야 누가 말하는지 알 수 있다.
 {ADULT}
 출력은 JSON 하나만.`;
-const SYSTEM_WT = () => SYSTEM_WT_BASE.replace('{ADULT}', wtAdultRules());
+const SYSTEM_WT = () => SYSTEM_WT_BASE.replace('{ADULT}', wtAdultRules() + '\n' + WT_NATURAL);
+// AI 티 지우기: 사람이 쓴 웹툰처럼 (줄거리·대본 모두)
+const WT_NATURAL = `- AI 가 쓴 티가 나는 말은 쓰지 않는다: '그 순간', '마치 ~처럼', '~하는 것이었다', '이윽고', '묘한 감정', '알 수 없는 감정', '심장이 두근거렸다', '하나가 되었다', '두 사람은', '그렇게 밤이 깊어 갔다', '~을 느꼈다' 로 감정 설명하기.
+- 웹툰 나레이션처럼 쓴다: 짧게 끊고, 장면을 바로 던진다. 한 문장 25자 안팎. 문어체 '~였다'만 이어 쓰지 말고 현재형·구어체를 섞는다.
+- 사람은 정리해서 말하지 않는다: 말이 겹치고, 끊기고, 엉뚱한 데로 샌다. 사투리·비속어·말버릇을 인물마다 다르게 준다.
+- 설명보다 장면: '부끄러웠다' 대신 귀가 빨개지고 시선을 피하는 걸 보여 준다.`;
 
 /* ---------- 등급·수위 ---------- */
 const wtRating = () => $('#wtRating')?.value || $('#naiRating').value;
@@ -7790,6 +7910,12 @@ const NSFW_DROP_POS = /\bclosed mouth\b/gi;
 const NSFW_DROP_NEG = /^(smile|grin|smirk|teeth|open mouth|parted lips)$/i;
 const NSFW_NEG_ADD = 'censored, mosaic censoring, bar censor, pixelated, steam censor, convenient censoring';
 const wtHeatKey = () => $('#wtHeat')?.value || store.get('set.wtHeat', 'mid');
+// 톤: 치정(진지·끈적) / 뽕빨(성인 웹툰 특유의 가볍고 과장된 개그 + 노골)
+const WT_TONE = {
+  drama: '치정극. 진지하고 끈적하게. 관계의 긴장, 들킬까 하는 불안, 질투와 집착이 장면을 끌고 간다. 빛과 그림자, 침묵과 거리로 감정을 만든다.',
+  pong: "뽕빨물. 가볍고 빠르고 노골적이다. 개연성보다 상황이 먼저다: '어쩌다 보니' 둘만 남고, 오해·우연·내기가 바로 침대로 이어진다. 과장된 리액션, 속마음 태클, 민망한 개그를 섞되 야한 장면은 진지하게 길게 간다. 대사는 능청스럽고 천박해도 된다. 화마다 끝은 다음 판을 예고하는 한 마디.",
+};
+const wtToneKey = () => $('#wtAdultTone')?.value || store.get('set.wtAdultTone', 'drama');
 const wtHeat = () => WT_HEAT[wtHeatKey()] || WT_HEAT.mid;
 const wtActTags = () => ($('#wtAct')?.value || store.get('set.wtAct', '')).trim().replace(/,\s*$/, '');
 // 성인 등급일 때 AI에게 주는 작법 지침. 소재는 사용자가 정하고, 미성년만 막는다.
@@ -7803,7 +7929,8 @@ function wtAdultRules(){
 - 감정과 몸을 같이 민다. 부끄러움·버티다 무너짐·원하면서 아니라고 하는 마음이 몸의 반응과 같이 움직이게 한다.
 - 수위는 한 화 안에서 올라간다. 닿는다 → 벗긴다 → 애무 → 삽입 → 절정 → 끝난 뒤의 공기. 각 단계를 beats 에 분명히 적는다.
 - 장소가 자극을 만든다. 누가 들어올 수 있는 곳, 소리가 새는 곳, 벗을 수 없는 옷, 멈출 수 없는 상황을 쓴다.
-- 모든 인물은 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다·작다 등)은 절대 쓰지 않는다.`;
+- 톤: ${WT_TONE[wtToneKey()] || WT_TONE.drama}
+- 모든 인물은 20세 이상 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다·작다 등)은 절대 쓰지 않는다. 실존 인물은 쓰지 않는다.`;
 }
 /* ---------- 그림체 ---------- */
 const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
@@ -8059,10 +8186,10 @@ const SYSTEM_SYN_BASE = `너는 한국 웹툰·웹소설 기획자다. 거칠게
 - 장면이 눈에 보이게 쓴다. 설명하지 말고 무엇을 하는지 쓴다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
 - 인물은 받은 이름을 쓰고, 새 인물이 필요하면 이름을 지어 cast 에 외형 영어 태그와 한국어 말투를 적는다. 모든 인물은 성인이다.
 - beats 는 장면(또는 화) 차례다. 요청한 개수만큼 쓰고, 각 항목은 그 장면에서 실제로 벌어지는 일을 적는다.
-- 밝고 가벼운 분위기로 흐르지 않게 한다. 빛과 그림자, 침묵과 거리로 감정을 만든다.
+- 톤이 따로 정해지지 않았으면 밝고 가벼운 분위기로 흐르지 않게 한다. 빛과 그림자, 침묵과 거리로 감정을 만든다.
 {ADULT}
 출력은 JSON 하나만.`;
-const SYSTEM_SYN = () => SYSTEM_SYN_BASE.replace('{ADULT}', wtAdultRules());
+const SYSTEM_SYN = () => SYSTEM_SYN_BASE.replace('{ADULT}', wtAdultRules() + '\n' + WT_NATURAL);
 function wtSynText(sc){
   const parts = [];
   if (sc.logline) parts.push(String(sc.logline).trim());
@@ -8072,9 +8199,12 @@ function wtSynText(sc){
 }
 function wtSynStat(){ const v = $('#wtSyn').value.trim(); $('#wtSynLenOut').textContent = v ? `${v.replace(/\s/g, '').length}자` : ''; }
 let wtSynAbort = null;
-function wtSynBusy(on){ $('#wtSynGo').disabled = on; $('#wtSynMore').disabled = on; $('#wtAutoGo').disabled = on; $('#wtSynStop').hidden = !on; }
+function wtSynBusy(on){ $('#wtSynGo').disabled = on; $('#wtSynMore').disabled = on; $('#wtSynSpice').disabled = on; $('#wtAutoGo').disabled = on; $('#wtSynStop').hidden = !on; }
+// more: true=이어서 더 쓰기, 'spice'=같은 사건·인물로 덜 딱딱하게(성인이면 더 노골적으로) 다시 쓰기
 async function wtSynRun(more){
-  const seed = (more ? $('#wtSyn').value : ($('#wtSyn').value.trim() || $('#wtStory').value)).trim();
+  const spice = more === 'spice'; if (spice) more = false;
+  const seed = (spice ? $('#wtSyn').value : more ? $('#wtSyn').value : ($('#wtSyn').value.trim() || $('#wtStory').value)).trim();
+  if (spice && !seed) return toast('먼저 줄거리를 쓰거나 만들어 주세요');
   if (!seed) return toast('줄거리를 한 줄이라도 적어 주세요');
   if (wtSynAbort) return;
   const rating = wtRating(), dict = naiCharsDict();
@@ -8082,7 +8212,8 @@ async function wtSynRun(more){
   const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
   const L = WT_SYN_LEN[$('#wtSynLen').value] || WT_SYN_LEN.mid;
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
-  wtSynAbort = new AbortController(); wtSynBusy(true); wtAutoStat(more ? '줄거리를 이어서 쓰는 중…' : '줄거리를 늘리는 중…');
+  wtSynAbort = new AbortController(); wtSynBusy(true); wtAutoStat(spice ? '줄거리를 맛깔나게 다시 쓰는 중…' : more ? '줄거리를 이어서 쓰는 중…' : '줄거리를 늘리는 중…');
+  if (spice) WT.proj.synPrev = $('#wtSyn').value;
   const text = `분량: ${L.n} — ${L.say}
 장면(또는 화) 차례 개수: ${L.beats || '없이'}
 등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe).'}
@@ -8090,9 +8221,9 @@ async function wtSynRun(more){
 인물 사전: ${dict.length ? dict.map(l => l.split(':')[0].trim()).join(', ') : '(없음)'}
 말투: ${wtVoiceDict().join(' / ') || '(없음)'}
 
-${more ? '아래 줄거리를 그대로 두고 그 뒤를 이어서 더 쓴다. 이미 쓴 부분은 다시 쓰지 않는다.' : '아래를 바탕으로 늘려 쓴다.'}
+${spice ? `아래 줄거리를 같은 사건·인물·순서로 두고 처음부터 다시 쓴다. AI 같은 문장과 설명을 걷어 내고, 사람이 쓴 웹툰처럼 짧고 생생하게.${rating === 'nsfw' ? ' 야한 장면은 더 길고 더 노골적으로, 소리와 몸의 반응을 더 적는다.' : ''}` : more ? '아래 줄거리를 그대로 두고 그 뒤를 이어서 더 쓴다. 이미 쓴 부분은 다시 쓰지 않는다.' : '아래를 바탕으로 늘려 쓴다.'}
 
-${seed}`;
+${seed}${wtRefBlock(await wtRefText())}`;
   let res; try{ res = await stream(c, {messages: [{role: 'user', content: [{type: 'text', text}]}], system: SYSTEM_SYN(), signal: wtSynAbort.signal, format: {type: 'json_schema', schema: WT_SYN_SCHEMA}}); }
   finally { wtSynAbort = null; wtSynBusy(false); }
   if (!res.ok) return wtAutoStat((res.note || '줄거리를 못 만들었어요').trim());
@@ -8106,6 +8237,7 @@ ${seed}`;
 }
 $('#wtSynGo').onclick = () => wtSynRun(false);
 $('#wtSynMore').onclick = () => wtSynRun(true);
+$('#wtSynSpice').onclick = () => wtSynRun('spice');
 $('#wtSynStop').onclick = () => wtSynAbort?.abort();
 $('#wtSyn').addEventListener('input', wtSynStat);
 $('#wtSynLen').value = store.get('set.wtSynLen', 'mid');
@@ -8113,7 +8245,7 @@ $('#wtSynLen').onchange = () => store.set('set.wtSynLen', $('#wtSynLen').value);
 
 /* ---------- 등급·수위 칸 (노벨AI 탭과 같은 값을 쓴다) ---------- */
 function wtRatingSync(){
-  const on = $('#wtRating').value === 'nsfw'; $('#wtHeat').disabled = !on; $('#wtActRow').hidden = !on;
+  const on = $('#wtRating').value === 'nsfw'; $('#wtHeat').disabled = !on; $('#wtActRow').hidden = !on; $('#wtToneRow').hidden = !on;
   $('#wtRatingHint').textContent = on ? '성인으로 두면 줄거리·대사·컷 지시가 성인 기준으로 나와요. 모든 인물은 성인이어야 해요.' : '일반이면 노출·성적 요소 없이 만들어요.';
   const prov = provOf($('#wtAI').value === 'default' ? '' : '#wtAI');
   const soft = on && (prov === 'claude' || prov === 'gemini');
@@ -8124,6 +8256,43 @@ function wtRatingSync(){
 $('#wtRating').value = $('#naiRating').value; $('#wtHeat').value = store.get('set.wtHeat', 'mid'); wtRatingSync();
 $('#wtRating').onchange = () => { $('#naiRating').value = $('#wtRating').value; store.set('set.naiRating', $('#naiRating').value); wtRatingSync(); wtModelSync(); };
 $('#wtHeat').onchange = () => store.set('set.wtHeat', $('#wtHeat').value);
+$('#wtAdultTone').value = store.get('set.wtAdultTone', 'drama'); $('#wtAdultTone').onchange = () => store.set('set.wtAdultTone', $('#wtAdultTone').value);
+/* ---------- 문체 참고: 내 서재의 글 작품에서 대사·소리가 많은 대목을 골라 AI 에게 '말투·리듬·수위 표현'만 보여 준다 ---------- */
+// 내용·이름·문장은 베끼지 않게 한다. 고른 작품은 이 기기에만 기억한다.
+function wtRefFill(){
+  const sel = $('#wtRef'); if (!sel) return; const keep = store.get('set.wtRef', '');
+  const list = works.filter(w => w.eps.some(e => /^(txt|epub|epubch|txtpart)$/.test(e.type))).sort((a, b) => (isAdult(b) - isAdult(a)) || natural(a.name, b.name)).slice(0, 300);
+  sel.innerHTML = '<option value="">없음</option>' + list.map(w => `<option value="${esc(w.key)}">${isAdult(w) ? '[성인] ' : ''}${esc(w.name)}</option>`).join('');
+  sel.value = list.some(w => w.key === keep) ? keep : '';
+}
+$('#wtRef').onfocus = wtRefFill; $('#wtRef').onchange = () => store.set('set.wtRef', $('#wtRef').value);
+setTimeout(wtRefFill, 2500);
+const WT_REF_CACHE = new Map();
+async function wtRefText(){
+  const key = $('#wtRef')?.value || store.get('set.wtRef', ''); if (!key) return '';
+  if (WT_REF_CACHE.has(key)) return WT_REF_CACHE.get(key);
+  const w = works.find(x => x.key === key); if (!w) return '';
+  let eps = w.eps;
+  if (eps.some(e => e.type === 'epub') && !w._expanded){ try{ const out = []; for (const e of eps){ if (e.type !== 'epub'){ out.push(e); continue; } const r = await readEpub(e.file); r.chapters.forEach((c, i) => out.push({type: 'epubch', file: e.file, idx: i})); } eps = out; }catch{} }
+  eps = eps.filter(e => /^(txt|epubch|txtpart)$/.test(e.type));
+  // 앞·가운데·뒤에서 몇 화를 읽어, 대사·소리·말줄임이 많은 대목 두 군데를 고른다
+  const pick = [...new Set([0, Math.floor(eps.length / 3), Math.floor(eps.length * 2 / 3), eps.length - 1])].filter(i => i >= 0 && eps[i]);
+  const spans = [];
+  for (const i of pick){
+    let t = ''; try{ t = await epText(eps[i]); }catch{} if (!t) continue;
+    const paras = t.split(/\n+/).map(x => x.trim()).filter(Boolean);
+    for (let k = 0; k < paras.length; k += 4){
+      const span = paras.slice(k, k + 12).join('\n').slice(0, 700);
+      const score = (span.match(/["“”「」『』]/g) || []).length + 2 * (span.match(/[하흐읏앗응아]{2,}|…|♡|!{1,}/g) || []).length;
+      spans.push({score, span});
+    }
+  }
+  const lively = spans.filter(x => x.score > 0);   // 대사·소리가 하나도 없는 서술 대목은 말투 참고가 안 된다
+  const best = (lively.length ? lively : spans).sort((a, b) => b.score - a.score).slice(0, 2).map(x => x.span);
+  const out = best.length ? best.join('\n\n——\n\n') : '';
+  WT_REF_CACHE.set(key, out); return out;
+}
+const wtRefBlock = ref => ref ? `\n\n문체 참고(아래 글의 말투·문장 길이·리듬·소리 적는 법·수위 표현만 배운다. 내용·인물·이름·문장은 절대 베끼지 않는다):\n<<<\n${ref}\n>>>` : '';
 $('#wtAI').addEventListener('change', wtRatingSync);
 $('#wtAct').value = store.get('set.wtAct', '');
 $('#wtAct').oninput = () => { clearTimeout(WT.actT); WT.actT = setTimeout(() => store.set('set.wtAct', $('#wtAct').value), 500); };
@@ -8685,7 +8854,7 @@ function renderHome(){
   if (!$('#home')) return;
   $('#hDate').textContent = new Date().toLocaleDateString('ko-KR', {month: 'long', day: 'numeric', weekday: 'long'});
   try{ renderDesk(); renderProjs(); }catch(e){ console.warn(e); }
-  renderHomeIdeas(); renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden;
+  renderHomeIdeas(); renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden; window.nvReadStats?.render();
   gnavSync();
 }
 const hIdea = () => { const v = $('#hIdeaIn').value.trim(); if (!v) return; addIdea(v, cur ? cur.name : '홈'); $('#hIdeaIn').value = ''; renderHomeIdeas(); };
@@ -8883,7 +9052,12 @@ async function renderVideo(ep, pos = {}){
   const v = document.createElement('video'); v.controls = true; v.playsInline = true; v.preload = 'metadata'; v.tabIndex = -1;
   const f = ep.file;
   // 드라이브 영상: 서비스 워커를 거쳐 구간으로 흘려 본다(통째로 받으면 폰이 멈춘다). 토큰이 끝났으면 새로 받고 다시
-  let src = f.streamUrl; if (!src && f.rangeUrl){ try{ await gdToken(false); src = f.streamUrl; }catch{} }
+  let src = f.streamUrl;
+  if (!src && f.rangeUrl){
+    // 앱을 막 연 참이라 서비스 워커가 아직 이 화면을 맡지 않았으면 잠깐(4초까지) 기다린다 — 안 그러면 영상을 통째로 받느라 멈춘 것처럼 보인다
+    if ('serviceWorker' in navigator && !navigator.serviceWorker.controller) await Promise.race([new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, {once: true})), new Promise(r => setTimeout(r, 4000))]);
+    try{ await gdToken(false); src = f.streamUrl; }catch{}
+  }
   v.src = src || url(await realBlob(f));
   v.playbackRate = store.get('set.vRate', 1);
   // 그 글의 표지 그림을 재생 전 화면으로 (만화 칸에 따로 나오던 영상 표지)
@@ -8891,15 +9065,16 @@ async function renderVideo(ep, pos = {}){
   box.append(v);
   // 위 줄: 제목 · 10초 뒤로 · 재생 · 10초 앞으로 · 속도 · 자막 · 번역 · 전체 화면 · 다음
   const bar = document.createElement('div'); bar.className = 'vinfo';
-  bar.innerHTML = `<b></b><span class="vt hint">0:00 / 0:00</span><span style="flex:1"></span>
+  bar.innerHTML = `<b></b><span class="vt hint">0:00 / 0:00</span><span style="flex:1"></span><div class="vbtns">
     <button data-a="back" title="10초 뒤로 (← 또는 J)">« 10초</button>
     <button data-a="play" title="재생·멈춤 (스페이스 또는 K)">▶</button>
     <button data-a="fwd" title="10초 앞으로 (→ 또는 L)">10초 »</button>
     <select id="vRate" title="재생 속도">${[0.5, 0.75, 1, 1.25, 1.5, 2].map(x => `<option value="${x}">${x}배</option>`).join('')}</select>
     <select id="vSub" title="자막" hidden></select>
-    <button data-a="tr" title="이 영상을 한국어 자막으로 (내 컴퓨터 AI, 무료)">한국어 자막 만들기</button>
+    <button data-a="tr" title="이 영상을 한국어 자막으로 (내 컴퓨터 AI, 무료). 소리가 없으면 화면 자막을 읽어요">한국어 자막 만들기</button>
+    <button data-a="ocr" title="화면에 입혀진 외국어 자막을 읽어 한국어 자막으로 (소리가 있어도)">화면 자막 읽기</button>
     <button data-a="full" title="전체 화면 (Enter)">전체 화면</button>
-    <button data-a="next" title="다음 영상 ( ] )">다음</button>`;
+    <button data-a="next" title="다음 영상 ( ] )">다음</button></div>`;
   bar.querySelector('b').textContent = ep.label || ep.name;
   bar.querySelector('#vRate').value = String(v.playbackRate);
   bar.onclick = e => {
@@ -8909,6 +9084,7 @@ async function renderVideo(ep, pos = {}){
     else if (a === 'full') (document.fullscreenElement ? document.exitFullscreen() : v.requestFullscreen?.());
     else if (a === 'next') openEp(curEp + 1);
     else if (a === 'tr') translateVideo(ep, v, e.target.closest('button'));
+    else if (a === 'ocr') translateVideo(ep, v, e.target.closest('button'), 'ocr');
   };
   bar.querySelector('#vRate').onchange = e => { v.playbackRate = +e.target.value; store.set('set.vRate', v.playbackRate); };
   bar.querySelector('#vSub').onchange = e => { [...v.textTracks].forEach((t, i) => t.mode = i === +e.target.value ? 'showing' : 'disabled'); };
@@ -9329,16 +9505,17 @@ $('#reader').addEventListener('click', trMaybe);
 document.addEventListener('keydown', e => { if ((e.key === 'o' || e.key === 'O') && !e.ctrlKey && !e.metaKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && curImgs.some(it => it.trSrc)){ e.preventDefault(); trToggleShow(); } });
 
 /* 영상 */
-async function translateVideo(ep, video, btn){
+// mode: 'auto'(음성 → 말소리가 없으면 화면 자막) · 'ocr'(화면에 입힌 자막을 읽는다)
+async function translateVideo(ep, video, btn, mode = 'auto'){
   if (!ep) return;
-  if ((ep.subs || []).length) return translateSubs(ep, video, btn);   // 자막 파일이 있으면 그것을 옮긴다
+  if (mode !== 'ocr' && (ep.subs || []).length) return translateSubs(ep, video, btn);   // 자막 파일이 있으면 그것을 옮긴다
   const p = ep.file?.abs || (TRS !== 'http://127.0.0.1:8790' && ep.file?.lanRel ? 'lan:' + ep.file.lanRel : '');   // 폰·아이패드: PC 가 경로를 찾는다
-  if (!p){ trShow('영상', '<p>내 컴퓨터 폴더의 영상만 음성을 들어 자막을 만들 수 있어요.</p>'); return; }
+  if (!p){ trShow('영상', '<p>내 컴퓨터 폴더의 영상만 자막을 만들 수 있어요(PC 의 번역 엔진이 영상 파일을 읽어요).</p>'); return; }
   trShow('영상 자막', '<p class="hint">번역 엔진 준비 중…</p>');
   if (!(await trEnsure())) return;
   if (btn) btn.disabled = true;
   try{
-    const {id, error} = await fetch(TRS + '/video', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path: p, model: trModel('local'), provider: trProvCfg(), adult: isAdult(cur)})}).then(r => r.json());
+    const {id, error} = await fetch(TRS + '/video', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path: p, mode, lang: trLang(), model: trModel('local'), provider: trProvCfg(), adult: isAdult(cur)})}).then(r => r.json());
     if (!id) throw new Error(error || '시작하지 못했어요');
     for (;;){
       await new Promise(r => setTimeout(r, 1500));
@@ -9435,7 +9612,13 @@ window.nvDesktop?.onLibDlNew?.(() => linkDownloaderFolders());
 // 프로그램을 켤 때마다 '전체'로 돌아간다(누가 서재를 열어도 곤란하지 않게).
 const LIB_KINDS = [['all', '전체'], ['novel', '소설'], ['webtoon', '웹툰'], ['manga', '만화'], ['video', '영상'], ['adult', '성인']];
 let libKind = (() => { const k = store.get('set.libKind', 'all'); return k === 'adult' ? 'all' : k; })();
-const inKind = (w, k = libKind) => k === 'adult' ? isAdult(w) : !isAdult(w) && (k === 'all' || w.kind === k);
+// 성인 칸 안에서도 종류를 나눈다: 만화(웹툰 포함) · 영상 · 소설 — 영상은 영상끼리
+let adultSub = store.get('set.libAdultSub', 'manga');
+const ADULT_SUB = [['manga', '만화'], ['video', '영상'], ['novel', '소설']];
+const adultSubOf = w => w.kind === 'video' ? 'video' : w.kind === 'novel' ? 'novel' : 'manga';
+const inKind = (w, k = libKind) => k === 'adult' ? isAdult(w) && adultSubOf(w) === adultSub : !isAdult(w) && (k === 'all' || w.kind === k);
+window.libShelf = () => libKind === 'all';
+window.libGoKind = k => { libKind = k; store.set('set.libKind', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
 const allWorks = () => works;
 window.nvAllWorks = allWorks;
 const _renderLib0 = renderLib;
@@ -9446,7 +9629,9 @@ renderLib = function(){
 };
 function renderKinds(){
   const box = $('#libKinds'); if (!box) return;
-  const n = k => works.filter(w => inKind(w, k)).length;
+  const n = k => k === 'adult' ? works.filter(isAdult).length : works.filter(w => inKind(w, k)).length;
+  // 성인 칸의 고른 종류가 비었으면 있는 종류로
+  if (libKind === 'adult' && !works.some(w => isAdult(w) && adultSubOf(w) === adultSub)){ const s = ADULT_SUB.find(([k]) => works.some(w => isAdult(w) && adultSubOf(w) === k)); if (s){ adultSub = s[0]; return renderLib(); } }
   box.innerHTML = '';
   for (const [k, label] of LIB_KINDS){
     const c = n(k); if (k !== 'all' && !c) continue;   // 없는 종류는 칸을 만들지 않는다
@@ -9455,6 +9640,17 @@ function renderKinds(){
     b.innerHTML = `<span></span><em>${c}</em>`; b.querySelector('span').textContent = label;
     b.onclick = () => { libKind = k; store.set('set.libKind', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
     box.append(b);
+  }
+  if (libKind === 'adult'){
+    const row = document.createElement('div'); row.className = 'lib-sub';
+    for (const [k, label] of ADULT_SUB){
+      const c = works.filter(w => isAdult(w) && adultSubOf(w) === k).length; if (!c) continue;
+      const b = document.createElement('button'); b.className = 'kind-tab' + (k === adultSub ? ' on' : '');
+      b.innerHTML = `<span>성인 ${label}</span><em>${c}</em>`;
+      b.onclick = () => { adultSub = k; store.set('set.libAdultSub', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
+      row.append(b);
+    }
+    box.append(row);
   }
 }
 // 성인 작품을 읽다가 서재·홈으로 나오면 읽던 화면도 비운다(뒤에 비쳐 보이지 않게)
@@ -9703,17 +9899,19 @@ window.nvNaiCast = {cast: NP_CAST, pairs: NP_PAIRS, line: npCastLine};   // 시�
 //  · 그 PC 의 프로그램: 127.0.0.1 주소로
 //  · PC 주소로 연 폰·아이패드: PC 를 거쳐(/t/<열쇠>/toki/)
 //  · 깃허브 주소로 연 폰·아이패드·노트북: 구글로 맞춘 PC 바깥 주소(pcRemote, 터널)를 거쳐
-const DL = {apps: [], cur: '', urls: {}, base: '', ext: null};
+const DL = {apps: [], cur: '', urls: {}, base: '', ext: null, down: false};
 const DL_NAME = {moa: ['모아받기', '사이트에서 골라 받기 · pawchive'], toki: ['토끼 다운로더', '제목·주소로 받기 · 새 회차'], ext: ['주소로 받기', 'kemono · coomer · pawchive · 히토미 · mangadex 등 주소만 붙여 넣기']};
 async function dlInit(){
-  DL.base = ''; DL.apps = [];
+  DL.base = ''; DL.apps = []; DL.down = false; DL.urls = {};
   if (DESKTOP && window.nvDesktop.dlApps) DL.apps = await window.nvDesktop.dlApps().catch(() => []);
   if (!DL.apps.length && pcBase()){ DL.base = pcBase() + '/'; DL.apps = (await fetch(pcBase() + '/lan/info').then(r => r.json()).catch(() => null))?.apps || []; }
   // 이 기기에 다운로더가 없으면(폰·아이패드·다른 노트북) 구글로 맞춘 PC 바깥 주소로
   const remote = store.get('pcRemote', null)?.url || '';
   if (!DL.apps.length && remote && location.protocol !== 'app:'){
     DL.base = remote.endsWith('/') ? remote : remote + '/';
-    DL.apps = (await fetch(DL.base + 'lan/info').then(r => r.json()).catch(() => null))?.apps || [];
+    // PC 가 꺼져 있어도 칸은 보이고, 열면 'PC 를 켜 주세요'를 알려 준다
+    const info = await fetch(DL.base + 'lan/info', {signal: AbortSignal.timeout?.(8000)}).then(r => r.ok ? r.json() : null).catch(() => null);
+    DL.down = !info; DL.apps = info?.apps || ['moa', 'toki'];
   }
   // 창 프로그램 다운로더(Kemono·Pawchive·HakuNeko·HaruNeko·히토미): 이 PC 에서 창으로만 열린다
   DL.ext = DESKTOP && DL.apps.length && window.nvDesktop.dlExt ? await window.nvDesktop.dlExt().catch(() => null) : null;
@@ -9732,6 +9930,10 @@ async function dlUrl(k){
 async function dlShow(k){
   DL.cur = k = k || DL.cur || DL.apps[0]; if (!k) return;
   $$('#dlTabs [data-k]').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+  if (DL.down){   // 다시 한 번 물어본다(그새 PC 를 켰을 수 있다)
+    await dlInit(); if (DL.down){ $('#dlFrame').hidden = true; $('#dlExt').hidden = false; $('#dlOut').hidden = true; $('#dlStat').textContent = '';
+      $('#dlExt').innerHTML = '<div class="lib-empty"><b>PC 에 닿지 않아요</b><p>받기는 다운로더가 있는 PC 가 해요. PC 에서 Novelist 를 켜 두고 잠시 뒤 다시 눌러 주세요.<br>(PC 를 다시 켰다면 PC 주소가 바뀌어서, 이 기기가 구글로 한 번 맞춘 뒤에 열려요)</p><button class="primary" id="dlRetry">다시 해 보기</button></div>';
+      $('#dlRetry').onclick = () => dlShow(k); return; } }
   $('#dlFrame').hidden = k === 'ext'; $('#dlExt').hidden = k !== 'ext'; $('#dlOut').hidden = k === 'ext';
   if (k === 'ext') return dlExtShow();
   const u = await dlUrl(k); if (DL.cur !== k) return;
@@ -9776,6 +9978,114 @@ function dlClose(){ $('#dlPage').hidden = true; }
 $('#dlOut').onclick = () => { const u = DL.urls[DL.cur]; if (u) window.open(u, '_blank', 'noopener'); };
 setTimeout(dlInit, 1500);
 window.nvDl = {init: dlInit, state: () => DL};   // 시험용
+/* ================= 독서 기록 · 사전 찾기 ================= */
+// 독서 기록(리디·KOReader 의 독서 통계처럼): 읽는 화면이 보이고 최근 2분 안에 넘기거나 누른 동안만 시간을 센다.
+// 기기마다 따로 적고(rstat.<기기>) 홈에서 모두 더해 보여 준다 — 두 기기가 같은 날 읽어도 서로 덮어쓰지 않는다(기기끼리 맞춰진다).
+const RS_DEV = (() => { try{ let d = localStorage.getItem('nv.devTag'); if (!d){ d = Math.random().toString(36).slice(2, 8); localStorage.setItem('nv.devTag', d); } return d; }catch{ return 'x'; } })();
+const RS = {last: 0, add: 0, work: {}};
+const rsDay = (t = Date.now()) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+for (const ev of ['pointerdown', 'wheel', 'keydown', 'scroll', 'touchmove']) addEventListener(ev, e => { if (e.target?.closest?.('#reader') || ev === 'keydown' || ev === 'wheel') RS.last = Date.now(); }, {capture: true, passive: true});
+const rsReading = () => !!cur && document.visibilityState === 'visible' && !atHome() && !atLib() && $('#studio').hidden && $('#wt').hidden && $('#dlPage').hidden && Date.now() - RS.last < 120e3;
+setInterval(() => { if (rsReading()){ RS.add += 15; RS.work[cur.key] = (RS.work[cur.key] || 0) + 15; } }, 15e3);
+function rsFlush(){
+  if (!RS.add) return;
+  const k = 'rstat.' + RS_DEV, s = store.get(k, {days: {}, works: {}});
+  const day = rsDay(); s.days[day] = (s.days[day] || 0) + RS.add;
+  for (const [w, sec] of Object.entries(RS.work)) s.works[w] = (s.works[w] || 0) + sec;
+  // 오래된 날은 1년치만, 작품은 많이 읽은 300개만 남긴다
+  const keep = rsDay(Date.now() - 366 * 864e5); for (const d of Object.keys(s.days)) if (d < keep) delete s.days[d];
+  const ws = Object.entries(s.works); if (ws.length > 300) s.works = Object.fromEntries(ws.sort((a, b) => b[1] - a[1]).slice(0, 300));
+  RS.add = 0; RS.work = {}; store.set(k, s);
+}
+setInterval(rsFlush, 60e3);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') rsFlush(); });
+function rsAll(){
+  const days = {}, wks = {};
+  for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (!k.startsWith('nv.rstat.')) continue;
+    const s = store.get(k.slice(3), null); if (!s) continue;
+    for (const [d, v] of Object.entries(s.days || {})) days[d] = (days[d] || 0) + v;
+    for (const [w, v] of Object.entries(s.works || {})) wks[w] = (wks[w] || 0) + v; }
+  const today = rsDay(); days[today] = (days[today] || 0) + RS.add;   // 아직 적지 않은 것도
+  return {days, wks};
+}
+const rsMin = s => s >= 3600 ? `${Math.floor(s / 3600)}시간 ${Math.round(s % 3600 / 60)}분` : `${Math.round(s / 60)}분`;
+function renderReadStats(){
+  const box = $('#hStats'); if (!box) return;
+  const {days, wks} = rsAll(); const now = Date.now();
+  const sum = n => Array.from({length: n}, (_, i) => days[rsDay(now - i * 864e5)] || 0).reduce((a, b) => a + b, 0);
+  let streak = 0; for (let i = days[rsDay()] ? 0 : 1; days[rsDay(now - i * 864e5)] >= 60; i++) streak++;   // 하루 1분 넘게 읽은 날이 이어진 수
+  if (!Object.keys(days).length || !sum(365)){ box.hidden = true; return; }
+  box.hidden = false;
+  // 4주 달력(오늘이 맨 오른쪽 아래)
+  const cells = Array.from({length: 28}, (_, i) => { const t = now - (27 - i) * 864e5, v = days[rsDay(t)] || 0; const lv = !v ? 0 : v < 600 ? 1 : v < 1800 ? 2 : v < 3600 ? 3 : 4; return `<i class="l${lv}" title="${new Date(t).toLocaleDateString('ko-KR', {month: 'numeric', day: 'numeric'})} · ${rsMin(v)}"></i>`; }).join('');
+  const top = Object.entries(wks).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => { const w = works.find(x => x.key === k); return w && !isAdult(w) ? `<li><span></span><em>${rsMin(v)}</em></li>` : ''; }).filter(Boolean);
+  box.innerHTML = `<div class="h-k">독서 기록</div>
+    <div class="rs-row"><div><b>${rsMin(days[rsDay()] || 0)}</b><span>오늘</span></div><div><b>${rsMin(sum(7))}</b><span>이번 주(7일)</span></div><div><b>${streak}일</b><span>연속</span></div></div>
+    <div class="rs-cal">${cells}</div>${top.length ? `<ol class="rs-top">${top.join('')}</ol>` : ''}`;
+  const names = Object.entries(wks).sort((a, b) => b[1] - a[1]).map(([k]) => works.find(x => x.key === k)).filter(w => w && !isAdult(w)).slice(0, 3);
+  box.querySelectorAll('.rs-top span').forEach((s, i) => s.textContent = names[i]?.name || '');
+}
+window.nvReadStats = {all: rsAll, flush: rsFlush, render: renderReadStats, tick: s => { RS.add += s; if (cur) RS.work[cur.key] = (RS.work[cur.key] || 0) + s; }};   // 시험용
+
+// 사전 찾기: 고른 낱말을 네이버 사전(한국어·영어·일본어·한자 모두)에서
+if ($('#selbar') && !$('#selDict')){
+  const b = document.createElement('button'); b.id = 'selDict'; b.textContent = '사전'; b.title = '고른 낱말을 사전에서 찾기';
+  $('#selCopy').before(b);
+  b.onclick = () => { const t = (selInfo?.text || getSelection().toString()).trim().slice(0, 60); if (!t) return; $('#selbar').style.display = 'none'; window.open('https://dict.naver.com/search.dict?dicQuery=' + encodeURIComponent(t), '_blank', 'noopener'); };
+}
+/* ================= 보고 있는 웹툰·만화의 그림체로 노벨AI 그리기 ================= */
+// 읽는 화면에 보이는 그림 한 장을 고른 AI(노벨AI 탭의 'AI')에게 보여 주고, 내용(인물·장면·옷)은 빼고 그림체만 노벨AI 태그로 받는다.
+// 받은 태그는 하우스 스타일 칸에 넣고 그림체를 '직접 쓰기'로 바꾼다 → 노벨AI 탭·웹툰 만들기가 그 그림체로 그린다. 바꾸기 전 칸은 되돌릴 수 있게 남겨 둔다.
+const SP_SYS = `너는 노벨AI(NAI Diffusion V4.5) 프롬프트 전문가다. 그림을 보고 "그림체"만 영어 Danbooru 태그로 적는다.
+- 넣는 것: 화풍(korean webtoon style, manga style, anime coloring, semi realistic 등), 선(thick lineart, thin lineart, no lineart), 채색(cel shading, flat color, soft shading, painterly), 명암·빛(rim light, dramatic lighting, soft lighting), 색감(muted colors, pastel colors, high contrast, monochrome, screentone), 질감·매체(film grain, watercolor, digital painting), 눈·얼굴 그리는 법(sharp eyes, detailed eyes) 같은 그림체 태그.
+- 넣지 않는 것: 인물 수·성별·머리색·옷·자세·배경·장면·사물·말풍선·글자 등 그림의 내용. 작가 이름도 넣지 않는다.
+- 12~24개를 쉼표로 이어 한 줄로만 출력한다. 다른 말은 하지 않는다.`;
+function spVisibleImg(){
+  const imgs = [...document.querySelectorAll('#reader img')].filter(i => i.complete && i.naturalWidth > 80);
+  if (!imgs.length) return null;
+  const mid = innerHeight / 2, d = i => { const r = i.getBoundingClientRect(); return r.bottom < 0 || r.top > innerHeight ? 1e9 : Math.abs((r.top + r.bottom) / 2 - mid); };
+  return imgs.sort((a, b) => d(a) - d(b))[0];
+}
+async function spJpeg(im, max = 1024){
+  const s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+  const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * s); c.height = Math.round(im.naturalHeight * s);
+  try{ c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', 0.85).split(',')[1]; }
+  catch{   // 다른 주소의 그림이라 캔버스가 막히면 받아서 다시 그린다
+    const bm = await createImageBitmap(await (await fetch(im.src)).blob());
+    c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); bm.close?.(); return c.toDataURL('image/jpeg', 0.85).split(',')[1];
+  }
+}
+// AI 가 내용 태그(인물 수·머리·옷·자세·배경 등)를 섞어 내도 그림체 태그만 남긴다
+const SP_CONTENT = /^(\d+\+?\s*)?(boys?|girls?|others?)$|^(solo|duo|couple|multiple \w+)$|\b(hair|hairstyle|ponytail|bangs|shirt|dress|uniform|skirt|pants|jacket|coat|suit|hat|glasses|background|holding|standing|sitting|looking|smile|smiling|blush|crying|nude|naked|breasts?|penis|pussy|sex|kiss|bed|room|street|sky|tree|window|sword|weapon|speech bubble|text|logo|signature)\b|^(red|blue|green|yellow|purple|pink|black|white|brown|grey|gray|golden|silver|orange|aqua) (eyes|skin)$/;
+const spClean = t => [...new Set(String(t).split('\n').find(l => l.includes(','))?.split(',').map(x => x.trim().replace(/^["'`]+|["'`.]+$/g, '').toLowerCase()).filter(x => x && x.length < 40 && /^[a-z0-9 ()_:.'-]+$/.test(x) && !SP_CONTENT.test(x)) || [])].slice(0, 26).join(', ');
+async function spPick(btn){
+  const im = spVisibleImg();
+  if (!im) return toast('웹툰·만화를 열어 그림이 보이는 곳에서 눌러 주세요');
+  const c = await client('#naiProv'); if (!c) return;
+  const st = $('#spStat'); btn.disabled = true; st.textContent = '그림체를 읽는 중…';
+  try{
+    const data = await spJpeg(im);
+    const r = await stream(c, {system: SP_SYS, messages: [{role: 'user', content: [{type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}}, {type: 'text', text: '이 그림의 그림체 태그만.'}]}]});
+    const tags = r.ok ? spClean(r.text) : '';
+    if (!tags){ st.textContent = '그림체를 읽지 못했어요' + (r.note ? ' ' + r.note.trim() : ' (그림을 볼 수 있는 AI 인지 확인해 주세요 — Claude·Gemini, 또는 Ollama 는 qwen2.5vl 같은 그림 모델)'); return; }
+    if (!confirm(`'${cur?.name || '이 작품'}' 그림체로 노벨AI 하우스 스타일을 바꿀까요?\n\n${tags}`)){ st.textContent = '바꾸지 않았어요: ' + tags; return; }
+    store.set('set.naiStyle.prev', $('#naiStyle').value);
+    $('#naiStyle').value = 'masterpiece, best quality, very aesthetic, ' + tags; store.set('set.naiStyle', $('#naiStyle').value);
+    $('#naiStyleSel').value = 'custom'; $('#naiStyleSel').dispatchEvent(new Event('change'));
+    const picks = store.get('naiStylePicks', []).filter(p => p.tags !== tags); picks.unshift({name: cur?.name || '', tags, t: Date.now()}); store.set('naiStylePicks', picks.slice(0, 10));
+    st.textContent = `'${cur?.name || ''}' 그림체로 바꿨어요. 노벨AI 탭·웹툰 만들기가 이 그림체로 그려요.`; $('#spUndo').hidden = false;
+    toast('그림체를 가져왔어요');
+  }catch(e){ st.textContent = '그림체를 읽지 못했어요: ' + e.message; }
+  finally{ btn.disabled = false; }
+}
+if ($('#naiStyleNow') && !$('#spPick')){
+  const box = document.createElement('div'); box.className = 'row tight';
+  box.innerHTML = '<button id="spPick" title="읽는 화면에 보이는 그림의 그림체(내용 말고)를 AI 가 노벨AI 태그로 옮겨 하우스 스타일에 넣어요">지금 보는 그림체 가져오기</button><button id="spUndo" hidden>되돌리기</button><span class="hint" id="spStat"></span>';
+  $('#naiStyleNow').after(box);
+  $('#spPick').onclick = e => spPick(e.currentTarget);
+  $('#spUndo').onclick = () => { const p = store.get('set.naiStyle.prev', null); if (p === null) return; $('#naiStyle').value = p; store.set('set.naiStyle', p); $('#spUndo').hidden = true; $('#spStat').textContent = '하우스 스타일을 되돌렸어요'; };
+}
+window.nvStylePick = {clean: spClean};   // 시험용
 </script>
 </body>
 </html>

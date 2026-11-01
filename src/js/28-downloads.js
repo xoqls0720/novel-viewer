@@ -4,17 +4,19 @@
 //  · 그 PC 의 프로그램: 127.0.0.1 주소로
 //  · PC 주소로 연 폰·아이패드: PC 를 거쳐(/t/<열쇠>/toki/)
 //  · 깃허브 주소로 연 폰·아이패드·노트북: 구글로 맞춘 PC 바깥 주소(pcRemote, 터널)를 거쳐
-const DL = {apps: [], cur: '', urls: {}, base: '', ext: null};
+const DL = {apps: [], cur: '', urls: {}, base: '', ext: null, down: false};
 const DL_NAME = {moa: ['모아받기', '사이트에서 골라 받기 · pawchive'], toki: ['토끼 다운로더', '제목·주소로 받기 · 새 회차'], ext: ['주소로 받기', 'kemono · coomer · pawchive · 히토미 · mangadex 등 주소만 붙여 넣기']};
 async function dlInit(){
-  DL.base = ''; DL.apps = [];
+  DL.base = ''; DL.apps = []; DL.down = false; DL.urls = {};
   if (DESKTOP && window.nvDesktop.dlApps) DL.apps = await window.nvDesktop.dlApps().catch(() => []);
   if (!DL.apps.length && pcBase()){ DL.base = pcBase() + '/'; DL.apps = (await fetch(pcBase() + '/lan/info').then(r => r.json()).catch(() => null))?.apps || []; }
   // 이 기기에 다운로더가 없으면(폰·아이패드·다른 노트북) 구글로 맞춘 PC 바깥 주소로
   const remote = store.get('pcRemote', null)?.url || '';
   if (!DL.apps.length && remote && location.protocol !== 'app:'){
     DL.base = remote.endsWith('/') ? remote : remote + '/';
-    DL.apps = (await fetch(DL.base + 'lan/info').then(r => r.json()).catch(() => null))?.apps || [];
+    // PC 가 꺼져 있어도 칸은 보이고, 열면 'PC 를 켜 주세요'를 알려 준다
+    const info = await fetch(DL.base + 'lan/info', {signal: AbortSignal.timeout?.(8000)}).then(r => r.ok ? r.json() : null).catch(() => null);
+    DL.down = !info; DL.apps = info?.apps || ['moa', 'toki'];
   }
   // 창 프로그램 다운로더(Kemono·Pawchive·HakuNeko·HaruNeko·히토미): 이 PC 에서 창으로만 열린다
   DL.ext = DESKTOP && DL.apps.length && window.nvDesktop.dlExt ? await window.nvDesktop.dlExt().catch(() => null) : null;
@@ -33,6 +35,10 @@ async function dlUrl(k){
 async function dlShow(k){
   DL.cur = k = k || DL.cur || DL.apps[0]; if (!k) return;
   $$('#dlTabs [data-k]').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+  if (DL.down){   // 다시 한 번 물어본다(그새 PC 를 켰을 수 있다)
+    await dlInit(); if (DL.down){ $('#dlFrame').hidden = true; $('#dlExt').hidden = false; $('#dlOut').hidden = true; $('#dlStat').textContent = '';
+      $('#dlExt').innerHTML = '<div class="lib-empty"><b>PC 에 닿지 않아요</b><p>받기는 다운로더가 있는 PC 가 해요. PC 에서 Novelist 를 켜 두고 잠시 뒤 다시 눌러 주세요.<br>(PC 를 다시 켰다면 PC 주소가 바뀌어서, 이 기기가 구글로 한 번 맞춘 뒤에 열려요)</p><button class="primary" id="dlRetry">다시 해 보기</button></div>';
+      $('#dlRetry').onclick = () => dlShow(k); return; } }
   $('#dlFrame').hidden = k === 'ext'; $('#dlExt').hidden = k !== 'ext'; $('#dlOut').hidden = k === 'ext';
   if (k === 'ext') return dlExtShow();
   const u = await dlUrl(k); if (DL.cur !== k) return;

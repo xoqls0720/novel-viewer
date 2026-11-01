@@ -90,8 +90,12 @@ put('성인/영상/creatorB (123)/22222222 영상 글/01_cover.png', PNG); put('
   const tabs = await p.$$eval('#libKinds .kind-tab span', s => s.map(x => x.textContent));
   const shownAll = await p.$$eval('#lib .card .t', s => s.map(x => x.textContent));
   console.log('tabs:', tabs.join(','), '| all has adult:', shownAll.includes('creatorB (123)'));
-  await p.click('#libKinds .kind-tab.adult'); await p.waitForTimeout(300);
-  console.log('adult tab:', (await p.$$eval('#lib .card .t', s => s.map(x => x.textContent))).sort().join(','));
+  // 성인 칸은 만화·영상·소설로 나뉜다: 칸마다 모아서 본다
+  const adultAll = async () => { await p.click('#libKinds .kind-tab.adult'); await p.waitForTimeout(300); const out = [];
+    const n = await p.locator('#libKinds .lib-sub .kind-tab').count();
+    for (let i = 0; i < n; i++){ await p.locator('#libKinds .lib-sub .kind-tab').nth(i).click(); await p.waitForTimeout(200); out.push(...await p.$$eval('#lib .card .t', s => s.map(x => x.textContent))); }
+    return out.sort().join(','); };
+  console.log('adult tab:', await adultAll(), '| subs:', await p.$$eval('#libKinds .lib-sub .kind-tab span', s => s.map(x => x.textContent).join(',')));
   await p.click('#libKinds .kind-tab:has-text("만화")'); await p.waitForTimeout(300);
   console.log('manga tab:', (await p.$$eval('#lib .card .t', s => s.map(x => x.textContent))).join(','));
   // 오른쪽 클릭으로 성인 칸에 보내기 / 되돌리기 (이름으로 알아본 작품은 처음부터 성인 칸에만)
@@ -99,8 +103,9 @@ put('성인/영상/creatorB (123)/22222222 영상 글/01_cover.png', PNG); put('
   const okDlg = d => d.accept(); p.on('dialog', okDlg);
   await p.click('#lib .card:has-text("artistA")', {button: 'right'}); await p.waitForTimeout(300);
   const mangaAfter = await cards();
-  await p.click('#libKinds .kind-tab.adult'); await p.waitForTimeout(300); const adultAfter = await cards();
-  await p.click('#lib .card:has-text("hintC")', {button: 'right'}); await p.waitForTimeout(300); const adultBack = await cards();
+  const adultAfter = await adultAll();
+  for (let i = 0; i < await p.locator('#libKinds .lib-sub .kind-tab').count(); i++){ await p.locator('#libKinds .lib-sub .kind-tab').nth(i).click(); await p.waitForTimeout(200); if (await p.$('#lib .card:has-text("hintC")')) break; }
+  await p.click('#lib .card:has-text("hintC")', {button: 'right'}); await p.waitForTimeout(300); const adultBack = await adultAll();
   p.off('dialog', okDlg); await p.evaluate(() => { localStorage.removeItem('nv.adultMark'); nvMedia.setKind('all'); });
   console.log('adult marks: manga tab', JSON.stringify(mangaAfter), '| adult tab', adultAfter, '| hintC back out', !adultBack.includes('hintC'));
   // 웹툰 EPUB → 화 3개 (디스크에서 구간으로 읽기: 통째로 받지 않는다)

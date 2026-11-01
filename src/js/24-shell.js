@@ -107,7 +107,7 @@ function renderHome(){
   if (!$('#home')) return;
   $('#hDate').textContent = new Date().toLocaleDateString('ko-KR', {month: 'long', day: 'numeric', weekday: 'long'});
   try{ renderDesk(); renderProjs(); }catch(e){ console.warn(e); }
-  renderHomeIdeas(); renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden;
+  renderHomeIdeas(); renderResume(); $('#hReadNone').hidden = !$('#wResume').hidden; window.nvReadStats?.render();
   gnavSync();
 }
 const hIdea = () => { const v = $('#hIdeaIn').value.trim(); if (!v) return; addIdea(v, cur ? cur.name : '홈'); $('#hIdeaIn').value = ''; renderHomeIdeas(); };

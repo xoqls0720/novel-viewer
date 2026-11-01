@@ -42,13 +42,13 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   await p.click('#drvPick'); await p.waitForTimeout(1500);
   console.log('sources:', await p.$$eval('#srcList .src b', e => e.map(x => x.textContent)), '| status:', await p.textContent('#srcList .st'));
   await p.keyboard.press('Escape');
-  console.log('works:', await p.$$eval('.grid .card .t', e => e.map(x => x.textContent)));
-  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
+  console.log('works:', await p.$$eval(':is(.grid,.shelf) .card .t', e => e.map(x => x.textContent)));
+  await p.evaluate(() => nvGo('lib')); await p.click(':is(.grid,.shelf) .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
   console.log('ep text:', (await p.textContent('#reader .novel')).includes('드라이브에서 온 1화'), '| media hits:', mediaHits);
   // 다시 켜면(인터넷 없이) 목록·받은 화가 그대로
   online = false; await p.reload(); await p.waitForTimeout(1800);
-  console.log('offline works:', await p.$$eval('.grid .card .t', e => e.map(x => x.textContent)));
-  await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
+  console.log('offline works:', await p.$$eval(':is(.grid,.shelf) .card .t', e => e.map(x => x.textContent)));
+  await p.evaluate(() => nvGo('lib')); await p.click(':is(.grid,.shelf) .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
   console.log('offline ep text:', (await p.textContent('#reader .novel')).includes('드라이브에서 온 1화'));
   // 드라이브에 새 화가 올라갔다 → 다시 켜면 저장해 둔 목록으로 먼저 보이고, 뒤에서 새 화를 맞춘다
   online = true; await p.reload(); await p.waitForTimeout(2500); const qs0 = folderQs;

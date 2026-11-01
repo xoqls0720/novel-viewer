@@ -79,7 +79,12 @@ const SYSTEM_WT_BASE = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽�
 - 말투: 받은 말투 설명이 있으면 그 인물의 대사는 반드시 그 말투로 쓴다(존대·반말, 길이, 말버릇, 호칭). 말투가 없는 인물은 cast 에 적은 말투를 따른다. 인물마다 말이 달라야 누가 말하는지 알 수 있다.
 {ADULT}
 출력은 JSON 하나만.`;
-const SYSTEM_WT = () => SYSTEM_WT_BASE.replace('{ADULT}', wtAdultRules());
+const SYSTEM_WT = () => SYSTEM_WT_BASE.replace('{ADULT}', wtAdultRules() + '\n' + WT_NATURAL);
+// AI 티 지우기: 사람이 쓴 웹툰처럼 (줄거리·대본 모두)
+const WT_NATURAL = `- AI 가 쓴 티가 나는 말은 쓰지 않는다: '그 순간', '마치 ~처럼', '~하는 것이었다', '이윽고', '묘한 감정', '알 수 없는 감정', '심장이 두근거렸다', '하나가 되었다', '두 사람은', '그렇게 밤이 깊어 갔다', '~을 느꼈다' 로 감정 설명하기.
+- 웹툰 나레이션처럼 쓴다: 짧게 끊고, 장면을 바로 던진다. 한 문장 25자 안팎. 문어체 '~였다'만 이어 쓰지 말고 현재형·구어체를 섞는다.
+- 사람은 정리해서 말하지 않는다: 말이 겹치고, 끊기고, 엉뚱한 데로 샌다. 사투리·비속어·말버릇을 인물마다 다르게 준다.
+- 설명보다 장면: '부끄러웠다' 대신 귀가 빨개지고 시선을 피하는 걸 보여 준다.`;
 
 /* ---------- 등급·수위 ---------- */
 const wtRating = () => $('#wtRating')?.value || $('#naiRating').value;
@@ -98,6 +103,12 @@ const NSFW_DROP_POS = /\bclosed mouth\b/gi;
 const NSFW_DROP_NEG = /^(smile|grin|smirk|teeth|open mouth|parted lips)$/i;
 const NSFW_NEG_ADD = 'censored, mosaic censoring, bar censor, pixelated, steam censor, convenient censoring';
 const wtHeatKey = () => $('#wtHeat')?.value || store.get('set.wtHeat', 'mid');
+// 톤: 치정(진지·끈적) / 뽕빨(성인 웹툰 특유의 가볍고 과장된 개그 + 노골)
+const WT_TONE = {
+  drama: '치정극. 진지하고 끈적하게. 관계의 긴장, 들킬까 하는 불안, 질투와 집착이 장면을 끌고 간다. 빛과 그림자, 침묵과 거리로 감정을 만든다.',
+  pong: "뽕빨물. 가볍고 빠르고 노골적이다. 개연성보다 상황이 먼저다: '어쩌다 보니' 둘만 남고, 오해·우연·내기가 바로 침대로 이어진다. 과장된 리액션, 속마음 태클, 민망한 개그를 섞되 야한 장면은 진지하게 길게 간다. 대사는 능청스럽고 천박해도 된다. 화마다 끝은 다음 판을 예고하는 한 마디.",
+};
+const wtToneKey = () => $('#wtAdultTone')?.value || store.get('set.wtAdultTone', 'drama');
 const wtHeat = () => WT_HEAT[wtHeatKey()] || WT_HEAT.mid;
 const wtActTags = () => ($('#wtAct')?.value || store.get('set.wtAct', '')).trim().replace(/,\s*$/, '');
 // 성인 등급일 때 AI에게 주는 작법 지침. 소재는 사용자가 정하고, 미성년만 막는다.
@@ -111,7 +122,8 @@ function wtAdultRules(){
 - 감정과 몸을 같이 민다. 부끄러움·버티다 무너짐·원하면서 아니라고 하는 마음이 몸의 반응과 같이 움직이게 한다.
 - 수위는 한 화 안에서 올라간다. 닿는다 → 벗긴다 → 애무 → 삽입 → 절정 → 끝난 뒤의 공기. 각 단계를 beats 에 분명히 적는다.
 - 장소가 자극을 만든다. 누가 들어올 수 있는 곳, 소리가 새는 곳, 벗을 수 없는 옷, 멈출 수 없는 상황을 쓴다.
-- 모든 인물은 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다·작다 등)은 절대 쓰지 않는다.`;
+- 톤: ${WT_TONE[wtToneKey()] || WT_TONE.drama}
+- 모든 인물은 20세 이상 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다·작다 등)은 절대 쓰지 않는다. 실존 인물은 쓰지 않는다.`;
 }
 /* ---------- 그림체 ---------- */
 const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
@@ -367,10 +379,10 @@ const SYSTEM_SYN_BASE = `너는 한국 웹툰·웹소설 기획자다. 거칠게
 - 장면이 눈에 보이게 쓴다. 설명하지 말고 무엇을 하는지 쓴다. 감정은 이름 붙이지 않고 행동과 사물로 보여 준다.
 - 인물은 받은 이름을 쓰고, 새 인물이 필요하면 이름을 지어 cast 에 외형 영어 태그와 한국어 말투를 적는다. 모든 인물은 성인이다.
 - beats 는 장면(또는 화) 차례다. 요청한 개수만큼 쓰고, 각 항목은 그 장면에서 실제로 벌어지는 일을 적는다.
-- 밝고 가벼운 분위기로 흐르지 않게 한다. 빛과 그림자, 침묵과 거리로 감정을 만든다.
+- 톤이 따로 정해지지 않았으면 밝고 가벼운 분위기로 흐르지 않게 한다. 빛과 그림자, 침묵과 거리로 감정을 만든다.
 {ADULT}
 출력은 JSON 하나만.`;
-const SYSTEM_SYN = () => SYSTEM_SYN_BASE.replace('{ADULT}', wtAdultRules());
+const SYSTEM_SYN = () => SYSTEM_SYN_BASE.replace('{ADULT}', wtAdultRules() + '\n' + WT_NATURAL);
 function wtSynText(sc){
   const parts = [];
   if (sc.logline) parts.push(String(sc.logline).trim());
@@ -380,9 +392,12 @@ function wtSynText(sc){
 }
 function wtSynStat(){ const v = $('#wtSyn').value.trim(); $('#wtSynLenOut').textContent = v ? `${v.replace(/\s/g, '').length}자` : ''; }
 let wtSynAbort = null;
-function wtSynBusy(on){ $('#wtSynGo').disabled = on; $('#wtSynMore').disabled = on; $('#wtAutoGo').disabled = on; $('#wtSynStop').hidden = !on; }
+function wtSynBusy(on){ $('#wtSynGo').disabled = on; $('#wtSynMore').disabled = on; $('#wtSynSpice').disabled = on; $('#wtAutoGo').disabled = on; $('#wtSynStop').hidden = !on; }
+// more: true=이어서 더 쓰기, 'spice'=같은 사건·인물로 덜 딱딱하게(성인이면 더 노골적으로) 다시 쓰기
 async function wtSynRun(more){
-  const seed = (more ? $('#wtSyn').value : ($('#wtSyn').value.trim() || $('#wtStory').value)).trim();
+  const spice = more === 'spice'; if (spice) more = false;
+  const seed = (spice ? $('#wtSyn').value : more ? $('#wtSyn').value : ($('#wtSyn').value.trim() || $('#wtStory').value)).trim();
+  if (spice && !seed) return toast('먼저 줄거리를 쓰거나 만들어 주세요');
   if (!seed) return toast('줄거리를 한 줄이라도 적어 주세요');
   if (wtSynAbort) return;
   const rating = wtRating(), dict = naiCharsDict();
@@ -390,7 +405,8 @@ async function wtSynRun(more){
   const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
   const L = WT_SYN_LEN[$('#wtSynLen').value] || WT_SYN_LEN.mid;
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
-  wtSynAbort = new AbortController(); wtSynBusy(true); wtAutoStat(more ? '줄거리를 이어서 쓰는 중…' : '줄거리를 늘리는 중…');
+  wtSynAbort = new AbortController(); wtSynBusy(true); wtAutoStat(spice ? '줄거리를 맛깔나게 다시 쓰는 중…' : more ? '줄거리를 이어서 쓰는 중…' : '줄거리를 늘리는 중…');
+  if (spice) WT.proj.synPrev = $('#wtSyn').value;
   const text = `분량: ${L.n} — ${L.say}
 장면(또는 화) 차례 개수: ${L.beats || '없이'}
 등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe).'}
@@ -398,9 +414,9 @@ async function wtSynRun(more){
 인물 사전: ${dict.length ? dict.map(l => l.split(':')[0].trim()).join(', ') : '(없음)'}
 말투: ${wtVoiceDict().join(' / ') || '(없음)'}
 
-${more ? '아래 줄거리를 그대로 두고 그 뒤를 이어서 더 쓴다. 이미 쓴 부분은 다시 쓰지 않는다.' : '아래를 바탕으로 늘려 쓴다.'}
+${spice ? `아래 줄거리를 같은 사건·인물·순서로 두고 처음부터 다시 쓴다. AI 같은 문장과 설명을 걷어 내고, 사람이 쓴 웹툰처럼 짧고 생생하게.${rating === 'nsfw' ? ' 야한 장면은 더 길고 더 노골적으로, 소리와 몸의 반응을 더 적는다.' : ''}` : more ? '아래 줄거리를 그대로 두고 그 뒤를 이어서 더 쓴다. 이미 쓴 부분은 다시 쓰지 않는다.' : '아래를 바탕으로 늘려 쓴다.'}
 
-${seed}`;
+${seed}${wtRefBlock(await wtRefText())}`;
   let res; try{ res = await stream(c, {messages: [{role: 'user', content: [{type: 'text', text}]}], system: SYSTEM_SYN(), signal: wtSynAbort.signal, format: {type: 'json_schema', schema: WT_SYN_SCHEMA}}); }
   finally { wtSynAbort = null; wtSynBusy(false); }
   if (!res.ok) return wtAutoStat((res.note || '줄거리를 못 만들었어요').trim());
@@ -414,6 +430,7 @@ ${seed}`;
 }
 $('#wtSynGo').onclick = () => wtSynRun(false);
 $('#wtSynMore').onclick = () => wtSynRun(true);
+$('#wtSynSpice').onclick = () => wtSynRun('spice');
 $('#wtSynStop').onclick = () => wtSynAbort?.abort();
 $('#wtSyn').addEventListener('input', wtSynStat);
 $('#wtSynLen').value = store.get('set.wtSynLen', 'mid');
@@ -421,7 +438,7 @@ $('#wtSynLen').onchange = () => store.set('set.wtSynLen', $('#wtSynLen').value);
 
 /* ---------- 등급·수위 칸 (노벨AI 탭과 같은 값을 쓴다) ---------- */
 function wtRatingSync(){
-  const on = $('#wtRating').value === 'nsfw'; $('#wtHeat').disabled = !on; $('#wtActRow').hidden = !on;
+  const on = $('#wtRating').value === 'nsfw'; $('#wtHeat').disabled = !on; $('#wtActRow').hidden = !on; $('#wtToneRow').hidden = !on;
   $('#wtRatingHint').textContent = on ? '성인으로 두면 줄거리·대사·컷 지시가 성인 기준으로 나와요. 모든 인물은 성인이어야 해요.' : '일반이면 노출·성적 요소 없이 만들어요.';
   const prov = provOf($('#wtAI').value === 'default' ? '' : '#wtAI');
   const soft = on && (prov === 'claude' || prov === 'gemini');
@@ -432,6 +449,43 @@ function wtRatingSync(){
 $('#wtRating').value = $('#naiRating').value; $('#wtHeat').value = store.get('set.wtHeat', 'mid'); wtRatingSync();
 $('#wtRating').onchange = () => { $('#naiRating').value = $('#wtRating').value; store.set('set.naiRating', $('#naiRating').value); wtRatingSync(); wtModelSync(); };
 $('#wtHeat').onchange = () => store.set('set.wtHeat', $('#wtHeat').value);
+$('#wtAdultTone').value = store.get('set.wtAdultTone', 'drama'); $('#wtAdultTone').onchange = () => store.set('set.wtAdultTone', $('#wtAdultTone').value);
+/* ---------- 문체 참고: 내 서재의 글 작품에서 대사·소리가 많은 대목을 골라 AI 에게 '말투·리듬·수위 표현'만 보여 준다 ---------- */
+// 내용·이름·문장은 베끼지 않게 한다. 고른 작품은 이 기기에만 기억한다.
+function wtRefFill(){
+  const sel = $('#wtRef'); if (!sel) return; const keep = store.get('set.wtRef', '');
+  const list = works.filter(w => w.eps.some(e => /^(txt|epub|epubch|txtpart)$/.test(e.type))).sort((a, b) => (isAdult(b) - isAdult(a)) || natural(a.name, b.name)).slice(0, 300);
+  sel.innerHTML = '<option value="">없음</option>' + list.map(w => `<option value="${esc(w.key)}">${isAdult(w) ? '[성인] ' : ''}${esc(w.name)}</option>`).join('');
+  sel.value = list.some(w => w.key === keep) ? keep : '';
+}
+$('#wtRef').onfocus = wtRefFill; $('#wtRef').onchange = () => store.set('set.wtRef', $('#wtRef').value);
+setTimeout(wtRefFill, 2500);
+const WT_REF_CACHE = new Map();
+async function wtRefText(){
+  const key = $('#wtRef')?.value || store.get('set.wtRef', ''); if (!key) return '';
+  if (WT_REF_CACHE.has(key)) return WT_REF_CACHE.get(key);
+  const w = works.find(x => x.key === key); if (!w) return '';
+  let eps = w.eps;
+  if (eps.some(e => e.type === 'epub') && !w._expanded){ try{ const out = []; for (const e of eps){ if (e.type !== 'epub'){ out.push(e); continue; } const r = await readEpub(e.file); r.chapters.forEach((c, i) => out.push({type: 'epubch', file: e.file, idx: i})); } eps = out; }catch{} }
+  eps = eps.filter(e => /^(txt|epubch|txtpart)$/.test(e.type));
+  // 앞·가운데·뒤에서 몇 화를 읽어, 대사·소리·말줄임이 많은 대목 두 군데를 고른다
+  const pick = [...new Set([0, Math.floor(eps.length / 3), Math.floor(eps.length * 2 / 3), eps.length - 1])].filter(i => i >= 0 && eps[i]);
+  const spans = [];
+  for (const i of pick){
+    let t = ''; try{ t = await epText(eps[i]); }catch{} if (!t) continue;
+    const paras = t.split(/\n+/).map(x => x.trim()).filter(Boolean);
+    for (let k = 0; k < paras.length; k += 4){
+      const span = paras.slice(k, k + 12).join('\n').slice(0, 700);
+      const score = (span.match(/["“”「」『』]/g) || []).length + 2 * (span.match(/[하흐읏앗응아]{2,}|…|♡|!{1,}/g) || []).length;
+      spans.push({score, span});
+    }
+  }
+  const lively = spans.filter(x => x.score > 0);   // 대사·소리가 하나도 없는 서술 대목은 말투 참고가 안 된다
+  const best = (lively.length ? lively : spans).sort((a, b) => b.score - a.score).slice(0, 2).map(x => x.span);
+  const out = best.length ? best.join('\n\n——\n\n') : '';
+  WT_REF_CACHE.set(key, out); return out;
+}
+const wtRefBlock = ref => ref ? `\n\n문체 참고(아래 글의 말투·문장 길이·리듬·소리 적는 법·수위 표현만 배운다. 내용·인물·이름·문장은 절대 베끼지 않는다):\n<<<\n${ref}\n>>>` : '';
 $('#wtAI').addEventListener('change', wtRatingSync);
 $('#wtAct').value = store.get('set.wtAct', '');
 $('#wtAct').oninput = () => { clearTimeout(WT.actT); WT.actT = setTimeout(() => store.set('set.wtAct', $('#wtAct').value), 500); };
