@@ -1,5 +1,5 @@
 // 노벨 뷰어 오프라인 캐시: 앱 파일과 라이브러리는 캐시에서, 새 버전은 다음 실행 때 반영
-const CACHE = 'nv-v62';
+const CACHE = 'nv-v63';
 const APP = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const LIBS = /^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
 
@@ -27,13 +27,17 @@ self.addEventListener('fetch', e => {
 });
 
 // 구간 응답의 Content-Range 는 드라이브가 다른 주소에는 보여 주지 않아서, 목록에서 받은 크기(s)로 직접 만든다 (iPhone 사파리는 206·Content-Range 가 꼭 있어야 재생한다)
+// 화면이 새 토큰을 받을 때마다 알려 준다. 주소에 붙은 토큰은 한 시간이면 끝나서, 긴 영상이 중간에 멈췄다 → 늘 가장 새 토큰을 쓴다
+let DRV_TOK = {t: '', exp: 0};
+self.addEventListener('message', e => { const d = e.data || {}; if (d.type === 'drvTok' && d.t && d.exp > DRV_TOK.exp) DRV_TOK = {t: d.t, exp: d.exp}; });
 async function drvProxy(req, url){
   const id = url.pathname.split('/__drv/')[1], size = +url.searchParams.get('s') || 0, type = url.searchParams.get('m') || 'application/octet-stream';
-  const h = {Authorization: 'Bearer ' + url.searchParams.get('t')};
+  const h = {Authorization: 'Bearer ' + (DRV_TOK.exp > Date.now() + 20e3 ? DRV_TOK.t : url.searchParams.get('t'))};
   const m = /bytes=(\d*)-(\d*)/.exec(req.headers.get('range') || '');
   let a = 0, b = size - 1;
   if (m && size){ if (m[1] === '') a = Math.max(0, size - +m[2]); else { a = +m[1]; if (m[2] !== '') b = Math.min(size - 1, +m[2]); } h.Range = `bytes=${a}-${b}`; }
   const r = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true`, {headers: h});
+  if (r.status === 401){ for (const c of await self.clients.matchAll()) c.postMessage({type: 'drvNeedTok'}); }   // 화면에 '한 번 눌러 이어 보기'를 부탁한다
   if (!r.ok) return new Response(r.body, {status: r.status});
   const out = {'Content-Type': type, 'Accept-Ranges': 'bytes', 'Cache-Control': 'no-store'};
   if (h.Range){ out['Content-Range'] = `bytes ${a}-${b}/${size}`; out['Content-Length'] = String(b - a + 1); return new Response(r.body, {status: 206, headers: out}); }

@@ -79,7 +79,24 @@ async function renderVideo(ep, pos = {}){
   let lastSave = 0;
   v.addEventListener('timeupdate', () => { if (Date.now() - lastSave > 5000){ lastSave = Date.now(); savePos(); } });
   v.addEventListener('pause', savePos);
-  v.addEventListener('error', () => { const c = v.error?.code; toast(c === 4 ? '이 영상 형식은 재생할 수 없어요(코덱). 파일 탐색기에서 다른 플레이어로 열어 주세요' : '영상을 읽는 중 문제가 생겼어요. 다시 열어 보세요'); });
+  // 드라이브 영상: 구글 토큰(한 시간짜리)이 끝나 가면 미리 '한 번 눌러 주세요' → 누르면 새 토큰으로 이어서. 이미 멈췄으면 새 토큰을 받은 뒤 그 자리부터 다시
+  const drive = !!f.rangeUrl && !DESKTOP;
+  let resumeAt = null, warned = false;
+  const resume = () => { if (resumeAt === null || !(GD.token && GD.exp > Date.now() + 60e3)) return; const t = resumeAt; resumeAt = null; const s = f.streamUrl; if (!s) return; v.src = s; v.addEventListener('loadedmetadata', () => { v.currentTime = t; v.play().catch(() => {}); }, {once: true}); toast('이어서 봐요'); };
+  window.drvVideoStalled = () => { if ($('#reader video') !== v || !drive) return; if (resumeAt === null) resumeAt = v.currentTime; toast('구글 연결이 끝나 영상이 멈췄어요. 화면을 한 번 누르면 이어서 봐요'); };
+  const tokTick = setInterval(() => {
+    if (!v.isConnected){ clearInterval(tokTick); return; }
+    if (!drive) return;
+    if (resumeAt !== null) return resume();
+    if (!v.paused && GD.exp - Date.now() < 8 * 60e3 && !warned){ warned = true; gdArmRenew(); toast('계속 보려면 화면을 한 번 눌러 주세요 (구글 연결을 늘려요)'); }
+    if (GD.exp - Date.now() > 8 * 60e3) warned = false;
+  }, 5000);
+  // 토큰이 거절되면 영상 칸은 '형식을 재생할 수 없음(4)'으로 알린다 → 드라이브 영상은 서비스 워커의 알림·토큰 시각을 보고 가린다(알림이 조금 늦게 올 수 있어 잠깐 기다린다)
+  v.addEventListener('error', () => setTimeout(() => {
+    const auth = drive && (v.error?.code !== 4 || Date.now() - (window.__drvNeedTokT || 0) < 15000 || GD.exp < Date.now() + 60e3);
+    if (auth){ resumeAt = resumeAt ?? v.currentTime; gdArmRenew(); toast('구글 연결이 끝나 영상이 멈췄어요. 화면을 한 번 누르면 그 자리부터 이어서 봐요'); return; }
+    const c = v.error?.code; toast(c === 4 ? '이 영상 형식은 재생할 수 없어요(코덱). 파일 탐색기에서 다른 플레이어로 열어 주세요' : '영상을 읽는 중 문제가 생겼어요. 다시 열어 보세요');
+  }, 900));
   v.addEventListener('ended', () => { markRead(curEp); if ($('#autoNext').value === 'auto' && cur.eps[curEp + 1]) openEp(curEp + 1); });
   // 영상 위 클릭이 읽는 화면의 쪽 넘기기로 새지 않게
   box.addEventListener('click', e => e.stopPropagation());

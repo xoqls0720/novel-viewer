@@ -22,7 +22,11 @@ const SC_APP = 'https://www.googleapis.com/auth/drive.appdata', SC_READ = 'https
 function gdScopes(){ return !DESKTOP || store.get('lib.sources', []).some(s => s.kind === 'drive') ? SC_APP + ' ' + SC_READ : SC_APP; }
 function gdScopeOk(granted){ return !granted || gdScopes().split(' ').every(s => granted.includes(s)); }
 // 받은 토큰은 이 기기에만(gd.* 는 맞추기·백업에서 빠진다) 둬서, 앱을 다시 켜도 한 시간 안이면 바로 맞춘다
-function gdKeep(t, exp){ GD.token = t; GD.exp = exp; store.set('gd.tok', {t, exp, s: gdScopes()}); }
+function gdKeep(t, exp){ GD.token = t; GD.exp = exp; store.set('gd.tok', {t, exp, s: gdScopes()}); gdTellSW(); }
+// 서비스 워커(드라이브 영상 흘려 보기)에게 지금 토큰을 알려 준다 — 보던 영상이 토큰이 바뀌어도 끊기지 않게
+function gdTellSW(){ try{ const t = GD.token || store.get('gd.tok', null)?.t, exp = GD.token ? GD.exp : store.get('gd.tok', null)?.exp; if (t && exp > Date.now()) navigator.serviceWorker?.controller?.postMessage({type: 'drvTok', t, exp}); }catch{} }
+if ('serviceWorker' in navigator && !DESKTOP){ navigator.serviceWorker.addEventListener('controllerchange', gdTellSW); setTimeout(gdTellSW, 1000);
+  navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'drvNeedTok'){ window.__drvNeedTokT = Date.now(); gdArmRenew(); window.drvVideoStalled?.(); } }); }
 function gdForget(){ GD.token = null; GD.exp = 0; localStorage.removeItem('nv.gd.tok'); }
 // 웹: 구글 로그인 창은 누름(탭·클릭) 안에서만 열린다. 토큰이 끝났으면 바로 열지 않고, 다음에 화면을 누를 때 조용히 다시 받는다
 function gdAsk(prompt){

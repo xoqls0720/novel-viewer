@@ -54,7 +54,7 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   online = true; await p.reload(); await p.waitForTimeout(2500); const qs0 = folderQs;
   console.log('nothing changed: folder queries', folderQs - qs0);
   D.F2.push({id: 'T3', name: '0003 ep.txt', mimeType: 'text/plain', size: '40', modifiedTime: '2026-10-02T00:00:00Z'}); changed = true;
-  await p.reload(); await p.waitForTimeout(500); const early = await p.evaluate(() => nvMedia.works().find(w => w.name === '화산귀환')?.eps.length);
+  await p.reload(); await p.waitForFunction(() => window.nvMedia && nvMedia.works().some(w => w.name === '화산귀환'), null, {timeout: 15000}); const early = await p.evaluate(() => nvMedia.works().find(w => w.name === '화산귀환')?.eps.length);   // 저장해 둔 목록으로 먼저 보인다
   await p.waitForTimeout(3000);
   console.log('new episode:', early, '->', await p.evaluate(() => nvMedia.works().find(w => w.name === '화산귀환')?.eps.length));
   console.log('sync keeps lib out:', await p.evaluate(() => !/^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.)/.test('lib.sources') ? 'no' : 'yes'));
