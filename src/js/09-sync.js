@@ -18,7 +18,8 @@ async function gdLoadGIS(){
 }
 // 드라이브 작품 폴더를 연결했으면 읽기 권한도 함께 받는다
 const SC_APP = 'https://www.googleapis.com/auth/drive.appdata', SC_READ = 'https://www.googleapis.com/auth/drive.readonly';
-function gdScopes(){ return store.get('lib.sources', []).some(s => s.kind === 'drive') ? SC_APP + ' ' + SC_READ : SC_APP; }
+// 폰·웹은 처음부터 함께 받는다: 맞추기를 켜면 드라이브의 '노벨리스트' 서재를 저절로 연결한다(15-sources.js)
+function gdScopes(){ return !DESKTOP || store.get('lib.sources', []).some(s => s.kind === 'drive') ? SC_APP + ' ' + SC_READ : SC_APP; }
 function gdScopeOk(granted){ return !granted || gdScopes().split(' ').every(s => granted.includes(s)); }
 // 받은 토큰은 이 기기에만(gd.* 는 맞추기·백업에서 빠진다) 둬서, 앱을 다시 켜도 한 시간 안이면 바로 맞춘다
 function gdKeep(t, exp){ GD.token = t; GD.exp = exp; store.set('gd.tok', {t, exp, s: gdScopes()}); }
@@ -39,7 +40,7 @@ function gdArmRenew(){
   const go = () => {
     removeEventListener('pointerup', go, true); GD.armed = false;
     if (!want() || GD.busy) return;
-    gdLoadGIS().then(() => gdAsk('')).then(() => { if (gdLinked()) gdSync(false); }).catch(() => {});
+    gdLoadGIS().then(() => gdAsk('')).then(() => { if (gdLinked()) gdSync(false); window.drvAfterToken?.(); }).catch(() => {});
   };
   addEventListener('pointerup', go, true);
 }
@@ -313,6 +314,7 @@ async function gdStart(){
   try{ await gdToken(true); }   // 웹은 누름 안에서 바로 로그인 창을 연다(앞에 기다리는 일이 없어야 팝업이 막히지 않는다)
   catch(e){ if (/nosecret/.test(e.message)) gdNeedSecret(); else gdStatus('연결하지 못했어요 (' + e.message + ')'); return; }
   store.set('gd.linked', true); store.set('gd.later', false); gdUI(); toast('구글 드라이브에 연결했어요. 이제 저절로 맞춰요'); gdSync(true);
+  window.drvAfterToken?.(true);
 }
 $('#gdClient').value = store.get('gd.client', '');
 if (GD_CLIENT_ID) $('#gdClient').placeholder = '기본값을 쓰는 중이에요 (비워 두면 돼요)';
@@ -347,6 +349,8 @@ document.addEventListener('visibilitychange', () => {
 addEventListener('focus', gdBack);
 if (!SYNC_OD() && gdReady() && !DESKTOP) gdLoadGIS().catch(()=>{});   // 미리 받아 둬야 단추를 누르는 순간 로그인 창이 열린다
 if (!SYNC_OD() && gdLinked()){ if ($('#gdAuto').checked) setTimeout(() => gdSync(false), 3000); }
+// 프로그램: 연결이 꺼져 있어도 이 PC에 다시 쓰는 토큰이 살아 있으면(예전에 인터넷이 잠깐 끊겨 꺼진 경우 등) 조용히 다시 잇는다. '연결 끊기'를 누르면 토큰을 지워서 다시 잇지 않는다
+else if (!SYNC_OD() && DESKTOP && gdReady()) setTimeout(async () => { try{ if (gdLinked()) return; const r = await window.nvDesktop.gdToken(gdClientId(), ''); if (!r || !gdScopeOk(r.scope)) return; GD.token = r.token; GD.exp = Date.now() + r.expires * 1000; store.set('gd.linked', true); gdUI(); if ($('#gdAuto').checked) gdSync(false); }catch{} }, 3000);
 else if (SYNC_OD()) setTimeout(() => { if (syncOn() || (!DESKTOP && store.get('od.everLinked', false))) gdSync(false); }, 3000);
 gdUI();
 { const last = store.get('gd.last', 0); if (last && gdLinked()) gdStatus('마지막 동기화 ' + new Date(last).toLocaleString('ko-KR')); else if (location.protocol !== 'https:' && !DESKTOP) gdStatus('https 주소(앱으로 설치한 뷰어)에서 켤 수 있어요'); }

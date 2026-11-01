@@ -25,6 +25,13 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
     let files = ids.flatMap(id => (D[id] || []).map(f => ({...f, parents: [id]}))); if (q.includes("mimeType='application/vnd.google-apps.folder'")) files = files.filter(f => f.mimeType.endsWith('folder'));
     r.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({files})});
   });
+  // 바뀐 것 묻기(changes): 표 'c1' 뒤로 바뀐 게 있으면 알려 준다
+  let changed = false;
+  await ctx.route('https://www.googleapis.com/drive/v3/changes**', r => {
+    if (!online) return r.abort();
+    const u = new URL(r.request().url()); if (u.pathname.endsWith('/startPageToken')) return r.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({startPageToken: changed ? 'c2' : 'c1'})});
+    r.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify(changed && u.searchParams.get('pageToken') === 'c1' ? {changes: [{fileId: 'T3'}], nextPageToken: 'x'} : {changes: [], newStartPageToken: u.searchParams.get('pageToken')})});
+  });
   await p.goto('https://nv.test/index.html'); await p.waitForTimeout(800);
   await p.evaluate(() => { localStorage.setItem('nv.gd.client', JSON.stringify('x.apps.googleusercontent.com')); localStorage.setItem('nv.set.stStart', 'false'); });
   await p.reload(); await p.waitForTimeout(800);
@@ -43,6 +50,13 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   console.log('offline works:', await p.$$eval('.grid .card .t', e => e.map(x => x.textContent)));
   await p.evaluate(() => nvGo('lib')); await p.click('.grid .card:has-text("화산귀환")'); await p.waitForTimeout(1200);
   console.log('offline ep text:', (await p.textContent('#reader .novel')).includes('드라이브에서 온 1화'));
+  // 드라이브에 새 화가 올라갔다 → 다시 켜면 저장해 둔 목록으로 먼저 보이고, 뒤에서 새 화를 맞춘다
+  online = true; await p.reload(); await p.waitForTimeout(2500); const qs0 = folderQs;
+  console.log('nothing changed: folder queries', folderQs - qs0);
+  D.F2.push({id: 'T3', name: '0003 ep.txt', mimeType: 'text/plain', size: '40', modifiedTime: '2026-10-02T00:00:00Z'}); changed = true;
+  await p.reload(); await p.waitForTimeout(500); const early = await p.evaluate(() => nvMedia.works().find(w => w.name === '화산귀환')?.eps.length);
+  await p.waitForTimeout(3000);
+  console.log('new episode:', early, '->', await p.evaluate(() => nvMedia.works().find(w => w.name === '화산귀환')?.eps.length));
   console.log('sync keeps lib out:', await p.evaluate(() => !/^(apiKey|gemKey|grKey|olOk|__ts|theme|spent|st\.bk\.|lib\.)/.test('lib.sources') ? 'no' : 'yes'));
   console.log('ERRORS:', errs.length ? errs : 'none'); await b.close();
 })();

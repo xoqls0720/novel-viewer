@@ -3,6 +3,8 @@
 // 연결 목록은 기기마다 따로(store 'lib.sources'): {id, kind:'disk'|'drive', name, path?, folderId?, t}
 function libSources(){ return store.get('lib.sources', []).filter(s => s.id !== '__pending'); }
 function libSave(list){ store.set('lib.sources', list); renderSources(); }
+// 드라이브 폴더 고르기를 끝내지 않고 꺼진 자국('__pending')이 남으면 읽기 권한을 계속 달라고 해서, PC 는 다시 쓰는 토큰이 맞지 않아 구글 연결이 저절로 꺼졌다
+if (store.get('lib.sources', []).some(s => s.id === '__pending')) store.set('lib.sources', libSources());
 
 /* ---------- 내 컴퓨터 폴더 (윈도우 프로그램) ---------- */
 async function diskFiles(src){
@@ -72,19 +74,67 @@ async function driveBlob0(f){
   try{ await idb.tx('readwrite', s => s.put({id: f.id, blob: b, mtime: f.mtime}), 'dcache'); }catch{}
   return b;
 }
-async function driveFiles(src, refresh){
-  let idx = null;
-  if (!refresh){ try{ idx = (await idb.tx('readonly', s => s.get('__idx2:' + src.id), 'dcache'))?.files; }catch{} }
-  if (!idx){
-    idx = await driveIndex(src, (d, n) => srcStatus(src.id, `목록 받는 중… 폴더 ${d}개 · 파일 ${n}개`));
-    try{ await idb.tx('readwrite', s => s.put({id: '__idx2:' + src.id, files: idx, t: Date.now()}), 'dcache'); }catch{}
-  }
+function driveLazy(idx){
   return idx.map(f => { const lf = Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true});
     // 큰 EPUB·zip 은 필요한 구간만 (통째로 받지 않는다). 영상도 이 주소로 흘려 본다
     lf.rangeUrl = async () => { await gdToken(false); return driveMediaUrl(f.id); };
     Object.defineProperty(lf, 'streamUrl', {get: () => GD.token && Date.now() < GD.exp - 60000 ? driveMediaUrl(f.id) : undefined});
     return lf; });
 }
+// 드라이브에서 무엇이 바뀌었는지 묻는 표(changes). 목록을 만들기 전에 받아 두고, 다음에 이것으로 '바뀐 게 있나'만 싸게 묻는다
+const drvChangeMark = async () => (await (await gdFetch(`${GD_API}/changes/startPageToken?supportsAllDrives=true`)).json()).startPageToken || '';
+async function drvChanged(ct){
+  if (!ct) return true;
+  const j = await (await gdFetch(`${GD_API}/changes?pageToken=${encodeURIComponent(ct)}&pageSize=1&spaces=drive&includeItemsFromAllDrives=true&supportsAllDrives=true&fields=changes(fileId),newStartPageToken,nextPageToken`)).json();
+  return j.changes?.length ? true : j.newStartPageToken || ct;   // 바뀐 게 없으면 새 표를 돌려준다
+}
+async function driveIndexSave(src){
+  const ct = await drvChangeMark().catch(() => '');
+  const idx = await driveIndex(src, (d, n) => srcStatus(src.id, `목록 받는 중… 폴더 ${d}개 · 파일 ${n}개`));
+  try{ await idb.tx('readwrite', s => s.put({id: '__idx2:' + src.id, files: idx, t: Date.now(), ct}), 'dcache'); }catch{}
+  return idx;
+}
+// 켤 때는 이 기기에 저장해 둔 목록으로 서재를 바로 보이고, 그다음 드라이브에 새로 올라간·지운 작품을 뒤에서 맞춘다 (예전엔 한 번 받은 목록을 '새로 고침' 전까지 그대로 써서 나중에 올라간 작품이 안 보였다)
+async function driveFiles(src, refresh){
+  let rec = null;
+  if (!refresh){ try{ rec = await idb.tx('readonly', s => s.get('__idx2:' + src.id), 'dcache'); }catch{} }
+  if (rec?.files){ setTimeout(() => driveRefresh(src), 1200); return driveLazy(rec.files); }
+  return driveLazy(await driveIndexSave(src));
+}
+// 작품 단위 열쇠: '만화/작품', 성인은 '성인/만화/작가' (그 아래 회차·파일이 바뀌면 그 작품만 다시 묶는다)
+// (파일 이름은 넣지 않는다: '낱개/책.epub' 은 '낱개' 한 묶음이라, 하나만 다시 넣으면 나머지가 빠진다)
+const drvWorkOf = rel => { const s = rel.split('/'); return s.slice(0, Math.min(s.length - 1, s[0] === '성인' ? 3 : 2)).join('/'); };
+const DRV_REF = {busy: new Set(), t: {}, loaded: new Set()};
+async function driveRefresh(src, {force = false} = {}){
+  if (DRV_REF.busy.has(src.id) || !libSources().some(s => s.id === src.id)) return;
+  DRV_REF.busy.add(src.id);
+  try{
+    let rec = null; try{ rec = await idb.tx('readonly', s => s.get('__idx2:' + src.id), 'dcache'); }catch{}
+    if (!rec?.files) return;
+    if (!force){
+      const ch = await drvChanged(rec.ct);
+      if (ch !== true){ DRV_REF.t[src.id] = Date.now(); if (ch !== rec.ct) try{ await idb.tx('readwrite', s => s.put({...rec, ct: ch}), 'dcache'); }catch{} return; }
+    }
+    const idx = await driveIndexSave(src); DRV_REF.t[src.id] = Date.now();
+    const sig = f => f.rel + '|' + f.size + '|' + f.mtime;
+    const oldSig = new Set(rec.files.map(sig)), newSig = new Set(idx.map(sig));
+    const touched = new Set([...rec.files.filter(f => !newSig.has(sig(f))), ...idx.filter(f => !oldSig.has(sig(f)))].map(f => drvWorkOf(f.rel)));
+    srcStatus(src.id, `파일 ${idx.length.toLocaleString()}개 · ${new Date().toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'})}`);
+    if (!touched.size) return;
+    // 지워진 작품은 서재에서 빼고, 바뀌거나 새로 올라간 작품만 다시 묶는다
+    const alive = new Set(idx.map(f => drvWorkOf(f.rel)));
+    const gone = w => w.paths?.length && w.eps.every(e => [e.file, ...(e.files || [])].every(f => !f || f.remote)) && w.paths.every(p => touched.has(drvWorkOf(p)) && !alive.has(drvWorkOf(p)));
+    const before = works.length; for (let i = works.length - 1; i >= 0; i--) if (gone(works[i])) works.splice(i, 1);
+    const add = idx.filter(f => touched.has(drvWorkOf(f.rel)));
+    if (add.length) await addFiles(driveLazy(add), {persist: false, quiet: true}); else renderLib();
+    const n = add.length ? new Set(add.map(f => drvWorkOf(f.rel))).size : 0;
+    if (n || works.length < before) toast(`드라이브에서 작품 ${n ? n + '개를 새로 맞췄어요' : (before - works.length) + '개가 빠졌어요'}`);
+  }catch(e){ if (e.message === 'auth') DRV_REF.wait = true; }   // 토큰이 끝났다 → 화면을 한 번 누르면(새 토큰) 이어서
+  finally{ DRV_REF.busy.delete(src.id); }
+}
+// 앱으로 돌아왔을 때(5분 넘게 지났으면) · 새 토큰을 받은 뒤에 드라이브 서재를 다시 맞춘다
+window.drvRefreshAll = (minAge = 0) => { DRV_REF.wait = false; for (const s of libSources()) if (s.kind === 'drive' && Date.now() - (DRV_REF.t[s.id] || 0) > minAge) driveRefresh(s); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !DESKTOP) window.drvRefreshAll(5 * 60e3); });
 
 /* ---------- 불러오기 ---------- */
 const SRC_STATE = {};
@@ -105,11 +155,11 @@ async function loadSource(src, {refresh = false, quiet = true} = {}){
     srcStatus(src.id, '불러오는 중…');
     const files = src.kind === 'disk' ? await diskFiles(src) : src.kind === 'onedrive' ? await odFiles(src, refresh) : await driveFiles(src, refresh);
     const before = works.length;
-    await addFiles(files, {persist: false, quiet: true});
+    await addFiles(files, {persist: false, quiet: true}); DRV_REF.loaded.add(src.id);
     srcStatus(src.id, `파일 ${files.length.toLocaleString()}개 · ${new Date().toLocaleTimeString('ko-KR', {hour: 'numeric', minute: '2-digit'})}`);
     if (!quiet) toast(`${src.name}: 작품 ${works.length - before > 0 ? (works.length - before) + '개를 새로 ' : ''}불러왔어요`);
   }catch(e){
-    const login = /auth|scope|setup|popup|timeout/.test(e.message);
+    const login = /auth|scope|setup|popup|timeout/.test(e.message); if (login && src.kind === 'drive') DRV_REF.wait = true;
     const who = src.kind === 'onedrive' ? 'Microsoft' : '구글';
     srcStatus(src.id, login ? `${who} 연결이 필요해요 → 위 단추로 다시 연결` : '불러오지 못했어요 (' + e.message + ')');
     if (!quiet) toast(login ? `${src.kind === 'onedrive' ? 'OneDrive' : '구글 드라이브'}에 다시 연결해 주세요 (설정 탭 → 연결)` : `${src.name}을 불러오지 못했어요`);
@@ -122,7 +172,26 @@ async function loadAllSources(){
     if (s.kind === 'onedrive' && !(odReady() && odLinked())) { srcStatus(s.id, '설정 탭에서 OneDrive를 먼저 연결해 주세요'); continue; }
     await loadSource(s);
   }
+  driveAutoLink();
 }
+// 폰·웹: 구글로 맞추는데 드라이브 서재를 아직 연결하지 않았으면, 내 드라이브 맨 위의 '노벨리스트' 폴더(PC 가 받는 곳)를 찾아 저절로 연결한다
+const DRV_HOME = ['노벨리스트', 'Novelist'];
+async function driveAutoLink(){
+  if (DESKTOP || !gdLinked() || SYNC_OD() || libSources().some(s => s.kind === 'drive') || store.get('lib.driveAuto', true) === false) return;
+  try{
+    const q = `'root' in parents and mimeType='${DRIVE_FOLDER}' and trashed=false and (${DRV_HOME.map(n => `name='${n}'`).join(' or ')})`;
+    const f = (await driveList(q))[0]; if (!f || libSources().some(s => s.kind === 'drive')) return;
+    const src = {id: uid(), kind: 'drive', name: f.name, folderId: f.id, t: Date.now()};
+    libSave([...libSources(), src]); toast(`구글 드라이브의 '${f.name}' 폴더를 서재로 연결했어요`);
+    await loadSource(src, {quiet: false});
+  }catch(e){ if (e.message === 'auth' || e.message === 'scope') DRV_REF.wait = true; }
+}
+// 새 토큰을 받은 뒤(웹: 화면을 누른 뒤): 못 불러온 드라이브 서재는 불러오고, 불러온 것은 바뀐 것만 맞춘다
+window.drvAfterToken = force => {
+  if (!DRV_REF.wait && !force) return; DRV_REF.wait = false;
+  for (const s of libSources()) if (s.kind === 'drive') DRV_REF.loaded.has(s.id) ? driveRefresh(s) : loadSource(s);
+  driveAutoLink();
+};
 
 /* ---------- 화면 ---------- */
 function renderSources(){
@@ -137,7 +206,7 @@ function renderSources(){
     const pk = d.querySelector('[data-a=pick]'); if (pk) pk.onclick = async () => { const p = await window.nvDesktop.libRepick?.(s.path); if (!p) return; const list = libSources(); const me = list.find(x => x.id === s.id); if (me){ me.path = p; delete me.missing; } libSave(list); loadSource(me || s, {quiet: false}); };
     d.querySelector('[data-a=rm]').onclick = async () => {
       if (!confirm(`'${s.name}' 연결을 끊을까요? (원래 파일은 그대로 있어요. 메모·진도도 남아요)`)) return;
-      libSave(libSources().filter(x => x.id !== s.id));
+      libSave(libSources().filter(x => x.id !== s.id)); if (s.kind === 'drive') store.set('lib.driveAuto', false);   // 끊었으면 다시 저절로 잇지 않는다
       if (s.kind === 'drive' || s.kind === 'onedrive') try{ await idb.tx('readwrite', st => st.delete('__idx2:' + s.id), 'dcache'); }catch{}
       toast('연결을 끊었어요. 다시 켜면 목록에서 빠져요');
     };
@@ -190,7 +259,7 @@ $('#drvPick').onclick = () => {
   if (DRV.kind === 'od') return here.id === 'root' ? toast('OneDrive 맨 위는 너무 커요. 작품 폴더로 들어가서 연결해 주세요') : odPick(here);
   const list = libSources().filter(s => s.id !== '__pending');
   if (list.some(s => s.kind === 'drive' && s.folderId === here.id)) return toast('이미 연결한 폴더예요');
-  const src = {id: uid(), kind: 'drive', name: here.name, folderId: here.id, t: Date.now()};
+  const src = {id: uid(), kind: 'drive', name: here.name, folderId: here.id, t: Date.now()}; store.set('lib.driveAuto', true);
   libSave([...list, src]); $('#drvBrowse').hidden = true; loadSource(src, {quiet: false});
 };
 renderSources();
