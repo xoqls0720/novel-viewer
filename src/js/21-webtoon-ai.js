@@ -454,8 +454,9 @@ $('#wtAdultTone').value = store.get('set.wtAdultTone', 'drama'); $('#wtAdultTone
 // 내용·이름·문장은 베끼지 않게 한다. 고른 작품은 이 기기에만 기억한다.
 function wtRefFill(){
   const sel = $('#wtRef'); if (!sel) return; const keep = store.get('set.wtRef', '');
-  const list = works.filter(w => w.eps.some(e => /^(txt|epub|epubch|txtpart)$/.test(e.type))).sort((a, b) => (isAdult(b) - isAdult(a)) || natural(a.name, b.name)).slice(0, 300);
-  sel.innerHTML = '<option value="">없음</option>' + list.map(w => `<option value="${esc(w.key)}">${isAdult(w) ? '[성인] ' : ''}${esc(w.name)}</option>`).join('');
+  // 글 작품뿐 아니라 웹툰·만화도(말풍선 글자를 읽어 쓴다). 성인 먼저, 같은 종류끼리
+  const list = works.filter(w => w.eps.some(e => /^(txt|epub|epubch|txtpart|imgs)$/.test(e.type))).sort((a, b) => (isAdult(b) - isAdult(a)) || a.kind.localeCompare(b.kind) || natural(a.name, b.name)).slice(0, 400);
+  sel.innerHTML = '<option value="">없음</option>' + list.map(w => `<option value="${esc(w.key)}">${isAdult(w) ? '[성인] ' : ''}[${KIND_LABEL[w.kind] || ''}] ${esc(w.name)}</option>`).join('');
   sel.value = list.some(w => w.key === keep) ? keep : '';
 }
 $('#wtRef').onfocus = wtRefFill; $('#wtRef').onchange = () => store.set('set.wtRef', $('#wtRef').value);
@@ -465,6 +466,13 @@ async function wtRefText(){
   const key = $('#wtRef')?.value || store.get('set.wtRef', ''); if (!key) return '';
   if (WT_REF_CACHE.has(key)) return WT_REF_CACHE.get(key);
   const w = works.find(x => x.key === key); if (!w) return '';
+  // 이 기기에 저장해 둔 것(웹툰·만화는 AI 로 말풍선을 읽어야 해서 한 번만)
+  const lk = 'nv.wtRefC.' + key; try{ const c = localStorage.getItem(lk); if (c){ WT_REF_CACHE.set(key, c); return c; } }catch{}
+  if (!w.eps.some(e => /^(txt|epub|epubch|txtpart)$/.test(e.type))){
+    const t = await wtRefFromPages(w).catch(e => { toast('문체 참고: 말풍선을 읽지 못했어요 (' + e.message + ')'); return ''; });
+    if (t){ WT_REF_CACHE.set(key, t); try{ localStorage.setItem(lk, t); }catch{} }
+    return t;
+  }
   let eps = w.eps;
   if (eps.some(e => e.type === 'epub') && !w._expanded){ try{ const out = []; for (const e of eps){ if (e.type !== 'epub'){ out.push(e); continue; } const r = await readEpub(e.file); r.chapters.forEach((c, i) => out.push({type: 'epubch', file: e.file, idx: i})); } eps = out; }catch{} }
   eps = eps.filter(e => /^(txt|epubch|txtpart)$/.test(e.type));
@@ -484,6 +492,18 @@ async function wtRefText(){
   const best = (lively.length ? lively : spans).sort((a, b) => b.score - a.score).slice(0, 2).map(x => x.span);
   const out = best.length ? best.join('\n\n——\n\n') : '';
   WT_REF_CACHE.set(key, out); return out;
+}
+// 웹툰·만화: 작품 전체에서 4쪽을 골라(30-style-pick.js 의 spWorkFiles) 그림을 볼 수 있는 AI 가 말풍선·나레이션·효과음 글자를 읽는 순서대로 옮겨 적는다
+async function wtRefFromPages(w){
+  const fs = spWorkFiles(w, 4); if (!fs.length) return '';
+  wtAutoStat?.(`문체 참고: '${w.name}' ${fs.length}쪽의 말풍선을 읽는 중…`);
+  const imgs = []; for (const f of fs){ try{ imgs.push(await spFileJpeg(f, 1024)); }catch{} }
+  if (!imgs.length) return '';
+  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return '';
+  const r = await stream(c, {system: '너는 만화 글자 받아쓰기 담당이다. 그림 속 말풍선·속마음·나레이션 상자·효과음 글자를 읽는 순서대로 원문 그대로 옮겨 적는다. 번역·요약·설명은 하지 않는다. 한 줄에 말풍선 하나, 효과음은 [효과음] 을 앞에 붙인다. 쪽마다 --- 로 나눈다. 글자가 없는 쪽은 (없음).',
+    messages: [{role: 'user', content: [...imgs.map(data => ({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}})), {type: 'text', text: '이 쪽들의 글자를 모두 받아써.'}]}]});
+  if (!r.ok) throw new Error((r.note || '').trim() || '실패');
+  return r.text.trim().slice(0, 1600);
 }
 const wtRefBlock = ref => ref ? `\n\n문체 참고(아래 글의 말투·문장 길이·리듬·소리 적는 법·수위 표현만 배운다. 내용·인물·이름·문장은 절대 베끼지 않는다):\n<<<\n${ref}\n>>>` : '';
 $('#wtAI').addEventListener('change', wtRatingSync);

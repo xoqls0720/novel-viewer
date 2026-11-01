@@ -25,5 +25,14 @@ const {chromium} = require('playwright'); const fs = require('fs'); const path =
   console.log('select custom:', await p.$eval('#naiStyleSel', e => e.value), '| stat:', await p.textContent('#spStat'));
   await p.click('#spUndo').catch(() => p.evaluate(() => document.querySelector('#spUndo').click()));
   console.log('undo:', await p.$eval('#naiStyle', e => e.value));
+  // 작품 전체에서: 8화 × 4장 작품 → 앞·가운데·뒤 회차에 걸쳐 6장, 회차 첫 장은 쓰지 않는다
+  await p.evaluate(async () => { const fs = []; for (let e = 1; e <= 8; e++) for (let i = 1; i <= 4; i++){ const c = document.createElement('canvas'); c.width = 300; c.height = 420; const g = c.getContext('2d'); g.fillStyle = `hsl(${e * 30 + i * 5} 60% 50%)`; g.fillRect(0, 0, 300, 420);
+      const blob = await new Promise(r => c.toBlob(r, 'image/png')); const f = new File([blob], `00${i}.png`, {type: 'image/png'}); f._rel = `만화/전체시험/000${e} ${e}화/00${i}.png`; fs.push(f); }
+    await nvMedia.addFiles(fs); await nvMedia.openWork(nvMedia.works().find(w => w.name === '전체시험')); });
+  await p.waitForTimeout(800);
+  console.log('whole picks:', await p.evaluate(() => nvStylePick.files(nvMedia.works().find(w => w.name === '전체시험')).map(f => f._rel.split('/').slice(-2).join('/').replace(/^000\d /, '')).join(',')));
+  sent = null; await p.evaluate(() => document.querySelector('#spWhole').click()); await p.waitForTimeout(2500);
+  const parts = sent?.contents?.[0]?.parts || [];
+  console.log('whole sent:', parts.filter(x => x.inline_data).length, 'images |', /여러 쪽 6장/.test(parts.find(x => x.text)?.text || ''), '| sys says common:', /공통된 그림체/.test(JSON.stringify(sent?.systemInstruction || sent?.system_instruction || '')));
   console.log('ERRORS:', errs.length ? errs : 'none'); await b.close();
 })();

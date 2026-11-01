@@ -8,7 +8,10 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   const syn = {title: '옆집 사람', logline: '벽이 얇은 원룸', synopsis: '벽 너머로 소리가 샌다.', beats: [{t: '1장', c: '택배를 잘못 받는다'}], cast: []};
   const spiced = {title: '옆집 사람', logline: '벽이 얇다, 너무.', synopsis: '"택배 왔어요." 문이 열리자마자 꼬인다.', beats: [{t: '1장', c: '택배 핑계로 문턱을 넘는다'}], cast: []};
   let turn = 0, sent = [];
-  await ctx.route('https://generativelanguage.googleapis.com/**', r => { sent.push(r.request().postData()); const body = [syn, spiced][Math.min(turn++, 1)]; r.fulfill({status: 200, headers: {'content-type': 'text/event-stream', 'access-control-allow-origin': '*'}, body: `data: ${JSON.stringify({candidates: [{content: {parts: [{text: JSON.stringify(body)}]}, finishReason: 'STOP'}]})}\n\n`}); });
+  let reads = 0;
+  await ctx.route('https://generativelanguage.googleapis.com/**', r => { const pd = r.request().postData();
+    if (/받아써/.test(pd)){ reads++; return r.fulfill({status: 200, headers: {'content-type': 'text/event-stream', 'access-control-allow-origin': '*'}, body: `data: ${JSON.stringify({candidates: [{content: {parts: [{text: '"으읏… 거기 아니라니까!"\n[효과음] 찌걱\n---\n"쉿, 다 들려."'}]}, finishReason: 'STOP'}]})}\n\n`}); }
+    sent.push(pd); const body = [syn, spiced][Math.min(turn++, 1)]; r.fulfill({status: 200, headers: {'content-type': 'text/event-stream', 'access-control-allow-origin': '*'}, body: `data: ${JSON.stringify({candidates: [{content: {parts: [{text: JSON.stringify(body)}]}, finishReason: 'STOP'}]})}\n\n`}); });
   await p.goto(APP); await p.waitForTimeout(700);
   await p.evaluate(() => { localStorage.setItem('nv.set.stStart', 'false'); localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); localStorage.setItem('nv.set.provider', '"gemini"'); });
   await p.reload(); await p.waitForTimeout(800);
@@ -23,8 +26,8 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   await p.selectOption('#wtAdultTone', 'pong');
   await p.focus('#wtRef'); await p.waitForTimeout(200);
   const opts = await p.$$eval('#wtRef option', o => o.map(x => x.textContent));
-  console.log('ref options:', opts.includes('[성인] 참고소설'));
-  await p.selectOption('#wtRef', {label: '[성인] 참고소설'});
+  console.log('ref options:', opts.includes('[성인] [소설] 참고소설'));
+  await p.selectOption('#wtRef', {label: '[성인] [소설] 참고소설'});
   await p.fill('#wtStory', '옆집 사람과 택배 때문에 엮임');
   await p.click('#wtSynGo');
   for (let i = 0; i < 30; i++){ if (/줄거리를 썼어요/.test(await p.textContent('#wtAutoStat'))) break; await p.waitForTimeout(300); }
@@ -39,5 +42,19 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
   // 일반 등급이면 톤 줄이 숨는다
   await p.selectOption('#wtRating', 'safe');
   console.log('tone hidden on safe:', await p.isHidden('#wtToneRow'));
+  // 웹툰도 문체 참고: 그림 회차 작품을 고르면 AI 가 말풍선을 받아쓰고 그 글이 줄거리 요청에 붙는다 (한 번 읽으면 기기에 남는다)
+  await p.selectOption('#wtRating', 'nsfw');
+  await p.evaluate(async () => { const fs = []; for (let e = 1; e <= 3; e++) for (let i = 1; i <= 3; i++){ const c = document.createElement('canvas'); c.width = 200; c.height = 300; c.getContext('2d').fillRect(0, 0, 200, 300);
+      const blob = await new Promise(r => c.toBlob(r, 'image/png')); const f = new File([blob], `00${i}.png`, {type: 'image/png'}); f._rel = `성인/만화/참고웹툰작가/000${e} [참고웹툰작가] 글${e}/00${i}.png`; fs.push(f); }
+    await nvMedia.addFiles(fs); });
+  await p.focus('#wtRef'); await p.waitForTimeout(200);
+  const label = (await p.$$eval('#wtRef option', o => o.map(x => x.textContent))).find(t => t.includes('참고웹툰작가'));
+  console.log('webtoon in ref list:', label || 'none');
+  await p.selectOption('#wtRef', {label}); sent = []; turn = 0;
+  await p.click('#wtSynGo'); for (let i = 0; i < 40; i++){ if (sent.length) break; await p.waitForTimeout(300); }
+  await p.waitForTimeout(500);
+  console.log('page ref read:', reads, '| bubble text sent:', /거기 아니라니까/.test(sent[0] || '') && /찌걱/.test(sent[0] || ''));
+  sent = []; await p.click('#wtSynGo'); for (let i = 0; i < 40; i++){ if (sent.length) break; await p.waitForTimeout(300); }
+  console.log('read once:', reads === 1);
   console.log('ERRORS:', errs.length ? errs : 'none'); await b.close();
 })();
