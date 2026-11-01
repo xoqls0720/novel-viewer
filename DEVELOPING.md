@@ -146,6 +146,14 @@ ovel` 의 `다운로더`. 찾으면 `dlDir` 로 기억한다(서재를 G: 로 �
 - 번역 AI 고르기: 화면이 `provider: {id, key, model, base, region}` 를 같이 보낸다. `local`(Ollama) 외에 gemini·groq·openrouter·cerebras·mistral·github(OpenAI 형식), claude(anthropic SDK), deepl·microsoft(기계 번역), custom(OpenAI 형식 주소). 거절·한도·오류면 그 쪽은 Ollama 가 옮기고 결과의 `by` 에 적는다. 성인 작품은 `set.trAdultCloud` 를 켜지 않으면 늘 `local`. 키는 `tr.key.*`·`gemKey`·`grKey`·`apiKey` 에 기기에만(백업·동기화 제외). `POST /models {provider}` 로 모델 목록, `POST /subs {vtt, provider}` 로 자막 파일 번역.
 - desktop/main.js 의 `tr-status`·`tr-install`·`tr-start` 가 설치·켜기를 맡고, 화면(26-media.js)은 8790 으로 바로 요청한다. 설치 파일에는 `extraResources` 로 `resources/translator/*.py` 가 들어간다.
 
+## 웹툰 만들기 고친 것 (21-webtoon-ai.js · 20-webtoon.js)
+
+- 그림체 '직접 쓰기': 웹툰 칸(`wtStyleIn`)이 비면 노벨AI 탭 하우스 스타일(`naiStyle`)을 쓰고, 성인이면 수위·컷 성인 태그를 붙인다(예전엔 둘 다 빠져 가져온 그림체·성인 수위가 컷에 안 들어갔다). '그림체 가져오기'는 두 칸 모두에 넣는다.
+- 대본: 줄거리의 사건을 빼지 않는다는 지침, `[1장]` 같은 장면 줄이 쪽 수보다 많으면 그만큼 쪽을 늘린다(12쪽까지).
+- 말풍선(`wtPlace`): 말하는 사람(chars 순서 = 그림 속 위치)의 머리 위, 꼬리는 그 사람 쪽, 글 길이에 맞춘 폭, 글씨 40~50px(쪽 너비 1500). 설명 상자가 있으면 그 아래. 스티커는 아래 모서리. 집중선은 `pi`(컷 번호)로 그 컷 안에서만 그린다(`wtRenderPage` 가 자른다).
+- '말풍선을 노벨AI 가 그림 안에 그리기'(`wtNaiText`)를 켜면 대사 말풍선은 얹지 않고 `panel.say` 에 두었다가 그림 프롬프트의 `Text:` 로 보낸다(겹치지 않게). 설명 상자·그림 위 독백은 그대로 얹는다. 시험: `node tests/run.cjs wtfix`
+- 노벨AI 탭 '여러 작품 골라서'(`spManyOpen`): 그림 작품을 8개까지 골라(기억해 둔다) 작품마다 고르게 모두 12장 안쪽으로 보이고, 겹치는 그림체만 받는다.
+
 ## 성인 웹툰 줄거리 (21-webtoon-ai.js)
 
 - 톤(`#wtAdultTone`, 성인일 때만): 치정(진지·끈적) / 뽕빨(가볍고 과장된 개그 + 노골). `#wtTone` 은 원래 있던 '컷 느낌'이라 이름이 다르다.

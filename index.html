@@ -601,6 +601,9 @@ a:hover{text-decoration-color:currentColor}
 .ap-it .m{font-size:11px;color:var(--sub)}
 .ap-it.read .cv{opacity:.55}
 @media (max-width:700px){ .ap-grid{grid-template-columns:repeat(3,1fr);gap:12px 8px;padding:10px} .apick{padding:0;align-items:stretch} .ap-in{border-radius:0} }
+.spm .ap-it.on .cv{outline:3px solid #e8603c;outline-offset:-3px}
+.spm .ap-it .ck{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:#e8603c;color:#fff;font:700 13px/22px var(--ui);text-align:center}
+.spm .ap-it:not(.on) .ck{background:rgb(0 0 0 / 35%)}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -2201,7 +2204,7 @@ button:not(:disabled):active{transform:scale(.98)}
       <div class="row tight"><label>그림 모델</label><select id="wtModel" class="grow"><option value="nai-diffusion-5-full">V5 Full · 성인 가능 (권장)</option><option value="nai-diffusion-5-curated">V5 Curated · 일반만</option><option value="nai-diffusion-4-5-full">V4.5 Full</option></select></div>
       <div class="hint" id="wtModelHint"></div>
       <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="custom">직접 쓰기</option></select></div>
-      <div class="row tight"><label class="hint grow" title="노벨AI V5의 글자 그리기(Text:)로 이 컷의 말풍선 글을 그림에 함께 그려요. 영어·일본어가 정확하고 한글은 아직 깨질 수 있어요"><input type="checkbox" id="wtNaiText"> 말풍선 글자도 그림에 그리기</label></div>
+      <div class="row tight"><label class="hint grow" title="켜면 대사 말풍선을 노벨AI 가 그림 안에 직접 그려요(V5의 Text:). 그럴 땐 대본에서 따로 말풍선을 얹지 않아 겹치지 않아요. 영어·일본어는 정확하고 한글은 깨질 수 있어요"><input type="checkbox" id="wtNaiText"> 말풍선을 노벨AI 가 그림 안에 그리기 (켜면 따로 얹는 말풍선 없음 · 한글은 깨질 수 있음)</label></div>
       <div class="row tight" id="wtMonoRow" hidden><label>단색</label><select id="wtMono"><option value="cold blue">cold blue · 7년 전 가이드</option><option value="red">red · 명부</option><option value="gold">gold · 흑요룡</option><option value="white and grey">white and grey · 날개</option><option value="teal">teal · 인어</option><option value="amber">amber · 성녀</option><option value="magenta">magenta · 아이돌</option><option value="dusty orange">dusty orange · 백신</option><option value="moonlight blue">moonlight blue · 늑대</option><option value="warm sepia">warm sepia · 캠퍼스</option></select></div>
       <div class="row tight" id="wtFrameRow" hidden><label>액자</label><select id="wtFrame"><option value="mirror">거울 너머</option><option value="photo">젖은 사진 너머</option><option value="tank">수조 유리 너머</option><option value="shutter">셔터 틈 너머</option><option value="fence">철조망 너머</option><option value="booth">녹음 부스 유리 너머</option><option value="none">쓰지 않기</option></select></div>
       <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
@@ -7547,7 +7550,12 @@ function drawItem(g, it){ (it.k === 'bubble' ? drawBubble : {text: drawOutlined,
 function wtRenderPage(g, pg, k, opts = {}){
   g.save(); g.scale(k, k); g.fillStyle = '#fff'; g.fillRect(0, 0, WT_W, pg.h);
   if (pg.kind === 'text'){ /* 글 쪽: 바탕만 */ } else drawPanels(g, pg, k);
-  for (const it of pg.items) drawItem(g, it);
+  // 집중선처럼 컷에 묶인 것(pi)은 그 컷 밖으로 나가지 않게 잘라서 그린다
+  for (const it of pg.items){
+    const pn = it.pi != null ? pg.panels[it.pi] : null;
+    if (!pn){ drawItem(g, it); continue; }
+    g.save(); g.beginPath(); polyPx(pg, pn).forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.clip(); drawItem(g, it); g.restore();
+  }
   if (opts.ui) wtDrawUI(g, pg);
   g.restore();
 }
@@ -7878,6 +7886,7 @@ const WT_SCHEMA = {
 const SYSTEM_WT_BASE = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 대본으로 바꾼다. 모든 글은 한국어, 그림 태그(tags)만 영어.
 - 받은 줄거리가 한 줄이거나 거칠면 네가 채운다: 장소·시간, 둘 사이에 무슨 일이 있었는지, 감정이 꺾이는 지점, 끝을 정해서 synopsis 에 3~6문장으로 먼저 쓴다. 그 synopsis 대로 쪽을 나눈다.
 - 받은 줄거리에 이미 있는 것은 바꾸지 않는다. 비어 있는 곳만 채운다.
+- 줄거리의 사건은 하나도 빼지 않는다. 받은 줄거리의 [장면]·문장 순서대로 쪽에 나눠 담고, 인물이 한 말이 줄거리에 있으면 그 말을 대사로 살린다. 쪽이 모자라면 한 쪽에 컷을 4개까지 늘리고, 그래도 모자라면 쪽을 더 쓴다.
 틀(layout) 키: 1=한 컷, 2a=위아래 반반, 2b=위 작은 컷+아래 큰 컷, 2c=위 큰 컷+아래 작은 컷, 2d=사선 가로 둘, 2e=사선 세로 둘, 3a=세 칸, 3b=위 큰 컷+아래 둘, 3c=왼쪽 길게+오른쪽 둘, 3d=사선 세 칸, 4a=네 칸.
 - 한 쪽은 1~4컷. 컷 수는 틀과 맞춘다(1→1컷, 2*→2컷, 3*→3컷, 4a→4컷). 장면 전환·감정 고조에는 큰 컷, 반응에는 작은 컷을 쓴다.
 - 첫 쪽은 상황을 한 번에 보여 주는 큰 컷으로 시작하고, 마지막 쪽은 다음이 궁금해지는 여운으로 끝낸다.
@@ -7943,7 +7952,12 @@ const wtFrame = () => WT_FRAME[$('#wtFrame')?.value || store.get('set.wtFrame', 
 // 그림체를 머리·꼬리로 나눠 준다. 웹툰 컷과 노벨AI 탭이 같은 그림체를 쓰게 하는 한 곳.
 function wtStyleParts(nsfw){
   const k = wtStyleKey();
-  if (k === 'custom'){ const c = ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, ''); return {head: c, tail: '', neg: ''}; }
+  // 직접 쓰기: 웹툰 칸(wtStyleIn) → 비었으면 노벨AI 탭 하우스 스타일(그림체 가져오기가 채우는 칸). 성인이면 수위 태그도 붙인다(예전엔 빠졌다)
+  if (k === 'custom'){
+    const c = (($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim() || $('#naiStyle').value.trim()).replace(/,\s*$/, '');
+    const head = [c]; if (nsfw){ head.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid); const a = wtActTags(); if (a) head.push(a); }
+    return {head: head.filter(Boolean).join(', '), tail: '', neg: '', key: k};
+  }
   const st = WT_STYLE[k]; const head = [st.head];
   if (k === 'dark'){ const fr = wtFrame(); if (fr) head.push(st.frame.replace('{FRAME}', fr)); }
   let tail = st.tail.replace('{MONO}', wtMono());
@@ -7967,7 +7981,7 @@ function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: fa
 }
 function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 태그
   const k = wtStyleKey();
-  if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
+  if (k === 'custom') return (($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim() || $('#naiStyle').value.trim()).replace(/,\s*$/, '');
   return WT_STYLE[k].head;
 }
 function wtStyleNeg(neg, nsfwArg, who){
@@ -8013,7 +8027,7 @@ function wtSizeKey(pg, panel){ const bb = polyBox(polyPx(pg, panel)), r = (bb[2]
 const wtMinorBlock = p => wtRating() === 'nsfw' && MINOR_RE.test([p.base, ...p.chars.map(c => c.prompt)].join(' '));
 async function wtGenPanel(pg, panel){
   const bb = polyBox(polyPx(pg, panel));
-  const bt = (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
+  const bt = panel.say?.length ? panel.say.map(t => t.slice(0, 40)) : (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
   const p = wtPanelPrompt(panel, bt);
   if (wtMinorBlock(p)) throw new Error('미성년을 떠올리게 하는 태그가 있어서 건너뛰었어요');
   const blob = await naiGenBlob(p, wtSizeKey(pg, panel));
@@ -8021,24 +8035,36 @@ async function wtGenPanel(pg, panel){
 }
 
 /* ---------- 대본 → 쪽 ---------- */
+// 컷 하나에 말풍선·효과음·스티커를 놓는다.
+// 말풍선은 말하는 사람(chars 순서 = 그림 속 위치와 같은 줄)의 머리 위에 두고 꼬리를 그 사람 쪽으로, 글 길이에 맞춘 폭으로.
+// '말풍선 글자도 그림에 그리기'를 켜면 대사는 노벨AI 가 그림 안에 그리므로 겹치지 않게 대사 말풍선은 놓지 않고 컷에 적어 둔다(panel.say)
 function wtPlace(pg, panel, spec){
-  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.55, Math.min(1.15, bw / 1100));
+  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.7, Math.min(1.3, bw / 1000));
   const items = []; const mk = o => { o.id = uid(); items.push(o); return o; };
-  const left = bb[0] + bw * 0.28, right = bb[0] + bw * 0.72;
-  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.min(bw, bh) * 0.5, rot: 0});
-  let bi = 0;
+  const pi = pg.panels.indexOf(panel);
+  const names = (spec.chars || []).map(String);
+  const cols = names.length === 1 ? [2] : names.length === 2 ? [1, 3] : names.length === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
+  const headX = i => bb[0] + bw * ((cols[i] ?? 2) / 5 + 0.1);
+  const clampX = x => Math.max(bb[0] + bw * 0.2, Math.min(bb[2] - bw * 0.2, x));
+  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.round(Math.min(bw, bh) * 0.42), rot: 0, pi});   // pi: 이 컷 안에서만 보이게 자른다
+  const naiText = wtNaiTextOn(); panel.say = [];
+  let bi = 0, ni = 0;
   for (const b of (spec.bubbles || []).slice(0, 3)){
     const text = String(b.text || '').trim(); if (!text) continue;
-    const y = bb[1] + bh * (0.15 + 0.2 * bi), x = bi % 2 === 0 ? right : left;
-    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1 + bi * 90, size: Math.round(38 * sc), w: Math.round(480 * sc), text, line: 'thin', dash: true, tail: null}); }
-    else if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(52 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); }
-    else {
-      const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
-      mk({k: 'bubble', shape, x, y, size: Math.round(38 * sc), w: Math.round(310 * sc), line: 'thin', text, tail: shape === 'shout' ? null : {x: x + (bi % 2 ? 30 : -30), y: y + bh * 0.2}}); bi++;
-    }
+    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.08 + ni * 100 * sc, size: Math.round(40 * sc), w: Math.round(Math.min(bw * 0.5, 520 * sc)), text, line: 'thin', dash: true, tail: null}); ni++; continue; }
+    if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(54 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); continue; }
+    if (naiText){ panel.say.push(text); continue; }
+    const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
+    const who = names.indexOf(String(b.who || '').trim());
+    const sx = who >= 0 ? headX(who) : bb[0] + bw * (bi % 2 === 0 ? 0.72 : 0.28);
+    const x = clampX(sx + (who >= 0 ? (sx < bb[0] + bw / 2 ? bw * 0.06 : -bw * 0.06) : 0)), y = bb[1] + bh * (0.12 + 0.2 * bi) + ni * 130 * sc;   // 설명 상자가 있으면 그 아래로
+    const w = Math.round(Math.max(240, Math.min(bw * 0.5, Math.sqrt(text.length) * 105)));
+    const fs = Math.round(44 * Math.max(0.92, Math.min(1.15, bw / 1000)));   // 글씨는 컷이 작아도 쪽 너비(1500)의 3% 안팎으로 읽히게
+    mk({k: 'bubble', shape, x, y, size: fs, w, line: 'thin', text, tail: shape === 'shout' ? null : {x: sx, y: y + bh * (shape === 'thought' ? 0.1 : 0.2)}}); bi++;
   }
   (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.2 : 0.8), y: bb[1] + bh * (i ? 0.78 : 0.62), size: Math.round(Math.min(bw, bh) * 0.2), text: t, grad: (hash(t) % 4), rot: i ? 10 : -12, vert: !!s.vert, font: 'Black Han Sans'}); });
-  const stk = (spec.stickers || []).filter(k => k !== 'speed'); stk.forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.86 - i * 0.12), y: bb[1] + bh * (k === 'heart' ? 0.5 : 0.1 + i * 0.1), size: Math.round(Math.min(bw, bh) * 0.15), rot: i * 8 - 4}));
+  // 스티커는 말풍선이 없는 아래쪽 모서리에 (말풍선을 덮지 않게)
+  const stk = (spec.stickers || []).filter(k => k !== 'speed'); stk.forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.14 + i * 0.12), y: bb[1] + bh * (k === 'heart' ? 0.55 : 0.82), size: Math.round(Math.min(bw, bh) * 0.15), rot: i * 8 - 4}));
   return items;
 }
 function wtBuildFromScript(sc){
@@ -8096,11 +8122,14 @@ $('#wtAutoGo').onclick = async () => {
   const rating = wtRating(), dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(story + '\n' + dict.join('\n'), 'adult')) return;
   const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
-  const n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)), tone = $('#wtTone').selectedOptions[0].text;
+  let n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)); const tone = $('#wtTone').selectedOptions[0].text;
+  // 줄거리의 장면 수([1장] 같은 줄)가 쪽 수보다 많으면 쪽을 늘린다(예전엔 4쪽에 줄이느라 사건이 빠졌다)
+  const scenes = (story.match(/^\s*\[[^\]]+\]/gm) || []).length;
+  if (scenes > n){ n = Math.min(12, scenes); $('#wtPagesN').value = n; toast(`줄거리 장면이 ${scenes}개라 ${n}쪽으로 늘렸어요`); }
   wtAbort = new AbortController(); $('#wtAutoGo').disabled = true; $('#wtAutoStop').hidden = false; wtAutoStat('대본 쓰는 중…');
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
   const known = new Set(dict.map(l => l.split(':')[0].trim()));
-  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (±1쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
+  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (사건을 다 담으려면 ±2쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
   let res; try{ res = await stream(c, {messages: [{role: 'user', content}], system: SYSTEM_WT(), signal: wtAbort.signal, format: {type: 'json_schema', schema: WT_SCHEMA}}); }
   finally { wtAbort = null; $('#wtAutoGo').disabled = false; $('#wtAutoStop').hidden = true; }
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
@@ -10118,11 +10147,20 @@ async function spFileJpeg(f, max = 768){
   const c = document.createElement('canvas'); c.width = Math.round(bm.width * s); c.height = Math.round(bm.height * s);
   c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); bm.close?.(); return c.toDataURL('image/jpeg', 0.82).split(',')[1];
 }
-// whole: true 면 작품 전체에서 여러 장을 골라 공통 그림체를, 아니면 지금 보이는 한 장
-async function spPick(btn, whole = false){
+// whole: true 면 작품 전체에서 여러 장을 골라 공통 그림체를, 아니면 지금 보이는 한 장. many: 고른 여러 작품(열쇠 목록)에서 고르게
+async function spPick(btn, whole = false, many = null){
   let datas = [];
   const st = $('#spStat');
-  if (whole){
+  if (many?.length){
+    const ws = many.map(k => works.find(w => w.key === k)).filter(Boolean);
+    const per = Math.max(2, Math.floor(12 / ws.length));   // 모두 합쳐 12장 안쪽
+    const fs = ws.flatMap(w => spWorkFiles(w, per)).slice(0, 12);
+    if (!fs.length) return toast('고른 작품에서 그림을 찾지 못했어요');
+    st.textContent = `작품 ${ws.length}개에서 ${fs.length}장을 고르는 중…`; btn.disabled = true;
+    for (const f of fs){ try{ datas.push(await spFileJpeg(f, 640)); }catch{} }
+    btn.disabled = false;
+    if (!datas.length) return void (st.textContent = '그림을 읽지 못했어요');
+  } else if (whole){
     if (!cur) return toast('그림체를 가져올 웹툰·만화를 먼저 열어 주세요');
     const fs = spWorkFiles(cur);
     if (!fs.length) return toast('이 작품에서 그림을 찾지 못했어요 (그림 폴더로 된 웹툰·만화만 돼요)');
@@ -10138,13 +10176,16 @@ async function spPick(btn, whole = false){
   const c = await client('#naiProv'); if (!c) return;
   btn.disabled = true; st.textContent = datas.length > 1 ? `${datas.length}장을 보고 공통 그림체를 읽는 중…` : '그림체를 읽는 중…';
   try{
-    const ask = datas.length > 1 ? `같은 작품의 여러 쪽 ${datas.length}장이다. 모든 장에 공통된 그림체 태그만.` : '이 그림의 그림체 태그만.';
+    const ask = many?.length ? `서로 다른 작품 ${many.length}개의 여러 쪽 ${datas.length}장이다. 이 작품들에 공통된 그림체(겹치는 화풍·선·채색·명암·색감)를 하나로 합친 태그만.` : datas.length > 1 ? `같은 작품의 여러 쪽 ${datas.length}장이다. 모든 장에 공통된 그림체 태그만.` : '이 그림의 그림체 태그만.';
     const r = await stream(c, {system: SP_SYS, messages: [{role: 'user', content: [...datas.map(data => ({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}})), {type: 'text', text: ask}]}]});
     const tags = r.ok ? spClean(r.text) : '';
     if (!tags){ st.textContent = '그림체를 읽지 못했어요' + (r.note ? ' ' + r.note.trim() : ' (그림을 볼 수 있는 AI 인지 확인해 주세요 — Claude·Gemini, 또는 Ollama 는 qwen2.5vl 같은 그림 모델)'); return; }
-    if (!confirm(`'${cur?.name || '이 작품'}' 그림체로 노벨AI 하우스 스타일을 바꿀까요?\n\n${tags}`)){ st.textContent = '바꾸지 않았어요: ' + tags; return; }
-    store.set('set.naiStyle.prev', $('#naiStyle').value);
+    const label = many?.length ? `고른 작품 ${many.length}개의` : `'${cur?.name || '이 작품'}'`;
+    if (!confirm(`${label} 그림체로 노벨AI 하우스 스타일을 바꿀까요?\n\n${tags}`)){ st.textContent = '바꾸지 않았어요: ' + tags; return; }
+    store.set('set.naiStyle.prev', $('#naiStyle').value); store.set('set.wtStyleIn.prev', $('#wtStyleIn')?.value || '');
     $('#naiStyle').value = 'masterpiece, best quality, very aesthetic, ' + tags; store.set('set.naiStyle', $('#naiStyle').value);
+    // 웹툰 만들기의 '직접 쓰기' 칸에도 넣는다(웹툰 컷도 이 그림체로)
+    if ($('#wtStyleIn')){ $('#wtStyleIn').value = $('#naiStyle').value; store.set('set.wtStyleIn', $('#wtStyleIn').value); }
     $('#naiStyleSel').value = 'custom'; $('#naiStyleSel').dispatchEvent(new Event('change'));
     const picks = store.get('naiStylePicks', []).filter(p => p.tags !== tags); picks.unshift({name: cur?.name || '', tags, t: Date.now()}); store.set('naiStylePicks', picks.slice(0, 10));
     st.textContent = `'${cur?.name || ''}' 그림체로 바꿨어요. 노벨AI 탭·웹툰 만들기가 이 그림체로 그려요.`; $('#spUndo').hidden = false;
@@ -10154,11 +10195,42 @@ async function spPick(btn, whole = false){
 }
 if ($('#naiStyleNow') && !$('#spPick')){
   const box = document.createElement('div'); box.className = 'row tight';
-  box.innerHTML = '<button id="spWhole" title="지금 연 작품의 앞·가운데·뒤 회차에서 그림을 골라, 모든 장에 공통된 그림체를 노벨AI 태그로 가져와요">작품 전체에서 그림체 가져오기</button><button id="spPick" title="읽는 화면에 보이는 그림의 그림체(내용 말고)를 AI 가 노벨AI 태그로 옮겨 하우스 스타일에 넣어요">지금 보는 그림만</button><button id="spUndo" hidden>되돌리기</button><span class="hint" id="spStat"></span>';
+  box.innerHTML = '<button id="spMany" title="서재에서 웹툰·만화를 여러 개 골라, 그 작품들에 공통된 그림체를 가져와요">여러 작품 골라서</button><button id="spWhole" title="지금 연 작품의 앞·가운데·뒤 회차에서 그림을 골라, 모든 장에 공통된 그림체를 노벨AI 태그로 가져와요">작품 전체에서 그림체 가져오기</button><button id="spPick" title="읽는 화면에 보이는 그림의 그림체(내용 말고)를 AI 가 노벨AI 태그로 옮겨 하우스 스타일에 넣어요">지금 보는 그림만</button><button id="spUndo" hidden>되돌리기</button><span class="hint" id="spStat"></span>';
   $('#naiStyleNow').after(box);
   $('#spPick').onclick = e => spPick(e.currentTarget);
   $('#spWhole').onclick = e => spPick(e.currentTarget, true);
-  $('#spUndo').onclick = () => { const p = store.get('set.naiStyle.prev', null); if (p === null) return; $('#naiStyle').value = p; store.set('set.naiStyle', p); $('#spUndo').hidden = true; $('#spStat').textContent = '하우스 스타일을 되돌렸어요'; };
+  $('#spMany').onclick = e => spManyOpen(e.currentTarget);
+  $('#spUndo').onclick = () => { const p = store.get('set.naiStyle.prev', null); if (p === null) return; $('#naiStyle').value = p; store.set('set.naiStyle', p);
+    const w = store.get('set.wtStyleIn.prev', null); if (w !== null && $('#wtStyleIn')){ $('#wtStyleIn').value = w; store.set('set.wtStyleIn', w); } $('#spUndo').hidden = true; $('#spStat').textContent = '하우스 스타일을 되돌렸어요'; };
+}
+// 여러 작품 고르기 창: 그림 회차가 있는 작품을 찾고 눌러서 고른다(8개까지). 고른 것은 이 기기에 기억한다
+function spManyOpen(btn){
+  document.querySelector('.spm')?.remove();
+  const keep = new Set(store.get('naiStyleMany', []));
+  const list = works.filter(w => w.eps.some(e => e.type === 'imgs' && e.files?.length)).sort((a, b) => (keep.has(b.key) - keep.has(a.key)) || natural(a.name, b.name));
+  const box = document.createElement('div'); box.className = 'apick spm';
+  box.innerHTML = `<div class="ap-in"><div class="ap-head"><div><div class="hint">그림체를 배울 작품 고르기 · 여러 개 고르면 겹치는 그림체만 남아요 (8개까지)</div><b>여러 작품에서 그림체</b></div><button class="icon ap-x" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="row tight" style="padding:10px 14px"><input type="search" class="grow" id="spmQ" placeholder="작품 찾기"><span class="hint" id="spmN"></span><button class="primary" id="spmGo">고른 작품으로 가져오기</button></div>
+    <div class="ap-grid" id="spmGrid"></div></div>`;
+  const grid = box.querySelector('#spmGrid');
+  const sel = new Set([...keep].filter(k => list.some(w => w.key === k)));
+  const count = () => { box.querySelector('#spmN').textContent = `${sel.size}개 고름`; box.querySelector('#spmGo').disabled = !sel.size; };
+  const draw = () => {
+    const q = box.querySelector('#spmQ').value.trim(); grid.innerHTML = '';
+    for (const w of list.filter(w => !q || w.name.includes(q)).slice(0, 200)){
+      const it = document.createElement('button'); it.className = 'ap-it' + (sel.has(w.key) ? ' on' : ''); it.dataset.key = w.key;
+      const cu = coverUrl(w);
+      it.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" src="${cu}">` : '<span class="ph"></span>'}<span class="ck">${sel.has(w.key) ? '✓' : ''}</span></div><div class="t"></div><div class="m">${isAdult(w) ? '성인 · ' : ''}${KIND_LABEL[w.kind] || ''}</div>`;
+      it.querySelector('.t').textContent = w.name;
+      it.onclick = () => { if (sel.has(w.key)) sel.delete(w.key); else if (sel.size < 8) sel.add(w.key); else return toast('8개까지 고를 수 있어요'); draw(); count(); };
+      grid.append(it);
+    }
+  };
+  box.querySelector('#spmQ').oninput = draw;
+  const close = () => box.remove();
+  box.querySelector('.ap-x').onclick = close; box.onclick = e => { if (e.target === box) close(); };
+  box.querySelector('#spmGo').onclick = () => { const keys = [...sel]; store.set('naiStyleMany', keys); close(); spPick(btn, false, keys); };
+  document.body.append(box); draw(); count();
 }
 window.nvStylePick = {clean: spClean, files: w => spWorkFiles(w)};   // 시험용
 </script>

@@ -67,6 +67,7 @@ const WT_SCHEMA = {
 const SYSTEM_WT_BASE = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽·컷 대본으로 바꾼다. 모든 글은 한국어, 그림 태그(tags)만 영어.
 - 받은 줄거리가 한 줄이거나 거칠면 네가 채운다: 장소·시간, 둘 사이에 무슨 일이 있었는지, 감정이 꺾이는 지점, 끝을 정해서 synopsis 에 3~6문장으로 먼저 쓴다. 그 synopsis 대로 쪽을 나눈다.
 - 받은 줄거리에 이미 있는 것은 바꾸지 않는다. 비어 있는 곳만 채운다.
+- 줄거리의 사건은 하나도 빼지 않는다. 받은 줄거리의 [장면]·문장 순서대로 쪽에 나눠 담고, 인물이 한 말이 줄거리에 있으면 그 말을 대사로 살린다. 쪽이 모자라면 한 쪽에 컷을 4개까지 늘리고, 그래도 모자라면 쪽을 더 쓴다.
 틀(layout) 키: 1=한 컷, 2a=위아래 반반, 2b=위 작은 컷+아래 큰 컷, 2c=위 큰 컷+아래 작은 컷, 2d=사선 가로 둘, 2e=사선 세로 둘, 3a=세 칸, 3b=위 큰 컷+아래 둘, 3c=왼쪽 길게+오른쪽 둘, 3d=사선 세 칸, 4a=네 칸.
 - 한 쪽은 1~4컷. 컷 수는 틀과 맞춘다(1→1컷, 2*→2컷, 3*→3컷, 4a→4컷). 장면 전환·감정 고조에는 큰 컷, 반응에는 작은 컷을 쓴다.
 - 첫 쪽은 상황을 한 번에 보여 주는 큰 컷으로 시작하고, 마지막 쪽은 다음이 궁금해지는 여운으로 끝낸다.
@@ -132,7 +133,12 @@ const wtFrame = () => WT_FRAME[$('#wtFrame')?.value || store.get('set.wtFrame', 
 // 그림체를 머리·꼬리로 나눠 준다. 웹툰 컷과 노벨AI 탭이 같은 그림체를 쓰게 하는 한 곳.
 function wtStyleParts(nsfw){
   const k = wtStyleKey();
-  if (k === 'custom'){ const c = ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, ''); return {head: c, tail: '', neg: ''}; }
+  // 직접 쓰기: 웹툰 칸(wtStyleIn) → 비었으면 노벨AI 탭 하우스 스타일(그림체 가져오기가 채우는 칸). 성인이면 수위 태그도 붙인다(예전엔 빠졌다)
+  if (k === 'custom'){
+    const c = (($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim() || $('#naiStyle').value.trim()).replace(/,\s*$/, '');
+    const head = [c]; if (nsfw){ head.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid); const a = wtActTags(); if (a) head.push(a); }
+    return {head: head.filter(Boolean).join(', '), tail: '', neg: '', key: k};
+  }
   const st = WT_STYLE[k]; const head = [st.head];
   if (k === 'dark'){ const fr = wtFrame(); if (fr) head.push(st.frame.replace('{FRAME}', fr)); }
   let tail = st.tail.replace('{MONO}', wtMono());
@@ -156,7 +162,7 @@ function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: fa
 }
 function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 태그
   const k = wtStyleKey();
-  if (k === 'custom') return ($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim().replace(/,\s*$/, '');
+  if (k === 'custom') return (($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim() || $('#naiStyle').value.trim()).replace(/,\s*$/, '');
   return WT_STYLE[k].head;
 }
 function wtStyleNeg(neg, nsfwArg, who){
@@ -202,7 +208,7 @@ function wtSizeKey(pg, panel){ const bb = polyBox(polyPx(pg, panel)), r = (bb[2]
 const wtMinorBlock = p => wtRating() === 'nsfw' && MINOR_RE.test([p.base, ...p.chars.map(c => c.prompt)].join(' '));
 async function wtGenPanel(pg, panel){
   const bb = polyBox(polyPx(pg, panel));
-  const bt = (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
+  const bt = panel.say?.length ? panel.say.map(t => t.slice(0, 40)) : (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
   const p = wtPanelPrompt(panel, bt);
   if (wtMinorBlock(p)) throw new Error('미성년을 떠올리게 하는 태그가 있어서 건너뛰었어요');
   const blob = await naiGenBlob(p, wtSizeKey(pg, panel));
@@ -210,24 +216,36 @@ async function wtGenPanel(pg, panel){
 }
 
 /* ---------- 대본 → 쪽 ---------- */
+// 컷 하나에 말풍선·효과음·스티커를 놓는다.
+// 말풍선은 말하는 사람(chars 순서 = 그림 속 위치와 같은 줄)의 머리 위에 두고 꼬리를 그 사람 쪽으로, 글 길이에 맞춘 폭으로.
+// '말풍선 글자도 그림에 그리기'를 켜면 대사는 노벨AI 가 그림 안에 그리므로 겹치지 않게 대사 말풍선은 놓지 않고 컷에 적어 둔다(panel.say)
 function wtPlace(pg, panel, spec){
-  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.55, Math.min(1.15, bw / 1100));
+  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.7, Math.min(1.3, bw / 1000));
   const items = []; const mk = o => { o.id = uid(); items.push(o); return o; };
-  const left = bb[0] + bw * 0.28, right = bb[0] + bw * 0.72;
-  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.min(bw, bh) * 0.5, rot: 0});
-  let bi = 0;
+  const pi = pg.panels.indexOf(panel);
+  const names = (spec.chars || []).map(String);
+  const cols = names.length === 1 ? [2] : names.length === 2 ? [1, 3] : names.length === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
+  const headX = i => bb[0] + bw * ((cols[i] ?? 2) / 5 + 0.1);
+  const clampX = x => Math.max(bb[0] + bw * 0.2, Math.min(bb[2] - bw * 0.2, x));
+  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.round(Math.min(bw, bh) * 0.42), rot: 0, pi});   // pi: 이 컷 안에서만 보이게 자른다
+  const naiText = wtNaiTextOn(); panel.say = [];
+  let bi = 0, ni = 0;
   for (const b of (spec.bubbles || []).slice(0, 3)){
     const text = String(b.text || '').trim(); if (!text) continue;
-    const y = bb[1] + bh * (0.15 + 0.2 * bi), x = bi % 2 === 0 ? right : left;
-    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1 + bi * 90, size: Math.round(38 * sc), w: Math.round(480 * sc), text, line: 'thin', dash: true, tail: null}); }
-    else if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(52 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); }
-    else {
-      const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
-      mk({k: 'bubble', shape, x, y, size: Math.round(38 * sc), w: Math.round(310 * sc), line: 'thin', text, tail: shape === 'shout' ? null : {x: x + (bi % 2 ? 30 : -30), y: y + bh * 0.2}}); bi++;
-    }
+    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.08 + ni * 100 * sc, size: Math.round(40 * sc), w: Math.round(Math.min(bw * 0.5, 520 * sc)), text, line: 'thin', dash: true, tail: null}); ni++; continue; }
+    if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(54 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); continue; }
+    if (naiText){ panel.say.push(text); continue; }
+    const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
+    const who = names.indexOf(String(b.who || '').trim());
+    const sx = who >= 0 ? headX(who) : bb[0] + bw * (bi % 2 === 0 ? 0.72 : 0.28);
+    const x = clampX(sx + (who >= 0 ? (sx < bb[0] + bw / 2 ? bw * 0.06 : -bw * 0.06) : 0)), y = bb[1] + bh * (0.12 + 0.2 * bi) + ni * 130 * sc;   // 설명 상자가 있으면 그 아래로
+    const w = Math.round(Math.max(240, Math.min(bw * 0.5, Math.sqrt(text.length) * 105)));
+    const fs = Math.round(44 * Math.max(0.92, Math.min(1.15, bw / 1000)));   // 글씨는 컷이 작아도 쪽 너비(1500)의 3% 안팎으로 읽히게
+    mk({k: 'bubble', shape, x, y, size: fs, w, line: 'thin', text, tail: shape === 'shout' ? null : {x: sx, y: y + bh * (shape === 'thought' ? 0.1 : 0.2)}}); bi++;
   }
   (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.2 : 0.8), y: bb[1] + bh * (i ? 0.78 : 0.62), size: Math.round(Math.min(bw, bh) * 0.2), text: t, grad: (hash(t) % 4), rot: i ? 10 : -12, vert: !!s.vert, font: 'Black Han Sans'}); });
-  const stk = (spec.stickers || []).filter(k => k !== 'speed'); stk.forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.86 - i * 0.12), y: bb[1] + bh * (k === 'heart' ? 0.5 : 0.1 + i * 0.1), size: Math.round(Math.min(bw, bh) * 0.15), rot: i * 8 - 4}));
+  // 스티커는 말풍선이 없는 아래쪽 모서리에 (말풍선을 덮지 않게)
+  const stk = (spec.stickers || []).filter(k => k !== 'speed'); stk.forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.14 + i * 0.12), y: bb[1] + bh * (k === 'heart' ? 0.55 : 0.82), size: Math.round(Math.min(bw, bh) * 0.15), rot: i * 8 - 4}));
   return items;
 }
 function wtBuildFromScript(sc){
@@ -285,11 +303,14 @@ $('#wtAutoGo').onclick = async () => {
   const rating = wtRating(), dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(story + '\n' + dict.join('\n'), 'adult')) return;
   const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
-  const n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)), tone = $('#wtTone').selectedOptions[0].text;
+  let n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)); const tone = $('#wtTone').selectedOptions[0].text;
+  // 줄거리의 장면 수([1장] 같은 줄)가 쪽 수보다 많으면 쪽을 늘린다(예전엔 4쪽에 줄이느라 사건이 빠졌다)
+  const scenes = (story.match(/^\s*\[[^\]]+\]/gm) || []).length;
+  if (scenes > n){ n = Math.min(12, scenes); $('#wtPagesN').value = n; toast(`줄거리 장면이 ${scenes}개라 ${n}쪽으로 늘렸어요`); }
   wtAbort = new AbortController(); $('#wtAutoGo').disabled = true; $('#wtAutoStop').hidden = false; wtAutoStat('대본 쓰는 중…');
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
   const known = new Set(dict.map(l => l.split(':')[0].trim()));
-  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (±1쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
+  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (사건을 다 담으려면 ±2쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
   let res; try{ res = await stream(c, {messages: [{role: 'user', content}], system: SYSTEM_WT(), signal: wtAbort.signal, format: {type: 'json_schema', schema: WT_SCHEMA}}); }
   finally { wtAbort = null; $('#wtAutoGo').disabled = false; $('#wtAutoStop').hidden = true; }
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }

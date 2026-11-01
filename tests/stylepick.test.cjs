@@ -34,5 +34,14 @@ const {chromium} = require('playwright'); const fs = require('fs'); const path =
   sent = null; await p.evaluate(() => document.querySelector('#spWhole').click()); await p.waitForTimeout(2500);
   const parts = sent?.contents?.[0]?.parts || [];
   console.log('whole sent:', parts.filter(x => x.inline_data).length, 'images |', /여러 쪽 6장/.test(parts.find(x => x.text)?.text || ''), '| sys says common:', /공통된 그림체/.test(JSON.stringify(sent?.systemInstruction || sent?.system_instruction || '')));
+  // 여러 작품 골라서: 두 작품을 고르면 두 작품의 그림을 함께 보이고 '공통된 그림체'를 묻는다. 웹툰 '직접 쓰기' 칸에도 들어간다
+  await p.evaluate(() => document.querySelector('#spMany').click()); await p.waitForTimeout(300);
+  console.log('many list:', await p.$$eval('.spm .ap-it .t', e => e.map(x => x.textContent).sort().join(',')));
+  await p.click('.spm .ap-it:has-text("그림체시험")'); await p.click('.spm .ap-it:has-text("전체시험")');
+  console.log('many count:', await p.textContent('#spmN'));
+  sent = null; await p.click('#spmGo'); await p.waitForTimeout(2500);
+  const mp = sent?.contents?.[0]?.parts || [];
+  console.log('many sent:', mp.filter(x => x.inline_data).length, 'images |', /서로 다른 작품 2개/.test(mp.find(x => x.text)?.text || ''));
+  console.log('webtoon custom box:', await p.evaluate(() => document.querySelector('#wtStyleIn').value.includes('korean webtoon style')), '| remembered:', await p.evaluate(() => JSON.parse(localStorage.getItem('nv.naiStyleMany')).length));
   console.log('ERRORS:', errs.length ? errs : 'none'); await b.close();
 })();

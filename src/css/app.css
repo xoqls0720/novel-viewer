@@ -581,3 +581,6 @@ a:hover{text-decoration-color:currentColor}
 .ap-it .m{font-size:11px;color:var(--sub)}
 .ap-it.read .cv{opacity:.55}
 @media (max-width:700px){ .ap-grid{grid-template-columns:repeat(3,1fr);gap:12px 8px;padding:10px} .apick{padding:0;align-items:stretch} .ap-in{border-radius:0} }
+.spm .ap-it.on .cv{outline:3px solid #e8603c;outline-offset:-3px}
+.spm .ap-it .ck{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:#e8603c;color:#fff;font:700 13px/22px var(--ui);text-align:center}
+.spm .ap-it:not(.on) .ck{background:rgb(0 0 0 / 35%)}

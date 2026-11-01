@@ -263,7 +263,12 @@ function drawItem(g, it){ (it.k === 'bubble' ? drawBubble : {text: drawOutlined,
 function wtRenderPage(g, pg, k, opts = {}){
   g.save(); g.scale(k, k); g.fillStyle = '#fff'; g.fillRect(0, 0, WT_W, pg.h);
   if (pg.kind === 'text'){ /* 글 쪽: 바탕만 */ } else drawPanels(g, pg, k);
-  for (const it of pg.items) drawItem(g, it);
+  // 집중선처럼 컷에 묶인 것(pi)은 그 컷 밖으로 나가지 않게 잘라서 그린다
+  for (const it of pg.items){
+    const pn = it.pi != null ? pg.panels[it.pi] : null;
+    if (!pn){ drawItem(g, it); continue; }
+    g.save(); g.beginPath(); polyPx(pg, pn).forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.clip(); drawItem(g, it); g.restore();
+  }
   if (opts.ui) wtDrawUI(g, pg);
   g.restore();
 }
