@@ -102,6 +102,9 @@ sketch 시험은 가짜 PSD를 만들려고 파이썬 `pillow`·`psd-tools` 가 
 - PC 프로그램: `dl-apps`·`dl-open` IPC 가 다운로더를 켜고(`node server.cjs --no-open`) 127.0.0.1 주소를 준다. 폰·아이패드(PC 주소로 연 경우): `/t/<열쇠>/moa/` 처럼 PC 를 거친다. 받기는 늘 PC 가 하고, 받은 작품은 폴더 지켜보기(`lib-changed`)로 서재에 저절로 들어온다.
 - **다른 프로그램** 칸: 창으로 뜨는 다운로더(바탕 화면\…\다운로더 모음 의 번호 붙은 .bat: Kemono·Pawchive·HakuNeko·히토미·HaruNeko)는 화면에 넣지 못해서 켜는 단추(`dl-ext`·`dl-ext-run`, 목록에 있는 .bat 만 `cmd /c start`)와 서재 저장 폴더(복사 단추)를 보인다. `extDir` 은 lan.json 의 `extDir` 로 기억한다. Pawchive 는 config\settings.json 의 `download_dir` 를 `…\노벨리스트\성인\만화` 로 바꿔 두었다(원본 `.bak-20261101`).
 - 회차 폴더: '0001'·'Ch.001'·'Chapter 1'·'Vol.2'·'제3화'·'#4' 로 시작하는 폴더의 그림은 한 화로 묶는다(HakuNeko·HaruNeko).
+- **주소로 받기** 칸: 붙여 넣은 주소를 토끼 `/api/jobs`(`{kind:'title', titles, format}`)로 맡긴다. 토끼가 kemono·coomer·pawchive·히토미·mangadex 등은 gallery-dl, 영상은 yt-dlp 로 받는다. PC 프로그램은 `dl-job` IPC, PC 주소로 연 손님은 `/t/<열쇠>/toki/api/jobs`.
+- 깃허브 주소로 연 폰·아이패드·노트북: 구글로 맞춘 `pcRemote.url`(PC 의 cloudflared 터널 주소)로 `lan/info` 를 묻고, 받기 칸의 iframe·주소로 받기가 그 주소를 쓴다. lan-server 는 `https://xoqls0720.github.io` 에만 CORS 를 연다(열쇠가 맞을 때만). 창 프로그램 단추는 그 PC 에서만 보인다. 시험: `node tests/run.cjs dlremote` (진짜 sw.js 가 붙지 않게 serviceWorkers: 'block').
+- 다운로더 서버는 셸 없이 띄운다(작업 표시줄에 'node server.cjs' 검은 창이 남던 것).
 - 다운로더 폴더 찾기(`dlDir`): lan.json 의 `dlDir` → 작품 폴더 위쪽 → `~/novel`, `C:~H:
 ovel` 의 `다운로더`. 찾으면 `dlDir` 로 기억한다(서재를 G: 로 옮긴 뒤 위쪽에서 못 찾던 것).
 

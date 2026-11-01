@@ -255,7 +255,8 @@ async function gdSync(interactive = false){
     if (pc){ PC.last = Date.now(); pcStatus(`PC와 맞춤 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · ${sum}`); }
     else { localStorage.setItem('nv.gd.last', JSON.stringify(Date.now())); if (!od){ store.set('gd.linked', true); GD.warned = false; gdUI(); } gdStatus(`마지막 동기화 ${new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'})} · ${sum}`); }
     if (!pc || lsChanged || down || tx.down || kd){ applySettingsFromStore(); renderLib(); renderNotes(); renderScraps(); renderNaiHist(); }
-    if (!od && !pc) window.libAfterSync?.(files);   // 작품 파일 동기화(17-libsync.js). OneDrive·PC 는 작품 폴더를 바로 쓰니 올리지 않는다
+    if (!od && !pc) window.libAfterSync?.(files);
+    if (!DESKTOP && !pc) window.nvDl?.init?.();   // PC 바깥 주소(pcRemote)가 바뀌었을 수 있다 → 받기 칸을 다시   // 작품 파일 동기화(17-libsync.js). OneDrive·PC 는 작품 폴더를 바로 쓰니 올리지 않는다
     if (od) odUI();
   }catch(e){
     if (pc){ pcStatus('PC와 맞추지 못했어요 (' + e.message + ')'); return; }

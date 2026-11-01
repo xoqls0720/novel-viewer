@@ -147,6 +147,7 @@ async function waitPort(port, ms){
 /* apps: {moa: {port, start()}, toki: {port, start()}}  start 는 켜는 명령만, 기다리기는 여기서
    tr: {port, start()}  번역 엔진 */
 // sync: {list(), get(name), put(name, buf), del(name)} — PC로 맞추기 칸 (main.js 의 pcStore). onSync: 폰이 바꾸면 부른다
+const CORS_OK = /^https:\/\/xoqls0720\.github\.io$/;
 function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, tr = null, sync = null, onSync = null, trPages = null, cacheFile = null, resize = null, thumbDir = null}){
   const getApps = () => (typeof appsIn === 'function' ? appsIn() : appsIn) || {};
   const normRoots = () => (typeof roots === 'function' ? roots() : roots).map(r => path.normalize(r));
@@ -268,6 +269,11 @@ function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, 
       const bad = badTries.get(who);
       if (bad && bad.n >= 20 && Date.now() - bad.t < 10 * 60000){ res.writeHead(429); return res.end('too many'); }
       if (!m || m[1] !== token){ badTries.set(who, {n: (bad && Date.now() - bad.t < 10 * 60000 ? bad.n : 0) + 1, t: Date.now()}); res.writeHead(403); return res.end('forbidden'); }
+      // 폰·아이패드·노트북에서 늘 쓰는 Novelist(깃허브 주소)가 이 PC 의 다운로더에 받기를 맡길 수 있게(열쇠가 맞을 때만)
+      if (CORS_OK.test(req.headers.origin || '')){
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin); res.setHeader('Vary', 'Origin');
+        if (req.method === 'OPTIONS'){ res.writeHead(204, {'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'content-type', 'Access-Control-Max-Age': '600'}); return res.end(); }
+      }
       const rawRest = m[2] || '/';
       let p = decodeURIComponent(rawRest);
       if (p === '/lan/scan'){

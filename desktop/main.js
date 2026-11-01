@@ -246,7 +246,8 @@ function dlDir(){
 }
 function nodeRun(script, cwd){
   const { spawn } = require('child_process');
-  spawn('node', [script, '--no-open'], { cwd, detached: true, stdio: 'ignore', windowsHide: true, shell: process.platform === 'win32' }).unref();
+  // shell 을 거치면 윈도우에 'node server.cjs' 검은 창이 작업 표시줄에 남는다 → 바로 실행(창 숨김)
+  spawn('node', [script, '--no-open'], { cwd, detached: true, stdio: 'ignore', windowsHide: true }).unref();
 }
 function lanApps(){
   const d = dlDir(); const apps = {};
@@ -277,6 +278,13 @@ ipcMain.handle('dl-ext-run', (_e, id) => {
   return true;
 });
 ipcMain.handle('dl-apps', () => Object.keys(lanApps()));
+// 주소로 받기: 토끼 다운로더에 일을 맡긴다 (kemono·coomer·pawchive·히토미·mangadex 등은 토끼가 gallery-dl 로 받는다)
+ipcMain.handle('dl-job', async (_e, body) => {
+  const a = lanApps().toki; if (!a) return {error: '토끼 다운로더가 없어요'};
+  if (!(await waitPort(a.port, 600))){ dlStarting.toki ||= (async () => { try{ await a.start(); return await waitPort(a.port, 30000); } finally{ setTimeout(() => { delete dlStarting.toki; }, 1000); } })(); if (!(await dlStarting.toki)) return {error: '토끼 다운로더를 켜지 못했어요'}; }
+  try{ const r = await net.fetch(`http://127.0.0.1:${a.port}/api/jobs`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}); return await r.json(); }
+  catch(e){ return {error: e.message}; }
+});
 ipcMain.handle('dl-open', async (_e, k) => {
   const a = lanApps()[k]; if (!a) return null;
   const url = `http://127.0.0.1:${a.port}/`;

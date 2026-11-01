@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('nvDesktop', {
   dlApps: () => ipcRenderer.invoke('dl-apps'),
   dlOpen: k => ipcRenderer.invoke('dl-open', k),
   dlExt: () => ipcRenderer.invoke('dl-ext'),
+  dlJob: body => ipcRenderer.invoke('dl-job', body),
   dlExtRun: id => ipcRenderer.invoke('dl-ext-run', id),
   lanSet: on => ipcRenderer.invoke('lan-set', on),
   trPageGet: key => ipcRenderer.invoke('tr-page-get', key),
