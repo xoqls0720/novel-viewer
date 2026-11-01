@@ -1,6 +1,8 @@
 // 구글 드라이브의 zip 만화·영상을 폰처럼 연다. 진짜 드라이브처럼 주소에 붙인 토큰(access_token=)은 거절하고 머리글(Authorization)만 받는다.
 // 영상은 <video> 가 머리글을 못 붙이니 서비스 워커(./__drv/)를 거쳐야 하고, 구간 응답(206·Content-Range)을 워커가 만들어야 재생된다.
-const {chromium} = require('playwright'); const fs = require('fs'); const path = require('path');
+const {chromium, webkit, devices} = require('playwright');
+const fs = require('fs'); const path = require('path');
+// ENG=webkit DEV='iPad Pro 11' 로 사파리 엔진·아이패드에서도 돌린다
 const ROOT = path.resolve(__dirname, '..');
 // 압축 없는(store) zip 을 직접 만든다: 그림 두 장
 function storeZip(files){
@@ -23,7 +25,8 @@ const D = {root: [{id: 'H', name: '노벨리스트', mimeType: FOLDER}], H: [{id
   K2: [{id: 'W2', name: '시험영상', mimeType: FOLDER}], W2: [{id: 'V1', name: 'clip.webm', mimeType: 'video/webm', size: String(CLIP.length), modifiedTime: '2026-10-01T00:00:00Z'}]};
 const BODY = {Z1: ZIP, V1: CLIP};
 (async () => {
-  const b = await chromium.launch(); const ctx = await b.newContext({viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true});
+  const b = await (process.env.ENG === 'webkit' ? webkit : chromium).launch();
+  const ctx = await b.newContext(process.env.DEV ? {...devices[process.env.DEV], isMobile: process.env.ENG === 'webkit' ? undefined : devices[process.env.DEV].isMobile} : {viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true});
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
   const html = fs.readFileSync(path.join(ROOT, 'index.html')), sw = fs.readFileSync(path.join(ROOT, 'sw.js'));
   await ctx.route('https://nv.test/**', r => {
@@ -33,7 +36,7 @@ const BODY = {Z1: ZIP, V1: CLIP};
     return r.fulfill({status: 200, contentType: 'application/octet-stream', body: ''});   // 아이콘 등: 워커 설치(addAll)가 실패하지 않게
   });
   await ctx.route('https://accounts.google.com/**', r => r.fulfill({status: 200, contentType: 'text/javascript', body: 'window.google={accounts:{oauth2:{initTokenClient:o=>({requestAccessToken:()=>setTimeout(()=>o.callback({access_token:"tok",expires_in:3600}),10)})}}};'}));
-  const seen = {qp: 0, hdr: 0, range: 0};
+  const seen = {qp: 0, hdr: 0, range: 0, tail: 0};
   await ctx.route('https://www.googleapis.com/**', async r => {
     const rq = r.request(); const u = new URL(rq.url()); const H = {'access-control-allow-origin': '*'};
     const J = o => r.fulfill({status: 200, contentType: 'application/json', headers: H, body: JSON.stringify(o)});
@@ -47,7 +50,7 @@ const BODY = {Z1: ZIP, V1: CLIP};
     if (m){
       seen.hdr++; const buf = BODY[m[1]]; const rg = /bytes=(\d+)-(\d+)/.exec(rq.headers()['range'] || '');
       // Content-Range 는 다른 주소에 보여 주지 않는다(진짜 드라이브와 같이)
-      if (rg){ seen.range++; const a = +rg[1], e = Math.min(buf.length - 1, +rg[2]); return r.fulfill({status: 206, headers: {...H, 'content-type': 'application/octet-stream'}, body: buf.subarray(a, e + 1)}); }
+      if (rg){ seen.range++; if (m[1] === 'Z1' && +rg[2] >= buf.length - 1) seen.tail++; const a = +rg[1], e = Math.min(buf.length - 1, +rg[2]); return r.fulfill({status: 206, headers: {...H, 'content-type': 'application/octet-stream'}, body: buf.subarray(a, e + 1)}); }
       return r.fulfill({status: 200, headers: {...H, 'content-type': 'application/octet-stream'}, body: buf});
     }
     const q = u.searchParams.get('q') || '';
@@ -57,7 +60,7 @@ const BODY = {Z1: ZIP, V1: CLIP};
   await p.goto('https://nv.test/index.html'); await p.waitForTimeout(300);
   await p.evaluate(() => { const S = (k, v) => localStorage.setItem('nv.' + k, JSON.stringify(v)); S('set.stStart', false); S('gd.linked', true); S('coachDone', true);
     S('gd.tok', {t: 'tok', exp: Date.now() + 3600e3, s: 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.readonly'}); });
-  await p.evaluate(() => navigator.serviceWorker.ready); await p.reload();
+  console.log('sw ready:', await p.evaluate(() => Promise.race([navigator.serviceWorker?.ready.then(() => true), new Promise(r => setTimeout(() => r(false), 8000))]))); await p.reload();
   await p.waitForFunction(() => window.nvMedia && nvMedia.works().length >= 2, null, {timeout: 30000}).catch(() => {});
   console.log('sw controls:', await p.evaluate(() => !!navigator.serviceWorker.controller), '| works:', await p.evaluate(() => nvMedia.works().map(w => w.kind + ':' + w.name).sort().join(',')));
   const manga = await p.evaluate(async () => {
@@ -74,5 +77,9 @@ const BODY = {Z1: ZIP, V1: CLIP};
   });
   console.log('video:', vid);
   console.log('token in drive urls:', seen.qp, '| header reads:', seen.hdr > 0, '| range reads:', seen.range > 0);
+  // 다시 켜면 zip 목록은 이 기기에 저장해 둔 것으로: 요청도 '푸는 중'도 없다
+  seen.tail = 0; await p.addInitScript(() => { window.__toasts = []; addEventListener('DOMContentLoaded', () => new MutationObserver(() => { const t = document.querySelector('#toast')?.textContent; if (t) window.__toasts.push(t); }).observe(document.body, {subtree: true, childList: true, characterData: true})); });
+  await p.reload(); await p.waitForFunction(() => window.nvMedia && nvMedia.works().length >= 2, null, {timeout: 30000}).catch(() => {}); await p.waitForTimeout(1500);
+  console.log('reopen zip list reads:', seen.tail, '| unzip toast:', await p.evaluate(() => window.__toasts.some(t => t.includes('푸는 중'))), '| works:', await p.evaluate(() => nvMedia.works().length));
   console.log('ERRORS:', errs.length ? errs : 'none'); await b.close();
 })();

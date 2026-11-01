@@ -1,6 +1,7 @@
 /* ================= 열기 ================= */
 async function openWork(w){
   stopTTS();
+  if (w.n0 != null && store.get('seen.' + w.key, null) !== w.n0) store.set('seen.' + w.key, w.n0);   // 새 회차 표시를 지운다
   cur = w; chats.ai.reset(); $('#mode').value = store.get('set.mode.' + w.kind, 'auto'); $('#app').classList.remove('nowork'); $('#app').classList.add('opening');
   if (!w._expanded && w.kind !== 'manga' && w.eps.some(e => e.type === 'epub')){
     toast('epub 여는 중…');

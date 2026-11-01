@@ -16,11 +16,15 @@ async function expandZips(list){
   const out = [];
   for (const f of list){
     if (!/\.zip$/i.test(f.name)){ out.push(f); continue; }
-    toast(`${f.name} 푸는 중…`);
     // 폴더·PC 서재의 zip: 목록만 읽고, 그림은 볼 때 그 부분만 (수백 MB 를 통째로 받지 않는다)
+    // 목록(중앙 목록)은 이 기기에 저장해 두고 다음에 켤 때는 요청 없이 쓴다 (예전엔 켤 때마다 zip 마다 '푸는 중'을 다시 했다)
     if (f.rangeUrl || f.streamUrl){
       try{
-        const zip = await RangeZip.open(f.rangeUrl || f.streamUrl, f.size);
+        const zkey = 'zc:' + relPath(f) + '|' + f.size + '|' + f.lastModified;
+        let known = null; try{ known = (await idb.tx('readonly', s => s.get(zkey), 'dcache'))?.files || null; }catch{}
+        if (!known) toast(`${f.name} 푸는 중…`);
+        const zip = await RangeZip.open(f.rangeUrl || f.streamUrl, f.size, known);
+        if (!known) try{ await idb.tx('readwrite', s => s.put({id: zkey, files: zip.files}), 'dcache'); }catch{}
         const base = relPath(f).replace(/\.zip$/i, '');
         const dir = base.includes('/') ? base.slice(0, base.lastIndexOf('/')+1) : '';
         const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
@@ -32,6 +36,7 @@ async function expandZips(list){
         continue;
       }catch{}   // 구간 읽기가 안 되면 아래처럼 통째로
     }
+    toast(`${f.name} 푸는 중…`);
     try{
       const zip = await JSZip.loadAsync(await realBlob(f), {decodeFileName: bytes => { try{ return new TextDecoder('utf-8', {fatal:true}).decode(bytes); }catch{ try{ return new TextDecoder('euc-kr').decode(bytes); }catch{ return String.fromCharCode(...bytes); } } }});
       const base = relPath(f).replace(/\.zip$/i, '');
@@ -66,7 +71,8 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     const ai = rel.findIndex(p => p === '성인');
     if (ai >= 0 && media && rel.length >= ai + 5) { workPath = rel.slice(0, ai + 3).join('/'); epName = rel.slice(ai + 3, -1).join(' · '); }
     // 웹툰·만화 회차 폴더: 작품/0001 1화/이미지, 작품/001/이미지, 작품/1화/이미지
-    else if (media && rel.length >= 3 && /^\d{1,4}(?:\D|$)/.test(rel[rel.length-2])) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
+    // HakuNeko·HaruNeko 처럼 'Ch.001'·'Chapter 1'·'Vol.2'·'제3화'·'#4' 로 시작하는 회차 폴더도
+    else if (media && rel.length >= 3 && /^(\d{1,4}(?:\D|$)|(?:ch(?:apter)?|ep(?:isode)?|vol(?:ume)?|제)\.?\s*\d|#\d)/i.test(rel[rel.length-2])) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
     else workPath = rel.length > 1 ? rel.slice(0,-1).join('/') : '낱개/' + f.name.replace(/\.[^.]+$/, '');
     if (!groups.has(workPath)) groups.set(workPath, {files:[], imgEps:new Map(), vidEps:[], subs:[], paths:[]});
     const g = groups.get(workPath); g.paths.push(relPath(f));
@@ -115,7 +121,9 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     // 이름으로 알아본 성인 작품: 열쇠(읽던 자리)는 그대로 두고 칸·묶음 이름만 성인으로
     const guess = !adult && ADULT_NAME.test(path);
     const shown = guess ? '성인 ' + (kind === 'video' ? '영상' : kind === 'novel' ? '소설' : '만화') : topName || top;
-    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths};
+    // n0: 처음 묶었을 때의 화 수(EPUB 을 펼치기 전) — '새 회차' 표시에 쓴다. added: 가장 최근 파일 시각 — '최근 추가순'
+    const lastT = g.files.concat(...[...g.imgEps.values()].map(fs => fs.slice(-1)), g.vidEps.map(v => v.file)).reduce((m, f) => Math.max(m, f.lastModified || 0), 0);
+    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths, n0: finalEps.length, added: lastT};
     const old = works.findIndex(x=>x.key===w.key);
     if (old >= 0){ if (works[old].coverUrl) URL.revokeObjectURL(works[old].coverUrl); works[old] = w; } else works.push(w);
     added++;
@@ -161,13 +169,16 @@ function adultToggle(w){
   const m = store.get('adultMark', {}); m[w.key] = !a; store.set('adultMark', m); renderLib();
   toast(a ? '보통 칸으로 돌렸어요' : '성인 칸으로 옮겼어요');
 }
+// 새 회차: 마지막으로 연 뒤 늘어난 화 수(기기끼리 맞춰진다). 연 적 없는 작품은 3일 안에 들어왔으면 NEW(-1)
+const newEps = w => { const s = store.get('seen.' + w.key, null); if (s !== null) return Math.max(0, (w.n0 || 0) - s); return w.added && Date.now() - w.added < 3 * 864e5 && !store.get('pos.' + w.key, null) ? -1 : 0; };
 function workCard(w){
   const pos = store.get('pos.'+w.key, null);
   const total = pos?.n || w.eps.length;
   const pct = pos ? Math.min(100, Math.round(((pos.ep + (pos.f||0)) / total) * 100)) : 0;
   const d = document.createElement('div'); d.className = 'card' + (w===cur?' on':'');
   const cu = coverUrl(w);
-  d.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" decoding="async" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
+  const nw = newEps(w);
+  d.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" decoding="async" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${nw ? `<span class="new">${nw > 0 ? '+' + nw + '화' : 'NEW'}</span>` : ''}${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
   d.querySelector('.t').textContent = w.name;
   const ph = d.querySelector('.ph'); if (ph){   // 표지 없는 작품: 이름으로 고른 깊은 색 + 활자 표지
     const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8];   // 책 표지에 어울리는 열 가지 색
@@ -213,6 +224,9 @@ function renderLib(){
     }
   }
   if (sort === 'recent') list = [...list].sort((a,b)=>(store.get('pos.'+b.key,{t:0}).t||0)-(store.get('pos.'+a.key,{t:0}).t||0));
+  if (sort === 'added') list = [...list].sort((a, b) => (b.added || 0) - (a.added || 0));
+  // 새 회차: 새 화가 생긴 작품만, 많이 늘어난 순 (다른 뷰어의 '업데이트' 칸)
+  if (sort === 'new') list = list.filter(w => newEps(w)).sort((a, b) => (newEps(b) || 0.5) - (newEps(a) || 0.5) || (b.added || 0) - (a.added || 0));
   let lastTop = null, grid = null;
   const counts = {}; for (const w of list) counts[w.top] = (counts[w.top] || 0) + 1;
   for (const w of list){
@@ -223,7 +237,7 @@ function renderLib(){
     grid.append(workCard(w));
   }
   if (!list.length) lib.insertAdjacentHTML('beforeend', works.length
-    ? '<div class="hint" style="padding:16px 4px">찾는 작품이 없어요</div>'
+    ? `<div class="hint" style="padding:16px 4px">${sort === 'new' && !q ? '새로 들어온 회차가 없어요. 다 따라 읽었어요' : '찾는 작품이 없어요'}</div>`
     : /^\/t\/[^/]+\//.test(location.pathname) ? `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>PC 서재를 불러오는 중…</b><p>PC 의 Novelist 가 켜져 있어야 해요. 오래 걸리면 위의 <b>새로 받은 작품 보기</b>를 눌러 주세요.</p></div>`
     : `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>서재가 비어 있어요</b><p>위의 <b>폴더 열기</b>로 작품 폴더(노벨·만화·웹툰)를 고르거나,<br>txt·epub·zip 파일을 끌어다 놓아도 돼요. OneDrive 폴더를 연결하면 켤 때마다 저절로 들어와요.</p></div>`);
 }

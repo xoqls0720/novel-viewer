@@ -577,6 +577,8 @@ details.fold summary .chev{margin-left:auto}
 table.ep td:first-child{font-family:var(--display)}
 a{color:var(--accent);text-underline-offset:2px;text-decoration-color:color-mix(in srgb, var(--accent) 45%, transparent)}
 a:hover{text-decoration-color:currentColor}
+/* 새 회차 표시 (+3화 · NEW) */
+.card .cv .new{position:absolute;top:6px;left:6px;background:#e8603c;color:#fff;font:700 11px/1 var(--ui);padding:4px 6px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 /* ===== 집필실 ===== */
 #studio{--desk:color-mix(in srgb, var(--panel-2) 70%, var(--bg));position:fixed;inset:0;z-index:30;background:var(--desk);display:grid;grid-template-columns:64px 268px minmax(0,1fr) 340px;font-family:var(--ui)}
 #studio.noside{grid-template-columns:64px 0 minmax(0,1fr) 340px}
@@ -1323,6 +1325,25 @@ button:not(:disabled):active{transform:scale(.98)}
 /* 폰: 집필실에서는 아래 탭 줄이 숨겨지니 위쪽에 나가기(홈) 단추를 둔다 */
 .st-exit{display:none}
 @media (max-width:700px){.st-exit{display:inline-flex}}
+/* 받기 탭: 메뉴는 그대로 두고 오른쪽을 다운로더 화면으로 */
+#dlPage{position:fixed;top:0;bottom:0;right:0;left:var(--gw);z-index:34;background:var(--bg);display:flex;flex-direction:column;padding-top:var(--sat)}
+#dlPage[hidden]{display:none}
+.dl-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--hairline)}
+.dl-tabs{display:flex;gap:4px;overflow-x:auto}
+.dl-tabs button{white-space:nowrap}
+.dl-tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dl-st{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dlFrame{flex:1;width:100%;border:0;background:#fff}
+@media (max-width:700px){
+  #dlPage{left:0;bottom:calc(60px + var(--sab))}
+  #dlOut{display:none}
+}
+.dl-ext{flex:1;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.dl-ext[hidden],#dlFrame[hidden]{display:none}
+.dl-apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.dl-app{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px;text-align:left;height:auto}
+.dl-app span{font-size:12px;color:var(--sub)}
+.dl-dirs-h{margin-top:12px}
 /* 영상 회차 · 번역 칸 · 세로/펼침 단추 (26-media.js) */
 #reader.vid { overflow: hidden; }
 .vbox { display: flex; flex-direction: column; height: 100%; background: #000; padding: 56px 0 64px; box-sizing: border-box; }
@@ -1417,6 +1438,7 @@ button:not(:disabled):active{transform:scale(.98)}
   <symbol id="i-type" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="10" rx="2"/><path d="M7 5h10M7 13h1M11 13h1M15 13h1M8 16h8"/></symbol>
   <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6 9.5V19a1 1 0 0 0 1 1h3.5v-5h3v5H17a1 1 0 0 0 1-1V9.5"/></symbol>
+  <symbol id="i-get" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5 12 15.5l5-5M5 19.5h14"/></symbol>
   <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.6 9.1 4.5 4.5 0 0 0 7 18z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-focus" viewBox="0 0 24 24"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></symbol>
@@ -1427,6 +1449,7 @@ button:not(:disabled):active{transform:scale(.98)}
   <button data-g="lib" title="읽기 · 서재"><svg class="i"><use href="#i-book"/></svg><span>읽기</span></button>
   <button data-g="write" title="쓰기 · 집필실"><svg class="i"><use href="#i-pen"/></svg><span>쓰기</span></button>
   <button data-g="toon" title="웹툰 만들기"><svg class="i"><use href="#i-cards"/></svg><span>웹툰</span></button>
+  <button data-g="dl" title="받기 · 모아받기 · 토끼 다운로더" hidden><svg class="i"><use href="#i-get"/></svg><span>받기</span></button>
   <div class="g-sp"></div>
   <button data-g="set" class="g-sync" title="설정 · 동기화"><svg class="i"><use href="#i-gear"/></svg><span>설정</span><i class="g-dot"></i></button>
 </nav>
@@ -1444,7 +1467,7 @@ button:not(:disabled):active{transform:scale(.98)}
       <button id="btnWebtoon" class="studio-btn"><svg class="i"><use href="#i-cards"/></svg><span><b>웹툰</b><small>콘티·컷 만들기</small></span></button></div>
       <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
-      <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option></select></div>
+      <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option><option value="added">최근 추가순</option><option value="new">새 회차</option></select></div>
       <div class="lib-kinds" id="libKinds" role="tablist" aria-label="작품 종류"></div>
     </div>
     <div class="lib" id="lib"></div>
@@ -2149,6 +2172,16 @@ button:not(:disabled):active{transform:scale(.98)}
     </div>
   </div>
 </section>
+<!-- 받기: 모아받기·토끼 다운로더를 Novelist 안에서 (받은 작품은 서재에 저절로) -->
+<section id="dlPage" hidden>
+  <div class="dl-head">
+    <div class="dl-tabs" role="tablist" id="dlTabs"></div>
+    <span class="dl-st hint" id="dlStat"></span>
+    <button id="dlOut" title="이 다운로더를 새 창으로">새 창</button>
+  </div>
+  <iframe id="dlFrame" title="다운로더" allow="clipboard-read; clipboard-write"></iframe>
+  <div id="dlExt" class="dl-ext" hidden></div>
+</section>
 <div class="toast" id="toast"></div>
 <button class="primary share-ready" id="shareReady" hidden><svg class="i"><use href="#i-right"/></svg><span></span></button>
 
@@ -2187,13 +2220,40 @@ const idb = {
     this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 6); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); if (!db.objectStoreNames.contains('dcache')) db.createObjectStore('dcache', {keyPath:'id'}); if (!db.objectStoreNames.contains('wt')) db.createObjectStore('wt', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 Novelist 창을 닫고 다시 열어 주세요'); });
     return this.db;
   },
-  async tx(mode, fn, name = 'files'){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
+  async tx0(mode, fn, name){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
+  // 어떤 브라우저(일부 아이폰·아이패드 사파리 등)는 파일(Blob)을 그대로 넣으면 'UnknownError' 로 저장이 안 된다 → 그때만 바이트(ArrayBuffer)로 바꿔 넣고, 꺼낼 때 다시 파일로
+  blobOk: null,
+  async canBlob(){
+    if (this.blobOk === null) this.blobOk = this.tx0('readwrite', s => { s.put({id: '__blob', blob: new Blob(['x'])}); s.delete('__blob'); }, 'dcache').then(() => true, () => false);
+    return this.blobOk;
+  },
+  async tx(mode, fn, name = 'files'){
+    if (mode !== 'readwrite' || await this.canBlob()){ const r = await this.tx0(mode, fn, name); return mode === 'readonly' ? idbUnpack(r) : r; }
+    // 쓰기 일을 먼저 적어 두고(바꾸는 동안 트랜잭션이 닫히지 않게), 파일을 바이트로 바꾼 다음 한 번에 쓴다
+    const ops = []; fn(new Proxy({}, {get: (_, k) => (...a) => { ops.push([k, a]); return {}; }}));
+    for (const op of ops) if (op[0] === 'put' || op[0] === 'add') op[1][0] = await idbPack(op[1][0]);
+    return this.tx0(mode, s => { let last; for (const [k, a] of ops) last = s[k](...a); return last; }, name);
+  },
   async putMany(files){ for (let i=0; i<files.length; i+=50){ const part = files.slice(i, i+50); await this.tx('readwrite', s => { for (const f of part) s.put({path: relPath(f), blob: f, name: f.name}); }); } },
   async all(){ return await this.tx('readonly', s => s.getAll()); },
   async delPrefix(prefix){ const keys = await this.tx('readonly', s => s.getAllKeys()); const del = keys.filter(k => k === prefix || k.startsWith(prefix + '/')); await this.tx('readwrite', s => { for (const k of del) s.delete(k); }); return del.length; },
   async clear(){ await this.tx('readwrite', s => s.clear()); },
 };
 const relPath = f => f._rel || f.webkitRelativePath || f.name;
+async function idbPack(v, d = 0){
+  if (v instanceof Blob) return {__nvab: await v.arrayBuffer(), type: v.type, name: v instanceof File ? v.name : undefined, lm: v instanceof File ? v.lastModified : undefined};
+  if (d > 4 || !v || typeof v !== 'object' || ArrayBuffer.isView(v) || v instanceof ArrayBuffer) return v;
+  if (Array.isArray(v)) return Promise.all(v.map(x => idbPack(x, d + 1)));
+  if (Object.getPrototypeOf(v) !== Object.prototype) return v;
+  const o = {}; for (const k of Object.keys(v)) o[k] = await idbPack(v[k], d + 1); return o;
+}
+function idbUnpack(v, d = 0){
+  if (!v || typeof v !== 'object' || d > 5 || v instanceof Blob || v instanceof ArrayBuffer || ArrayBuffer.isView(v)) return v;
+  if (v.__nvab instanceof ArrayBuffer) return v.name !== undefined ? new File([v.__nvab], v.name, {type: v.type, lastModified: v.lm}) : new Blob([v.__nvab], {type: v.type});
+  if (Array.isArray(v)){ for (let i = 0; i < v.length; i++) v[i] = idbUnpack(v[i], d + 1); return v; }
+  if (Object.getPrototypeOf(v) !== Object.prototype) return v;
+  for (const k of Object.keys(v)) v[k] = idbUnpack(v[k], d + 1); return v;
+}
 async function showStore(){
   try{ const e = await navigator.storage?.estimate?.(); const n = await idb.tx('readonly', s => s.count()); $('#storeInfo').textContent = `저장한 파일 ${n.toLocaleString()}개` + (e ? ` · 사용 ${(e.usage/1048576).toFixed(0)}MB / 가능 ${(e.quota/1073741824).toFixed(1)}GB` : ''); }catch{ $('#storeInfo').textContent = '이 브라우저는 기기 저장을 지원하지 않아요'; }
 }
@@ -2216,11 +2276,15 @@ async function expandZips(list){
   const out = [];
   for (const f of list){
     if (!/\.zip$/i.test(f.name)){ out.push(f); continue; }
-    toast(`${f.name} 푸는 중…`);
     // 폴더·PC 서재의 zip: 목록만 읽고, 그림은 볼 때 그 부분만 (수백 MB 를 통째로 받지 않는다)
+    // 목록(중앙 목록)은 이 기기에 저장해 두고 다음에 켤 때는 요청 없이 쓴다 (예전엔 켤 때마다 zip 마다 '푸는 중'을 다시 했다)
     if (f.rangeUrl || f.streamUrl){
       try{
-        const zip = await RangeZip.open(f.rangeUrl || f.streamUrl, f.size);
+        const zkey = 'zc:' + relPath(f) + '|' + f.size + '|' + f.lastModified;
+        let known = null; try{ known = (await idb.tx('readonly', s => s.get(zkey), 'dcache'))?.files || null; }catch{}
+        if (!known) toast(`${f.name} 푸는 중…`);
+        const zip = await RangeZip.open(f.rangeUrl || f.streamUrl, f.size, known);
+        if (!known) try{ await idb.tx('readwrite', s => s.put({id: zkey, files: zip.files}), 'dcache'); }catch{}
         const base = relPath(f).replace(/\.zip$/i, '');
         const dir = base.includes('/') ? base.slice(0, base.lastIndexOf('/')+1) : '';
         const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
@@ -2232,6 +2296,7 @@ async function expandZips(list){
         continue;
       }catch{}   // 구간 읽기가 안 되면 아래처럼 통째로
     }
+    toast(`${f.name} 푸는 중…`);
     try{
       const zip = await JSZip.loadAsync(await realBlob(f), {decodeFileName: bytes => { try{ return new TextDecoder('utf-8', {fatal:true}).decode(bytes); }catch{ try{ return new TextDecoder('euc-kr').decode(bytes); }catch{ return String.fromCharCode(...bytes); } } }});
       const base = relPath(f).replace(/\.zip$/i, '');
@@ -2266,7 +2331,8 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     const ai = rel.findIndex(p => p === '성인');
     if (ai >= 0 && media && rel.length >= ai + 5) { workPath = rel.slice(0, ai + 3).join('/'); epName = rel.slice(ai + 3, -1).join(' · '); }
     // 웹툰·만화 회차 폴더: 작품/0001 1화/이미지, 작품/001/이미지, 작품/1화/이미지
-    else if (media && rel.length >= 3 && /^\d{1,4}(?:\D|$)/.test(rel[rel.length-2])) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
+    // HakuNeko·HaruNeko 처럼 'Ch.001'·'Chapter 1'·'Vol.2'·'제3화'·'#4' 로 시작하는 회차 폴더도
+    else if (media && rel.length >= 3 && /^(\d{1,4}(?:\D|$)|(?:ch(?:apter)?|ep(?:isode)?|vol(?:ume)?|제)\.?\s*\d|#\d)/i.test(rel[rel.length-2])) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
     else workPath = rel.length > 1 ? rel.slice(0,-1).join('/') : '낱개/' + f.name.replace(/\.[^.]+$/, '');
     if (!groups.has(workPath)) groups.set(workPath, {files:[], imgEps:new Map(), vidEps:[], subs:[], paths:[]});
     const g = groups.get(workPath); g.paths.push(relPath(f));
@@ -2315,7 +2381,9 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     // 이름으로 알아본 성인 작품: 열쇠(읽던 자리)는 그대로 두고 칸·묶음 이름만 성인으로
     const guess = !adult && ADULT_NAME.test(path);
     const shown = guess ? '성인 ' + (kind === 'video' ? '영상' : kind === 'novel' ? '소설' : '만화') : topName || top;
-    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths};
+    // n0: 처음 묶었을 때의 화 수(EPUB 을 펼치기 전) — '새 회차' 표시에 쓴다. added: 가장 최근 파일 시각 — '최근 추가순'
+    const lastT = g.files.concat(...[...g.imgEps.values()].map(fs => fs.slice(-1)), g.vidEps.map(v => v.file)).reduce((m, f) => Math.max(m, f.lastModified || 0), 0);
+    const w = {key, name, top: shown, kind, adult: adult || guess, cover, info, eps: finalEps, paths: g.paths, n0: finalEps.length, added: lastT};
     const old = works.findIndex(x=>x.key===w.key);
     if (old >= 0){ if (works[old].coverUrl) URL.revokeObjectURL(works[old].coverUrl); works[old] = w; } else works.push(w);
     added++;
@@ -2361,13 +2429,16 @@ function adultToggle(w){
   const m = store.get('adultMark', {}); m[w.key] = !a; store.set('adultMark', m); renderLib();
   toast(a ? '보통 칸으로 돌렸어요' : '성인 칸으로 옮겼어요');
 }
+// 새 회차: 마지막으로 연 뒤 늘어난 화 수(기기끼리 맞춰진다). 연 적 없는 작품은 3일 안에 들어왔으면 NEW(-1)
+const newEps = w => { const s = store.get('seen.' + w.key, null); if (s !== null) return Math.max(0, (w.n0 || 0) - s); return w.added && Date.now() - w.added < 3 * 864e5 && !store.get('pos.' + w.key, null) ? -1 : 0; };
 function workCard(w){
   const pos = store.get('pos.'+w.key, null);
   const total = pos?.n || w.eps.length;
   const pct = pos ? Math.min(100, Math.round(((pos.ep + (pos.f||0)) / total) * 100)) : 0;
   const d = document.createElement('div'); d.className = 'card' + (w===cur?' on':'');
   const cu = coverUrl(w);
-  d.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" decoding="async" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
+  const nw = newEps(w);
+  d.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" decoding="async" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${nw ? `<span class="new">${nw > 0 ? '+' + nw + '화' : 'NEW'}</span>` : ''}${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
   d.querySelector('.t').textContent = w.name;
   const ph = d.querySelector('.ph'); if (ph){   // 표지 없는 작품: 이름으로 고른 깊은 색 + 활자 표지
     const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8];   // 책 표지에 어울리는 열 가지 색
@@ -2413,6 +2484,9 @@ function renderLib(){
     }
   }
   if (sort === 'recent') list = [...list].sort((a,b)=>(store.get('pos.'+b.key,{t:0}).t||0)-(store.get('pos.'+a.key,{t:0}).t||0));
+  if (sort === 'added') list = [...list].sort((a, b) => (b.added || 0) - (a.added || 0));
+  // 새 회차: 새 화가 생긴 작품만, 많이 늘어난 순 (다른 뷰어의 '업데이트' 칸)
+  if (sort === 'new') list = list.filter(w => newEps(w)).sort((a, b) => (newEps(b) || 0.5) - (newEps(a) || 0.5) || (b.added || 0) - (a.added || 0));
   let lastTop = null, grid = null;
   const counts = {}; for (const w of list) counts[w.top] = (counts[w.top] || 0) + 1;
   for (const w of list){
@@ -2423,7 +2497,7 @@ function renderLib(){
     grid.append(workCard(w));
   }
   if (!list.length) lib.insertAdjacentHTML('beforeend', works.length
-    ? '<div class="hint" style="padding:16px 4px">찾는 작품이 없어요</div>'
+    ? `<div class="hint" style="padding:16px 4px">${sort === 'new' && !q ? '새로 들어온 회차가 없어요. 다 따라 읽었어요' : '찾는 작품이 없어요'}</div>`
     : /^\/t\/[^/]+\//.test(location.pathname) ? `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>PC 서재를 불러오는 중…</b><p>PC 의 Novelist 가 켜져 있어야 해요. 오래 걸리면 위의 <b>새로 받은 작품 보기</b>를 눌러 주세요.</p></div>`
     : `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>서재가 비어 있어요</b><p>위의 <b>폴더 열기</b>로 작품 폴더(노벨·만화·웹툰)를 고르거나,<br>txt·epub·zip 파일을 끌어다 놓아도 돼요. OneDrive 폴더를 연결하면 켤 때마다 저절로 들어와요.</p></div>`);
 }
@@ -2576,6 +2650,7 @@ async function readEpub(file){
 /* ================= 열기 ================= */
 async function openWork(w){
   stopTTS();
+  if (w.n0 != null && store.get('seen.' + w.key, null) !== w.n0) store.set('seen.' + w.key, w.n0);   // 새 회차 표시를 지운다
   cur = w; chats.ai.reset(); $('#mode').value = store.get('set.mode.' + w.kind, 'auto'); $('#app').classList.remove('nowork'); $('#app').classList.add('opening');
   if (!w._expanded && w.kind !== 'manga' && w.eps.some(e => e.type === 'epub')){
     toast('epub 여는 중…');
@@ -4751,6 +4826,14 @@ gdUI();
 
 if (store.get('apiKey','')) setTimeout(() => loadSDK().catch(()=>{}), 1200);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+// 기기 저장(진도·메모·받아 둔 목록·화)이 지워지지 않게: 브라우저에 '지우지 말 것'을 부탁한다.
+// 아이폰·아이패드 사파리는 홈 화면에 추가하지 않은 사이트의 저장을 7일 안 쓰면 지울 수 있어서, 그때만 홈 화면 추가를 한 번 알려 준다(사흘에 한 번까지)
+if (!DESKTOP && location.protocol === 'https:') setTimeout(async () => {
+  let kept = false; try{ kept = await navigator.storage?.persisted?.() || await navigator.storage?.persist?.() || false; }catch{}
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const home = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  if (ios && !home && !kept && Date.now() - store.get('iosHomeHint', 0) > 3 * 864e5){ localStorage.setItem('nv.iosHomeHint', JSON.stringify(Date.now())); toast('사파리 공유 단추 → "홈 화면에 추가"로 열면 진도·저장이 지워지지 않아요'); }
+}, 4000);
 (async () => {
   try{
     const saved = await idb.all();
@@ -8129,7 +8212,8 @@ $('#fontFile').onchange = async e => {
   if (f.size > 40 * 1048576) return toast('글꼴 파일이 너무 커요 (40MB까지)');
   const rec = {name: f.name, blob: f};
   if (!await fontApply(rec)) return;
-  try{ await fontIO('readwrite', s => s.put(rec, 'mine')); }catch{}
+  const packed = await idb.canBlob() ? rec : await idbPack(rec);   // 파일을 그대로 못 넣는 브라우저는 바이트로
+  try{ await fontIO('readwrite', s => s.put(packed, 'mine')); }catch{}
   $('#rfont').value = $('#rfontMine').value; $('#rfont').dispatchEvent(new Event('change'));
   toast('내 글꼴로 바꿨어요');
 };
@@ -8139,7 +8223,7 @@ $('#fontDel').onclick = async () => {
   if ($('#rfont').value === $('#rfontMine').value){ $('#rfont').selectedIndex = 0; $('#rfont').dispatchEvent(new Event('change')); }
   fontApply(null); toast('내 글꼴을 뺐어요');
 };
-fontIO('readonly', s => s.get('mine')).then(rec => fontApply(rec || null)).catch(() => {});
+fontIO('readonly', s => s.get('mine')).then(rec => fontApply(idbUnpack(rec) || null)).catch(() => {});
 
 /* ---------- 키보드 ----------
    스크롤 보기에서 Space·←→·PageUp/Down 한 화면, Home/End, +/− 글자 크기, P 폰 화면 */
@@ -8490,11 +8574,11 @@ $('#srcOd').onclick = () => odBrowseOpen();
 odUI();
 odHandleReturn();
 /* ================= 전역 메뉴 · 홈 · 서재 판 ================= */
-// 길은 하나: 왼쪽(폰은 아래) 메뉴 다섯 칸 — 홈 · 읽기 · 쓰기 · 웹툰 · 설정.
+// 길은 하나: 왼쪽(폰은 아래) 메뉴 — 홈 · 읽기 · 쓰기 · 웹툰 · (받기: 다운로더가 있을 때) · 설정.
 // 홈과 서재는 읽는 화면 위에 덮는 판이라, 읽던 자리는 그대로 남는다. 책을 열면 판이 걷히고 글만 남는다.
 const atHome = () => $('#app').classList.contains('at-home');
 const atLib = () => $('#app').classList.contains('at-lib');
-function closeOverlays(){ if (!$('#studio').hidden) stClose(); if (!$('#wt').hidden) wtClose(); }
+function closeOverlays(){ if (!$('#studio').hidden) stClose(); if (!$('#wt').hidden) wtClose(); if (!$('#dlPage').hidden) $('#dlPage').hidden = true; }
 function showPage(k){
   closeOverlays(); closeSheets(); fsCloseNow?.();
   const a = $('#app'); a.classList.toggle('at-home', k === 'home'); a.classList.toggle('at-lib', k === 'lib'); a.classList.remove('show-side', 'show-tool', 'immersive');
@@ -8507,13 +8591,13 @@ function leavePages(){ if (!atHome() && !atLib()) return; $('#app').classList.re
 new MutationObserver(() => { if (cur) leavePages(); }).observe($('#reader'), {childList: true});
 
 function gnavSync(){
-  const k = !$('#studio').hidden ? 'write' : !$('#wt').hidden ? 'toon' : atHome() ? 'home' : 'lib';
+  const k = !$('#dlPage').hidden ? 'dl' : !$('#studio').hidden ? 'write' : !$('#wt').hidden ? 'toon' : atHome() ? 'home' : 'lib';
   $$('#gnav [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === k));
   const on = SYNC_OD() ? odLinked() : gdLinked();
   $('#gnav .g-sync').classList.toggle('ok', !!on);
   $('#gnav .g-sync').title = on ? `설정 · ${SYNC_OD() ? 'OneDrive' : '구글 드라이브'}로 맞추는 중` : '설정 · 기기끼리 맞추기는 아직 연결 전';
 }
-for (const el of ['#studio', '#wt']) new MutationObserver(gnavSync).observe($(el), {attributes: true, attributeFilter: ['hidden']});
+for (const el of ['#studio', '#wt', '#dlPage']) new MutationObserver(gnavSync).observe($(el), {attributes: true, attributeFilter: ['hidden']});
 
 const GO = {
   home: () => showPage('home'),
@@ -8521,6 +8605,7 @@ const GO = {
   write(){ if (!$('#wt').hidden) wtClose(); if ($('#studio').hidden) stOpen(); },
   toon(){ if (!$('#studio').hidden) stClose(); if ($('#wt').hidden) $('#btnWebtoon').click(); },
   set(){ closeOverlays(); openTool('set'); },
+  dl: () => dlOpen(),
 };
 window.nvGo = k => GO[k]();   // 시험·단축용
 // 폰에서 집필실 나가기: 아래 탭 줄이 숨겨져 있어서 위쪽 단추로 홈에 간다(쓰던 글은 저절로 저장돼 있다)
@@ -9378,7 +9463,7 @@ function hideAdultReader(){
 new MutationObserver(hideAdultReader).observe($('#app'), {attributes: true, attributeFilter: ['class']});
 
 // 시험·확장용 (모듈 밖에서 서재와 열기를 쓸 수 있게)
-window.nvMedia = {works: () => works, openWork: w => openWork(w), translateNow: trCurrent, trPage, setKind: k => { libKind = k; renderLib(); }};
+window.nvMedia = {works: () => works, addFiles: (fs, o) => addFiles(fs, {persist: false, quiet: true, ...o}), openWork: w => openWork(w), translateNow: trCurrent, trPage, setKind: k => { libKind = k; renderLib(); }};
 
 /* ---------- 화 고르기: 그림으로 보는 목차 (만화·웹툰·영상) ----------
    목차를 열면 화마다 작은 그림을 보여 준다. 만화·웹툰은 그 화 첫 쪽, 영상은 표지(없으면 영상 앞부분 한 장면).
@@ -9609,6 +9694,52 @@ function npCastFill(){
 }
 npCastFill();
 window.nvNaiCast = {cast: NP_CAST, pairs: NP_PAIRS, line: npCastLine};   // 시험용
+/* ================= 받기: 모아받기·토끼 다운로더를 Novelist 안에서 ================= */
+// 다운로더(따로 켜던 .bat)는 Novelist 가 켜고 이 칸 안에 띄운다. pawchive 받기는 두 다운로더 안에 들어 있다.
+// PC 프로그램: 이 PC 의 127.0.0.1 주소로. 폰·아이패드(PC 주소로 연 경우): PC 를 거쳐(/t/<열쇠>/moa/) — 받기는 늘 PC 가 하고, 받은 작품은 서재에 저절로 들어온다.
+const DL = {apps: [], cur: '', urls: {}};
+const DL_NAME = {moa: ['모아받기', '사이트에서 골라 받기 · pawchive'], toki: ['토끼 다운로더', '제목·주소로 받기 · 새 회차']};
+async function dlInit(){
+  if (DESKTOP && window.nvDesktop.dlApps) DL.apps = await window.nvDesktop.dlApps().catch(() => []);
+  else if (pcBase()) DL.apps = (await fetch(pcBase() + '/lan/info').then(r => r.json()).catch(() => null))?.apps || [];
+  // 창 프로그램 다운로더(Kemono·Pawchive·HakuNeko·HaruNeko·히토미): PC 프로그램에서만 켤 수 있다
+  DL.ext = DESKTOP && window.nvDesktop.dlExt ? await window.nvDesktop.dlExt().catch(() => null) : null;
+  const tabs = [...DL.apps, ...(DL.ext?.list?.length ? ['ext'] : [])];
+  $('#gnav [data-g=dl]').hidden = !tabs.length;
+  $('#dlTabs').innerHTML = tabs.map(k => k === 'ext' ? `<button data-k="ext" title="Kemono · Pawchive · HakuNeko · HaruNeko · 히토미">다른 프로그램</button>` : `<button data-k="${k}" title="${DL_NAME[k]?.[1] || ''}">${DL_NAME[k]?.[0] || k}</button>`).join('');
+  $$('#dlTabs [data-k]').forEach(b => b.onclick = () => dlShow(b.dataset.k));
+}
+async function dlUrl(k){
+  if (DL.urls[k]) return DL.urls[k];
+  if (!DESKTOP) return DL.urls[k] = pcBase() + '/' + k + '/';
+  $('#dlStat').textContent = `${DL_NAME[k]?.[0] || k} 켜는 중…`;
+  const u = await window.nvDesktop.dlOpen(k).catch(() => null);
+  if (u) DL.urls[k] = u; return u;
+}
+async function dlShow(k){
+  DL.cur = k = k || DL.cur || DL.apps[0] || (DL.ext ? 'ext' : ''); if (!k) return;
+  $$('#dlTabs [data-k]').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+  $('#dlFrame').hidden = k === 'ext'; $('#dlExt').hidden = k !== 'ext'; $('#dlOut').hidden = k === 'ext';
+  if (k === 'ext') return dlExtShow();
+  const u = await dlUrl(k); if (DL.cur !== k) return;
+  if (!u){ $('#dlStat').textContent = `${DL_NAME[k]?.[0] || k}를 켜지 못했어요 (Node.js 가 설치돼 있는지 확인해 주세요)`; return; }
+  $('#dlStat').textContent = '받은 작품은 서재에 저절로 들어와요';
+  const f = $('#dlFrame'); if (f.dataset.k !== k){ f.dataset.k = k; f.src = u; }
+}
+// 창 프로그램: 켜는 단추 + 받는 폴더(서재 폴더로 두면 서재·폰에 저절로 들어온다)
+function dlExtShow(){
+  const root = DL.ext?.save || '', sep = root.includes('\\') ? '\\' : '/';
+  const dirs = root ? [['만화·웹툰 (HakuNeko·HaruNeko)', root + sep + '만화'], ['성인 (Kemono·Pawchive·히토미)', root + sep + '성인' + sep + '만화']] : [];
+  $('#dlStat').textContent = '창으로 따로 열려요. 받은 작품은 서재에 저절로 들어와요';
+  $('#dlExt').innerHTML = `<div class="dl-apps">${(DL.ext?.list || []).map(x => `<button class="dl-app" data-id="${esc(x.id)}"><b>${esc(x.name)}</b><span>열기</span></button>`).join('')}</div>`
+    + (dirs.length ? `<div class="hint dl-dirs-h">각 프로그램 설정의 <b>저장 폴더</b>를 아래로 정해 두면, 받은 작품이 서재와 폰에 저절로 들어와요.</div>` + dirs.map(([t, p]) => `<div class="lan-addr"><span class="hint">${t}</span><code>${esc(p)}</code><button data-cp="${esc(p)}">복사</button></div>`).join('') : '');
+  $$('#dlExt [data-id]').forEach(b => b.onclick = async () => { const ok = await window.nvDesktop.dlExtRun(b.dataset.id).catch(() => false); toast(ok ? `${b.querySelector('b').textContent} 를 여는 중이에요` : '열지 못했어요'); });
+  $$('#dlExt [data-cp]').forEach(b => b.onclick = () => copy(b.dataset.cp));
+}
+function dlOpen(){ closeOverlays(); closeSheets(); $('#dlPage').hidden = false; dlShow(); }
+function dlClose(){ $('#dlPage').hidden = true; }
+$('#dlOut').onclick = () => { const u = DL.urls[DL.cur]; if (u) window.open(u, '_blank', 'noopener'); };
+setTimeout(dlInit, 1500);
 </script>
 </body>
 </html>

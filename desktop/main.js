@@ -225,7 +225,7 @@ async function tokenRequest(params){
 ipcMain.handle('version', () => app.getVersion());
 
 /* ---------- 같은 와이파이로 보여 주기 (desktop/lan-server.js) ---------- */
-const {createLanServer, hasPublicIp} = require('./lan-server.js');
+const {createLanServer, hasPublicIp, waitPort} = require('./lan-server.js');
 const LAN_CFG = () => path.join(app.getPath('userData'), 'lan.json');
 // 처음부터 켜 둔다(폰·아이패드는 주소만 열면 된다). 설정에서 끌 수 있다.
 const lanCfg = () => { try{ return {on: true, ...JSON.parse(fs.readFileSync(LAN_CFG(), 'utf8'))}; }catch{ return {on: true, token: ''}; } };
@@ -235,10 +235,12 @@ const LAN_PORT = process.env.NOVELIST_LAN_PORT != null ? Number(process.env.NOVE
 function dlDir(){
   const cfg = lanCfg(); const ok = d => d && fs.existsSync(path.join(d, 'moaDownloader', 'server.cjs')) || d && fs.existsSync(path.join(d, 'tokiDownloader', 'app', 'server.cjs'));
   if (ok(cfg.dlDir)) return cfg.dlDir;
-  for (const r of libRoots()){
-    for (let d = path.dirname(r), i = 0; i < 4 && d !== path.dirname(d); d = path.dirname(d), i++){
-      for (const name of ['다운로더', 'downloader', 'Downloader']) if (ok(path.join(d, name))) return path.join(d, name);
-    }
+  // 작품 폴더 위쪽 → 흔한 자리(D:\novel 등). 서재를 구글 드라이브(G:)로 옮기면 다운로더는 그대로 D:\novel\다운로더 에 남아 위쪽에서 못 찾았다
+  const near = libRoots().flatMap(r => { const out = []; for (let d = path.dirname(r), i = 0; i < 4 && d !== path.dirname(d); d = path.dirname(d), i++) out.push(d); return out; });
+  const common = [path.join(os.homedir(), 'novel'), ...'CDEFGH'.split('').map(l => path.join(l + ':\\', 'novel'))];
+  for (const d of [...near, ...common]) for (const name of ['다운로더', 'downloader', 'Downloader']){
+    const p = path.join(d, name);
+    if (ok(p)){ try{ fs.writeFileSync(LAN_CFG(), JSON.stringify({...lanCfg(), dlDir: p})); }catch{} return p; }   // 찾은 자리는 기억해 둔다
   }
   return '';
 }
@@ -252,6 +254,36 @@ function lanApps(){
   if (d && fs.existsSync(path.join(d, 'tokiDownloader', 'app', 'server.cjs'))) apps.toki = {port: 47615, start: async () => nodeRun(path.join('app', 'server.cjs'), path.join(d, 'tokiDownloader'))};
   return apps;
 }
+/* ---------- 받기 탭: 모아받기·토끼 다운로더(pawchive 받기도 그 안)를 Novelist 안에서 연다 ----------
+   다운로더는 이 PC 의 127.0.0.1 에서만 듣는다. 꺼져 있으면 켜고 열릴 때까지 기다린 다음 주소를 준다. */
+const dlStarting = {};
+// 따로 설치한 창 프로그램 다운로더(바탕 화면\…\다운로더 모음 의 번호 붙은 .bat: Kemono·Pawchive·HakuNeko·HaruNeko·히토미)
+// 화면에 넣을 수는 없어서(파이썬·일렉트론 창) 받기 탭에서 켜기만 한다. 받는 폴더를 서재 폴더로 두면 서재에 저절로 들어온다.
+function extDir(){
+  const cfg = lanCfg(); const ok = d => { try{ return !!d && fs.readdirSync(d).some(n => /^\d+\..+\.bat$/i.test(n)); }catch{ return false; } };
+  if (ok(cfg.extDir)) return cfg.extDir;
+  const desk = path.join(os.homedir(), 'Desktop');
+  const cands = [path.join(desk, '다운로더 모음'), ...(() => { try{ return fs.readdirSync(desk).map(n => path.join(desk, n, '다운로더 모음')); }catch{ return []; } })()];
+  const d = dlDir(); if (d) cands.push(path.join(d, '다운로더 모음'), path.join(path.dirname(d), '다운로더 모음'));
+  for (const c of cands) if (ok(c)){ try{ fs.writeFileSync(LAN_CFG(), JSON.stringify({...lanCfg(), extDir: c})); }catch{} return c; }
+  return '';
+}
+const extList = () => { const d = extDir(); if (!d) return []; try{ return fs.readdirSync(d).filter(n => /^\d+\..+\.bat$/i.test(n)).sort((a, b) => parseInt(a) - parseInt(b)).map(f => ({id: f, name: f.replace(/^\d+\.\s*/, '').replace(/\.bat$/i, '').replace(/\s*실행/, '').replace(/\s*받기$/, '').trim()})); }catch{ return []; } };
+ipcMain.handle('dl-ext', () => ({list: extList(), save: dlSaveRoot()}));
+ipcMain.handle('dl-ext-run', (_e, id) => {
+  const d = extDir(); if (!extList().some(x => x.id === id)) return false;
+  const { spawn } = require('child_process');
+  spawn('cmd.exe', ['/c', 'start', '""', '"' + path.join(d, id) + '"'], { cwd: d, detached: true, stdio: 'ignore', windowsVerbatimArguments: true }).unref();
+  return true;
+});
+ipcMain.handle('dl-apps', () => Object.keys(lanApps()));
+ipcMain.handle('dl-open', async (_e, k) => {
+  const a = lanApps()[k]; if (!a) return null;
+  const url = `http://127.0.0.1:${a.port}/`;
+  if (await waitPort(a.port, 600)) return url;
+  dlStarting[k] ||= (async () => { try{ await a.start(); return await waitPort(a.port, 30000); } finally{ setTimeout(() => { delete dlStarting[k]; }, 1000); } })();
+  return (await dlStarting[k]) ? url : null;
+});
 /* ---------- PC로 맞추기 ----------
    폰·아이패드가 이 PC 주소(와이파이·Tailscale·터널)로 연 Novelist 와 이 PC 의 Novelist 가
    메모·형광펜·진도·집필실 원고·장면 노트·설정·API 키를 맞추는 곳. 구글 드라이브·OneDrive 의 '앱 폴더'와 같은 파일 모양이다.

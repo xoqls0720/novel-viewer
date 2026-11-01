@@ -32,13 +32,40 @@ const idb = {
     this.db = await new Promise((res, rej) => { const r = indexedDB.open('nv', 6); r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', {keyPath:'path'}); if (!db.objectStoreNames.contains('scraps')) db.createObjectStore('scraps', {keyPath:'id'}); if (!db.objectStoreNames.contains('snaps')) db.createObjectStore('snaps', {keyPath:'id'}); if (!db.objectStoreNames.contains('texts')) db.createObjectStore('texts', {keyPath:'k'}); if (!db.objectStoreNames.contains('dcache')) db.createObjectStore('dcache', {keyPath:'id'}); if (!db.objectStoreNames.contains('wt')) db.createObjectStore('wt', {keyPath:'id'}); }; r.onsuccess = () => { r.result.onversionchange = () => { r.result.close(); this.db = null; }; res(r.result); }; r.onerror = () => rej(r.error); r.onblocked = () => toast('다른 Novelist 창을 닫고 다시 열어 주세요'); });
     return this.db;
   },
-  async tx(mode, fn, name = 'files'){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
+  async tx0(mode, fn, name){ const db = await this.open(); return await new Promise((res, rej) => { const t = db.transaction(name, mode); const out = fn(t.objectStore(name)); t.oncomplete = () => res(out?.result ?? out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
+  // 어떤 브라우저(일부 아이폰·아이패드 사파리 등)는 파일(Blob)을 그대로 넣으면 'UnknownError' 로 저장이 안 된다 → 그때만 바이트(ArrayBuffer)로 바꿔 넣고, 꺼낼 때 다시 파일로
+  blobOk: null,
+  async canBlob(){
+    if (this.blobOk === null) this.blobOk = this.tx0('readwrite', s => { s.put({id: '__blob', blob: new Blob(['x'])}); s.delete('__blob'); }, 'dcache').then(() => true, () => false);
+    return this.blobOk;
+  },
+  async tx(mode, fn, name = 'files'){
+    if (mode !== 'readwrite' || await this.canBlob()){ const r = await this.tx0(mode, fn, name); return mode === 'readonly' ? idbUnpack(r) : r; }
+    // 쓰기 일을 먼저 적어 두고(바꾸는 동안 트랜잭션이 닫히지 않게), 파일을 바이트로 바꾼 다음 한 번에 쓴다
+    const ops = []; fn(new Proxy({}, {get: (_, k) => (...a) => { ops.push([k, a]); return {}; }}));
+    for (const op of ops) if (op[0] === 'put' || op[0] === 'add') op[1][0] = await idbPack(op[1][0]);
+    return this.tx0(mode, s => { let last; for (const [k, a] of ops) last = s[k](...a); return last; }, name);
+  },
   async putMany(files){ for (let i=0; i<files.length; i+=50){ const part = files.slice(i, i+50); await this.tx('readwrite', s => { for (const f of part) s.put({path: relPath(f), blob: f, name: f.name}); }); } },
   async all(){ return await this.tx('readonly', s => s.getAll()); },
   async delPrefix(prefix){ const keys = await this.tx('readonly', s => s.getAllKeys()); const del = keys.filter(k => k === prefix || k.startsWith(prefix + '/')); await this.tx('readwrite', s => { for (const k of del) s.delete(k); }); return del.length; },
   async clear(){ await this.tx('readwrite', s => s.clear()); },
 };
 const relPath = f => f._rel || f.webkitRelativePath || f.name;
+async function idbPack(v, d = 0){
+  if (v instanceof Blob) return {__nvab: await v.arrayBuffer(), type: v.type, name: v instanceof File ? v.name : undefined, lm: v instanceof File ? v.lastModified : undefined};
+  if (d > 4 || !v || typeof v !== 'object' || ArrayBuffer.isView(v) || v instanceof ArrayBuffer) return v;
+  if (Array.isArray(v)) return Promise.all(v.map(x => idbPack(x, d + 1)));
+  if (Object.getPrototypeOf(v) !== Object.prototype) return v;
+  const o = {}; for (const k of Object.keys(v)) o[k] = await idbPack(v[k], d + 1); return o;
+}
+function idbUnpack(v, d = 0){
+  if (!v || typeof v !== 'object' || d > 5 || v instanceof Blob || v instanceof ArrayBuffer || ArrayBuffer.isView(v)) return v;
+  if (v.__nvab instanceof ArrayBuffer) return v.name !== undefined ? new File([v.__nvab], v.name, {type: v.type, lastModified: v.lm}) : new Blob([v.__nvab], {type: v.type});
+  if (Array.isArray(v)){ for (let i = 0; i < v.length; i++) v[i] = idbUnpack(v[i], d + 1); return v; }
+  if (Object.getPrototypeOf(v) !== Object.prototype) return v;
+  for (const k of Object.keys(v)) v[k] = idbUnpack(v[k], d + 1); return v;
+}
 async function showStore(){
   try{ const e = await navigator.storage?.estimate?.(); const n = await idb.tx('readonly', s => s.count()); $('#storeInfo').textContent = `저장한 파일 ${n.toLocaleString()}개` + (e ? ` · 사용 ${(e.usage/1048576).toFixed(0)}MB / 가능 ${(e.quota/1073741824).toFixed(1)}GB` : ''); }catch{ $('#storeInfo').textContent = '이 브라우저는 기기 저장을 지원하지 않아요'; }
 }

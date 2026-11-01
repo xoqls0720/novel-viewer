@@ -1,9 +1,9 @@
 /* ================= 전역 메뉴 · 홈 · 서재 판 ================= */
-// 길은 하나: 왼쪽(폰은 아래) 메뉴 다섯 칸 — 홈 · 읽기 · 쓰기 · 웹툰 · 설정.
+// 길은 하나: 왼쪽(폰은 아래) 메뉴 — 홈 · 읽기 · 쓰기 · 웹툰 · (받기: 다운로더가 있을 때) · 설정.
 // 홈과 서재는 읽는 화면 위에 덮는 판이라, 읽던 자리는 그대로 남는다. 책을 열면 판이 걷히고 글만 남는다.
 const atHome = () => $('#app').classList.contains('at-home');
 const atLib = () => $('#app').classList.contains('at-lib');
-function closeOverlays(){ if (!$('#studio').hidden) stClose(); if (!$('#wt').hidden) wtClose(); }
+function closeOverlays(){ if (!$('#studio').hidden) stClose(); if (!$('#wt').hidden) wtClose(); if (!$('#dlPage').hidden) $('#dlPage').hidden = true; }
 function showPage(k){
   closeOverlays(); closeSheets(); fsCloseNow?.();
   const a = $('#app'); a.classList.toggle('at-home', k === 'home'); a.classList.toggle('at-lib', k === 'lib'); a.classList.remove('show-side', 'show-tool', 'immersive');
@@ -16,13 +16,13 @@ function leavePages(){ if (!atHome() && !atLib()) return; $('#app').classList.re
 new MutationObserver(() => { if (cur) leavePages(); }).observe($('#reader'), {childList: true});
 
 function gnavSync(){
-  const k = !$('#studio').hidden ? 'write' : !$('#wt').hidden ? 'toon' : atHome() ? 'home' : 'lib';
+  const k = !$('#dlPage').hidden ? 'dl' : !$('#studio').hidden ? 'write' : !$('#wt').hidden ? 'toon' : atHome() ? 'home' : 'lib';
   $$('#gnav [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === k));
   const on = SYNC_OD() ? odLinked() : gdLinked();
   $('#gnav .g-sync').classList.toggle('ok', !!on);
   $('#gnav .g-sync').title = on ? `설정 · ${SYNC_OD() ? 'OneDrive' : '구글 드라이브'}로 맞추는 중` : '설정 · 기기끼리 맞추기는 아직 연결 전';
 }
-for (const el of ['#studio', '#wt']) new MutationObserver(gnavSync).observe($(el), {attributes: true, attributeFilter: ['hidden']});
+for (const el of ['#studio', '#wt', '#dlPage']) new MutationObserver(gnavSync).observe($(el), {attributes: true, attributeFilter: ['hidden']});
 
 const GO = {
   home: () => showPage('home'),
@@ -30,6 +30,7 @@ const GO = {
   write(){ if (!$('#wt').hidden) wtClose(); if ($('#studio').hidden) stOpen(); },
   toon(){ if (!$('#studio').hidden) stClose(); if ($('#wt').hidden) $('#btnWebtoon').click(); },
   set(){ closeOverlays(); openTool('set'); },
+  dl: () => dlOpen(),
 };
 window.nvGo = k => GO[k]();   // 시험·단축용
 // 폰에서 집필실 나가기: 아래 탭 줄이 숨겨져 있어서 위쪽 단추로 홈에 간다(쓰던 글은 저절로 저장돼 있다)

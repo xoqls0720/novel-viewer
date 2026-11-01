@@ -75,6 +75,13 @@ npm run dist         # 윈도우 설치 파일 → desktop/dist/ (리눅스에�
 - 남은 '__pending'(폴더 고르기를 끝내지 않은 자국)은 켤 때 지운다. 남아 있으면 PC 가 읽기 권한까지 달라고 해서 다시 쓰는 토큰이 맞지 않아 구글 연결이 저절로 꺼졌다. 프로그램은 연결이 꺼져 있어도 토큰이 살아 있으면 켤 때 조용히 다시 잇는다.
 - 큰 EPUB·zip·영상: 진짜 구글 드라이브는 주소에 붙인 토큰(`access_token=`)을 거절한다(가짜 드라이브 시험에서는 안 보였다 → `drvmedia` 시험이 거절하게 흉내). 그래서 `rangeUrl()` 은 `{url, headers: {Authorization}}` 를 돌려주고 RangeZip 이 머리글로 구간을 읽는다. `<video>`·포스터는 머리글을 못 붙이니 `streamUrl` 이 같은 주소 `./__drv/<id>?s=크기&m=형식&t=토큰` 이고, sw.js 의 `drvProxy` 가 토큰을 머리글로 바꿔 드라이브에 구간 요청한 뒤 206·Content-Range 를 직접 만들어 돌려준다(드라이브는 Content-Range 를 다른 주소에 보여 주지 않고, iPhone 사파리는 그게 있어야 재생한다). 워커가 화면을 맡기 전에는 `streamUrl` 이 없어서 통째로 받는다.
 
+## 기기 저장 (01-core.js idb)
+
+- 어떤 브라우저(WebKit: 일부 아이폰·아이패드 사파리, 시험용 webkit)는 IndexedDB 에 Blob 을 그대로 넣으면 `UnknownError` 로 쓰기가 통째로 실패한다(드라이브에서 받은 화·zip 목록이 저장되지 않아 매번 다시 받았다). `idb.canBlob()` 이 처음 한 번 시험해 보고, 안 되면 `idb.tx('readwrite')` 가 쓰기 일을 적어 두었다가 Blob/File 을 `{__nvab: ArrayBuffer, type, name, lm}` 로 바꿔 쓴다. 읽을 때(`readonly`)는 `idbUnpack` 이 다시 Blob/File 로. 글꼴 저장(22-reader-more.js)도 같다.
+- zip 중앙 목록은 `dcache` 의 `zc:<경로>|크기|수정 시각` 에 둔다(켤 때마다 '푸는 중' 없이).
+- 켤 때 `navigator.storage.persist()` 를 부탁한다. 아이폰·아이패드 사파리에서 홈 화면에 추가하지 않았고 허락도 안 되면 '홈 화면에 추가' 안내를 사흘에 한 번까지 띄운다(`nv.iosHomeHint`, 맞추기 제외).
+- 사파리 엔진으로 시험: `npx playwright install webkit` 뒤 `node -r ./tests/webkit.cjs tests/drive.test.cjs` (chromium 을 webkit 으로 바꿔 끼운다), `ENG=webkit DEV='iPad Pro 11' node tests/drvmedia.test.cjs`. 윈도우용 webkit 은 서비스 워커·webm 이 없어 영상 칸은 확인이 안 된다.
+
 ## OneDrive
 
 `sync.backend` 가 `od` 이면 09-sync.js 의 `gdList/gdPut/gdGet/gdDel` 이 23-onedrive.js 의 같은 모양 함수로 넘어가요(합치는 규칙은 하나). 맞추기 파일은 OneDrive `앱/Novelist`(approot)에만 쓰고, 작품 폴더는 `Files.Read` 로 읽기만 해요.
@@ -88,6 +95,15 @@ npm run dist         # 윈도우 설치 파일 → desktop/dist/ (리눅스에�
 앱은 홈부터 열려요(쓰거나 읽던 게 없으면 서재부터). 옆 서재 칸은 쓰지 않고, 서재는 읽는 화면 위에 덮는 한 판이에요. 책을 열면 판이 걷혀요. 시험에서는 `nvGo('lib')`·`nvGo('home')` 으로 판을 바꿀 수 있어요. 집필실을 켤 때부터 보이게 하려면 작품 정보의 '앱을 열면 홈 대신 집필실부터 보여 주기'를 켜요.
 
 sketch 시험은 가짜 PSD를 만들려고 파이썬 `pillow`·`psd-tools` 가 필요해요(`pip install pillow psd-tools`).
+
+## 받기 탭 (28-downloads.js)
+
+- 메뉴의 **받기**: 모아받기(47616)·토끼 다운로더(47615)를 Novelist 안(iframe)에 띄운다. pawchive 받기는 두 다운로더 안에 들어 있다. 다운로더가 있을 때만 보인다.
+- PC 프로그램: `dl-apps`·`dl-open` IPC 가 다운로더를 켜고(`node server.cjs --no-open`) 127.0.0.1 주소를 준다. 폰·아이패드(PC 주소로 연 경우): `/t/<열쇠>/moa/` 처럼 PC 를 거친다. 받기는 늘 PC 가 하고, 받은 작품은 폴더 지켜보기(`lib-changed`)로 서재에 저절로 들어온다.
+- **다른 프로그램** 칸: 창으로 뜨는 다운로더(바탕 화면\…\다운로더 모음 의 번호 붙은 .bat: Kemono·Pawchive·HakuNeko·히토미·HaruNeko)는 화면에 넣지 못해서 켜는 단추(`dl-ext`·`dl-ext-run`, 목록에 있는 .bat 만 `cmd /c start`)와 서재 저장 폴더(복사 단추)를 보인다. `extDir` 은 lan.json 의 `extDir` 로 기억한다. Pawchive 는 config\settings.json 의 `download_dir` 를 `…\노벨리스트\성인\만화` 로 바꿔 두었다(원본 `.bak-20261101`).
+- 회차 폴더: '0001'·'Ch.001'·'Chapter 1'·'Vol.2'·'제3화'·'#4' 로 시작하는 폴더의 그림은 한 화로 묶는다(HakuNeko·HaruNeko).
+- 다운로더 폴더 찾기(`dlDir`): lan.json 의 `dlDir` → 작품 폴더 위쪽 → `~/novel`, `C:~H:
+ovel` 의 `다운로더`. 찾으면 `dlDir` 로 기억한다(서재를 G: 로 옮긴 뒤 위쪽에서 못 찾던 것).
 
 ## 같은 와이파이로 보여 주기 (폰·아이패드)
 
@@ -130,6 +146,12 @@ sketch 시험은 가짜 PSD를 만들려고 파이썬 `pillow`·`psd-tools` 가 
 
 - 내 컴퓨터 폴더의 EPUB 은 `RangeZip`(02-library.js)이 `app://novel/__disk/` 에 구간(Range) 요청을 보내 필요한 부분만 읽는다. 수 GB 웹툰 EPUB(JSZip 으로는 2GB 넘으면 못 읽던 것)도 바로 열린다. 구글 드라이브·OneDrive·끌어다 놓은 파일은 예전처럼 JSZip.
 - 웹툰 EPUB 은 목차(nav.xhtml·toc.ncx)대로 `epubpart` 회차로 나눈다. 만화 권 EPUB 은 권 그대로.
+
+## 새 회차 · 정렬 (02-library.js)
+
+- 작품마다 `n0`(묶었을 때 화 수, EPUB 펼치기 전)와 `added`(가장 최근 파일 시각). 작품을 열면 `seen.<열쇠>` = n0 (기기끼리 맞춰진다).
+- 카드 왼쪽 위: 연 뒤 늘어난 화 수 `+N화`, 연 적 없고 3일 안에 들어온 작품은 `NEW` (`newEps`).
+- 정렬: 이름순 · 최근 읽은 순 · **최근 추가순**(`added`) · **새 회차**(새 화가 있는 작품만, 다른 뷰어의 '업데이트' 칸). 시험: `node tests/run.cjs newep`
 
 ## 서재 종류 칸 · 성인 작품
 

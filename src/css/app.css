@@ -557,3 +557,5 @@ details.fold summary .chev{margin-left:auto}
 table.ep td:first-child{font-family:var(--display)}
 a{color:var(--accent);text-underline-offset:2px;text-decoration-color:color-mix(in srgb, var(--accent) 45%, transparent)}
 a:hover{text-decoration-color:currentColor}
+/* 새 회차 표시 (+3화 · NEW) */
+.card .cv .new{position:absolute;top:6px;left:6px;background:#e8603c;color:#fff;font:700 11px/1 var(--ui);padding:4px 6px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.25)}

@@ -370,4 +370,4 @@ function createLanServer({appDir, roots, token, port = 8787, apps: appsIn = {}, 
   };
 }
 
-module.exports = {createLanServer, lanIps, tailscaleIps, hasPublicIp, rootBase, relRewrite};
+module.exports = {createLanServer, lanIps, tailscaleIps, hasPublicIp, rootBase, relRewrite, waitPort};

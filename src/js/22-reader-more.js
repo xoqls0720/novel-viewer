@@ -55,7 +55,8 @@ $('#fontFile').onchange = async e => {
   if (f.size > 40 * 1048576) return toast('글꼴 파일이 너무 커요 (40MB까지)');
   const rec = {name: f.name, blob: f};
   if (!await fontApply(rec)) return;
-  try{ await fontIO('readwrite', s => s.put(rec, 'mine')); }catch{}
+  const packed = await idb.canBlob() ? rec : await idbPack(rec);   // 파일을 그대로 못 넣는 브라우저는 바이트로
+  try{ await fontIO('readwrite', s => s.put(packed, 'mine')); }catch{}
   $('#rfont').value = $('#rfontMine').value; $('#rfont').dispatchEvent(new Event('change'));
   toast('내 글꼴로 바꿨어요');
 };
@@ -65,7 +66,7 @@ $('#fontDel').onclick = async () => {
   if ($('#rfont').value === $('#rfontMine').value){ $('#rfont').selectedIndex = 0; $('#rfont').dispatchEvent(new Event('change')); }
   fontApply(null); toast('내 글꼴을 뺐어요');
 };
-fontIO('readonly', s => s.get('mine')).then(rec => fontApply(rec || null)).catch(() => {});
+fontIO('readonly', s => s.get('mine')).then(rec => fontApply(idbUnpack(rec) || null)).catch(() => {});
 
 /* ---------- 키보드 ----------
    스크롤 보기에서 Space·←→·PageUp/Down 한 화면, Home/End, +/− 글자 크기, P 폰 화면 */

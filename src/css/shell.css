@@ -433,3 +433,22 @@ button:not(:disabled):active{transform:scale(.98)}
 /* 폰: 집필실에서는 아래 탭 줄이 숨겨지니 위쪽에 나가기(홈) 단추를 둔다 */
 .st-exit{display:none}
 @media (max-width:700px){.st-exit{display:inline-flex}}
+/* 받기 탭: 메뉴는 그대로 두고 오른쪽을 다운로더 화면으로 */
+#dlPage{position:fixed;top:0;bottom:0;right:0;left:var(--gw);z-index:34;background:var(--bg);display:flex;flex-direction:column;padding-top:var(--sat)}
+#dlPage[hidden]{display:none}
+.dl-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--hairline)}
+.dl-tabs{display:flex;gap:4px;overflow-x:auto}
+.dl-tabs button{white-space:nowrap}
+.dl-tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dl-st{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dlFrame{flex:1;width:100%;border:0;background:#fff}
+@media (max-width:700px){
+  #dlPage{left:0;bottom:calc(60px + var(--sab))}
+  #dlOut{display:none}
+}
+.dl-ext{flex:1;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.dl-ext[hidden],#dlFrame[hidden]{display:none}
+.dl-apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.dl-app{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px;text-align:left;height:auto}
+.dl-app span{font-size:12px;color:var(--sub)}
+.dl-dirs-h{margin-top:12px}

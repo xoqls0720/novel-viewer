@@ -357,6 +357,14 @@ gdUI();
 
 if (store.get('apiKey','')) setTimeout(() => loadSDK().catch(()=>{}), 1200);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+// 기기 저장(진도·메모·받아 둔 목록·화)이 지워지지 않게: 브라우저에 '지우지 말 것'을 부탁한다.
+// 아이폰·아이패드 사파리는 홈 화면에 추가하지 않은 사이트의 저장을 7일 안 쓰면 지울 수 있어서, 그때만 홈 화면 추가를 한 번 알려 준다(사흘에 한 번까지)
+if (!DESKTOP && location.protocol === 'https:') setTimeout(async () => {
+  let kept = false; try{ kept = await navigator.storage?.persisted?.() || await navigator.storage?.persist?.() || false; }catch{}
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const home = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  if (ios && !home && !kept && Date.now() - store.get('iosHomeHint', 0) > 3 * 864e5){ localStorage.setItem('nv.iosHomeHint', JSON.stringify(Date.now())); toast('사파리 공유 단추 → "홈 화면에 추가"로 열면 진도·저장이 지워지지 않아요'); }
+}, 4000);
 (async () => {
   try{
     const saved = await idb.all();

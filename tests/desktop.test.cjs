@@ -23,7 +23,7 @@ const fakeCf = path.join(tmp, 'fakecf.js'); fs.writeFileSync(fakeCf, "process.st
 process.env.NOVELIST_CF_BIN = process.execPath; process.env.NOVELIST_CF_PRE = fakeCf; process.env.NOVELIST_LAN_PORT = '0';
 require(path.resolve(__dirname, '..', 'desktop', 'main.js'));
 (async () => {
-  console.log('handlers:', ['lib-info', 'lib-find', 'lib-repick', 'od-login', 'od-token', 'od-logout'].every(k => H[k]));
+  console.log('handlers:', ['lib-info', 'lib-find', 'lib-repick', 'od-login', 'od-token', 'od-logout', 'dl-apps', 'dl-open', 'dl-ext', 'dl-ext-run'].every(k => H[k]));
   console.log('old exists:', (await H['lib-info'](null, oldNovel)).exists);
   const found = await H['lib-find'](null, oldNovel);
   console.log('found:', found === newNovel, '| roots:', JSON.parse(fs.readFileSync(path.join(userData, 'library-roots.json'), 'utf8')).map(r => path.relative(tmp, r)).join(' , '));

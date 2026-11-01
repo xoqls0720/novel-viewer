@@ -610,7 +610,7 @@ function hideAdultReader(){
 new MutationObserver(hideAdultReader).observe($('#app'), {attributes: true, attributeFilter: ['class']});
 
 // 시험·확장용 (모듈 밖에서 서재와 열기를 쓸 수 있게)
-window.nvMedia = {works: () => works, openWork: w => openWork(w), translateNow: trCurrent, trPage, setKind: k => { libKind = k; renderLib(); }};
+window.nvMedia = {works: () => works, addFiles: (fs, o) => addFiles(fs, {persist: false, quiet: true, ...o}), openWork: w => openWork(w), translateNow: trCurrent, trPage, setKind: k => { libKind = k; renderLib(); }};
 
 /* ---------- 화 고르기: 그림으로 보는 목차 (만화·웹툰·영상) ----------
    목차를 열면 화마다 작은 그림을 보여 준다. 만화·웹툰은 그 화 첫 쪽, 영상은 표지(없으면 영상 앞부분 한 장면).
