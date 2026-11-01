@@ -26,7 +26,9 @@ async function renderVideo(ep, pos = {}){
   const box = document.createElement('div'); box.className = 'vbox';
   const v = document.createElement('video'); v.controls = true; v.playsInline = true; v.preload = 'metadata'; v.tabIndex = -1;
   const f = ep.file;
-  v.src = f.streamUrl || (f.rangeUrl ? await f.rangeUrl() : url(await realBlob(f)));   // 드라이브 영상: 통째로 받으면 폰이 멈춘다
+  // 드라이브 영상: 서비스 워커를 거쳐 구간으로 흘려 본다(통째로 받으면 폰이 멈춘다). 토큰이 끝났으면 새로 받고 다시
+  let src = f.streamUrl; if (!src && f.rangeUrl){ try{ await gdToken(false); src = f.streamUrl; }catch{} }
+  v.src = src || url(await realBlob(f));
   v.playbackRate = store.get('set.vRate', 1);
   // 그 글의 표지 그림을 재생 전 화면으로 (만화 칸에 따로 나오던 영상 표지)
   if (ep.cover){ try{ v.poster = ep.cover.streamUrl || url(await realBlob(ep.cover)); }catch{} }

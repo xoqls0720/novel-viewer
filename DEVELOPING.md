@@ -73,7 +73,7 @@ npm run dist         # 윈도우 설치 파일 → desktop/dist/ (리눅스에�
 - 목록: 폴더 40개씩 묶어 묻는다(`'a' in parents or 'b' in parents`, parents 로 가름). 폴더 2천 개도 요청 수십 번. 만든 목록은 `dcache` 의 `__idx2:<연결 id>` 에 `ct`(changes 표)와 함께 둔다.
 - 켤 때: 저장해 둔 목록으로 서재를 바로 보이고, 1초 뒤 `driveRefresh` 가 `changes?pageToken=ct` 로 '바뀐 게 있나'만 묻는다(요청 1번). 있으면 목록을 다시 만들어 바뀐 작품(`drvWorkOf`: '만화/작품', '성인/만화/작가')만 다시 묶고 지워진 작품은 뺀다. 앱으로 돌아올 때(5분 넘게)·끝난 토큰을 화면 누름으로 새로 받은 뒤(`drvAfterToken`)에도 한다.
 - 남은 '__pending'(폴더 고르기를 끝내지 않은 자국)은 켤 때 지운다. 남아 있으면 PC 가 읽기 권한까지 달라고 해서 다시 쓰는 토큰이 맞지 않아 구글 연결이 저절로 꺼졌다. 프로그램은 연결이 꺼져 있어도 토큰이 살아 있으면 켤 때 조용히 다시 잇는다.
-- 큰 EPUB·zip·영상: `rangeUrl`/`streamUrl` 이 `files/<id>?alt=media&access_token=` 주소라 RangeZip·<video> 가 필요한 구간만 읽는다(토큰이 바뀌면 rangeUrl 이 새로 받는다).
+- 큰 EPUB·zip·영상: 진짜 구글 드라이브는 주소에 붙인 토큰(`access_token=`)을 거절한다(가짜 드라이브 시험에서는 안 보였다 → `drvmedia` 시험이 거절하게 흉내). 그래서 `rangeUrl()` 은 `{url, headers: {Authorization}}` 를 돌려주고 RangeZip 이 머리글로 구간을 읽는다. `<video>`·포스터는 머리글을 못 붙이니 `streamUrl` 이 같은 주소 `./__drv/<id>?s=크기&m=형식&t=토큰` 이고, sw.js 의 `drvProxy` 가 토큰을 머리글로 바꿔 드라이브에 구간 요청한 뒤 206·Content-Range 를 직접 만들어 돌려준다(드라이브는 Content-Range 를 다른 주소에 보여 주지 않고, iPhone 사파리는 그게 있어야 재생한다). 워커가 화면을 맡기 전에는 `streamUrl` 이 없어서 통째로 받는다.
 
 ## OneDrive
 

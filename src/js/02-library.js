@@ -232,12 +232,12 @@ function renderLib(){
 // 큰 zip 을 구간(Range) 요청으로 읽는 가벼운 읽개. JSZip 과 같은 모양(zip.file(이름).async('string'|'blob'))만 갖춘다.
 // 그림은 보통 압축 없이(store), 글(xhtml)은 deflate 로 들어 있다. ZIP64(4GB 넘는 zip)도 읽는다.
 const RangeZip = {
-  // url: 주소 또는 주소를 돌려주는 함수(구글 드라이브처럼 토큰이 바뀌는 곳은 읽을 때마다 새로)
+  // url: 주소 또는 주소를 돌려주는 함수(구글 드라이브처럼 토큰이 바뀌는 곳은 읽을 때마다 새로). 함수는 {url, headers} 를 돌려줘도 된다(토큰은 머리글로)
   // known: 지난번에 읽어 둔 중앙 목록(files). 있으면 끝부분·목록을 다시 받지 않는다
   async open(url, size, known = null){
-    const at = async () => typeof url === 'function' ? await url() : url;
-    const get = async (a, b) => { const r = await fetch(await at(), {headers: {Range: `bytes=${a}-${b}`}}); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status); return new Uint8Array(await r.arrayBuffer()); };
-    if (!size){ const r = await fetch(await at(), {headers: {Range: 'bytes=0-0'}}); size = +((r.headers.get('content-range') || '').split('/')[1] || 0); }
+    const at = async range => { const x = typeof url === 'function' ? await url() : url; return typeof x === 'string' ? fetch(x, {headers: {Range: range}}) : fetch(x.url, {headers: {...x.headers, Range: range}}); };
+    const get = async (a, b) => { const r = await at(`bytes=${a}-${b}`); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status); return new Uint8Array(await r.arrayBuffer()); };
+    if (!size){ const r = await at('bytes=0-0'); size = +((r.headers.get('content-range') || '').split('/')[1] || 0); }
     if (known) return this.make(get, known);
     const tailN = Math.min(size, 66000); const tail = await get(size - tailN, size - 1); const dv = new DataView(tail.buffer);
     let e = -1; for (let i = tailN - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50){ e = i; break; }

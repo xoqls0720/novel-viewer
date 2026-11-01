@@ -59,8 +59,13 @@ async function driveIndex(src, onProgress){
   const used = new Set(); for (const f of files){ let r = f.rel, k = 2; while (used.has(r)) r = f.rel.replace(/(\.[^./]+)?$/, ` (${k++})$1`); f.rel = r; used.add(r); }
   return files;
 }
-// 드라이브 파일을 구간(Range)으로 읽는 주소: 토큰을 주소에 붙여서 <video> 와 구간 읽기가 그대로 쓴다 (토큰은 한 시간짜리)
-const driveMediaUrl = id => `${GD_API}/files/${id}?alt=media&supportsAllDrives=true&access_token=${encodeURIComponent(GD.token)}`;
+// 드라이브 파일 구간(Range) 읽기. 구글은 주소에 붙인 토큰(access_token=)을 받지 않아서(실제 드라이브에서 막힘) 토큰은 머리글로 보낸다.
+const driveMediaUrl = id => `${GD_API}/files/${id}?alt=media&supportsAllDrives=true`;
+// <video>·<img> 는 머리글을 못 붙이니, 앱의 서비스 워커(sw.js)를 거치는 같은 주소(./__drv/<id>)로 보내고 워커가 토큰을 머리글로 바꿔 드라이브에 묻는다.
+// 토큰은 같은 주소 안에서만 오가고 밖으로 나가지 않는다. 워커가 아직 이 화면을 맡지 않았으면(처음 연 순간) 쓰지 않는다.
+const DRV_MIME = {mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm', mkv: 'video/x-matroska', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', avif: 'image/avif'};
+const driveProxyUrl = f => navigator.serviceWorker?.controller && GD.token && Date.now() < GD.exp - 60000
+  ? `./__drv/${f.id}?s=${f.size}&m=${encodeURIComponent(DRV_MIME[(f.rel.split('.').pop() || '').toLowerCase()] || 'application/octet-stream')}&t=${encodeURIComponent(GD.token)}` : undefined;
 // 한 번 받은 파일은 기기(IndexedDB 'dcache')에 남겨서 다음엔 인터넷 없이도 연다
 const DRV_INFLIGHT = new Map();
 function driveBlob(f){
@@ -77,8 +82,8 @@ async function driveBlob0(f){
 function driveLazy(idx){
   return idx.map(f => { const lf = Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true});
     // 큰 EPUB·zip 은 필요한 구간만 (통째로 받지 않는다). 영상도 이 주소로 흘려 본다
-    lf.rangeUrl = async () => { await gdToken(false); return driveMediaUrl(f.id); };
-    Object.defineProperty(lf, 'streamUrl', {get: () => GD.token && Date.now() < GD.exp - 60000 ? driveMediaUrl(f.id) : undefined});
+    lf.rangeUrl = async () => ({url: driveMediaUrl(f.id), headers: {Authorization: 'Bearer ' + await gdToken(false)}});
+    Object.defineProperty(lf, 'streamUrl', {get: () => driveProxyUrl(f)});
     return lf; });
 }
 // 드라이브에서 무엇이 바뀌었는지 묻는 표(changes). 목록을 만들기 전에 받아 두고, 다음에 이것으로 '바뀐 게 있나'만 싸게 묻는다
