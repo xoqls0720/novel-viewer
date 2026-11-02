@@ -368,7 +368,9 @@ if (!DESKTOP && location.protocol === 'https:') setTimeout(async () => {
   let kept = false; try{ kept = await navigator.storage?.persisted?.() || await navigator.storage?.persist?.() || false; }catch{}
   const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const home = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
-  if (ios && !home && !kept && Date.now() - store.get('iosHomeHint', 0) > 3 * 864e5){ localStorage.setItem('nv.iosHomeHint', JSON.stringify(Date.now())); toast('사파리 공유 단추 → "홈 화면에 추가"로 열면 진도·저장이 지워지지 않아요'); }
+  // 읽는 중이거나 처음 안내 카드가 떠 있으면 겹치지 않게 미룬다(홈·서재에서만 한 번)
+  const calm = (window.nvAtShelf?.() ?? true) && !(document.querySelector('#coach') && !document.querySelector('#coach').hidden);
+  if (ios && !home && !kept && calm && Date.now() - store.get('iosHomeHint', 0) > 3 * 864e5){ localStorage.setItem('nv.iosHomeHint', JSON.stringify(Date.now())); toast('사파리 공유 단추 → "홈 화면에 추가"로 열면 진도·저장이 지워지지 않아요'); }
 }, 4000);
 (async () => {
   try{

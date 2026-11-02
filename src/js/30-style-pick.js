@@ -42,59 +42,78 @@ async function spFileJpeg(f, max = 768){
   const c = document.createElement('canvas'); c.width = Math.round(bm.width * s); c.height = Math.round(bm.height * s);
   c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); bm.close?.(); return c.toDataURL('image/jpeg', 0.82).split(',')[1];
 }
-// whole: true 면 작품 전체에서 여러 장을 골라 공통 그림체를, 아니면 지금 보이는 한 장. many: 고른 여러 작품(열쇠 목록)에서 고르게
+// 작품의 그림 전부 (회차 순서대로)
+const spAllFiles = w => (w?.eps || []).filter(e => e.type === 'imgs' && e.files?.length).flatMap(e => e.files);
+// 한 번에 AI 에게 보이는 장 수. 그림이 많으면 이만큼씩 나눠 여러 번 묻고, 여러 번 나온 태그만 모은다
+const SP_BATCH = 8;
+const SP = {stop: false};
+// 한 묶음(그림 여러 장)을 보이고 그림체 태그를 받는다
+async function spAsk(c, datas, ask){
+  const r = await stream(c, {system: SP_SYS, messages: [{role: 'user', content: [...datas.map(data => ({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}})), {type: 'text', text: ask}]}]});
+  return {tags: r.ok ? spClean(r.text) : '', note: r.note};
+}
+// whole: 지금 연 작품의 그림 전부, many: 고른 여러 작품(열쇠 목록)의 그림 전부, 둘 다 아니면 지금 보이는 한 장
 async function spPick(btn, whole = false, many = null){
-  let datas = [];
   const st = $('#spStat');
-  if (many?.length){
-    const ws = many.map(k => works.find(w => w.key === k)).filter(Boolean);
-    const per = Math.max(2, Math.floor(12 / ws.length));   // 모두 합쳐 12장 안쪽
-    const fs = ws.flatMap(w => spWorkFiles(w, per)).slice(0, 12);
-    if (!fs.length) return toast('고른 작품에서 그림을 찾지 못했어요');
-    st.textContent = `작품 ${ws.length}개에서 ${fs.length}장을 고르는 중…`; btn.disabled = true;
-    for (const f of fs){ try{ datas.push(await spFileJpeg(f, 640)); }catch{} }
-    btn.disabled = false;
-    if (!datas.length) return void (st.textContent = '그림을 읽지 못했어요');
-  } else if (whole){
-    if (!cur) return toast('그림체를 가져올 웹툰·만화를 먼저 열어 주세요');
-    const fs = spWorkFiles(cur);
-    if (!fs.length) return toast('이 작품에서 그림을 찾지 못했어요 (그림 폴더로 된 웹툰·만화만 돼요)');
-    st.textContent = `작품 전체에서 ${fs.length}장을 고르는 중…`; btn.disabled = true;
-    for (const f of fs){ try{ datas.push(await spFileJpeg(f)); }catch{} }
-    btn.disabled = false;
-    if (!datas.length) return void (st.textContent = '그림을 읽지 못했어요');
-  } else {
-    const im = spVisibleImg();
-    if (!im) return toast('웹툰·만화를 열어 그림이 보이는 곳에서 눌러 주세요');
-    datas = [await spJpeg(im)];
-  }
   const c = await client('#naiProv'); if (!c) return;
-  btn.disabled = true; st.textContent = datas.length > 1 ? `${datas.length}장을 보고 공통 그림체를 읽는 중…` : '그림체를 읽는 중…';
+  let tags = '';
+  const ws = many?.length ? many.map(k => works.find(w => w.key === k)).filter(Boolean) : whole ? (cur ? [cur] : []) : [];
+  if (whole && !cur) return toast('그림체를 가져올 웹툰·만화를 먼저 열어 주세요');
+  btn.disabled = true;
   try{
-    const ask = many?.length ? `서로 다른 작품 ${many.length}개의 여러 쪽 ${datas.length}장이다. 이 작품들에 공통된 그림체(겹치는 화풍·선·채색·명암·색감)를 하나로 합친 태그만.` : datas.length > 1 ? `같은 작품의 여러 쪽 ${datas.length}장이다. 모든 장에 공통된 그림체 태그만.` : '이 그림의 그림체 태그만.';
-    const r = await stream(c, {system: SP_SYS, messages: [{role: 'user', content: [...datas.map(data => ({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}})), {type: 'text', text: ask}]}]});
-    const tags = r.ok ? spClean(r.text) : '';
-    if (!tags){ st.textContent = '그림체를 읽지 못했어요' + (r.note ? ' ' + r.note.trim() : ' (그림을 볼 수 있는 AI 인지 확인해 주세요 — Claude·Gemini, 또는 Ollama 는 qwen2.5vl 같은 그림 모델)'); return; }
-    const label = many?.length ? `고른 작품 ${many.length}개의` : `'${cur?.name || '이 작품'}'`;
+    if (ws.length){
+      // 전부 본다: 작품마다 그림을 모두 모아 8장씩 나눠 묻는다
+      const files = ws.flatMap(spAllFiles);
+      if (!files.length) return toast('그림을 찾지 못했어요 (그림 폴더로 된 웹툰·만화만 돼요)');
+      const nb = Math.ceil(files.length / SP_BATCH);
+      if (nb > 1 && !confirm(`그림 ${files.length.toLocaleString()}장을 모두 보려고 ${nb.toLocaleString()}번에 나눠 AI 에게 보여요(그만큼 AI 사용량이 들어요). 계속할까요?`)) return;
+      SP.stop = false; $('#spStop').hidden = false;
+      const count = new Map(); let done = 0, fails = 0, lastNote = '';
+      for (let b = 0; b < nb && !SP.stop; b++){
+        st.textContent = `그림 ${Math.min(files.length, (b + 1) * SP_BATCH).toLocaleString()} / ${files.length.toLocaleString()}장 보는 중… (${b + 1}/${nb}번째)`;
+        const datas = []; for (const f of files.slice(b * SP_BATCH, (b + 1) * SP_BATCH)){ try{ datas.push(await spFileJpeg(f, 640)); }catch{} }
+        if (!datas.length) continue;
+        const r = await spAsk(c, datas, ws.length > 1 ? `여러 작품 중 ${datas.length}장이다. 이 장들의 그림체 태그만.` : `같은 작품의 ${datas.length}장이다. 이 장들에 공통된 그림체 태그만.`).catch(e => ({tags: '', note: e.message}));
+        if (!r.tags){ fails++; lastNote = r.note || ''; if (fails >= 3 && !done){ st.textContent = '그림체를 읽지 못했어요 ' + (lastNote || '(그림을 볼 수 있는 AI 인지 확인해 주세요)').trim(); return; } continue; }
+        done++; for (const t of r.tags.split(', ')) count.set(t, (count.get(t) || 0) + 1);
+      }
+      $('#spStop').hidden = true;
+      if (!done) return void (st.textContent = '그림체를 읽지 못했어요 ' + (lastNote || '').trim());
+      // 여러 번(35% 넘게) 나온 태그만 — 한 장면에만 있던 빛·색은 빠진다. 너무 적으면 많이 나온 순으로 채운다
+      const ranked = [...count].sort((a, b) => b[1] - a[1]);
+      let keep = ranked.filter(([, n]) => n >= Math.max(1, Math.ceil(done * 0.35))).map(([t]) => t);
+      if (keep.length < 8) keep = ranked.slice(0, 18).map(([t]) => t);
+      tags = keep.slice(0, 24).join(', ');
+      st.textContent = `${done}번에 걸쳐 그림 ${files.length.toLocaleString()}장을 봤어요${SP.stop ? ' (중간에 멈춤)' : ''}`;
+    } else {
+      const im = spVisibleImg();
+      if (!im) return toast('웹툰·만화를 열어 그림이 보이는 곳에서 눌러 주세요');
+      st.textContent = '그림체를 읽는 중…';
+      const r = await spAsk(c, [await spJpeg(im)], '이 그림의 그림체 태그만.');
+      tags = r.tags;
+      if (!tags) return void (st.textContent = '그림체를 읽지 못했어요' + (r.note ? ' ' + r.note.trim() : ' (그림을 볼 수 있는 AI 인지 확인해 주세요 — Claude·Gemini, 또는 Ollama 는 qwen2.5vl 같은 그림 모델)'));
+    }
+    const label = ws.length > 1 ? `고른 작품 ${ws.length}개의` : `'${(ws[0] || cur)?.name || '이 작품'}'`;
     if (!confirm(`${label} 그림체로 노벨AI 하우스 스타일을 바꿀까요?\n\n${tags}`)){ st.textContent = '바꾸지 않았어요: ' + tags; return; }
     store.set('set.naiStyle.prev', $('#naiStyle').value); store.set('set.wtStyleIn.prev', $('#wtStyleIn')?.value || '');
     $('#naiStyle').value = 'masterpiece, best quality, very aesthetic, ' + tags; store.set('set.naiStyle', $('#naiStyle').value);
     // 웹툰 만들기의 '직접 쓰기' 칸에도 넣는다(웹툰 컷도 이 그림체로)
     if ($('#wtStyleIn')){ $('#wtStyleIn').value = $('#naiStyle').value; store.set('set.wtStyleIn', $('#wtStyleIn').value); }
     $('#naiStyleSel').value = 'custom'; $('#naiStyleSel').dispatchEvent(new Event('change'));
-    const picks = store.get('naiStylePicks', []).filter(p => p.tags !== tags); picks.unshift({name: cur?.name || '', tags, t: Date.now()}); store.set('naiStylePicks', picks.slice(0, 10));
-    st.textContent = `'${cur?.name || ''}' 그림체로 바꿨어요. 노벨AI 탭·웹툰 만들기가 이 그림체로 그려요.`; $('#spUndo').hidden = false;
+    const picks = store.get('naiStylePicks', []).filter(p => p.tags !== tags); picks.unshift({name: ws.map(w => w.name).join(', ') || cur?.name || '', tags, t: Date.now()}); store.set('naiStylePicks', picks.slice(0, 10));
+    st.textContent = `${label} 그림체로 바꿨어요. 노벨AI 탭·웹툰 만들기가 이 그림체로 그려요.`; $('#spUndo').hidden = false;
     toast('그림체를 가져왔어요');
   }catch(e){ st.textContent = '그림체를 읽지 못했어요: ' + e.message; }
-  finally{ btn.disabled = false; }
+  finally{ btn.disabled = false; $('#spStop').hidden = true; }
 }
 if ($('#naiStyleNow') && !$('#spPick')){
   const box = document.createElement('div'); box.className = 'row tight';
-  box.innerHTML = '<button id="spMany" title="서재에서 웹툰·만화를 여러 개 골라, 그 작품들에 공통된 그림체를 가져와요">여러 작품 골라서</button><button id="spWhole" title="지금 연 작품의 앞·가운데·뒤 회차에서 그림을 골라, 모든 장에 공통된 그림체를 노벨AI 태그로 가져와요">작품 전체에서 그림체 가져오기</button><button id="spPick" title="읽는 화면에 보이는 그림의 그림체(내용 말고)를 AI 가 노벨AI 태그로 옮겨 하우스 스타일에 넣어요">지금 보는 그림만</button><button id="spUndo" hidden>되돌리기</button><span class="hint" id="spStat"></span>';
+  box.innerHTML = '<button id="spMany" title="서재에서 웹툰·만화를 여러 개 골라, 그 작품들의 그림을 모두 보고 겹치는 그림체를 가져와요">여러 작품 골라서</button><button id="spWhole" title="지금 연 작품의 그림을 모두 보고(8장씩 나눠), 여러 번 나온 그림체만 노벨AI 태그로 가져와요">작품 전체에서 그림체 가져오기</button><button id="spPick" title="읽는 화면에 보이는 그림의 그림체(내용 말고)를 AI 가 노벨AI 태그로 옮겨 하우스 스타일에 넣어요">지금 보는 그림만</button><button id="spStop" hidden>멈추기</button><button id="spUndo" hidden>되돌리기</button><span class="hint" id="spStat"></span>';
   $('#naiStyleNow').after(box);
   $('#spPick').onclick = e => spPick(e.currentTarget);
   $('#spWhole').onclick = e => spPick(e.currentTarget, true);
   $('#spMany').onclick = e => spManyOpen(e.currentTarget);
+  $('#spStop').onclick = () => { SP.stop = true; $('#spStat').textContent = '멈추는 중… 지금까지 본 것으로 정해요'; };
   $('#spUndo').onclick = () => { const p = store.get('set.naiStyle.prev', null); if (p === null) return; $('#naiStyle').value = p; store.set('set.naiStyle', p);
     const w = store.get('set.wtStyleIn.prev', null); if (w !== null && $('#wtStyleIn')){ $('#wtStyleIn').value = w; store.set('set.wtStyleIn', w); } $('#spUndo').hidden = true; $('#spStat').textContent = '하우스 스타일을 되돌렸어요'; };
 }
@@ -127,4 +146,4 @@ function spManyOpen(btn){
   box.querySelector('#spmGo').onclick = () => { const keys = [...sel]; store.set('naiStyleMany', keys); close(); spPick(btn, false, keys); };
   document.body.append(box); draw(); count();
 }
-window.nvStylePick = {clean: spClean, files: w => spWorkFiles(w)};   // 시험용
+window.nvStylePick = {clean: spClean, files: w => spWorkFiles(w), all: w => spAllFiles(w)};   // 시험용

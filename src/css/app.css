@@ -584,3 +584,9 @@ a:hover{text-decoration-color:currentColor}
 .spm .ap-it.on .cv{outline:3px solid #e8603c;outline-offset:-3px}
 .spm .ap-it .ck{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:#e8603c;color:#fff;font:700 13px/22px var(--ui);text-align:center}
 .spm .ap-it:not(.on) .ck{background:rgb(0 0 0 / 35%)}
+/* 폰 읽기 화면 다듬기: 아래 상태 줄이 글 위에 겹쳐 보이지 않게 바탕을 깔고, 영상에서는 숨긴다. 웹툰은 막대가 숨으면 위 빈칸 없이 */
+.mini{padding:26px 0 4px;bottom:0;background:linear-gradient(to bottom, transparent, var(--reader-bg, var(--bg)) 60%)}
+.app:has(#reader .webtoon) .mini, .app:has(#reader .manga) .mini{background:none;padding:0;bottom:calc(4px + var(--sab));color:#fff;text-shadow:0 0 3px rgb(0 0 0 / 80%), 0 0 1px #000}
+.reader:has(video) ~ .mini, .app:has(#reader video) .mini{display:none}
+.immersive .webtoon{margin-top:var(--sat)}
+@media (max-width:700px){ .vinfo .vt{display:none} }   /* 폰: 영상 시간은 재생 막대에 이미 있다 */

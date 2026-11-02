@@ -150,7 +150,23 @@ function pcRemoteButton(){
   if (DESKTOP || LAN_BASE) return;
   const r = store.get('pcRemote', null); const box = $('#lanGuestApps'); if (!box) return;
   if (!r?.url){ box.hidden = true; box.innerHTML = ''; return; }
-  box.innerHTML = `<a class="lan-app" href="${esc(r.url)}"><b>PC 서재 열기</b><span>PC 의 작품·다운로더를 어디서나</span></a>`;
+  box.innerHTML = `<a class="lan-app" href="${esc(r.url)}" id="pcRemoteGo"><b>PC 서재 열기</b><span>PC 의 작품·다운로더를 어디서나</span></a>`;
   box.hidden = false;
+  $('#pcRemoteGo').onclick = pcRemoteOpen;
+}
+// PC 바깥 주소(터널)는 PC 를 다시 켜면 바뀐다. 누르면 먼저 닿는지 보고, 안 닿으면 구글로 한 번 맞춰 새 주소를 받아 다시 해 본다
+const pcReach = url => fetch(url + 'lan/info', {cache: 'no-store', signal: AbortSignal.timeout?.(7000)}).then(r => r.ok, () => false);
+async function pcRemoteOpen(e){
+  e.preventDefault();
+  const a = e.currentTarget, sp = a.querySelector('span'), was = sp.textContent;
+  sp.textContent = 'PC 에 닿는지 보는 중…';
+  let url = store.get('pcRemote', null)?.url || '';
+  if (url && await pcReach(url)) return void (location.href = url);
+  sp.textContent = '새 PC 주소를 받는 중…';
+  try{ if (!SYNC_OD() && gdLinked()) await gdSync(true); }catch{}   // 누름 안이라 구글 로그인이 끝났어도 다시 받을 수 있다
+  const fresh = store.get('pcRemote', null)?.url || '';
+  if (fresh && await pcReach(fresh)) return void (location.href = fresh);
+  sp.textContent = was;
+  toast('PC 에 닿지 않아요. PC 에서 노벨리스트를 켜 두고(설정 → 어디서나 열기 켜짐) 잠시 뒤 다시 눌러 주세요');
 }
 if (!DESKTOP && !LAN_BASE){ setTimeout(pcRemoteButton, 800); setInterval(pcRemoteButton, 15000); }

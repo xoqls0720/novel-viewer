@@ -32,7 +32,8 @@ const GO = {
   set(){ closeOverlays(); openTool('set'); },
   dl: () => dlOpen(),
 };
-window.nvGo = k => GO[k]();   // 시험·단축용
+window.nvGo = k => GO[k]();
+window.nvAtShelf = () => atHome() || atLib();   // 시험·단축용
 // 폰에서 집필실 나가기: 아래 탭 줄이 숨겨져 있어서 위쪽 단추로 홈에 간다(쓰던 글은 저절로 저장돼 있다)
 document.querySelectorAll('.st-exit').forEach(b => b.onclick = () => { try{ stFlush(); }catch{} GO.home(); });
 $$('#gnav [data-g]').forEach(b => b.onclick = () => GO[b.dataset.g]());

@@ -62,7 +62,8 @@ function diskResponse(abs, range){
   const m = range && /bytes=(\d*)-(\d*)/.exec(range);
   if (m && (m[1] || m[2])){
     const start = m[1] ? +m[1] : Math.max(0, st.size - +m[2]);
-    const end = m[1] && m[2] ? Math.min(+m[2], st.size - 1) : Math.min(st.size - 1, start + 8 * 1024 * 1024 - 1);
+    // 'bytes=X-'(끝까지)에는 끝까지 준다. 예전엔 8MB 만 주어서 영상 칸이 그 조각 끝을 영상 끝으로 알고 멈췄다(앞으로 넘기면 몇 초 뒤 '끝')
+    const end = m[1] && m[2] ? Math.min(+m[2], st.size - 1) : st.size - 1;   // 'bytes=-N'(뒤에서 N)도 끝까지
     if (start >= st.size) return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${st.size}` } });
     const { Readable } = require('stream');
     return new Response(Readable.toWeb(fs.createReadStream(abs, { start, end })), { status: 206, headers: {
