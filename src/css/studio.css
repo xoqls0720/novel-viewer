@@ -267,3 +267,10 @@
 .st-pagehead .t{font-size:12.5px;color:var(--sub)}
 /* 폰: 위 막대에 회차 제목이 가려지지 않게 (나란히 보기는 넓은 화면에서만) */
 @media (max-width:520px){ .st-top{gap:2px;padding-left:6px;padding-right:6px} .st-top .icon{width:36px;min-width:36px} .st-top select{padding:5px 20px 5px 7px} #stSplitBtn{display:none} .st-crumb{min-width:90px} }
+#stSprint.on{color:var(--accent)}
+.st-sprint{display:flex;align-items:center;gap:12px;padding:6px 14px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-variant-numeric:tabular-nums}
+.st-sprint[hidden]{display:none}
+.st-sprint b{font-size:15px}
+.st-sprint .grow{flex:1}
+.st-sprint button{padding:4px 12px;min-height:32px;font-size:12.5px}
+@media (max-width:520px){ .st-top .icon{width:34px;min-width:34px} .st-crumb input{min-width:48px} }

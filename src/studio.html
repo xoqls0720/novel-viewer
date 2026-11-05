@@ -34,6 +34,7 @@
       <button class="icon" id="stFindTg" title="찾기·바꾸기 (Ctrl+F)"><svg class="i"><use href="#i-search"/></svg></button>
       <button class="icon" id="stSplitBtn" title="자료 나란히 보기 (읽던 작품을 옆에 띄워 놓고 쓰기)"><svg class="i"><use href="#i-book"/></svg></button>
       <button class="icon" id="stCmtBtn" title="고른 문장에 메모 달기 (Ctrl+Shift+M)"><svg class="i"><use href="#i-note"/></svg></button>
+      <button class="icon" id="stSprint" title="집필 타이머: 정한 시간 동안 몇 자 쓰는지 재기" aria-label="집필 타이머"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v4l3 2M9 2h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
       <button class="icon desk-only" id="stTw" title="타자기 스크롤: 쓰는 줄을 화면 가운데에"><svg class="i"><use href="#i-type"/></svg></button>
       <button class="icon desk-only" id="stFocus" title="집중 모드 (Ctrl+.)"><svg class="i"><use href="#i-focus"/></svg></button>
       <button class="icon" id="stInspTg" title="회차 정보·AI·판 기록"><svg class="i"><use href="#i-panel"/></svg></button>
@@ -91,6 +92,7 @@
       <div class="rp-body" id="rpBody"><div class="hint" style="padding:20px">자료실에 불러온 작품을 골라 옆에 띄워 두고 쓸 수 있어요.</div></div>
       <div class="rp-foot"><button id="rpIdea">고른 문장 → 떠오른 문장</button><span class="hint grow">문장을 고르고 누르면 메모로 남아요</span><button id="rpPrev" title="이전 화">‹</button><button id="rpNext" title="다음 화">›</button></div>
     </aside>
+    <div class="st-sprint" id="stSprintBar" hidden><b id="stSprintT">0:00</b><span id="stSprintN">+0자</span><span class="grow"></span><button id="stSprintX">그만</button></div>
     <div class="st-meter" id="stMeter"></div>
   </div>
 
@@ -102,7 +104,7 @@
       <h3>나오는 인물</h3><div class="st-cast" id="stCast"></div>
       <h3>작가 메모 (원고에 안 들어가요)</h3><textarea id="stNote" placeholder="복선, 고칠 곳, 자료…" style="min-height:90px"></textarea>
       <h3>원고 메모</h3><div id="stCmts"></div>
-      <h3>순서</h3><div class="row tight"><button id="stUp">↑ 앞으로</button><button id="stDown">↓ 뒤로</button><button class="danger" id="stEpDel">이 회차 지우기</button></div>
+      <h3>순서</h3><div class="row tight"><button id="stUp">↑ 앞으로</button><button id="stDown">↓ 뒤로</button><button id="stEpDup">이 회차 복제</button><button class="danger" id="stEpDel">이 회차 지우기</button></div>
       <h3>연재용 내보내기</h3>
       <div class="row tight"><select id="stExpFmt" class="grow"><option value="mobile">모바일 연재 (문단 사이 빈 줄)</option><option value="book">출판·공모전 원고 (빈 줄 없이 들여쓰기)</option><option value="raw">쓴 그대로</option></select></div>
       <div class="row"><label class="hint"><input type="checkbox" id="stExpTitle" checked> 맨 위에 회차 제목</label><label class="hint"><input type="checkbox" id="stExpDots" checked> ... → …</label><label class="hint"><input type="checkbox" id="stExpQuote"> "곧은" → “둥근” 따옴표</label></div>

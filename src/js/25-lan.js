@@ -18,7 +18,15 @@ class LanFile extends LazyFile {
   // EPUB·zip: PC 가 읽어 둔 목록을 한 번에, 안의 그림은 하나씩 (readEpub 의 LanZip)
   get lanZip(){ return /\.(epub|zip|cbz)$/i.test(this.lan.rel) ? LAN_BASE + '/lan/zip?p=' + this.q : undefined; }
   get lanEnt(){ return LAN_BASE + '/lan/zent?p=' + this.q + '&e='; }
-  async fetchBlob(){ const r = await fetch(LAN_BASE + (this.img ? `/lan/img?w=${this.lanW}&p=` : '/lan/file?p=') + this.q); if (!r.ok) throw new Error('읽지 못했어요'); return r.blob(); }
+  get cacheKey(){ return 'lan:' + this.lan.rel + '|' + Math.round(this.lan.mtime || 0) + (this.img ? '|w' + this.lanW : ''); }
+  // 기기에 받아 둔 것(작품 통째로 받기)이 있으면 PC 없이도 연다. 기기에 남기는 것은 받아 두기(_save)에서만 (보통 보기는 브라우저 캐시로 충분)
+  async fetchBlob(){
+    try{ const c = await idb.tx('readonly', s => s.get(this.cacheKey), 'dcache'); if (c?.blob) return c.blob; }catch{}
+    const r = await fetch(LAN_BASE + (this.img ? `/lan/img?w=${this.lanW}&p=` : '/lan/file?p=') + this.q); if (!r.ok) throw new Error('읽지 못했어요');
+    const b = await r.blob();
+    if (this._save) try{ await idb.tx('readwrite', s => s.put({id: this.cacheKey, blob: b}), 'dcache'); }catch{}
+    return b;
+  }
 }
 function lanFiles(list){ const W = lanW(); return list.map(f => new LanFile(f, W)); }
 async function lanShow(list){ works = []; await addFiles(lanFiles(list), {persist: false, quiet: true}); renderLib(); renderHome(); }

@@ -167,10 +167,10 @@ async function odFiles(src, refresh){
     idx = await odIndex(src, n => srcStatus(src.id, `목록 받는 중… 항목 ${n.toLocaleString()}개`));
     try{ await idb.tx('readwrite', s => s.put({id: '__idx:' + src.id, files: idx, t: Date.now()}), 'dcache'); }catch{}
   }
-  return idx.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => odBlob(f)}), {remote: true}));
+  return idx.map(f => Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => odBlob(f)}), {remote: true, cacheKey: 'od:' + f.id}));
 }
 // '노벨'·'만화'·'웹툰' 같은 종류 폴더가 바로 아래에 있으면 하나씩 따로 연결한다(종류가 맞게 나뉘게)
-const KIND_DIR = /^(노벨|소설|novel|만화|망가|manga|comic|웹툰|webtoon)s?$/i;
+const KIND_DIR = /^(노벨|소설|novel|만화|망가|manga|comic|웹툰|webtoon|영상|video|애니|anime)s?$/i;
 
 /* ---------- 폴더 고르기 화면 (연결 시트의 드라이브 고르기 칸을 같이 쓴다) ---------- */
 async function odBrowseOpen(){

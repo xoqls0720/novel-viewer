@@ -29,7 +29,7 @@ async function driveList(q){
 }
 // 폴더 아래를 모두 훑어 파일 목록(경로 포함)을 만든다. 한 번 만든 목록은 기기에 저장해 다음엔 바로 쓴다.
 // 폴더 40개를 한 번에 묻는다(parents 로 어느 폴더 것인지 가른다): 폴더 2천 개 서재도 요청 수십 번이면 끝난다
-const DRV_KIND = /^(성인|노벨|소설|novel|웹툰|webtoon|만화|망가|manga|comic|영상|video|갤러리)$/i;
+const DRV_KIND = /^(성인|노벨|소설|novel|웹툰|webtoon|만화|망가|manga|comic|영상|video|애니|anime|갤러리)$/i;
 async function driveIndex(src, onProgress){
   // 연결한 폴더가 '만화'·'웹툰' 같은 종류 폴더가 아니면(예: 서재를 통째로 담은 '노벨리스트') 경로에서 빼서, PC 와 같은 '만화/작품' 경로·열쇠가 되게 한다
   // (예전엔 '노벨리스트' 의 '노벨' 때문에 그 안의 만화·웹툰이 모두 소설로 잡혔다)
@@ -80,7 +80,7 @@ async function driveBlob0(f){
   return b;
 }
 function driveLazy(idx){
-  return idx.map(f => { const lf = Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true});
+  return idx.map(f => { const lf = Object.assign(new LazyFile({name: f.rel.split('/').pop(), size: f.size, mtime: f.mtime, rel: f.rel, get: () => driveBlob(f)}), {remote: true, cacheKey: f.id});
     // 큰 EPUB·zip 은 필요한 구간만 (통째로 받지 않는다). 영상도 이 주소로 흘려 본다
     lf.rangeUrl = async () => ({url: driveMediaUrl(f.id), headers: {Authorization: 'Bearer ' + await gdToken(false)}});
     Object.defineProperty(lf, 'streamUrl', {get: () => driveProxyUrl(f)});

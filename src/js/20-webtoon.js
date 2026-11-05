@@ -487,8 +487,10 @@ const wtBlob = (c, type = 'image/png') => new Promise(r => c.toBlob(r, type));
 function wtDownload(blob, name){ const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
 $('#wtExport').onchange = async e => {
   const v = e.target.value; e.target.value = ''; if (!v || !WT.proj) return; await wtSaveNow(); await wtPreload();
+  if (v === 'view') return wtPreview();
   const name = safeName(WT.proj.name || '웹툰'); const pad = n => String(n).padStart(2, '0'); toast('내보내는 중…');
   try{
+    if (v === 'cut800' || v === 'cut690'){ const n = await (v === 'cut800' ? wtExportPieces(800, 1280) : wtExportPieces(690, 1600)); return toast(`${n}장으로 나눠 내보냈어요`); }
     if (v === 'this'){ wtDownload(await wtBlob(await wtPageCanvas(wtPage())), `${name}_${pad(WT.pi + 1)}.png`); }
     else if (v === 'zip'){ const z = new JSZip(); for (let i = 0; i < WT.proj.pages.length; i++) z.file(`${name}_${pad(i + 1)}.png`, await wtBlob(await wtPageCanvas(WT.proj.pages[i]))); wtDownload(await z.generateAsync({type: 'blob', compression: 'STORE'}), `${name}.zip`); }
     else if (v === 'strip'){

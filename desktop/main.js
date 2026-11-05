@@ -100,7 +100,7 @@ app.whenReady().then(() => { watchRoots(); setInterval(watchRoots, 60000); dlWat
 /* ---------- 모아받기·토끼 다운로더가 받는 폴더를 모두 잇는다 ----------
    두 다운로더는 토끼 설정의 saveDir(기본 D:\novel) 아래 종류 폴더에 받는다. 있는 폴더는 모두 연결하고,
    처음 받는 종류(예: 갤러리)가 새로 생기면 바로 연결해 화면에 알린다. 받은 작품은 위 watchRoots 가 알린다. */
-const DL_KINDS = ['만화', '웹툰', '노벨', '영상', '갤러리', '성인'];
+const DL_KINDS = ['만화', '웹툰', '노벨', '영상', '애니', '갤러리', '성인'];
 function dlSaveRoot(){
   const d = dlDir(); if (!d) return '';
   try{ const s = JSON.parse(fs.readFileSync(path.join(d, 'tokiDownloader', 'settings.json'), 'utf8')); if (s.saveDir && fs.existsSync(s.saveDir)) return path.normalize(s.saveDir); }catch{}

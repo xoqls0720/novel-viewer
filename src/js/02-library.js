@@ -12,10 +12,19 @@ class LazyFile {
 }
 const realBlob = async f => f?.isLazy ? await f.blob() : f;
 
+// 멀리 있는 zip·EPUB(드라이브·OneDrive·PC 서재) 안의 파일: 한 번 읽은 것은 기기(dcache)에 남겨 다음엔 인터넷·PC 없이 연다
+async function entCached(key, load){
+  try{ const c = await idb.tx('readonly', s => s.get(key), 'dcache'); if (c?.blob) return c.blob; }catch{}
+  const b = await load();
+  if (b?.size) try{ await idb.tx('readwrite', s => s.put({id: key, blob: b}), 'dcache'); }catch{}
+  return b;
+}
+
 async function expandZips(list){
   const out = [];
   for (const f of list){
-    if (!/\.zip$/i.test(f.name)){ out.push(f); continue; }
+    if (!/\.(zip|cbz)$/i.test(f.name)){ out.push(f); continue; }
+    const cbz = /\.cbz$/i.test(f.name);   // 만화 표준 묶음 파일: 파일 하나가 한 화
     // 폴더·PC 서재의 zip: 목록만 읽고, 그림은 볼 때 그 부분만 (수백 MB 를 통째로 받지 않는다)
     // 목록(중앙 목록)은 이 기기에 저장해 두고 다음에 켤 때는 요청 없이 쓴다 (예전엔 켤 때마다 zip 마다 '푸는 중'을 다시 했다)
     if (f.rangeUrl || f.streamUrl){
@@ -25,13 +34,15 @@ async function expandZips(list){
         if (!known) toast(`${f.name} 푸는 중…`);
         const zip = await RangeZip.open(f.rangeUrl || f.streamUrl, f.size, known);
         if (!known) try{ await idb.tx('readwrite', s => s.put({id: zkey, files: zip.files}), 'dcache'); }catch{}
-        const base = relPath(f).replace(/\.zip$/i, '');
+        const base = relPath(f).replace(/\.(zip|cbz)$/i, '');
         const dir = base.includes('/') ? base.slice(0, base.lastIndexOf('/')+1) : '';
         const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
         const rooted = entries.every(e => e.name.includes('/'));
         for (const e of entries){
           const rel = rooted ? dir + e.name : base + '/' + e.name;
-          out.push(new LazyFile({name: e.name.split('/').pop(), size: e.usize, rel, mtime: f.lastModified || 0, get: () => zip.file(e.name).async('blob')}));
+          const ck = f.remote ? 'zz:' + zkey.slice(3) + '|' + e.name : '';   // 멀리 있는 zip 안의 그림은 한 번 본 것을 기기에 남긴다
+          out.push(Object.assign(new LazyFile({name: e.name.split('/').pop(), size: e.usize, rel, mtime: f.lastModified || 0,
+            get: ck ? () => entCached(ck, () => zip.file(e.name).async('blob')) : () => zip.file(e.name).async('blob')}), f.remote ? {remote: true, cacheKey: ck} : {}, {_ep: cbz}));
         }
         continue;
       }catch{}   // 구간 읽기가 안 되면 아래처럼 통째로
@@ -39,14 +50,14 @@ async function expandZips(list){
     toast(`${f.name} 푸는 중…`);
     try{
       const zip = await JSZip.loadAsync(await realBlob(f), {decodeFileName: bytes => { try{ return new TextDecoder('utf-8', {fatal:true}).decode(bytes); }catch{ try{ return new TextDecoder('euc-kr').decode(bytes); }catch{ return String.fromCharCode(...bytes); } } }});
-      const base = relPath(f).replace(/\.zip$/i, '');
+      const base = relPath(f).replace(/\.(zip|cbz)$/i, '');
       const dir = base.includes('/') ? base.slice(0, base.lastIndexOf('/')+1) : '';
       const entries = Object.values(zip.files).filter(e => !e.dir && !/(^|\/)(__MACOSX|\.)/.test(e.name));
       const rooted = entries.every(e => e.name.includes('/'));   // zip 안에 작품 폴더가 이미 있으면 그대로
       for (const e of entries){
         const blob = await e.async('blob');
         const nf = new File([blob], e.name.split('/').pop(), {type: blob.type});
-        nf._rel = rooted ? dir + e.name : base + '/' + e.name;
+        nf._rel = rooted ? dir + e.name : base + '/' + e.name; nf._ep = cbz;
         out.push(nf);
       }
     }catch{ toast(`${f.name}을 풀지 못했어요`); }
@@ -72,7 +83,7 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     if (ai >= 0 && media && rel.length >= ai + 5) { workPath = rel.slice(0, ai + 3).join('/'); epName = rel.slice(ai + 3, -1).join(' · '); author = true; }
     // 웹툰·만화 회차 폴더: 작품/0001 1화/이미지, 작품/001/이미지, 작품/1화/이미지
     // HakuNeko·HaruNeko 처럼 'Ch.001'·'Chapter 1'·'Vol.2'·'제3화'·'#4' 로 시작하는 회차 폴더도
-    else if (media && rel.length >= 3 && /^(\d{1,4}(?:\D|$)|(?:ch(?:apter)?|ep(?:isode)?|vol(?:ume)?|제)\.?\s*\d|#\d)/i.test(rel[rel.length-2])) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
+    else if (media && rel.length >= 3 && (f._ep || /^(\d{1,4}(?:\D|$)|(?:ch(?:apter)?|ep(?:isode)?|vol(?:ume)?|제)\.?\s*\d|#\d)/i.test(rel[rel.length-2]))) { workPath = rel.slice(0,-2).join('/'); epName = rel[rel.length-2]; }
     else workPath = rel.length > 1 ? rel.slice(0,-1).join('/') : '낱개/' + f.name.replace(/\.[^.]+$/, '');
     if (!groups.has(workPath)) groups.set(workPath, {files:[], imgEps:new Map(), vidEps:[], subs:[], paths:[]});
     const g = groups.get(workPath); g.paths.push(relPath(f)); if (author) g.author = true;
@@ -86,7 +97,7 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     const segs = path.split('/');
     const name = segs.pop();
     const adult = segs.includes('성인');
-    const top = segs.find(x => /노벨|소설|novel|웹툰|webtoon|만화|망가|manga|comic|영상|video|갤러리/i.test(x)) || segs[0] || '낱개';
+    const top = segs.find(x => /노벨|소설|novel|웹툰|webtoon|만화|망가|manga|comic|영상|video|애니|anime|갤러리/i.test(x)) || segs[0] || '낱개';
     const eps = []; let cover = null, info = null; const loose = [];
     for (const f of g.files){
       const n = f.name.toLowerCase();
@@ -111,11 +122,11 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
     const hasTxt = eps.some(e=>e.type==='txt'), hasEpub = eps.some(e=>e.type==='epub');
     const finalEps = hasTxt && hasEpub ? eps.filter(e=>e.type!=='epub') : eps;
     // 영상 폴더의 작품은 표지·미리보기 그림 글이 섞여 있어도 '영상' (예전엔 그림 글이 하나만 있어도 웹툰으로 갔다)
-    const kind = finalEps.every(e => e.type === 'video') || (/영상|video/i.test(top) && finalEps.some(e => e.type === 'video')) ? 'video'
+    const kind = finalEps.every(e => e.type === 'video') || (/영상|video|애니|anime/i.test(top) && finalEps.some(e => e.type === 'video')) ? 'video'
                : /웹툰|webtoon/i.test(top) ? 'webtoon' : /만화|망가|manga|comic|갤러리/i.test(top) ? 'manga'
                : finalEps.every(e=>e.type==='imgs' || e.type==='video') ? 'webtoon' : 'novel';
     // 성인 작품은 '성인 만화'·'성인 영상' 칸에 작가별로 (보통 만화와 섞이지 않게 열쇠도 따로)
-    const topName = adult ? '성인 ' + (kind === 'video' || /영상|video/i.test(top) ? '영상' : '만화') : (TOPNAME(top) || '');
+    const topName = adult ? '성인 ' + (kind === 'video' || /영상|video|애니|anime/i.test(top) ? '영상' : '만화') : (TOPNAME(top) || '');
     const key = (topName || '기타') + '/' + name;
     migrateKey(path, key);
     // 이름으로 알아본 성인 작품: 열쇠(읽던 자리)는 그대로 두고 칸·묶음 이름만 성인으로
@@ -137,7 +148,7 @@ async function addFiles(fileList, {persist = true, quiet = false, fromLib = fals
 }
 
 // 폴더 이름을 한국어 분류로
-function TOPNAME(t){ if (/노벨|소설|novel/i.test(t)) return '소설'; if (/웹툰|webtoon/i.test(t)) return '웹툰'; if (/만화|망가|manga|comic/i.test(t)) return '만화'; if (/영상|video/i.test(t)) return '영상'; if (t === '낱개') return '낱개 파일'; return ''; }
+function TOPNAME(t){ if (/노벨|소설|novel/i.test(t)) return '소설'; if (/웹툰|webtoon/i.test(t)) return '웹툰'; if (/만화|망가|manga|comic/i.test(t)) return '만화'; if (/영상|video|애니|anime/i.test(t)) return '영상'; if (t === '낱개') return '낱개 파일'; return ''; }
 const KIND_LABEL = {novel: '소설', webtoon: '웹툰', manga: '만화', video: '영상'};
 // 예전 키(고른 폴더 경로)에 남은 메모·진도·읽은 화를 새 키로 옮긴다
 function migrateKey(oldKey, key){
@@ -181,7 +192,7 @@ function workCard(w){
   const d = document.createElement('div'); d.className = 'card' + (w===cur?' on':'');
   const cu = coverUrl(w);
   const nw = newEps(w);
-  d.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" decoding="async" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${nw ? `<span class="new">${nw > 0 ? '+' + nw + '화' : 'NEW'}</span>` : ''}${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
+  d.innerHTML = `<div class="cv">${cu ? `<img alt="" loading="lazy" decoding="async" src="${cu}">` : `<div class="ph"></div>`}<span class="kind">${KIND_LABEL[w.kind]}</span>${nw ? `<span class="new">${nw > 0 ? '+' + nw + '화' : 'NEW'}</span>` : ''}${window.nvKept?.(w.key) ? '<span class="kept" title="기기에 받아 둠">✓</span>' : ''}${pos?`<div class="pb"><i style="width:${pct}%"></i></div>`:''}</div><div class="t"></div><div class="m">${pos?`${Math.min(pos.ep+1,total)} / ${total}화`:`${total}화`}</div>`;
   d.querySelector('.t').textContent = w.name;
   const ph = d.querySelector('.ph'); if (ph){   // 표지 없는 작품: 이름으로 고른 깊은 색 + 활자 표지
     const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8];   // 책 표지에 어울리는 열 가지 색
@@ -256,6 +267,7 @@ function renderLib(){
   }
   if (sort === 'recent') list = [...list].sort((a,b)=>(store.get('pos.'+b.key,{t:0}).t||0)-(store.get('pos.'+a.key,{t:0}).t||0));
   if (sort === 'added') list = [...list].sort((a, b) => (b.added || 0) - (a.added || 0));
+  if (sort === 'kept') list = list.filter(w => window.nvKept?.(w.key));
   // 새 회차: 새 화가 생긴 작품만, 많이 늘어난 순 (다른 뷰어의 '업데이트' 칸)
   if (sort === 'new') list = list.filter(w => newEps(w)).sort((a, b) => (newEps(b) || 0.5) - (newEps(a) || 0.5) || (b.added || 0) - (a.added || 0));
   // '전체' 칸: 종류마다 한 줄(소설 · 웹툰 · 만화 · 영상)로 가로로 넘겨 보고, 제목을 누르면 그 종류 칸으로 (섞인 큰 목록 대신)
@@ -281,7 +293,7 @@ function renderLib(){
     grid.append(workCard(w)); inRow++;
   }
   if (!list.length) lib.insertAdjacentHTML('beforeend', works.length
-    ? `<div class="hint" style="padding:16px 4px">${sort === 'new' && !q ? '새로 들어온 회차가 없어요. 다 따라 읽었어요' : '찾는 작품이 없어요'}</div>`
+    ? `<div class="hint" style="padding:16px 4px">${sort === 'new' && !q ? '새로 들어온 회차가 없어요. 다 따라 읽었어요' : sort === 'kept' && !q ? '아직 기기에 받아 둔 작품이 없어요. 회차 목록의 전체 받기로 받아 보세요' : '찾는 작품이 없어요'}</div>`
     : /^\/t\/[^/]+\//.test(location.pathname) ? `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>PC 서재를 불러오는 중…</b><p>PC 의 Novelist 가 켜져 있어야 해요. 오래 걸리면 위의 <b>새로 받은 작품 보기</b>를 눌러 주세요.</p></div>`
     : `<div class="lib-empty"><svg class="i"><use href="#i-book"/></svg><b>서재가 비어 있어요</b><p>위의 <b>폴더 열기</b>로 작품 폴더(노벨·만화·웹툰)를 고르거나,<br>txt·epub·zip 파일을 끌어다 놓아도 돼요. OneDrive 폴더를 연결하면 켤 때마다 저절로 들어와요.</p></div>`);
 }
@@ -357,9 +369,12 @@ const RangeZip = {
 };
 // PC 서재(폰)의 EPUB·zip: PC 가 읽어 둔 목록·쪽 글을 한 번에 받고, 안의 파일은 하나씩 (그림은 폰 폭으로 줄여서, 폰이 담아 둔다)
 const LanZip = {
-  async open(f){
-    const r = await fetch(f.lanZip); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status);
-    const j = await r.json(); const files = {};
+  // saved: 이 기기에 남겨 둔 목록·쪽 글. 있으면 PC 에 묻지 않는다 (받아 둔 EPUB 이 PC 없이 열리게)
+  async open(f, saved = null){
+    let j;
+    if (saved?.files) j = {ents: Object.fromEntries(Object.values(saved.files).map(e => [e.name, e.usize])), texts: saved.texts || {}};
+    else { const r = await fetch(f.lanZip); if (!r.ok) throw new Error('읽지 못했어요 ' + r.status); j = await r.json(); }
+    const files = {};
     for (const [n, usize] of Object.entries(j.ents)) files[n] = {name: n, dir: false, usize};
     return {files, file(n){ if (!files[n]) return null;
       return {name: n, async async(kind){
@@ -379,7 +394,7 @@ async function readEpub(file){
   // 멀리 있는 EPUB(구글 드라이브 등)은 중앙 목록·쪽 글을 이 기기에 저장해 두고 다음엔 요청 없이 연다
   const ekey = file.remote && (file.rangeUrl || file.streamUrl) ? 'ez:' + relPath(file) + '|' + file.size + '|' + file.lastModified : '';
   let saved = null; if (ekey){ try{ const r = await idb.tx('readonly', s => s.get(ekey), 'dcache'); if (r?.files) saved = r; }catch{} }   // 없으면 요청 객체가 돌아오니 files 로 확인
-  const zip = file.lanZip ? await LanZip.open(file) : file.rangeUrl ? await RangeZip.open(file.rangeUrl, file.size, saved?.files) : file.streamUrl ? await RangeZip.open(file.streamUrl, file.size, saved?.files) : await JSZip.loadAsync(await realBlob(file));
+  const zip = file.lanZip ? await LanZip.open(file, saved) : file.rangeUrl ? await RangeZip.open(file.rangeUrl, file.size, saved?.files) : file.streamUrl ? await RangeZip.open(file.streamUrl, file.size, saved?.files) : await JSZip.loadAsync(await realBlob(file));
   const texts = {}; const zstr = async n => (texts[n] = saved?.texts?.[n] ?? await zip.file(n).async('string'));
   if (!saved && zip.prefetch) await zip.prefetch(Object.keys(zip.files).filter(n => /\.(xml|opf|ncx|x?html?)$/i.test(n)));   // 처음: 글 파일을 몇 번에 묶어 받기
   const container = await zstr('META-INF/container.xml');
@@ -424,7 +439,10 @@ async function readEpub(file){
   }
   const textChars = chapters.reduce((s,c)=>s+c.text.length, 0);
   const imgCount = chapters.reduce((s,c)=>s+c.imgs.length, 0);
-  const res = {zip, chapters: chapters.filter(c => c.text.length > 20 || c.imgs.length), parts: tocStart.size > 1 ? parts : [], isComic: (imgCount > 10 || (imgCount > 0 && tocStart.size > 1)) && textChars / Math.max(1,imgCount) < 200};
+  // 멀리 있는 EPUB: 안의 그림도 한 번 본 것은 기기에 남긴다 (글은 위의 texts 로 이미 남는다)
+  const czip = ekey ? {files: zip.files, prefetch: zip.prefetch, file(n){ const f = zip.file(n); if (!f) return null;
+    return {name: n, async: kind => kind === 'blob' ? entCached('ze:' + ekey.slice(3) + '|' + n, () => f.async('blob')) : f.async(kind)}; }} : zip;
+  const res = {zip: czip, chapters: chapters.filter(c => c.text.length > 20 || c.imgs.length), parts: tocStart.size > 1 ? parts : [], isComic: (imgCount > 10 || (imgCount > 0 && tocStart.size > 1)) && textChars / Math.max(1,imgCount) < 200};
   if (ekey && !saved) idb.tx('readwrite', s => s.put({id: ekey, files: zip.files, texts}), 'dcache').catch(() => {});
   epubCache.set(file, res);
   while (epubCache.size > 3) epubCache.delete(epubCache.keys().next().value);

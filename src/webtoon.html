@@ -7,7 +7,7 @@
     <span class="hint" id="wtSaved"></span>
     <button id="wtUndo" title="되돌리기 (Ctrl+Z)">되돌리기</button><button id="wtRedo" title="다시 (Ctrl+Shift+Z)">다시</button>
     <button id="wtAuto" class="primary" title="줄거리를 넣으면 쪽·컷·말풍선·효과음을 자동으로 깔아 줘요">줄거리로 자동 만들기</button>
-    <select id="wtExport"><option value="">내보내기…</option><option value="zip">쪽마다 PNG (zip)</option><option value="strip">세로로 긴 한 장 (PNG)</option><option value="pdf">PDF</option><option value="this">이 쪽만 PNG</option></select>
+    <select id="wtExport"><option value="">내보내기…</option><option value="zip">쪽마다 PNG (zip)</option><option value="strip">세로로 긴 한 장 (PNG)</option><option value="pdf">PDF</option><option value="this">이 쪽만 PNG</option><option value="cut800">연재용 조각 · 폭 800 · 세로 1280 이하 (JPG zip)</option><option value="cut690">연재용 조각 · 폭 690 · 세로 1600 이하 (JPG zip)</option><option value="view">독자 화면 미리 보기</option></select>
   </header>
   <div class="wt-main">
     <div class="wt-pages" id="wtPages"></div>
@@ -51,7 +51,7 @@
         <div class="row tight" id="wtColorRow"><label>색</label><div class="wt-sw" id="wtSw"></div></div>
         <div class="row tight" id="wtVertRow"><label class="hint"><input type="checkbox" id="wtVert"> 세로</label><label class="hint"><input type="checkbox" id="wtHeart"> 하트</label><label class="hint"><input type="checkbox" id="wtBurst"> 흰 조각</label><select id="wtFont"><option value="brush">붓글씨</option><option value="round">둥근 손글씨</option><option value="heavy">굵은 고딕</option><option value="pen">가는 손글씨</option><option value="wild">거친 손글씨</option></select></div>
         <div class="row tight" id="wtLineRow"><label>풍선 선</label><select id="wtLine"><option value="thin">얇게</option><option value="none">없이</option><option value="bold">굵게</option></select></div>
-        <div class="row tight"><button id="wtDup">복제</button><button id="wtFront">맨 위로</button><button id="wtDel" class="danger">지우기</button></div>
+        <div class="row tight"><button id="wtDup">복제</button><button id="wtFront">맨 위로</button><button id="wtBack">맨 뒤로</button><button id="wtDel" class="danger">지우기</button></div>
       </div>
       <div class="hint wt-foot">작품·그림은 이 기기에 저장돼요. 성인 장면은 모든 인물이 성인일 때만 만들어요.</div>
     </div>

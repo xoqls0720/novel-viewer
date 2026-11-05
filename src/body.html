@@ -52,12 +52,12 @@
         <button class="grow" id="btnFiles"><svg class="i"><use href="#i-file"/></svg>파일 열기</button>
       </div>
       <input type="file" id="pickFolder" webkitdirectory multiple hidden>
-      <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
+      <input type="file" id="pickFiles" multiple accept=".txt,.epub,.zip,.cbz,.jpg,.jpeg,.png,.webp,.gif,application/zip,application/epub+zip,text/plain,image/*" hidden>
       <div class="studio-row"><button id="btnStudio" class="studio-btn"><svg class="i"><use href="#i-pen"/></svg><span><b>집필실</b><small>내 작품 쓰기</small></span></button>
       <button id="btnWebtoon" class="studio-btn"><svg class="i"><use href="#i-cards"/></svg><span><b>웹툰</b><small>콘티·컷 만들기</small></span></button></div>
       <button id="btnLink" class="link-btn"><svg class="i"><use href="#i-folder"/></svg>폴더 연결 · 켤 때 자동으로 불러오기</button>
       <div class="drop desk-only" id="drop">폴더나 zip을 여기에 끌어다 놓아도 돼요</div>
-      <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option><option value="added">최근 추가순</option><option value="new">새 회차</option></select></div>
+      <div class="row tight"><input id="libSearch" type="search" placeholder="작품 찾기" class="grow"><select id="libSort"><option value="name">이름순</option><option value="recent">최근 읽은 순</option><option value="added">최근 추가순</option><option value="new">새 회차</option><option value="kept">받아 둔 작품</option></select></div>
       <div class="lib-kinds" id="libKinds" role="tablist" aria-label="작품 종류"></div>
     </div>
     <div class="lib" id="lib"></div>
@@ -122,7 +122,8 @@
 
     <div class="sheet" id="epDrawer">
       <div class="sh"><input type="search" id="epFind" placeholder="회차 찾기" class="grow"><button class="icon" id="epClose"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <div class="eptools"><button id="epCur">지금 화로</button><button id="epTop">맨 앞</button><button id="epSort">↑↓ 순서 바꾸기</button><button id="epSplit" hidden>합본 나누기 끄기</button></div>
+      <div class="eptools"><button id="epCur">지금 화로</button><button id="epTop">맨 앞</button><button id="epSort">↑↓ 순서 바꾸기</button><button id="epSplit" hidden>합본 나누기 끄기</button><button id="epReadTo">여기까지 읽음</button><button id="epUnread">안 읽은 화만</button><button id="epDl" hidden>전체 받기</button></div>
+      <div class="dlrow" id="epDlRow" hidden><div class="pb"><i></i></div><span class="hint"></span></div>
       <div class="eplist" id="epList"></div>
     </div>
 

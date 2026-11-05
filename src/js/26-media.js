@@ -27,7 +27,8 @@ async function renderVideo(ep, pos = {}){
   const v = document.createElement('video'); v.controls = true; v.playsInline = true; v.preload = 'metadata'; v.tabIndex = -1;
   const f = ep.file;
   // 드라이브 영상: 서비스 워커를 거쳐 구간으로 흘려 본다(통째로 받으면 폰이 멈춘다). 토큰이 끝났으면 새로 받고 다시
-  let src = f.streamUrl;
+  const kept = await dlVideoBlob(f);   // 기기에 받아 둔 영상은 인터넷·PC 없이 여기서 튼다
+  let src = kept ? url(kept) : f.streamUrl;
   if (!src && f.rangeUrl){
     // 앱을 막 연 참이라 서비스 워커가 아직 이 화면을 맡지 않았으면 잠깐(4초까지) 기다린다 — 안 그러면 영상을 통째로 받느라 멈춘 것처럼 보인다
     if ('serviceWorker' in navigator && !navigator.serviceWorker.controller) await Promise.race([new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, {once: true})), new Promise(r => setTimeout(r, 4000))]);
@@ -36,7 +37,7 @@ async function renderVideo(ep, pos = {}){
   v.src = src || url(await realBlob(f));
   v.playbackRate = store.get('set.vRate', 1);
   // 그 글의 표지 그림을 재생 전 화면으로 (만화 칸에 따로 나오던 영상 표지)
-  if (ep.cover){ try{ v.poster = ep.cover.streamUrl || url(await realBlob(ep.cover)); }catch{} }
+  if (ep.cover){ try{ v.poster = (!kept && ep.cover.streamUrl) || url(await realBlob(ep.cover)); }catch{} }
   box.append(v);
   // 위 줄: 제목 · 10초 뒤로 · 재생 · 10초 앞으로 · 속도 · 자막 · 번역 · 전체 화면 · 다음
   const bar = document.createElement('div'); bar.className = 'vinfo';
@@ -80,7 +81,7 @@ async function renderVideo(ep, pos = {}){
   v.addEventListener('timeupdate', () => { if (Date.now() - lastSave > 5000){ lastSave = Date.now(); savePos(); } });
   v.addEventListener('pause', savePos);
   // 드라이브 영상: 구글 토큰(한 시간짜리)이 끝나 가면 미리 '한 번 눌러 주세요' → 누르면 새 토큰으로 이어서. 이미 멈췄으면 새 토큰을 받은 뒤 그 자리부터 다시
-  const drive = !!f.rangeUrl && !DESKTOP;
+  const drive = !!f.rangeUrl && !DESKTOP && !kept;
   let resumeAt = null, warned = false;
   const resume = () => { if (resumeAt === null || !(GD.token && GD.exp > Date.now() + 60e3)) return; const t = resumeAt; resumeAt = null; const s = f.streamUrl; if (!s) return; v.src = s; v.addEventListener('loadedmetadata', () => { v.currentTime = t; v.play().catch(() => {}); }, {once: true}); toast('이어서 봐요'); };
   window.drvVideoStalled = () => { if ($('#reader video') !== v || !drive) return; if (resumeAt === null) resumeAt = v.currentTime; toast('구글 연결이 끝나 영상이 멈췄어요. 화면을 한 번 누르면 이어서 봐요'); };
@@ -711,6 +712,7 @@ renderEpList = function(){
   const frag = document.createDocumentFragment();
   cur.eps.forEach((e, i) => {
     if (q && !(e.label || e.name).includes(q)) return;
+    if (epUnreadOnly && read.has(i) && i !== curEp) return;
     const d = document.createElement('div'); d.className = 'it ept' + (e.type === 'video' ? ' v' : '') + (i === curEp ? ' cur' : '') + (read.has(i) ? ' read' : ''); d.dataset.i = i;
     d.innerHTML = `<div class="th"><img alt="">${e.type === 'video' ? '<span class="pl">▶</span>' : ''}</div><div class="cap"><span class="no">${i + 1}</span><span class="nm"></span></div>`;
     d.querySelector('.nm').textContent = e.label || e.name;

@@ -1,5 +1,5 @@
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat','sendMode'];   // ngModel·ngSteps 등은 19-naigen.js 에서 따로 저장한다
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat','sendMode','aiN','ngEach','stUseCraft','stLen','wtTone','wtAI','wtPagesN'];   // ngModel·ngSteps 등은 19-naigen.js 에서 따로 저장한다
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
@@ -19,6 +19,7 @@ function applyView2(){
   for (const [id, f] of Object.entries(OUTS)){ const o = $('#'+id+'Out'); if (o) o.textContent = f($('#'+id).value); }
 }
 let epRev = false;   // 회차 목록 순서 뒤집기
+let epUnreadOnly = false;   // 안 읽은 화만 보기
 // 슬라이더의 채워진 부분(--pct)을 값에 맞춘다
 function rangeFill(el){ const min = +el.min || 0, max = +el.max || 100; const v = Math.min(max, Math.max(min, +el.value || 0)); el.style.setProperty('--pct', (max > min ? (v - min) / (max - min) * 100 : 0) + '%'); }
 document.addEventListener('input', e => { if (e.target.matches?.('input[type=range]')) rangeFill(e.target); }, true);
@@ -63,7 +64,13 @@ $('#olTest').onclick = async () => {
   }catch{ store.set('olOk', false); aiHint(); toast('Ollama에 연결하지 못했어요. Ollama_켜기.bat을 실행했는지 확인해 주세요'); }
 };
 $('#spentReset').onclick = () => { store.set('spent', {in:0,out:0,cache:0,n:0}); showSpent(); };
-$('#storeClear').onclick = async () => { if (!confirm('이 기기에 저장한 작품 파일을 모두 지울까요? (메모·진도·설정은 남아요)')) return; await idb.clear(); showStore(); toast('지웠어요'); };
+$('#storeClear').onclick = async () => { if (!confirm('이 기기에 저장한 작품 파일을 모두 지울까요? (메모·진도·설정은 남아요)')) return;
+  await idb.clear();
+  // 드라이브·OneDrive·PC 서재에서 받아 둔 회차(dcache)도 지운다 (작품 목록·번역 캐시는 남겨 재받기만 하면 된다)
+  try{ const keys = await idb.tx('readonly', s => s.getAllKeys(), 'dcache');
+    const del = keys.filter(k => typeof k === 'string' && (/^(od:|lan:|zz:|ze:|zd:|ez:|zc:|vc:|vd:)/.test(k) || (!k.includes(':') && !k.startsWith('__'))));
+    await idb.tx('readwrite', s => { for (const k of del) s.delete(k); }, 'dcache'); }catch{}
+  window.nvKeptClear?.(); showStore(); toast('지웠어요'); };
 $('#bkOut').onclick = () => {
   const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret|gd\.tok|tr\.key\..*)$/.test(k)) data[k] = localStorage.getItem(k); }
   download('Novelist_백업.json', JSON.stringify(data), 'application/json');
@@ -75,6 +82,7 @@ function openTool(tab){
   const a = $('#app');
   if (isMobile()) a.classList.add('show-tool'); else a.classList.remove('hide-tool');
   $$('.tabs button[data-tab]').forEach(x=>x.classList.toggle('on', x.dataset.tab===tab)); $$('.pane').forEach(p=>p.classList.toggle('on', p.id==='pane-'+tab));
+  $('.tabs button.on')?.scrollIntoView({inline: 'center', block: 'nearest'});   // 폰에서 고른 탭이 밖으로 밀려 있지 않게
   if (tab === 'notes'){ renderNotes(); renderScraps(); renderBm(); renderIdeas(); } if (tab === 'set') showStore();
 }
 $('#btnFolder').onclick = () => $('#pickFolder').click();
@@ -153,6 +161,7 @@ function renderEpList(){
   const frag = document.createDocumentFragment();
   cur.eps.forEach((e, i) => {
     if (q && !e.name.includes(q)) return;
+    if (epUnreadOnly && read.has(i) && i !== curEp) return;
     const d = document.createElement('div'); d.className = 'it' + (i === curEp ? ' cur' : '') + (read.has(i) ? ' read' : '');
     d.innerHTML = `<span class="no">${i+1}</span><span class="nm"></span>`; d.querySelector('.nm').textContent = e.label || e.name;
     d.onclick = () => { closeSheets(); openEp(i); };
