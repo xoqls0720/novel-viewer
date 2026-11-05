@@ -36,6 +36,15 @@ const WT_STYLE = {
     tail: 'expressive eyes, detailed hands, masterpiece, best quality, very aesthetic',
     neg: 'cel shading, hard shadows, glossy skin, 3d, realistic, high contrast, heavy shadows, neon, child, young, aged down, shota, 1girl, female',
   },
+  spot: {
+    name: '기본 E · 스팟컬러 에디토리얼',
+    // 2026-11-06 설계(house_style_C_spot_editorial_1106.md): 트위터 V5 공유 프롬프트의 잡지·콜라주·먹 포스터 문법 + 우리 찢긴 종이·얼굴 초점.
+    // 숯회색·흰색 단색 + 스팟컬러 하나({MONO} = 아래 '단색' 칸). 색은 넥타이·목도리 같은 작은 천 하나에만.
+    head: '4::spot color, monochrome, grayscale ::, 1.4::charcoal grey and white, single {MONO} accent color ::, 1.4::bold ink illustration, thick brushstrokes, high contrast ::, 1.3::torn paper edges ::, 1.3::editorial poster layout, layered composition, clean negative space ::, high complexity, meta:golden era, depthness',
+    focus: '1.8::his handsome face is the focal point, drawn with obsessive detail ::',
+    tail: 'beautiful detailed eyes, calm composed expression, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic',
+    neg: 'full color, colorful, rainbow, multiple accent colors, smile, grin, teeth, lipstick, makeup, 1girl, female, child, bishounen, same face, watermark, signature',
+  },
 };
 const WT_FRAME = {mirror: 'a mirror', photo: 'a wet photograph', tank: 'aquarium glass', shutter: 'a gap in the shutters', fence: 'barbed wire', booth: 'recording booth glass', none: ''};
 const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];
@@ -139,7 +148,7 @@ function wtStyleParts(nsfw){
     const head = [c]; if (nsfw){ head.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid); const a = wtActTags(); if (a) head.push(a); }
     return {head: head.filter(Boolean).join(', '), tail: '', neg: '', key: k};
   }
-  const st = WT_STYLE[k]; const head = [st.head];
+  const st = WT_STYLE[k]; const head = [st.head.replace('{MONO}', wtMono())];
   if (k === 'dark'){ const fr = wtFrame(); if (fr) head.push(st.frame.replace('{FRAME}', fr)); }
   let tail = st.tail.replace('{MONO}', wtMono());
   if (nsfw){ tail = tail.replace(NSFW_DROP_POS, '').replace(/,\s*,/g, ','); head.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid); const a = wtActTags(); if (a) head.push(a); }
@@ -151,7 +160,7 @@ function wtStyleParts(nsfw){
 const WT_FACE_TAIL = /\b(extremely handsome man|beautiful detailed eyes|half-lidded eyes|looking at viewer|closed mouth|detailed hair strands)\b,?\s*/gi;
 function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: false, people: true}}){
   const P = wtStyleParts(nsfw); const parts = [P.head];
-  if (P.key === 'neon'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
+  if (P.key === 'neon' || P.key === 'spot'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
   parts.push(count, tags);
   if (pose && who.people) parts.push(`1.45::${pose} ::`);
   let tail = P.tail || '';
@@ -163,7 +172,7 @@ function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: fa
 function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 태그
   const k = wtStyleKey();
   if (k === 'custom') return (($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim() || $('#naiStyle').value.trim()).replace(/,\s*$/, '');
-  return WT_STYLE[k].head;
+  return WT_STYLE[k].head.replace('{MONO}', wtMono());
 }
 function wtStyleNeg(neg, nsfwArg, who){
   const k = wtStyleKey(); const st = WT_STYLE[k]; const nsfw = nsfwArg ?? (wtRating() === 'nsfw');
@@ -358,7 +367,7 @@ $('#wtImgGen').onclick = async () => {
 };
 
 /* ---------- 그림체·인물 사전 칸 ---------- */
-function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark'; $('#wtFrameRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
+function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark' && k !== 'spot'; $('#wtFrameRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
 $('#wtNaiText').checked = store.get('set.wtNaiText', false);
 $('#wtNaiText').onchange = () => store.set('set.wtNaiText', $('#wtNaiText').checked);
 $('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
@@ -552,7 +561,7 @@ wtModelSync();
 window.naiStyleFor = nsfw => { const P = wtStyleParts(nsfw); return {head: P.head || $('#naiStyle').value.trim().replace(/,\s*$/, ''), tail: P.tail, neg: n => wtStyleNeg(n, nsfw)}; };
 function naiStyleLabel(){
   const k = wtStyleKey(); const el = $('#naiStyleNow'); if (!el) return;
-  el.textContent = k === 'custom' ? '지금 그림체: 아래 하우스 스타일 칸을 그대로 써요' : `지금 그림체: ${WT_STYLE[k].name}` + (k === 'dark' ? ` · ${wtMono()}` : '');
+  el.textContent = k === 'custom' ? '지금 그림체: 아래 하우스 스타일 칸을 그대로 써요' : `지금 그림체: ${WT_STYLE[k].name}` + ((k === 'dark' || k === 'spot') ? ` · ${wtMono()}` : '');
 }
 $('#naiStyleSel').value = store.get('set.wtStyle', 'neon');
 $('#naiStyleSel').onchange = () => { $('#wtStyle').value = $('#naiStyleSel').value; store.set('set.wtStyle', $('#naiStyleSel').value); wtStyleSync(); naiStyleLabel(); };

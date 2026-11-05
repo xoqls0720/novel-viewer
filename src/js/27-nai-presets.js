@@ -10,6 +10,35 @@ const NP_LOOK = [
 ];
 const NP_NEG = 'child, young, aged down, shota, loli, teenager, school uniform, student, 1girl, female, breasts, bad anatomy, bad hands, extra fingers, missing fingers, deformed, blurry, lowres, worst quality, jpeg artifacts, watermark, signature, username';
 const NAI_PRESETS = [
+  // ---------- 그림체 E 구도 세트 (2026-11-06, 만화 학습 + 트위터 V5 문법) ----------
+  {id: 'e_c1', group: '그림체 E · 스팟컬러 구도', name: 'C1 소개 · 거대 인물 + 6컷 그리드', rating: 'safe', size: '832x1216',
+    base: '1.5::collage, graphic design, poster layout, large figure on left side, comic panel grid on right side ::, off-white background, 1.4::huge character on left side of image, giant figure cropped at thighs, extreme low angle, from below, foreground perspective ::, 1.4::2 rows by 3 columns panel grid on the right, each panel a different close-up: one eye looking up, back of head and nape, shoes stepping forward, chin from below, profile over shoulder, wrist and cuff ::, thin black panel borders',
+    chars: [{who: 0, pos: 'B3', act: 'head tilted down, looking down at viewer, one hand in pocket, wind blowing hair'}],
+    note: '소개 이미지. 오른쪽 6컷이 인물의 버릇·표식을 보여 주게 외형 표식을 꼭 넣어요.'},
+  {id: 'e_c2', group: '그림체 E · 스팟컬러 구도', name: 'C2 뒷모습 → 정면 (1/3 뒷모습)', rating: 'safe', size: '832x1216',
+    base: '1.5::from behind, back view, looking away ::, cowboy shot, empty street, 1.3::snow drifting in the foreground ::, wide negative space',
+    chars: [{who: 0, pos: 'C3', act: 'standing still, hands in coat pockets'}],
+    note: '3장 연작의 첫 장. 2장은 over the shoulder, 3장에서만 close-up, direct eye contact 로 얼굴을 보여 줘요(미생·슬램덩크).'},
+  {id: 'e_c3', group: '그림체 E · 스팟컬러 구도', name: 'C3 첫 만남 · 넓은 빈 공간에 두 사람', rating: 'safe', size: '1216x832',
+    base: '1.5::wide shot, from far, empty room, two small figures, vast negative space ::, quiet atmosphere, low contrast, cinematic composition',
+    chars: [{who: 0, pos: 'B3', act: 'standing, facing the other person'}, {who: 1, pos: 'D3', act: 'standing, facing the other person'}],
+    note: '첫 만남 이미지(슬램덩크). 인물이 작게 나와야 성공이에요.'},
+  {id: 'e_c4', group: '그림체 E · 스팟컬러 구도', name: 'C4 이별 · 닿지 못하는 두 손', rating: 'safe', size: '832x1216',
+    base: 'no humans, 1.6::two hands reaching toward each other, not touching, close-up of hands only ::, one hand in a knit mitten, one hand in a leather glove, 1.4::ruled notebook lines background, wide white margin ::, minimalist, quiet',
+    chars: [],
+    note: '새드 엔딩 한 장(나나 21권). 문장 한 줄과 공백으로 닫을 때 써요.'},
+  {id: 'e_c5', group: '그림체 E · 스팟컬러 구도', name: 'C5 상실·재회 · 눈과 보케', rating: 'safe', size: '832x1216',
+    base: 'upper body, night street, 1.3::snow drifting in the foreground ::, 1.3::bokeh lights ::, cold air, faint breath steam',
+    chars: [{who: 0, pos: 'C3', act: 'standing in the snow, looking at viewer'}],
+    note: '상실·재회 이벤트 공통 배경(나나).'},
+  {id: 'e_c6', group: '그림체 E · 스팟컬러 구도', name: 'C6 표지 · 잡지 커버 (영문 제목)', rating: 'safe', size: '832x1216',
+    base: '1.5::high-end editorial magazine cover ::, 1.4::luxury fashion magazine layout ::, 1.5::large white serif typography "THE 37TH CUT" ::, 1.4::exact English title "THE 37TH CUT" ::, small uppercase text "VOL. 01", small uppercase text "AFTER THE SNOW", thin white rectangular border frame, tiny barcode near the bottom corner, upper body',
+    chars: [{who: 0, pos: 'C3', act: 'three-quarter view, looking at viewer'}],
+    note: '표지 전용. 제목 영문만 바꿔 써요. 이 틀은 no text 를 지우고 그려요.'},
+  {id: 'e_c7', group: '그림체 E · 스팟컬러 구도', name: 'C7 클라이맥스 · 2컷 웹툰', rating: 'safe', size: '832x1216',
+    base: '1.7::vertical two-panel webtoon page ::, 1.5::two panels stacked vertically, clean black panel borders ::, same framing in both panels, [top panel]: upper body, calm expression, [bottom panel]: same pose, 1.3::eyes slightly wet, holding back tears ::',
+    chars: [{who: 0, pos: 'C3', act: 'upper body, close-up'}],
+    note: '위 컷 대사, 아래 컷 표정만 바뀌는 한 장. 시그니처 대사 직후에 써요.'},
   // ---------- 사용자가 준 프롬프트를 남자 성인 인물용으로 다듬은 것 ----------
   {id: 'twopanel', group: '모아 둔 프롬프트', name: '2컷 대비 · 소파에서 책 읽기', rating: 'nsfw', size: '832x1216',
     base: '2panels, two equal-sized rectangular panels stacked vertically, clear black rectangular border, 1boy, solo, full body, straight-on, living room, throw pillows on the sofa, a casually draped blanket over the backrest, framed pictures on the wall, warm afternoon light, [top panel]: sitting curled up on the sofa, feet on the sofa, 1.3::knees drawn up to chest, knees together, feet together ::, holding an open book in front of chest, reading a book, looking down at the book, calm expression, [bottom panel]: sitting on the sofa, 1.2::knees bent, knees apart, relaxed open posture, feet planted wide apart ::, holding an open book in front of mouth, mouth hidden behind the book, looking at viewer, 1.4::playful smile, mischievous grin, narrowed eyes ::, chin slightly tilted, motion lines near knees',
@@ -114,6 +143,7 @@ window.nvNaiPresets = {list: NAI_PRESETS, build: id => npBuild(NAI_PRESETS.find(
    만화 속 인물을 그대로 옮기지 않고, 체형·머리·분위기 유형만 가져와 이름·외형을 새로 지었다. 모두 성인.
    고르면 인물 사전 맨 위 두 줄로 들어간다(장면 틀은 1·2번째 줄을 쓴다). 이미 있는 줄은 지우지 않는다. */
 const NP_CAST = {
+  '한서진': '1boy, adult, mature male, 29 years old, tall, lean build, black wavy hair tied low, dark amber eyes, small burn scar on left ring finger, oatmeal knit sweater, film-amber scarf, vintage film camera strap',
   '차민혁': '1boy, adult, mature male, 34 years old, tall, broad shoulders, fit muscular build, neat black side-parted hair, sharp narrow dark eyes, thin rimless glasses, clean-shaven, strong jaw, charcoal suit, white dress shirt, dark tie, wristwatch',
   '윤시우': '1boy, adult, mature male, 27 years old, athletic build, defined chest, soft messy brown hair, round warm brown eyes, thick eyebrows, easily flushed cheeks, light blue dress shirt, sleeves rolled up, lanyard id badge',
   '강도현': '1boy, adult, mature male, 36 years old, very muscular, massive chest, thick neck, broad shoulders, tanned skin, short black hair, faded sides, thick straight eyebrows, sharp dark eyes, light stubble, square jaw, small scar on chin, navy blue field uniform jacket, shoulder patch, cargo pants, combat boots',
@@ -124,6 +154,7 @@ const NP_CAST = {
   '한태오': '1boy, adult, mature male, 29 years old, very muscular, bulky chest, thick thighs, tanned skin, short black crew cut, thick dark eyebrows, bright dark eyes, boyish grin, sleeveless black tank top, gym shorts',
 };
 const NP_PAIRS = [
+  {id: 'cut37', name: '사진사 한서진 · 서른일곱 번째 컷', cast: ['한서진'], for: '그림체 E · 스팟컬러 구도(C1~C7) · 단색은 film amber'},
   {id: 'office', name: '사무실 선배·후배', cast: ['차민혁', '윤시우'], for: '야근 사무실 · 출장지 호텔'},
   {id: 'agency', name: '현장 요원 · 노련한 국장', cast: ['강도현', '백무진'], for: '사무실 · 표지 콜라주'},
   {id: 'knights', name: '귀족 기사 · 금발 기사', cast: ['서이준', '레온'], for: '여관 촛불 · 표지 콜라주'},

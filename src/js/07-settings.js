@@ -1,5 +1,5 @@
 /* ================= 설정·이벤트 ================= */
-const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat','sendMode','aiN','ngEach','stUseCraft','stLen','wtTone','wtAI','wtPagesN'];   // ngModel·ngSteps 등은 19-naigen.js 에서 따로 저장한다
+const SETTINGS = ['indent','dimLv','model','effort','fs','lh','pgap','col','rfont','align','autoNext','ttsRate','wcol','spread','rtl','fit','coverSingle','splitWide','crop','keepLocal','specMin','specMax','specPara','specDlgMin','specDlgMax','voice','wKind','wRating','wStyle','wLen','wRef','wNotes','naiRating','naiUse','provider','gemModel','olUrl','olModel','grModel','orModel','aiProv','wProv','naiProv','stProv','gnPage','pcSize','pcFormat','sendMode','aiN','ngEach','stUseCraft','stLen','wtTone','wtAI','wtPagesN'];   // ngModel·ngSteps 등은 19-naigen.js 에서 따로 저장한다
 $('#keepLocal').checked = isTouch() || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 for (const id of SETTINGS){
   const el = $('#'+id); const v = store.get('set.'+id, null);
@@ -41,7 +41,7 @@ function aiHint(){
     el.textContent = ready ? `${P.name} · ${P.model()}${extra}` : `설정 탭에 ${P.name} API 키를 넣으면 쓸 수 있어요.`;
   });
 }
-function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'AIza...', grKey:'gsk_...', naiKey:'노벨AI 토큰'})[id]; }
+function keySaved(id){ const el = $('#'+id); if (el) el.placeholder = store.get(id,'') ? '저장됨 (바꾸려면 새로 입력)' : ({apiKey:'sk-ant-...', gemKey:'AIza...', grKey:'gsk_...', naiKey:'노벨AI 토큰', orKey:'sk-or-...'})[id]; }
 function saveKey(id){ const v = $('#'+id).value.trim(); if (!v) return; store.set(id, v); $('#'+id).value=''; keySaved(id); aiHint(); toast('API 키를 저장했어요'); }
 function delKey(id){ store.set(id, ''); keySaved(id); aiHint(); toast('API 키를 지웠어요'); }
 $('#keySave').onclick = () => saveKey('apiKey');
@@ -72,11 +72,11 @@ $('#storeClear').onclick = async () => { if (!confirm('이 기기에 저장한 �
     await idb.tx('readwrite', s => { for (const k of del) s.delete(k); }, 'dcache'); }catch{}
   window.nvKeptClear?.(); showStore(); toast('지웠어요'); };
 $('#bkOut').onclick = () => {
-  const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret|gd\.tok|tr\.key\..*)$/.test(k)) data[k] = localStorage.getItem(k); }
+  const data = {}; for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|orKey|gd\.secret|gd\.tok|tr\.key\..*)$/.test(k)) data[k] = localStorage.getItem(k); }
   download('Novelist_백업.json', JSON.stringify(data), 'application/json');
 };
 $('#bkIn').onclick = () => $('#bkFile').click();
-$('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|gd\.secret|gd\.tok|tr\.key\..*)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
+$('#bkFile').onchange = async e => { try{ const d = JSON.parse(await e.target.files[0].text()); for (const [k,v] of Object.entries(d)) if (k.startsWith('nv.') && !/^nv\.(apiKey|gemKey|grKey|naiKey|orKey|gd\.secret|gd\.tok|tr\.key\..*)$/.test(k)) localStorage.setItem(k, v); toast('가져왔어요. 새로 고침하면 반영돼요'); }catch{ toast('백업 파일을 읽지 못했어요'); } e.target.value = ''; };
 
 function openTool(tab){
   const a = $('#app');

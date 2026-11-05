@@ -1,4 +1,4 @@
-/* ================= AI 공통 (Claude · Gemini · Ollama · Groq) ================= */
+/* ================= AI 공통 (Claude · Gemini · Ollama · Groq · OpenRouter) ================= */
 let AnthropicSDK = null, sdkLoading = null;
 function loadSDK(){ return sdkLoading ??= import(SDK_URL).then(m => (AnthropicSDK = m.default)).catch(e => { sdkLoading = null; throw e; }); }
 const PROV = {
@@ -6,6 +6,7 @@ const PROV = {
   gemini: {name:'Gemini', key:'gemKey', model: () => gemModelName()},
   ollama: {name:'Ollama', key:null, model: () => $('#olModel').value.trim() || 'gemma3:12b'},
   groq:   {name:'Groq', key:'grKey', model: () => $('#grModel').value.trim() || 'llama-3.3-70b-versatile'},
+  openrouter: {name:'OpenRouter', key:'orKey', model: () => ($('#orModel')?.value || '').trim() || 'meta-llama/llama-3.3-70b-instruct:free'},
 };
 // 모델 이름 칸에 공백·'models/'·한글 등이 섞여도 구글이 받는 모양으로 고친다(안 되면 기본 모델)
 const GEM_DEFAULT = 'gemini-3.8-flash';
@@ -14,7 +15,9 @@ function gemModelName(){
   if (!/^[a-z0-9][a-z0-9._-]*$/.test(m)){ if (m && !gemModelName.warned){ gemModelName.warned = true; toast(`Gemini 모델 이름이 올바르지 않아 ${GEM_DEFAULT}로 보냈어요. 설정 탭에서 확인해 주세요`); } return GEM_DEFAULT; }
   return m;
 }
-const KEY_IDS = ['apiKey','gemKey','grKey','naiKey'];
+const KEY_IDS = ['apiKey','gemKey','grKey','naiKey','orKey'];
+// 번역 칸에 넣어 둔 OpenRouter 키가 있으면 AI 칸에서도 그대로 쓴다
+if (!store.get('orKey', '') && store.get('tr.key.openrouter', '')) store.set('orKey', store.get('tr.key.openrouter', ''));
 function provOf(sel){ let v = sel ? $(sel)?.value : 'default'; if (!v || v === 'default') v = $('#provider').value; return PROV[v] ? v : 'claude'; }
 function olBase(){ return ($('#olUrl').value.trim() || 'http://localhost:11434').replace(/\/+$/, ''); }
 async function client(sel){
@@ -124,12 +127,13 @@ async function streamGemini({messages, system, signal, onText, format}){
   if (finish === 'MAX_TOKENS') return {ok: !!text, text, note:'\n\n[길이 제한에 걸려 잘렸어요]'};
   return {ok:true, text};
 }
-// Ollama와 Groq는 OpenAI 방식 주소를 쓴다
+// Ollama·Groq·OpenRouter는 OpenAI 방식 주소를 쓴다
 async function streamOpenAICompat(prov, {messages, system, signal, onText, format}){
   const model = PROV[prov].model();
-  const url = prov === 'ollama' ? olBase() + '/v1/chat/completions' : 'https://api.groq.com/openai/v1/chat/completions';
+  const url = prov === 'ollama' ? olBase() + '/v1/chat/completions' : prov === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.groq.com/openai/v1/chat/completions';
   const headers = {'Content-Type':'application/json'};
   if (prov === 'groq') headers.Authorization = 'Bearer ' + store.get('grKey','');
+  if (prov === 'openrouter'){ headers.Authorization = 'Bearer ' + store.get('orKey',''); headers['X-Title'] = 'Novelist'; }
   const msgs = [{role:'system', content: system + schemaHint(format)}];
   for (const m of messages){
     const ps = partsOf(m.content);

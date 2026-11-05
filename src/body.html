@@ -250,7 +250,7 @@
     </div>
 
     <div class="pane" id="pane-ai">
-      <div class="row"><label>AI</label><select id="aiProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option></select><span class="hint keyHint grow"></span></div>
+      <div class="row"><label>AI</label><select id="aiProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option></select><span class="hint keyHint grow"></span></div>
       <h3>지금 화면으로</h3>
       <div class="row">
         <button data-ai="cut">절단·훅 분석</button>
@@ -274,7 +274,7 @@
     </div>
 
     <div class="pane" id="pane-write">
-      <div class="row"><label>AI</label><select id="wProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option></select><span class="hint keyHint grow"></span></div>
+      <div class="row"><label>AI</label><select id="wProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option></select><span class="hint keyHint grow"></span></div>
       <h3>무엇을</h3>
       <select id="wKind" style="width:100%">
         <option value="episode">웹소설 한 화</option>
@@ -302,7 +302,7 @@
     </div>
 
     <div class="pane" id="pane-nai">
-      <div class="row"><label>AI</label><select id="naiProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option></select><span class="hint keyHint grow"></span></div>
+      <div class="row"><label>AI</label><select id="naiProv" class="provSel"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option></select><span class="hint keyHint grow"></span></div>
       <div class="hint">한국어로 장면을 말하면 NovelAI(V4.5·V5) 프롬프트로 바꿔요. 인물 사전과 하우스 스타일은 저장돼서 매번 같은 그림체·외형으로 나와요.</div>
       <h3>장면</h3>
       <textarea id="naiIn" style="min-height:100px" placeholder="예) 무너진 성당, 자정. 라파엘이 한쪽 날개만 편 채 무릎 꿇은 {{user}}에게 장검을 겨눈다. 달빛, 금빛 균열 효과, 세로 표지 구도"></textarea>
@@ -336,7 +336,7 @@
       <div class="hint">받아 둔 성인 만화의 인물 유형(체형·머리·분위기)을 본떠 새로 만든 인물들이에요. 고르면 아래 사전 맨 위 두 줄로 들어가고, 위의 장면 틀이 그 두 사람으로 다시 나와요.</div>
       <textarea id="naiChars" style="min-height:90px" placeholder="라파엘: 1boy, adult, tall, long silver hair, golden eyes, one white wing, scar on left cheek, black priest coat&#10;세라온: 1boy, adult, short black hair, red eyes, horns, black armor"></textarea>
       <h3>그림체</h3>
-      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
+      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
       <div class="hint" id="naiStyleNow"></div>
       <h3>하우스 스타일 (직접 쓰기일 때 쓰는 칸)</h3>
       <textarea id="naiStyle" style="min-height:60px" placeholder="예) masterpiece, best quality, very aesthetic, (내가 쓰는 화가·화풍 태그)"></textarea>
@@ -348,7 +348,7 @@
 
     <div class="pane" id="pane-set">
       <h3>AI 연결</h3>
-      <div class="row" style="margin:2px 0 10px"><label>기본으로 쓸 AI</label><select id="provider" class="grow" style="max-width:220px"><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama (내 컴퓨터·무료)</option><option value="groq">Groq (무료 등급)</option></select></div>
+      <div class="row" style="margin:2px 0 10px"><label>기본으로 쓸 AI</label><select id="provider" class="grow" style="max-width:220px"><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="ollama">Ollama (내 컴퓨터·무료)</option><option value="groq">Groq (무료 등급)</option><option value="openrouter">OpenRouter (무료 모델 고르기)</option></select></div>
       <details class="prov" data-prov="claude">
         <summary><b>Claude</b><span class="pv-sub">글이 가장 좋아요 · 쓴 만큼 유료</span><span class="kst" id="st-claude"></span><svg class="i chev"><use href="#i-down"/></svg></summary>
         <div class="pv-body">
@@ -379,6 +379,15 @@
           <datalist id="olPreset"><option value="huihui_ai/qwen3-abliterated:8b"><option value="huihui_ai/qwen3-abliterated:4b-instruct-2507-q8_0"><option value="huihui_ai/qwen3-abliterated:14b"><option value="huihui_ai/Qwen3.8-abliterated"></datalist>
           <datalist id="olList"></datalist>
           <div class="hint">ollama.com에서 설치하고 <b>Ollama_켜기.bat</b>을 실행하면 붙어요. 컴퓨터에서만 되고, 그림까지 보려면 gemma3 같은 그림 보는 모델이 필요해요.<br><b>성인 글</b>을 그대로 쓰려면 강의 폴더의 <b>야한글_모델_받기.bat</b>을 실행해서 제한 없는 모델을 받으세요. Claude·Gemini는 성인 장면의 수위를 스스로 낮춰요.</div>
+        </div>
+      </details>
+      <details class="prov" data-prov="openrouter">
+        <summary><b>OpenRouter</b><span class="pv-sub">여러 회사 모델 · 무료 모델 있음</span><span class="kst" id="st-openrouter"></span><svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="pv-body">
+          <div class="krow"><input type="password" id="orKey" placeholder="sk-or-..." autocomplete="off"><button data-ksave="orKey" class="primary">저장</button><button data-kdel="orKey" title="키 지우기"><svg class="i" style="width:16px;height:16px"><use href="#i-x"/></svg></button></div>
+          <div class="row" style="margin-top:8px"><label>모델</label><input type="text" id="orModel" list="orList" value="" placeholder="meta-llama/llama-3.3-70b-instruct:free" class="grow"></div>
+          <datalist id="orList"><option value="meta-llama/llama-3.3-70b-instruct:free"><option value="deepseek/deepseek-chat-v3-0324:free"><option value="qwen/qwen3-235b-a22b:free"><option value="google/gemma-3-27b-it:free"></datalist>
+          <div class="hint">키 받기: openrouter.ai → Keys. 모델 이름 끝이 <b>:free</b>인 것은 무료예요(하루 한도 있음). openrouter.ai/models 에서 원하는 모델 이름을 복사해 넣으면 그 모델로 써요. 번역 칸에 넣은 OpenRouter 키가 있으면 자동으로 같이 써요.</div>
         </div>
       </details>
       <details class="prov" data-prov="groq">
@@ -494,7 +503,7 @@
   <div class="sk-bot">
     <textarea id="skNote" placeholder="이 장면에서 인상 깊은 점, 연출 메모 (예: 대사 없이 손만 클로즈업 → 감정 전환)"></textarea>
     <div class="row tight" style="flex-direction:column;align-items:stretch">
-      <button class="primary" id="skSave">저장</button><div class="row tight"><button id="skAsk" class="grow">저장하고 AI에게 연출 묻기</button><select id="skAskProv" title="어느 AI에게 물을지 (기본 AI는 설정에서 고른 것)"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option></select></div><button id="skCancel">취소</button>
+      <button class="primary" id="skSave">저장</button><div class="row tight"><button id="skAsk" class="grow">저장하고 AI에게 연출 묻기</button><select id="skAskProv" title="어느 AI에게 물을지 (기본 AI는 설정에서 고른 것)"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="ollama">Ollama</option></select></div><button id="skCancel">취소</button>
     </div>
   </div>
 </div>
