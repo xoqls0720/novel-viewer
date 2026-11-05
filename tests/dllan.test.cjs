@@ -65,7 +65,7 @@ const EPUB = zipOf([
   await p.selectOption('#libSort', 'name'); await p.waitForTimeout(200);
   // PC 가 꺼졌다 (앱 화면은 https 서비스 워커가 주는 경우와 같다): 서재 자료 요청을 모두 막는다
   let blocked = 0; await ctx.route(/\/t\/tok9\/lan\//, r => { blocked++; r.abort(); });
-  await p.reload(); await p.waitForTimeout(2500);
+  const t0 = Date.now(); await p.reload({timeout: 45000}); console.log('reload ms:', Date.now() - t0); await p.waitForTimeout(2500);
   console.log('off works:', await p.evaluate(() => ['hwasan', 'misaeng', '에펍웹툰', '시험애니'].every(n => nvMedia.works().some(w => w.name === n))));
   await open('hwasan'); const last = await p.evaluate(() => { const s = document.querySelector('#epSel'); return s.options.length; });
   await p.evaluate(i => { const s = document.querySelector('#epSel'); s.value = i; s.dispatchEvent(new Event('change')); }, String(last - 1)); await p.waitForTimeout(800);

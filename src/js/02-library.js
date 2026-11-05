@@ -254,7 +254,7 @@ function renderLib(){
       <div class="hm">${Math.min(hp.ep + 1, htotal)} / ${htotal}화 · ${hpct}% · ${when}</div>
       <div class="pb"><i style="width:${hpct}%"></i></div></div>
       <button class="primary hgo">이어 읽기</button>`;
-    hero.querySelector('.ht').textContent = hw.name;
+    hero.querySelector('.ht').textContent = hw.name; if (hcu) hero.style.setProperty('--cv', `url("${hcu}")`);
     const hph = hero.querySelector('.ph b'); if (hph){ hph.textContent = hw.name;
       const HS = [356, 22, 38, 95, 152, 185, 210, 250, 322, 8]; let n = 0; for (const ch of hw.name) n = (n * 31 + ch.codePointAt(0)) >>> 0;
       hero.querySelector('.ph').style.setProperty('--h', String(HS[n % HS.length])); }

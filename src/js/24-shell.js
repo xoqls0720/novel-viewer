@@ -45,7 +45,7 @@ $('#stToLib').onclick = () => { stClose(); if (!cur) GO.lib(); };
 $('#lpBody').append($('.side-head'), $('#lib'));
 $('#lpActs').append($('#btnFolder'), $('#btnFiles'), $('#btnLink'));
 $('#btnFolder').innerHTML = '<svg class="i"><use href="#i-folder"/></svg>폴더 열기'; $('#btnFiles').innerHTML = '<svg class="i"><use href="#i-file"/></svg>파일';
-$('#btnLink').innerHTML = '<svg class="i"><use href="#i-cloud"/></svg>폴더 연결 · OneDrive';
+$('#btnLink').innerHTML = '<svg class="i"><use href="#i-cloud"/></svg>폴더 연결';
 $('#btnLink').className = '';
 
 /* ---------- 홈 ---------- */
