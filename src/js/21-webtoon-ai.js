@@ -45,6 +45,26 @@ const WT_STYLE = {
     tail: 'beautiful detailed eyes, calm composed expression, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic',
     neg: 'full color, colorful, rainbow, multiple accent colors, smile, grin, teeth, lipstick, makeup, 1girl, female, child, bishounen, same face, watermark, signature',
   },
+  // 트위터 #프롬공유 NV5 글에서 많이 쓰는 짜임(품질 태그 → 구도 → 가중치 준 매체 → 색)을 우리 말로 새로 쓴 것. 남의 프롬을 그대로 옮기지 않았다.
+  // 2026-11-06 픽시AI 기본 모델로만 시험했다. 노벨AI V5 결과는 아직 못 봤다.
+  editorial: {
+    name: '화보 F · 흑백 에디토리얼',
+    head: 'cinematic composition, 1.4::high-end fashion editorial ::, elegant monochrome illustration, screentone, sharp silhouette, negative space, 1.1::mature male, adult man ::',
+    tail: 'beautiful detailed eyes, high contrast, masterpiece, best quality, very aesthetic',
+    neg: 'color, saturated, cluttered background, chibi, child, young, aged down, shota, 1girl, female',
+  },
+  watercolor: {
+    name: '로맨스 G · 수채 잉크',
+    head: 'delicate illustration, 1.4::visible watercolor washes, pigment bleeding ::, thin ink outline, 1.2::pastel muted colors ::, soft bloom, paper grain, 1.1::mature male, adult man ::',
+    tail: 'depth of field, gentle lighting, masterpiece, best quality, very aesthetic',
+    neg: 'cel shading, hard shadows, glossy skin, 3d, realistic, neon, child, young, aged down, shota, 1girl, female',
+  },
+  gothic: {
+    name: '판타지 H · 고딕 동판화',
+    head: '1.4::ornate engraved linework ::, crosshatching, gothic illustration, 1.2::deep burgundy and antique gold ::, dramatic chiaroscuro, art nouveau frame, 1.1::mature male, adult man ::',
+    tail: 'storytelling, cinematic composition, masterpiece, best quality, very aesthetic',
+    neg: 'pastel, flat color, cute, chibi, 3d, child, young, aged down, shota, 1girl, female',
+  },
 };
 const WT_FRAME = {mirror: 'a mirror', photo: 'a wet photograph', tank: 'aquarium glass', shutter: 'a gap in the shutters', fence: 'barbed wire', booth: 'recording booth glass', none: ''};
 const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];

@@ -318,6 +318,8 @@
       <div class="nai-desktop" hidden>
         <div class="krow"><input type="password" id="naiKey" placeholder="노벨AI 토큰 (설정 → Account → Get Persistent API Token)" autocomplete="off"><button id="ngSave">저장</button><button id="ngDel">지우기</button></div>
         <div class="hint">노벨AI 사이트 → 톱니(User Settings) → Account → <b>Get Persistent API Token</b> 을 눌러 나온 긴 글자를 넣으세요. 비밀번호가 아니에요.</div>
+        <div class="row tight"><label>그리는 곳</label><select id="ngEngine"><option value="nai">노벨AI</option><option value="pixai">픽시AI</option></select></div>
+        <div class="krow" id="pxRow" hidden><input type="password" id="pxKey" placeholder="픽시AI API 키 (sk-...)" autocomplete="off"><button id="pxSave">저장</button><button id="pxDel">지우기</button></div>
         <textarea id="ngList" style="min-height:76px" placeholder="한 줄에 한 장면씩 (비워 두면 방금 만든 프롬프트로 그려요)&#10;카엘이 눈 내리는 성 앞에서 뒤돌아본다&#10;레비안이 새벽 얼음 호수에서 혼자 검을 휘두른다"></textarea>
         <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-5-full"><option value="nai-diffusion-5-curated"><option value="nai-diffusion-4-5-full"></datalist></div>
         <div class="row tight"><label>크기</label><select id="ngSize"><option value="portrait">세로 832×1216</option><option value="landscape">가로 1216×832</option><option value="square">정사각 1024×1024</option></select>
@@ -336,7 +338,7 @@
       <div class="hint">받아 둔 성인 만화의 인물 유형(체형·머리·분위기)을 본떠 새로 만든 인물들이에요. 고르면 아래 사전 맨 위 두 줄로 들어가고, 위의 장면 틀이 그 두 사람으로 다시 나와요.</div>
       <textarea id="naiChars" style="min-height:90px" placeholder="라파엘: 1boy, adult, tall, long silver hair, golden eyes, one white wing, scar on left cheek, black priest coat&#10;세라온: 1boy, adult, short black hair, red eyes, horns, black armor"></textarea>
       <h3>그림체</h3>
-      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
+      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="editorial">화보 F · 흑백 에디토리얼</option><option value="watercolor">로맨스 G · 수채 잉크</option><option value="gothic">판타지 H · 고딕 동판화</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
       <div class="hint" id="naiStyleNow"></div>
       <h3>하우스 스타일 (직접 쓰기일 때 쓰는 칸)</h3>
       <textarea id="naiStyle" style="min-height:60px" placeholder="예) masterpiece, best quality, very aesthetic, (내가 쓰는 화가·화풍 태그)"></textarea>

@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('nvDesktop', {
   gdSecret: s => ipcRenderer.invoke('gd-secret', s),   // 구글 보안 비밀번호: 이 PC에만 암호화해 둔다
   openFolder: () => ipcRenderer.invoke('open-data-folder'),
   naiGen: (token, body) => ipcRenderer.invoke('nai-gen', token, body),
+  pixaiGen: (key, parameters) => ipcRenderer.invoke('pixai-gen', key, parameters),
   naiCapture: () => ipcRenderer.invoke('nai-capture'),
   libInfo: p => ipcRenderer.invoke('lib-info', p),
   libFind: p => ipcRenderer.invoke('lib-find', p),

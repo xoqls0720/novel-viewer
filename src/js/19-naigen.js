@@ -93,8 +93,28 @@ function msgpackFinals(buf){
 }
 // 한 장 그려서 장면 노트에 저장
 // 한 장 그려서 그림(PNG blob)만 돌려준다. 웹툰 만들기에서도 쓴다.
+// 성인 등급 그림에 미성년을 떠올리는 말이 있으면 어느 엔진으로도 보내지 않는다
+const MINOR_WORDS = /\b(loli|lolicon|shota|shotacon|child|children|kid|kids|toddler|infant|preteen|teen|teenager|underage|minor|elementary school|middle school|high school|schoolboy|schoolgirl|school uniform)\b|미성년|초등학생|중학생|고등학생|청소년|어린이|아동|로리|쇼타/i;
+function imgGuard(text){
+  const adult = $('#naiRating')?.value === 'nsfw' || (typeof wtRating === 'function' && wtRating() === 'nsfw');
+  if (adult && MINOR_WORDS.test(text)) throw new Error('성인 등급 그림에는 미성년을 떠올리는 말을 쓸 수 없어요');
+}
+// 픽시AI 는 노벨AI 의 '1.3::태그 ::' 가중치를 모른다. 가중치만 벗기고 인물 칸은 뒤에 잇는다
+const pxPlain = t => String(t || '').replace(/-?\d+(?:\.\d+)?::\s*([^:]*?)\s*::/g, (m, x) => m.startsWith('-') ? '' : x).replace(/,\s*,/g, ',').trim();
+async function pxGenBlob(body){
+  const key = store.get('tr.key.pixai', ''); if (!key) throw new Error('픽시AI API 키를 먼저 저장해 주세요');
+  const q = body.parameters; const chars = (q.characterPrompts || []).map(c => c.prompt);
+  const r = await window.nvDesktop.pixaiGen(key, {prompts: pxPlain([body.input, ...chars].join(', ')), negativePrompts: pxPlain(q.negative_prompt), width: q.width, height: q.height, batchSize: 1, samplingSteps: Math.min(q.steps || 25, 30), cfgScale: 6});
+  if (!r?.ok) throw new Error(r?.text || '픽시AI 그림을 받지 못했어요');
+  return new Blob([Uint8Array.from(atob(r.image), c => c.charCodeAt(0))], {type: r.type || 'image/jpeg'});
+}
 async function naiGenBlob(p, sizeKey, edit){
   const body = naiBody(p, undefined, sizeKey); if (edit) edit(body);
+  imgGuard([body.input, ...(body.parameters.characterPrompts || []).map(c => c.prompt)].join(', '));
+  if (store.get('set.ngEngine', 'nai') === 'pixai'){
+    if (!DESKTOP) throw new Error('픽시AI 는 윈도우 프로그램에서만 쓸 수 있어요');
+    return pxGenBlob(body);
+  }
   const r = await naiFetch(naiToken(), body);
   if (!r?.ok) throw new Error(r?.status === 401 ? '토큰이 맞지 않아요 (노벨AI 토큰을 다시 넣어 주세요)' : r?.status === 402 ? '남은 생성 수가 없어요' : r?.status === 429 ? '너무 자주 보냈어요. 잠시 뒤 다시 해 주세요' : (r?.text || '실패'));
   if (r.blobs?.length) return r.blobs[0];
@@ -103,7 +123,15 @@ async function naiGenBlob(p, sizeKey, edit){
   const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'});
 }
 async function naiOne(p, desc){ return naiSaveBlob(await naiGenBlob(p), desc); }
-window.nvNai = {one: naiOne};   // 시험용
+window.nvNai = {one: naiOne, pxPlain, imgGuard};   // 시험용
+{ // 그리는 곳 고르기: 픽시AI 키는 이 기기에만 둔다(tr.key.* 는 백업에서 빠진다)
+  const eng = $('#ngEngine'), row = $('#pxRow'), inp = $('#pxKey');
+  const show = () => { row.hidden = eng.value !== 'pixai'; inp.placeholder = store.get('tr.key.pixai', '') ? '저장됨 (바꾸려면 새로 입력)' : '픽시AI API 키 (sk-...)'; };
+  eng.value = store.get('set.ngEngine', 'nai'); show();
+  eng.onchange = () => { store.set('set.ngEngine', eng.value); show(); };
+  $('#pxSave').onclick = () => { const v = inp.value.trim(); if (v){ store.set('tr.key.pixai', v); inp.value = ''; show(); toast('픽시AI 키를 저장했어요'); } };
+  $('#pxDel').onclick = () => { store.set('tr.key.pixai', ''); show(); toast('픽시AI 키를 지웠어요'); };
+}
 async function naiSaveBlob(blob, desc){
   const im = await loadImgEl(blob);
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);

@@ -1924,6 +1924,8 @@ button:active:not(:disabled){transform:scale(.975)}
       <div class="nai-desktop" hidden>
         <div class="krow"><input type="password" id="naiKey" placeholder="노벨AI 토큰 (설정 → Account → Get Persistent API Token)" autocomplete="off"><button id="ngSave">저장</button><button id="ngDel">지우기</button></div>
         <div class="hint">노벨AI 사이트 → 톱니(User Settings) → Account → <b>Get Persistent API Token</b> 을 눌러 나온 긴 글자를 넣으세요. 비밀번호가 아니에요.</div>
+        <div class="row tight"><label>그리는 곳</label><select id="ngEngine"><option value="nai">노벨AI</option><option value="pixai">픽시AI</option></select></div>
+        <div class="krow" id="pxRow" hidden><input type="password" id="pxKey" placeholder="픽시AI API 키 (sk-...)" autocomplete="off"><button id="pxSave">저장</button><button id="pxDel">지우기</button></div>
         <textarea id="ngList" style="min-height:76px" placeholder="한 줄에 한 장면씩 (비워 두면 방금 만든 프롬프트로 그려요)&#10;카엘이 눈 내리는 성 앞에서 뒤돌아본다&#10;레비안이 새벽 얼음 호수에서 혼자 검을 휘두른다"></textarea>
         <div class="row tight"><label>모델</label><input type="text" id="ngModel" list="ngModels" value="nai-diffusion-5-full" class="grow"><datalist id="ngModels"><option value="nai-diffusion-5-full"><option value="nai-diffusion-5-curated"><option value="nai-diffusion-4-5-full"></datalist></div>
         <div class="row tight"><label>크기</label><select id="ngSize"><option value="portrait">세로 832×1216</option><option value="landscape">가로 1216×832</option><option value="square">정사각 1024×1024</option></select>
@@ -1942,7 +1944,7 @@ button:active:not(:disabled){transform:scale(.975)}
       <div class="hint">받아 둔 성인 만화의 인물 유형(체형·머리·분위기)을 본떠 새로 만든 인물들이에요. 고르면 아래 사전 맨 위 두 줄로 들어가고, 위의 장면 틀이 그 두 사람으로 다시 나와요.</div>
       <textarea id="naiChars" style="min-height:90px" placeholder="라파엘: 1boy, adult, tall, long silver hair, golden eyes, one white wing, scar on left cheek, black priest coat&#10;세라온: 1boy, adult, short black hair, red eyes, horns, black armor"></textarea>
       <h3>그림체</h3>
-      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
+      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="editorial">화보 F · 흑백 에디토리얼</option><option value="watercolor">로맨스 G · 수채 잉크</option><option value="gothic">판타지 H · 고딕 동판화</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
       <div class="hint" id="naiStyleNow"></div>
       <h3>하우스 스타일 (직접 쓰기일 때 쓰는 칸)</h3>
       <textarea id="naiStyle" style="min-height:60px" placeholder="예) masterpiece, best quality, very aesthetic, (내가 쓰는 화가·화풍 태그)"></textarea>
@@ -2356,7 +2358,7 @@ button:active:not(:disabled){transform:scale(.975)}
       </details>
       <div class="row tight"><label>그림 모델</label><select id="wtModel" class="grow"><option value="nai-diffusion-5-full">V5 Full · 성인 가능 (권장)</option><option value="nai-diffusion-5-curated">V5 Curated · 일반만</option><option value="nai-diffusion-4-5-full">V4.5 Full</option></select></div>
       <div class="hint" id="wtModelHint"></div>
-      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="custom">직접 쓰기</option></select></div>
+      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="editorial">화보 F · 흑백 에디토리얼</option><option value="watercolor">로맨스 G · 수채 잉크</option><option value="gothic">판타지 H · 고딕 동판화</option><option value="custom">직접 쓰기</option></select></div>
       <div class="row tight"><label class="hint grow" title="켜면 대사 말풍선을 노벨AI 가 그림 안에 직접 그려요(V5의 Text:). 그럴 땐 대본에서 따로 말풍선을 얹지 않아 겹치지 않아요. 영어·일본어는 정확하고 한글은 깨질 수 있어요"><input type="checkbox" id="wtNaiText"> 말풍선을 노벨AI 가 그림 안에 그리기 (켜면 따로 얹는 말풍선 없음 · 한글은 깨질 수 있음)</label></div>
       <div class="row tight" id="wtMonoRow" hidden><label>단색</label><select id="wtMono"><option value="cold blue">cold blue · 7년 전 가이드</option><option value="red">red · 명부</option><option value="gold">gold · 흑요룡</option><option value="white and grey">white and grey · 날개</option><option value="teal">teal · 인어</option><option value="amber">amber · 성녀</option><option value="magenta">magenta · 아이돌</option><option value="dusty orange">dusty orange · 백신</option><option value="moonlight blue">moonlight blue · 늑대</option><option value="warm sepia">warm sepia · 캠퍼스</option><option value="film amber">film amber · 서른일곱 번째 컷</option><option value="safelight red">safelight red · 암실</option><option value="neon pink">neon pink · 스팟</option><option value="jade">jade · 스팟</option><option value="lemon yellow">lemon yellow · 스팟</option></select></div>
       <div class="row tight" id="wtFrameRow" hidden><label>액자</label><select id="wtFrame"><option value="mirror">거울 너머</option><option value="photo">젖은 사진 너머</option><option value="tank">수조 유리 너머</option><option value="shutter">셔터 틈 너머</option><option value="fence">철조망 너머</option><option value="booth">녹음 부스 유리 너머</option><option value="none">쓰지 않기</option></select></div>
@@ -7334,8 +7336,28 @@ function msgpackFinals(buf){
 }
 // 한 장 그려서 장면 노트에 저장
 // 한 장 그려서 그림(PNG blob)만 돌려준다. 웹툰 만들기에서도 쓴다.
+// 성인 등급 그림에 미성년을 떠올리는 말이 있으면 어느 엔진으로도 보내지 않는다
+const MINOR_WORDS = /\b(loli|lolicon|shota|shotacon|child|children|kid|kids|toddler|infant|preteen|teen|teenager|underage|minor|elementary school|middle school|high school|schoolboy|schoolgirl|school uniform)\b|미성년|초등학생|중학생|고등학생|청소년|어린이|아동|로리|쇼타/i;
+function imgGuard(text){
+  const adult = $('#naiRating')?.value === 'nsfw' || (typeof wtRating === 'function' && wtRating() === 'nsfw');
+  if (adult && MINOR_WORDS.test(text)) throw new Error('성인 등급 그림에는 미성년을 떠올리는 말을 쓸 수 없어요');
+}
+// 픽시AI 는 노벨AI 의 '1.3::태그 ::' 가중치를 모른다. 가중치만 벗기고 인물 칸은 뒤에 잇는다
+const pxPlain = t => String(t || '').replace(/-?\d+(?:\.\d+)?::\s*([^:]*?)\s*::/g, (m, x) => m.startsWith('-') ? '' : x).replace(/,\s*,/g, ',').trim();
+async function pxGenBlob(body){
+  const key = store.get('tr.key.pixai', ''); if (!key) throw new Error('픽시AI API 키를 먼저 저장해 주세요');
+  const q = body.parameters; const chars = (q.characterPrompts || []).map(c => c.prompt);
+  const r = await window.nvDesktop.pixaiGen(key, {prompts: pxPlain([body.input, ...chars].join(', ')), negativePrompts: pxPlain(q.negative_prompt), width: q.width, height: q.height, batchSize: 1, samplingSteps: Math.min(q.steps || 25, 30), cfgScale: 6});
+  if (!r?.ok) throw new Error(r?.text || '픽시AI 그림을 받지 못했어요');
+  return new Blob([Uint8Array.from(atob(r.image), c => c.charCodeAt(0))], {type: r.type || 'image/jpeg'});
+}
 async function naiGenBlob(p, sizeKey, edit){
   const body = naiBody(p, undefined, sizeKey); if (edit) edit(body);
+  imgGuard([body.input, ...(body.parameters.characterPrompts || []).map(c => c.prompt)].join(', '));
+  if (store.get('set.ngEngine', 'nai') === 'pixai'){
+    if (!DESKTOP) throw new Error('픽시AI 는 윈도우 프로그램에서만 쓸 수 있어요');
+    return pxGenBlob(body);
+  }
   const r = await naiFetch(naiToken(), body);
   if (!r?.ok) throw new Error(r?.status === 401 ? '토큰이 맞지 않아요 (노벨AI 토큰을 다시 넣어 주세요)' : r?.status === 402 ? '남은 생성 수가 없어요' : r?.status === 429 ? '너무 자주 보냈어요. 잠시 뒤 다시 해 주세요' : (r?.text || '실패'));
   if (r.blobs?.length) return r.blobs[0];
@@ -7344,7 +7366,15 @@ async function naiGenBlob(p, sizeKey, edit){
   const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'});
 }
 async function naiOne(p, desc){ return naiSaveBlob(await naiGenBlob(p), desc); }
-window.nvNai = {one: naiOne};   // 시험용
+window.nvNai = {one: naiOne, pxPlain, imgGuard};   // 시험용
+{ // 그리는 곳 고르기: 픽시AI 키는 이 기기에만 둔다(tr.key.* 는 백업에서 빠진다)
+  const eng = $('#ngEngine'), row = $('#pxRow'), inp = $('#pxKey');
+  const show = () => { row.hidden = eng.value !== 'pixai'; inp.placeholder = store.get('tr.key.pixai', '') ? '저장됨 (바꾸려면 새로 입력)' : '픽시AI API 키 (sk-...)'; };
+  eng.value = store.get('set.ngEngine', 'nai'); show();
+  eng.onchange = () => { store.set('set.ngEngine', eng.value); show(); };
+  $('#pxSave').onclick = () => { const v = inp.value.trim(); if (v){ store.set('tr.key.pixai', v); inp.value = ''; show(); toast('픽시AI 키를 저장했어요'); } };
+  $('#pxDel').onclick = () => { store.set('tr.key.pixai', ''); show(); toast('픽시AI 키를 지웠어요'); };
+}
 async function naiSaveBlob(blob, desc){
   const im = await loadImgEl(blob);
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; c.getContext('2d').drawImage(im, 0, 0);
@@ -8051,6 +8081,26 @@ const WT_STYLE = {
     focus: '1.8::his handsome face is the focal point, drawn with obsessive detail ::',
     tail: 'beautiful detailed eyes, calm composed expression, looking at viewer, closed mouth, masterpiece, best quality, very aesthetic',
     neg: 'full color, colorful, rainbow, multiple accent colors, smile, grin, teeth, lipstick, makeup, 1girl, female, child, bishounen, same face, watermark, signature',
+  },
+  // 트위터 #프롬공유 NV5 글에서 많이 쓰는 짜임(품질 태그 → 구도 → 가중치 준 매체 → 색)을 우리 말로 새로 쓴 것. 남의 프롬을 그대로 옮기지 않았다.
+  // 2026-11-06 픽시AI 기본 모델로만 시험했다. 노벨AI V5 결과는 아직 못 봤다.
+  editorial: {
+    name: '화보 F · 흑백 에디토리얼',
+    head: 'cinematic composition, 1.4::high-end fashion editorial ::, elegant monochrome illustration, screentone, sharp silhouette, negative space, 1.1::mature male, adult man ::',
+    tail: 'beautiful detailed eyes, high contrast, masterpiece, best quality, very aesthetic',
+    neg: 'color, saturated, cluttered background, chibi, child, young, aged down, shota, 1girl, female',
+  },
+  watercolor: {
+    name: '로맨스 G · 수채 잉크',
+    head: 'delicate illustration, 1.4::visible watercolor washes, pigment bleeding ::, thin ink outline, 1.2::pastel muted colors ::, soft bloom, paper grain, 1.1::mature male, adult man ::',
+    tail: 'depth of field, gentle lighting, masterpiece, best quality, very aesthetic',
+    neg: 'cel shading, hard shadows, glossy skin, 3d, realistic, neon, child, young, aged down, shota, 1girl, female',
+  },
+  gothic: {
+    name: '판타지 H · 고딕 동판화',
+    head: '1.4::ornate engraved linework ::, crosshatching, gothic illustration, 1.2::deep burgundy and antique gold ::, dramatic chiaroscuro, art nouveau frame, 1.1::mature male, adult man ::',
+    tail: 'storytelling, cinematic composition, masterpiece, best quality, very aesthetic',
+    neg: 'pastel, flat color, cute, chibi, 3d, child, young, aged down, shota, 1girl, female',
   },
 };
 const WT_FRAME = {mirror: 'a mirror', photo: 'a wet photograph', tank: 'aquarium glass', shutter: 'a gap in the shutters', fence: 'barbed wire', booth: 'recording booth glass', none: ''};

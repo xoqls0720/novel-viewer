@@ -586,6 +586,28 @@ ipcMain.handle('nai-gen', async (_e, token, body) => {
   }
   return { ok: true, zip: raw.toString('base64') };   // 옛 모델(V3)은 zip 으로 온다
 });
+// 픽시AI: 작업을 만들고, 끝날 때까지 4초마다 보고, 그림을 받아 돌려준다 (공개 문서가 없는 GraphQL 이라 바뀌면 고쳐야 한다)
+ipcMain.handle('pixai-gen', async (_e, key, parameters) => {
+  const gql = async (query, variables) => {
+    const r = await fetch('https://api.pixai.art/graphql', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ query, variables }) });
+    const j = await r.json(); if (j.errors) throw new Error(j.errors[0]?.message || '픽시AI 오류 ' + r.status); return j.data;
+  };
+  try{
+    const { createGenerationTask: t } = await gql('mutation($p: JSONObject!){ createGenerationTask(parameters:$p){ id } }', { p: parameters });
+    for (let i = 0; i < 60; i++){
+      await new Promise(r => setTimeout(r, 4000));
+      const { task } = await gql('query($id:ID!){ task(id:$id){ status outputs } }', { id: t.id });
+      if (/failed|cancel/i.test(task?.status || '')) return { ok: false, text: '픽시AI 가 그리지 못했어요 (' + task.status + ')' };
+      if (!/completed/i.test(task?.status || '')) continue;
+      const mediaId = task.outputs?.mediaId || task.outputs?.batch?.[0]?.mediaId;
+      const { media } = await gql('query($id:String!){ media(id:$id){ urls{ variant url } } }', { id: mediaId });
+      const url = media?.urls?.find(u => u.variant === 'PUBLIC')?.url || media?.urls?.[0]?.url;
+      const img = await fetch(url);
+      return { ok: true, image: Buffer.from(await img.arrayBuffer()).toString('base64'), type: img.headers.get('content-type') || 'image/jpeg' };
+    }
+    return { ok: false, text: '픽시AI 가 4분 안에 끝내지 못했어요' };
+  }catch(err){ return { ok: false, text: err.message }; }
+});
 ipcMain.handle('open-data-folder', () => shell.openPath(app.getPath('userData')));
 ipcMain.handle('gd-logout', () => { try{ fs.unlinkSync(TOK()); }catch{} return true; });
 // 보안 비밀번호: 값을 주면 저장(빈 문자열이면 지움), 안 주면 저장돼 있는지만 알려 준다(값은 화면으로 돌려주지 않는다)
