@@ -4489,7 +4489,7 @@ skRecent();
 // 펜슬이 한 번이라도 보인 기기는 손가락으로 움직이고(확대·이동), 펜슬로만 그린다. 펜슬이 없는 기기는 손가락으로 그린다.
 const skFingerDraws = () => { const v = store.get('lib.skFinger', null); return v === null ? !store.get('lib.penSeen', false) : v; };
 function skFingerBtn(){ const b = $('#skFinger'); b.classList.toggle('on', skFingerDraws()); b.title = skFingerDraws() ? '손가락으로 그려요 (누르면 손가락은 확대·이동만)' : '펜슬로만 그려요. 손가락은 확대·이동 (누르면 손가락으로도 그리기)'; }
-$('#skFinger').onclick = () => { store.set('lib.skFinger', !skFingerDraws()); skFingerBtn(); toast(skFingerDraws() ? '손가락으로도 그려요' : '펜슬로만 그려요. 손가락 두 개로 확대·이동, 두 손가락 톡 되돌리기, 세 손가락 톡 다시'); };
+$('#skFinger').onclick = () => { store.set('lib.skFinger', !skFingerDraws()); skFingerBtn(); toast(skFingerDraws() ? '손가락으로도 그려요 · 같은 자리 두 번 톡=지우개' : '펜슬로만 그려요. 손가락 두 개로 확대·이동, 두 손가락 톡 되돌리기, 세 손가락 톡 다시 · 펜 끝 두 번 톡=지우개'); };
 const skTouch = new Map(); let skG = null, skSess = null;
 function canvasPt(e){ const cv = $('#skCanvas'); const b = cv.getBoundingClientRect(); const p = e.pointerType === 'pen' ? (e.pressure > 0 ? e.pressure : 0.5) : 0.5; return [(e.clientX - b.left) * cv.width / b.width, (e.clientY - b.top) * cv.height / b.height, p]; }
 const skGesture = () => { const t = [...skTouch.values()]; return {mx: t.reduce((q, p) => q + p.x, 0) / t.length, my: t.reduce((q, p) => q + p.y, 0) / t.length, d: t.length > 1 ? Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y) : 0}; };
@@ -4547,7 +4547,7 @@ $('#skCanvas').addEventListener('pointerdown', e => {
   }
   const erStroke = sk.tool === 'erase' && sk.eraseMode === 'stroke';
   const pr = sk.tool === 'pen' || (sk.tool === 'pencil' && e.pointerType === 'pen');
-  sk.cur = {tool: sk.tool, color: sk.color, size: skSize() * k * (sk.tool === 'erase' ? 3 : 1), pts: [pt], pid: e.pointerId, pr, ptype: e.pointerType, t: e.timeStamp};
+  sk.cur = {tool: sk.tool, color: sk.color, size: skSize() * k * (sk.tool === 'erase' ? 3 : 1), pts: [pt], pid: e.pointerId, pr, ptype: e.pointerType, t: e.timeStamp, down: Date.now()};
   if (erStroke){ sk.cur.whole = true; sk.cur.erased = []; skEraseStrokes(pt, pt, sk.cur.size / 2); return; }
   sk.strokes.push(sk.cur); skRedraw(); skHoldArm();
 });
@@ -4582,6 +4582,21 @@ $('#skCanvas').addEventListener('pointermove', e => {
   skRedraw();
 });
 $('#skCanvas').addEventListener('pointerleave', () => { $('#skCursor').hidden = true; });
+// 펜 끝으로 같은 자리 두 번 톡 → 그리던 도구 ⇄ 지우개 (사파리는 펜슬 옆면 두 번 탭을 웹에 알려 주지 않아서, 가장 가까운 길)
+// 톡으로 생긴 점·지움은 곧바로 되돌려서 자국이 남지 않는다. ops: 이 톡이 남긴 되돌리기 동작 수(0 또는 1)
+function skTap(st, ops){
+  const p = st.pts[0], k = skK();
+  if (Date.now() - st.down >= 240 || st.pts.some(([x, y]) => Math.hypot(x - p[0], y - p[1]) >= 4 * k)){ sk.tap1 = null; return; }
+  const tap = {t: Date.now(), x: p[0], y: p[1], ops};
+  if (sk.tap1 && tap.t - sk.tap1.t < 450 && Math.hypot(tap.x - sk.tap1.x, tap.y - sk.tap1.y) < 18 * k){
+    let n = tap.ops + sk.tap1.ops;
+    while (n-- > 0){ const op = sk.ops.pop(); if (op) skApply(op, true); }
+    sk.tap1 = null;
+    if (sk.tool === 'erase') skPickTool(sk.prevTool && sk.prevTool !== 'erase' ? sk.prevTool : 'pen');
+    else { sk.prevTool = sk.tool; skPickTool('erase'); }
+    toast(sk.tool === 'erase' ? '지우개로 바꿨어요 · 한 번 더 두 번 톡 하면 그리던 도구' : '그리던 도구로 돌아왔어요');
+  } else sk.tap1 = tap;
+}
 const skEnd = e => {
   if (skTouch.has(e.pointerId)){
     skTouch.delete(e.pointerId);
@@ -4596,8 +4611,8 @@ const skEnd = e => {
     else { const poly = sk.lasso || []; sk.lasso = null; if (poly.length > 4){ sk.sel = sk.strokes.filter(s => s.tool !== 'erase' && s.pts.filter(([x, y]) => inPoly(x, y, poly)).length >= Math.max(1, s.pts.length * 0.5)); if (!sk.sel.length) sk.sel = null; } }
     skSelUI(); skRedraw(); return;
   }
-  if (st.whole){ if (st.erased.length) skDo({t: 'del', list: st.erased}); return; }
-  skDo({t: 'add', st}); paintStroke(skLayer.getContext('2d'), st); skRedraw();
+  if (st.whole){ if (st.erased.length) skDo({t: 'del', list: st.erased}); skTap(st, st.erased.length ? 1 : 0); return; }
+  skDo({t: 'add', st}); paintStroke(skLayer.getContext('2d'), st); skRedraw(); skTap(st, 1);
 };
 $('#skCanvas').addEventListener('pointerup', skEnd);
 $('#skCanvas').addEventListener('pointercancel', skEnd);
