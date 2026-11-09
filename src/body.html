@@ -306,6 +306,13 @@
       <div class="hint">한국어로 장면을 말하면 NovelAI(V4.5·V5) 프롬프트로 바꿔요. 인물 사전과 하우스 스타일은 저장돼서 매번 같은 그림체·외형으로 나와요.</div>
       <h3>장면</h3>
       <textarea id="naiIn" style="min-height:100px" placeholder="예) 무너진 성당, 자정. 라파엘이 한쪽 날개만 편 채 무릎 꿇은 {{user}}에게 장검을 겨눈다. 달빛, 금빛 균열 효과, 세로 표지 구도"></textarea>
+      <details id="naiTagBox" class="ngbox" open><summary>태그로 바로 만들기 · AI 없이 (수위 컷은 여기서)</summary>
+        <div class="hint">노벨AI 형식 태그를 그대로 붙여 넣어요. <b>|</b> 로 나누면 맨 앞은 장면 전체, 그다음은 인물 1·2… 칸으로 들어가요. 인물 칸을 이름(인물 사전에 있는 이름)으로 시작하면 사전의 외형이 앞에 자동으로 붙어요. 그림체·네거티브·등급은 아래에서 고른 그대로 감싸요.</div>
+        <textarea id="naiTags" style="min-height:96px" placeholder="예) 2boys, rooftop, dusk, cowboy shot, ... | 강재혁, smirk, leaning in | 오동구, flustered, looking away"></textarea>
+        <div class="row tight"><button id="naiTagChars">인물 사전 1·2번 칸 붙이기</button><button id="naiTagGo" class="primary">프롬프트 만들기 (AI 없이)</button><button id="naiTagDraw">바로 그리기</button></div>
+        <div class="row tight"><label>내 조각</label><select id="naiSnip" class="grow"><option value="">저장해 둔 태그 묶음…</option></select><button id="naiSnipAdd">넣기</button><input type="text" id="naiSnipName" placeholder="저장할 이름" style="width:120px"><button id="naiSnipSave">지금 칸 저장</button><button id="naiSnipDel">지우기</button></div>
+        <div class="row tight"><label class="hint"><input type="checkbox" id="naiNsfwOllama"> 성인 등급일 때 '장면 → 프롬프트'는 내 컴퓨터 AI(Ollama)로 바꾸기 (Claude·Gemini 는 수위 장면을 거절하거나 약하게 바꿔요)</label></div>
+      </details>
       <div class="row tight"><label>바로 쓰는 틀</label><select id="naiPreset" class="grow"><option value="">고르기…</option></select></div>
       <div class="hint">틀을 고르면 AI 없이 바로 프롬프트가 나와요. 인물 외형은 아래 인물 사전의 1·2번째 줄을 써요. 그림체는 아래에서 고른 것을 붙여요(받아 둔 성인 만화 그림체: <b>기본 C</b>는 준호·아카데미·용사처럼 굵은 선과 셀 음영, <b>기본 D</b>는 직장동료 류x최처럼 거친 손그림 선과 평평한 채색).</div>
       <div class="row"><label>등급</label><select id="naiRating"><option value="safe">일반</option><option value="nsfw">성인(nsfw)</option></select>
@@ -327,6 +334,17 @@
           <label>가이드</label><input type="number" id="ngScale" value="5" min="1" max="10" step="0.5" style="width:60px">
           <label>장면당</label><input type="number" id="ngEach" value="1" min="1" max="8" style="width:56px">장</div>
         <div class="row"><button id="ngGrab">노벨AI에서 설정 가져오기</button><button id="ngTplClear">가져온 설정 지우기</button></div>
+        <details id="ngFaceBox" class="ngbox"><summary>얼굴 고정 · 같은 인물을 여러 장면에서 같은 얼굴로</summary>
+          <div class="row tight"><label>방식</label><select id="ngFace" class="grow"><option value="off">쓰지 않기</option><option value="seed">① 씨앗 고정 (무료 · 얼굴이 꽤 비슷해짐)</option><option value="i2i">② 기준 그림 이어 그리기 (V5 · 무료 · 얼굴·옷 유지, 구도는 덜 바뀜)</option><option value="ref">③ 정밀 참조 (V4.5 · 장당 +5 Anlas · 얼굴 고정이 가장 강함)</option></select></div>
+          <div class="row tight" id="ngSeedRow"><label>씨앗</label><input type="number" id="ngSeedFix" placeholder="숫자" style="width:150px"><button id="ngSeedLast">방금 그림의 씨앗</button></div>
+          <div id="ngRefRow">
+            <div class="row tight"><label>기준 그림</label><input type="file" id="ngRefFile" accept="image/*" style="max-width:190px"><button id="ngRefScrap">최근 장면 노트 그림</button><button id="ngRefClear">비우기</button></div>
+            <img id="ngRefPrev" alt="" style="max-height:120px;border-radius:8px;display:none;margin:4px 0">
+            <div class="row tight" id="ngI2iRow"><label>바뀌는 정도</label><input type="range" id="ngI2iStr" min="0.3" max="0.85" step="0.05" value="0.6" class="grow"><output id="ngI2iOut">0.6</output></div>
+            <div class="row tight" id="ngPrRow"><label>참조</label><select id="ngRefType"><option value="character">얼굴·인물만</option><option value="character&amp;style">인물 + 그림체</option><option value="style">그림체만</option></select><label>세기</label><input type="number" id="ngRefStr" value="1" min="0" max="1" step="0.05" style="width:64px"><label>충실도</label><input type="number" id="ngRefFid" value="1" min="0" max="1" step="0.05" style="width:64px"></div>
+          </div>
+          <div class="hint" id="ngFaceHint">노벨AI V5 에는 아직 '정밀 참조(캐릭터 레퍼런스)'가 없어요(V4.5 에만 있음). 그래서 ①·② 는 V5 로 무료, ③ 은 그릴 때만 모델을 V4.5 로 바꿔 보내고 장당 5 Anlas 가 들어요. 어느 방식이든 인물 사전의 외형 태그와 얼굴 원형을 같이 쓰면 더 잘 고정돼요.</div>
+        </details>
         <div class="row"><button id="ngGo" class="primary">그림 만들기</button><button id="ngStop" hidden>멈추기</button><span class="hint grow" id="ngStat"></span></div>
         <div class="hint">'설정 가져오기'를 누르면 노벨AI 창이 열려요. 거기서 평소처럼 그림을 한 장 만들면 <b>토큰·모델·크기·스텝·샘플러</b>를 그대로 가져와서, 다음부터는 같은 설정으로 그려요. 만든 그림은 <b>장면 노트</b>에 저장되고 동기화돼요.</div>
       </div>
@@ -336,9 +354,11 @@
       <h3>인물 사전 <span class="hint">· 한 줄에 한 명: 이름: 외형 태그</span></h3>
       <div class="row tight"><label>인물 틀</label><select id="naiCast" class="grow"><option value="">고르기…</option></select></div>
       <div class="hint">받아 둔 성인 만화의 인물 유형(체형·머리·분위기)을 본떠 새로 만든 인물들이에요. 고르면 아래 사전 맨 위 두 줄로 들어가고, 위의 장면 틀이 그 두 사람으로 다시 나와요.</div>
+      <div class="row tight"><label>얼굴 원형</label><select id="naiArch" class="grow"><option value="">고르기…</option></select><select id="naiArchWho"><option value="0">1번 인물</option><option value="1">2번 인물</option><option value="2">3번 인물</option></select></div>
+      <div class="hint">같은 얼굴만 나오는 걸 막아요. 고른 원형이 그 인물 줄 맨 앞에 2배 무게로 들어가요(이미 있던 원형은 바꿔요). 인물마다 다른 원형을 골라요.</div>
       <textarea id="naiChars" style="min-height:90px" placeholder="라파엘: 1boy, adult, tall, long silver hair, golden eyes, one white wing, scar on left cheek, black priest coat&#10;세라온: 1boy, adult, short black hair, red eyes, horns, black armor"></textarea>
       <h3>그림체</h3>
-      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="editorial">화보 F · 흑백 에디토리얼</option><option value="watercolor">로맨스 G · 수채 잉크</option><option value="gothic">판타지 H · 고딕 동판화</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
+      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="toon3">1 · 웹툰</option></select></div>
       <div class="hint" id="naiStyleNow"></div>
       <h3>하우스 스타일 (직접 쓰기일 때 쓰는 칸)</h3>
       <textarea id="naiStyle" style="min-height:60px" placeholder="예) masterpiece, best quality, very aesthetic, (내가 쓰는 화가·화풍 태그)"></textarea>

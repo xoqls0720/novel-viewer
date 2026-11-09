@@ -1,6 +1,8 @@
 /* ================= 웹툰 자동 만들기: 줄거리 → 대본 → 쪽·컷·말풍선 → (컴퓨터) 컷 그림 ================= */
 const WT_LAYOUT_KEYS = Object.keys(WT_LAYOUTS);
 // 우리 기본 그림체 2종 (인수인계 문서 house_style v15 / 암실 룩 기준, NAI V5)
+// v43 B 시그니처: 작가 17명 믹스에서 얼굴을 평균으로 모으던 무게를 낮춘 판(CORE_DIV). 얼굴 원형(인물 사전)과 함께 쓴다
+const V43_CORE_DIV = '0.8::artist:krenz_cushart ::, 1.0::artist:rei_(sanbonzakura) ::, 0.6::artist:wakabayashi_toshiya ::, artist:rei_(sanbonzakura), 0.45::artist:blackbox_(blackbox9158) ::, 1.2::artist:oharu-chan ::, 0.8::artist:yamamoto_souichirou ::, 0.25::artist:meyoco ::, 0.75::artist:mika_pikazo ::, 0.42::artist:tobo_katsuo ::, 0.23::artist:hungry_clicker ::, 0.45::artist:john_kafka ::, 0.27::artist:na_tarapisu153 ::, 0.9::artist:gongzuotianxiadiyi, artist:mnnd ::, 0.8::artist:pigeon666 ::, 0.8::artist:ashinamaturi ::, year 2025, year 2026, -2::flat color ::, -2::artist collaboration ::, 2::highres ::, 1.3::best quality ::, amazing quality, best illustration, 1.3::soft shading ::, glossy hair, detailed eyes, cinematic lighting, rim light, depth of field, 1.4::semi-realistic ::, 1.2::realistic lighting ::, -1::manga ::, film grain, very aesthetic, absurdres, detailed eyes, 1.2::key visual ::, highly detailed, dramatic lighting, rim light, volumetric lighting, particles, wind, depth of field, 0.4::artist:ask_(askzy) ::, -1.2::bishounen ::, 1.8::graphite pencil lines, textured pencil strokes over vivid color ::, 1.4::calligraphic ink lines, ink drips and splatter ::, 1.1::detailed hands ::, 1.5::torn paper edges, rough watercolor paper texture, painting fading into blank paper at borders ::';
 const WT_STYLE = {
   neon: {
     name: '기본 A · 야수파 + 네온',
@@ -64,8 +66,324 @@ const WT_STYLE = {
     head: '1.4::ornate engraved linework ::, crosshatching, gothic illustration, 1.2::deep burgundy and antique gold ::, dramatic chiaroscuro, art nouveau frame, 1.1::mature male, adult man ::',
     tail: 'storytelling, cinematic composition, masterpiece, best quality, very aesthetic',
     neg: 'pastel, flat color, cute, chibi, 3d, child, young, aged down, shota, 1girl, female',
+  },  // ---------- v43 라인업 (2026-11-08, house_style_v43_lineup.md) · NovelAI V5 로 시험해 고른 상업용 그림체 ----------
+  v43nov: {
+    name: '표지 1 · 남성향 웹소설 표지',
+    head: '1.5::korean web novel cover illustration, epic action key visual, highly detailed digital painting ::, 1.3::dramatic rim lighting, glowing particles, cinematic depth ::, 1.1::dark sky area at the top ::, 1.4::the hero is large in the frame, face clearly visible ::, high complexity',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'letters, tiny figure, small character, bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+  v43rofan: {
+    name: '표지 2 · 로판 표지',
+    head: '1.5::romance fantasy web novel cover, ornate gold and ivory, soft glowing light, lavish costume detail, painterly semi-realistic ::, 1.3::flower petals drifting, sparkles ::, 1.2::empty space at the top for a title ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+  v43real: {
+    name: 'D · 감성 반실사 (팅글 결)',
+    head: '1.5::semi-realistic korean webtoon illustration, painterly realism, soft realistic shading ::, 1.3::detailed skin texture, pale porcelain skin, faint flush on cheeks and eyelids, glossy lips ::, 1.3::muted desaturated colors, soft natural window light, film photography mood ::, thick dark eyelashes, delicate handsome face, slightly messy hair',
+    tail: 'intimate close framing, shallow depth of field, high quality, very aesthetic',
+    neg: 'lowres, worst quality, bad quality, jpeg artifacts, watermark, signature, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, blurry, chibi, child, aged down, baby face, flat color, cel shading, lineart, thick outlines, torn paper, ink splatter, vivid saturated colors, neon, 1girl, female, deformed face, cross-eyed',
+    safeNeg: 'nude, nipples, explicit',
+    wide: /\b(intimate close framing|shallow depth of field)\b,?\s*/gi,
+  },
+  v43realph: {
+    name: 'D2 · 감성 실사풍',
+    head: '1.5::semi-realistic korean webtoon illustration, painterly realism, soft realistic shading ::, 1.3::detailed skin texture, pale porcelain skin, faint flush on cheeks and eyelids, glossy lips ::, 1.3::muted desaturated colors, soft natural window light, film photography mood ::, thick dark eyelashes, delicate handsome face, slightly messy hair, 1.3::photorealistic rendering, cinematic photograph look ::',
+    tail: 'intimate close framing, shallow depth of field, high quality, very aesthetic',
+    neg: 'lowres, worst quality, bad quality, jpeg artifacts, watermark, signature, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, blurry, chibi, child, aged down, baby face, flat color, cel shading, lineart, thick outlines, torn paper, ink splatter, vivid saturated colors, neon, 1girl, female, deformed face, cross-eyed',
+    safeNeg: 'nude, nipples, explicit',
+    wide: /\b(intimate close framing|shallow depth of field)\b,?\s*/gi,
+  },
+  v43bneon: {
+    name: 'B · 네온 (현판·헌터·아이돌·SF)',
+    head: V43_CORE_DIV + ', ' + 'vivid saturated colors, 1.8::fauvism, wild unnatural colors, green and violet shadows on skin ::, 1.5::neon noir, hot pink and electric cyan rim lights ::, low key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bwarm: {
+    name: 'B · 따뜻함 (로맨스·일상·가족)',
+    head: V43_CORE_DIV + ', ' + '1.5::warm afternoon sunlight, peach, cream and sky blue palette ::, 1.3::fauvism, lilac and mint colored shadows on skin ::, bright high key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bhorror: {
+    name: 'B · 호러 (호러·미스터리·피폐)',
+    head: V43_CORE_DIV + ', ' + '1.5::cold blue-grey palette, pale skin, a single spot of red ::, 1.3::fog, deep shadows ::, low key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bwuxia: {
+    name: 'B · 무협 (무협·동양 판타지·사극)',
+    head: V43_CORE_DIV + ', ' + '1.5::ink wash, jade green and black ink palette, vermilion accent ::, 1.3::fauvism, jade shadows on skin ::',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bcourt: {
+    name: 'B · 궁정 (로판·서양 판타지)',
+    head: V43_CORE_DIV + ', ' + '1.5::gold and ivory palette, candlelight amber glow ::, 1.3::fauvism, violet shadows on skin ::',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bnoir: {
+    name: 'B · 느와르 (조직·형사·복수)',
+    head: V43_CORE_DIV + ', ' + '1.5::blood red and ink black palette, crimson rim light ::, 1.3::fauvism, crimson shadows on skin ::, low key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bmood: {
+    name: 'B · 무드판 (감성 캐릭터챗·유료 화보)',
+    head: V43_CORE_DIV + ', ' + '1.4::muted desaturated palette, soft grey and dusty rose, a single deep red accent ::, 1.3::soft natural window light, film photography mood ::, 1.2::fauvism, faint lilac shadows on skin ::, 1.3::pale porcelain skin, faint natural flush on cheeks and eyelids, slightly reddened eyelids, thick dark eyelashes, languid gaze ::, 1.1::naturally rosy lips ::',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons, vivid saturated colors, neon, lipstick, makeup',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43toon: {
+    name: '웹툰 · 컬러 웹툰 컷',
+    head: '1.6::korean full color webtoon panel, clean crisp lineart, soft cel shading, polished digital coloring ::, 1.2::bright readable colors, simple clean background ::',
+    tail: 'very aesthetic, best quality',
+    neg: 'bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+  v43manga: {
+    name: '만화 · 흑백 만화 페이지',
+    head: '4::monochrome, greyscale ::, 1.6::black and white manga page, ink lineart, screentone shading, speed lines ::, 1.4::clean black panel borders, white gutters ::',
+    tail: 'very aesthetic, best quality',
+    neg: 'color, colorful, bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face',
+    safeNeg: 'nude, nipples, explicit',
+  },  // ---------- 성인 그림체 5종 (2026-11-08) · 포스타입 성인 상위작·리디 BL 랭킹을 보고 만든 렌더링 결. 장면·수위는 인물 사전과 등급이 정한다 ----------
+  v43abl: {
+    name: '성인 1 · BL 광택 반실사 (리디 BL 결)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43afilm: {
+    name: '성인 2 · 관능 화보 필름 (땀·체온·조명)',
+    head: '1.5::intimate film photograph style illustration, painterly semi-realism ::, 1.4::sweat sheen on skin, faint steam, warm tungsten lamp light, deep soft shadows ::, 1.3::35mm film grain, shallow depth of field, muted warm palette, a single deep red accent ::, 1.2::sensual mood, half-lidded eyes, slightly parted lips ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'flat color, cel shading, thick outlines, vivid saturated colors, chibi, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43ahl: {
+    name: '성인 3 · 로맨스 수채 페인팅 (HL·여성향)',
+    head: '1.5::romance webtoon illustration, soft painterly coloring, delicate thin lineart ::, 1.3::pastel rose and cream palette, warm backlight, glowing rim light on skin ::, 1.2::dreamy bokeh, drifting petals ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'dark, gritty, chibi, 3d, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43adark: {
+    name: '성인 4 · 다크 집착물 (감금·집착·느와르)',
+    head: '1.5::dark romance illustration, high contrast chiaroscuro ::, 1.4::crimson and black palette, single hard key light, deep black shadows ::, 1.3::glossy skin, wet hair, intense possessive gaze, eyes clearly visible ::, 1.2::cinematic noir, film grain ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'pastel, bright, flat color, chibi, face in complete shadow, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43aline: {
+    name: '성인 5 · 트레틀용 선화 (흑백 라인)',
+    head: '4::monochrome, lineart ::, 1.6::clean black lineart on pure white background, no shading, no color, uniform line weight ::, 1.3::anatomically accurate adult bodies, clear readable silhouette ::',
+    tail: 'best quality',
+    neg: 'color, shading, gradient, screentone, grey, background, scenery, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },  // ---------- 성인 그림체 6~16 (2026-11-08) · 성인 1(BL 광택)의 변주 + 다른 결 후보 12종 시험(G:\포스타입\성인그림체_후보12_고르기.jpg)에서 태빈이 모두 넣기로 함 ----------
+  v43a02: {
+    name: '성인 6 · BL 더 실사 (실사풍 미남 화보)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::semi_realistic ::, 1.3::realistic skin texture, visible skin pores, photorealistic lighting, cinematic photograph ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, cel shading, beard, stubble, facial hair, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a03: {
+    name: '성인 7 · BL 웹툰 선 강조 (연재 컷·표지)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::crisp clean manhwa lineart, ligne claire, sharp cel shading with glossy highlights ::, 1.2::korean webtoon cover art ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, blurry, painterly, sketch, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a04: {
+    name: '성인 8 · BL 근육 강조 (체격차·바라)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::bara, manly, thick muscular build, huge pectorals, thick neck, thick thighs ::, 1.2::light chest hair, light stubble ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, slender, skinny, bishounen, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a05: {
+    name: '성인 9 · 미인수 결 (가는 몸·고운 얼굴)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::slender beautiful man, delicate pretty face, long eyelashes, soft lean build, pale glossy skin ::, 1.3::warm amber key light with teal shadows, soft bloom ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, muscular, bara, stubble, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a06: {
+    name: '성인 10 · 야경 네온 (호텔·도시 밤)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.2::night city neon light through the window, soft magenta and cyan rim light ::, 1.1::rain streaks on glass ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, neon stains on skin, colored blotches, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a07: {
+    name: '성인 11 · 유화 붓터치 (소장용 화보)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::oil painting, thick visible brushstrokes, impasto texture, painterly ::, 1.2::rich warm palette ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, lineart, cel shading, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a08: {
+    name: '성인 12 · 게임 CG (오토메·BL 게임풍)',
+    head: '1.6::otome game CG, gacha splash art, game_cg, polished anime rendering ::, 1.4::mature handsome man, sharp eyes, defined muscles ::, 1.3::sparkling light particles, dramatic rim light, glossy highlights ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, realistic, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a09: {
+    name: '성인 13 · 일본 BL 만화 (가는 선·파스텔)',
+    head: '1.6::japanese BL manga illustration, thin sharp lineart, elegant long limbs, color screentone shading ::, 1.3::mature handsome man, narrow sharp eyes, tall slim muscular ::, 1.2::muted pastel palette, white background accents ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, realistic, thick lines, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43a10: {
+    name: '성인 14 · 그래픽노블 (굵은 먹·2색)',
+    head: '1.6::american graphic novel, bold black ink, heavy spot blacks, flat cel shadows, hatching ::, 1.4::rugged handsome man, square jaw, muscular ::, 1.2::limited palette, teal and orange ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'chibi, 3d, anime, soft shading, glossy, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43a11: {
+    name: '성인 15 · 3D 렌더 (실사 3D 피부)',
+    head: '1.6::semi-realistic 3d render, subsurface scattering skin, octane render, soft studio lighting ::, 1.4::handsome asian man, defined muscular build, sharp jawline ::, 1.2::shallow depth of field ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'chibi, 2d, lineart, flat color, anime, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43a12: {
+    name: '성인 16 · 색연필 수채 (감성 굿즈)',
+    head: '1.6::colored pencil and watercolor sketch, visible paper texture, loose expressive lines, watercolor_pencil ::, 1.4::mature handsome man, defined muscles, sharp eyes ::, 1.2::warm sepia and rose palette ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'chibi, 3d, photorealistic, glossy, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },  v43a17: {
+    name: '성인 17 · 흑백 망가 해칭 (2000년대 청년만화)',
+    head: '1.5::manga style, detailed lineart, thin lineart, high contrast, ink, traditional media ::, 1.4::monochrome, greyscale, screentone, hatching, crosshatching, hatching (texture), detailed shading ::, 1.3::realistic proportions, semi realistic, sharp eyes, small pupils, detailed eyes, 2000s (style) ::',
+    tail: 'masterpiece, best quality, very aesthetic',
+    neg: 'color, colorful, flat color, chibi, 3d, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+
+
+
+  // ---------- 2026-11-09 정리: 태빈이 고른 결 (강재혁 캐릭터챗 시험 A·D). 쓰는 그림체는 WT_PICK 5개, 나머지는 예전 작품 호환용으로 숨긴다 ----------
+  mood: {
+    name: '무드 일러스트',
+    head: '1.0::artist:rei_(sanbonzakura) ::, 0.8::artist:krenz_cushart ::, 1.2::artist:oharu-chan ::, 0.75::artist:mika_pikazo ::, year 2025, 1.4::muted desaturated palette, soft grey and dusty rose ::, 1.3::soft natural light, film photography mood ::, 1.3::pale porcelain skin, faint natural flush, thick dark eyelashes ::, 1.3::soft shading, glossy hair, detailed eyes ::',
+    tail: 'clean hair, very aesthetic, masterpiece',
+    neg: 'lowres, worst quality, bad quality, jpeg artifacts, watermark, signature, text, logo, bad anatomy, bad hands, extra fingers, fused fingers, deformed face, cross-eyed, ugly, long face, big chin, old man, middle-aged, rugged, beard, stubble, child, aged down, baby face, shota, loli, stain, blotch, spots on hair, bad ears, feminine face, vivid saturated colors, neon, multiple views',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.3::face clearly visible, beautiful detailed eyes ::',
+    focusMale: '1.5::extremely handsome man, masculine beautiful face, idol visual, small face, fair skin ::',
+  },
+  // ---------- 2026-11-09 최종 3종: 그림체 라운드 1~6에서 태빈이 고른 결 ----------
+  // ---------- 2026-11-09 최종 4종 (라운드 13~16 + 아카·X·공식 문서 학습). v5:true 는 노벨AI V5 문법 그대로 보낸다
+  // (품질 태그 자동 추가 끔 → 직접 쓴 품질줄, 네거 프리셋 없음, guidance 5, rescale 0). 인물 외형은 인물 칸에만, 장면은 base 에.
+  toon3: {
+    name: '웹툰 · 반실사 한국 웹툰 컬러',
+    v5: true,
+    head: 'masterpiece, best quality, very aesthetic, high complexity, -0.34::low complexity::, 2::medium complexity::, -1::artist collaboration::, attractive male, depthness, 1.3::semi-realistic korean manhwa, full color webtoon panel, painterly, clean ink outlines::, cinematic composition, expressive facial acting, natural body language',
+    tail: '',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, halftone, screentone, child, teenager, bishounen, aged down',
+    safeNeg: 'nude, nipples, explicit',
+    fx: '1.3::dynamic action, strong speed lines, impact effect, debris::',
+    focusMale: 'handsome, sharp jawline, 1.4::detailed face, detailed eyes::, -2::rounded jawline::',
+  },
+  manga3: {
+    name: '만화 · 일본 만화 흑백 (스크린톤·먹)',
+    v5: true,
+    head: 'masterpiece, best quality, high complexity, -1::artist collaboration::, attractive male, 1.6::japanese manga panel, black and white, monochrome, screentone, crisp ink lineart, solid black fills::, cinematic composition, expressive facial acting, natural body language, no color',
+    tail: '',
+    fx: '1.4::speed lines, impact lines, motion blur streaks::',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, 1.3::color, colorful::, 3d, korean webtoon, vertical scroll, child, teenager, bishounen, aged down',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: 'handsome, sharp jawline, 1.4::detailed face, detailed eyes::, -2::rounded jawline::',
+  },
+  chat3: {
+    name: '캐릭터챗 · 우리 하우스 그림체 (먹 번짐·네온)',
+    v5: true,
+    head: '0.8::artist:krenz_cushart ::, 1.0::artist:rei_(sanbonzakura) ::, 0.6::artist:wakabayashi_toshiya ::, 0.45::artist:blackbox_(blackbox9158) ::, 1.2::artist:oharu-chan ::, 0.8::artist:yamamoto_souichirou ::, 0.25::artist:meyoco ::, 0.75::artist:mika_pikazo ::, 0.42::artist:tobo_katsuo ::, 0.45::artist:john_kafka ::, 0.9::artist:gongzuotianxiadiyi, artist:mnnd ::, 0.8::artist:pigeon666 ::, 0.8::artist:ashinamaturi ::, year 2025, -1::artist collaboration ::, best quality, amazing quality, very aesthetic, high complexity, depthness, attractive male, 1.3::soft shading ::, glossy hair, detailed eyes, cinematic lighting, rim light, depth of field, 1.4::semi-realistic ::, 1.2::realistic lighting ::, -1::manga ::, 1.2::key visual ::, dramatic lighting, -1.2::bishounen ::, 1.6::graphite pencil lines, textured pencil strokes over vivid color ::, 1.4::calligraphic ink lines, ink drips and splatter ::, 1.1::detailed hands ::',
+    tail: '',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, child, teenager, aged down, torn paper, border, frame',
+    safeNeg: 'nude, nipples, explicit',
+    fx: '1.3::dynamic action, ink splatter bursting with the motion::',
+    focusMale: 'handsome, sharp jawline, three quarter view, 1.5::detailed face, detailed eyes::, -2::rounded jawline::, -0.5::round face::',
+    focusFemale: '1.4::beautiful face, detailed face, detailed eyes::',
+  },
+  adult3: {
+    name: '성인 · 성인 로맨스 웹툰 (윤기 반실사)',
+    v5: true,
+    head: 'masterpiece, best quality, very aesthetic, high complexity, depthness, attractive male, -1::artist collaboration::, 1.4::mature romance manhwa, adult BL webtoon key visual, semi-realistic, glossy painterly rendering, soft skin shading, subsurface scattering::, 1.3::warm low key lighting, amber lamp light and deep shadows, intimate atmosphere, sensual tension::',
+    tail: '',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, child, teenager, bishounen, aged down, flat color',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: 'handsome, sharp jawline, 1.4::detailed face, detailed eyes::, -2::rounded jawline::',
   },
 };
+// 쓰는 그림체 4개 (2026-11-09 최종). 예전 키는 숨긴 칸으로 남겨 예전 작품·설정이 그대로 열리게 한다
+const WT_PICK = [['toon3', '1 · 웹툰 — 반실사 한국 웹툰 컬러 (웹툰 본문 기본)'], ['manga3', '2 · 만화 — 일본 만화 흑백 (스크린톤·먹)'], ['chat3', '3 · 캐릭터챗 — 우리 하우스 그림체 (표지·화보)'], ['adult3', '4 · 성인 — 성인 로맨스 웹툰 (윤기 반실사)']];
+const WT_DEFAULT_STYLE = 'toon3';
+function wtFillStyleSel(sel){
+  if (!sel) return; const pick = new Set(WT_PICK.map(x => x[0]));
+  sel.innerHTML = WT_PICK.map(([k, n]) => `<option value="${k}">${n}</option>`).join('') + '<option value="custom">직접 쓰기</option>'
+    + Object.keys(WT_STYLE).filter(k => !pick.has(k)).map(k => `<option value="${k}" hidden>예전 · ${WT_STYLE[k].name}</option>`).join('');
+}
+wtFillStyleSel(document.querySelector('#wtStyle')); wtFillStyleSel(document.querySelector('#naiStyleSel'));
+// 3종 정리(2026-11-09) 전에 저장된 그림체는 한 번만 새 기본으로 옮긴다 (예전 작품 안의 컷 설정은 그대로)
+if (!store.get('set.wtStyle3', false)){ const o = store.get('set.wtStyle', ''); if (o && o !== 'custom' && !WT_PICK.some(x => x[0] === o)) store.set('set.wtStyle', WT_DEFAULT_STYLE); store.set('set.wtStyle3', true); }
 const WT_FRAME = {mirror: 'a mirror', photo: 'a wet photograph', tank: 'aquarium glass', shutter: 'a gap in the shutters', fence: 'barbed wire', booth: 'recording booth glass', none: ''};
 const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];
 const WT_SCHEMA = {
@@ -75,8 +393,9 @@ const WT_SCHEMA = {
     synopsis: {type: 'string', description: '네가 채워 넣은 이번 화 줄거리. 한국어 3~6문장. 장소·시간, 무슨 일이 벌어지고, 감정이 어디서 꺾이고, 어떻게 끝나는지'},
     cast: {type: 'array', description: '사전에 없던 인물만. 외형 영어 태그와 한국어 말투를 지어서 채운다', items: {type: 'object', additionalProperties: false, required: ['name', 'tags', 'voice'],
       properties: {name: {type: 'string'}, tags: {type: 'string', description: '예: 1boy, adult, short black hair, grey eyes, black coat'}, voice: {type: 'string', description: '한국어 한 줄. 예: 낮은 반말, 짧고 명령적. 당황하면 말끝이 흐려진다'}}}},
-    pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'panels'],
+    pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'setting', 'panels'],
       properties: {
+        setting: {type: 'string', description: '이 쪽의 장소·시간·빛과 인물별 옷을 영어 태그로. 예: "rooftop at night, chain-link fence, city lights, cold teal and amber light, 강재혁 wears black track jacket, 오동구 wears grey hoodie". 같은 장면이 이어지면 앞 쪽과 글자까지 똑같이'},
         layout: {type: 'string', description: '틀 키: ' + WT_LAYOUT_KEYS.join(', ')},
         panels: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['scene', 'tags', 'pose', 'fx', 'chars', 'bubbles', 'sfx', 'stickers'],
           properties: {
@@ -107,6 +426,11 @@ const SYSTEM_WT_BASE = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽�
 - stickers: sweat(당황), burst(충격), heart(설렘), speed(집중선)를 감정이 튀는 컷에만 쓴다.
 - 인물: chars 에는 '나오는 인물'로 받은 이름과 사전에 있는 이름을 쓴다. 사전에 없던 이름은 cast 에 외형 영어 태그(성별·나이대·머리·눈·옷·특징 순, 모두 adult)와 한국어 말투를 지어서 한 번만 적는다. 줄거리에 새 인물이 필요하면 이름을 지어 cast 에 넣는다.
 - 말투: 받은 말투 설명이 있으면 그 인물의 대사는 반드시 그 말투로 쓴다(존대·반말, 길이, 말버릇, 호칭). 말투가 없는 인물은 cast 에 적은 말투를 따른다. 인물마다 말이 달라야 누가 말하는지 알 수 있다.
+- 이어짐(가장 중요): 컷은 따로 노는 그림이 아니라 한 흐름이다. 앞 컷의 마지막 동작·시선·대사가 다음 컷의 시작이 된다. 한 컷에서 질문하면 다음 컷에서 답하고, 누가 손을 뻗으면 다음 컷에서 그 손이 닿거나 뿌리쳐진다.
+- 장소가 바뀌면 그 쪽 첫 컷은 장소를 보여 주는 넓은 컷(wide shot, establishing)으로 열고 narr 상자로 시간·장소를 적는다. 장소가 같으면 setting 을 앞 쪽과 글자까지 똑같이 쓴다.
+- 옷은 화 전체에서 그대로다(갈아입는 사건이 있을 때만 바꾼다). 소품(우유·우산·담배)은 한 번 나오면 다음 컷에서도 같은 손, 같은 자리에 있다.
+- 컷 크기 문법: 새 장면 = 넓은 컷 → 대화 = 상반신을 번갈아(말하는 사람 쪽) → 감정이 정점 = 얼굴·눈·손 클로즈업 → 쪽 끝 = 다음 쪽이 궁금한 반응 컷.
+- 대사는 주고받는다. 같은 인물이 세 컷 넘게 혼자 말하지 않는다.
 {ADULT}
 출력은 JSON 하나만.`;
 const SYSTEM_WT = () => SYSTEM_WT_BASE.replace('{ADULT}', wtAdultRules() + '\n' + WT_NATURAL);
@@ -156,7 +480,7 @@ function wtAdultRules(){
 - 모든 인물은 20세 이상 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다·작다 등)은 절대 쓰지 않는다. 실존 인물은 쓰지 않는다.`;
 }
 /* ---------- 그림체 ---------- */
-const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
+const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', WT_DEFAULT_STYLE); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : WT_DEFAULT_STYLE); };
 const wtMono = () => $('#wtMono')?.value || store.get('set.wtMono', 'cold blue');
 const wtFrame = () => WT_FRAME[$('#wtFrame')?.value || store.get('set.wtFrame', 'mirror')] ?? WT_FRAME.mirror;
 // 그림체를 머리·꼬리로 나눠 준다. 웹툰 컷과 노벨AI 탭이 같은 그림체를 쓰게 하는 한 곳.
@@ -172,7 +496,7 @@ function wtStyleParts(nsfw){
   if (k === 'dark'){ const fr = wtFrame(); if (fr) head.push(st.frame.replace('{FRAME}', fr)); }
   let tail = st.tail.replace('{MONO}', wtMono());
   if (nsfw){ tail = tail.replace(NSFW_DROP_POS, '').replace(/,\s*,/g, ','); head.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid); const a = wtActTags(); if (a) head.push(a); }
-  return {head: head.filter(Boolean).join(', '), tail, neg: st.neg, focus: st.focus, fx: st.fx, key: k};
+  return {head: head.filter(Boolean).join(', '), tail, neg: st.neg, focus: st.focus, focusMale: st.focusMale, focusFemale: st.focusFemale, fx: st.fx, wide: st.wide, key: k, v5: !!st.v5};
 }
 // 그림체 공식대로 base 를 만든다. 인물 자세(pose)는 1.45 로 올리고, 물감 튐은 전투·각성 컷에만 넣는다.
 // who: {male, female, people} — 그림체가 남자 주인공을 전제로 쓴 말(his handsome face, handsome man)은 남자가 있을 때만,
@@ -180,11 +504,14 @@ function wtStyleParts(nsfw){
 const WT_FACE_TAIL = /\b(extremely handsome man|beautiful detailed eyes|half-lidded eyes|looking at viewer|closed mouth|detailed hair strands)\b,?\s*/gi;
 function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: false, people: true}}){
   const P = wtStyleParts(nsfw); const parts = [P.head];
-  if (P.key === 'neon' || P.key === 'spot'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
+  if (P.key === 'neon' || P.key === 'spot'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people && who.face !== false) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
+  else if (who.people && who.face !== false){ if (P.focus) parts.push(!who.male && P.focusFemale ? P.focusFemale : P.focus); if (who.male && P.focusMale) parts.push(P.focusMale); }
+  if (fx && P.fx && P.key !== 'neon' && P.key !== 'spot') parts.push(P.fx);   // 최종 3종: 전투·각성 컷에만 움직임·기운   // v43 B: 얼굴 보호 + 성인 남자 보정
   parts.push(count, tags);
   if (pose && who.people) parts.push(`1.45::${pose} ::`);
   let tail = P.tail || '';
-  if (!who.people) tail = tail.replace(WT_FACE_TAIL, '');
+  if (P.wide && /\b(full body|wide shot|from far|from above|aerial|back view)\b/i.test(`${tags} ${pose || ''}`)) tail = tail.replace(P.wide, '');   // 전신·원경 컷엔 근접 프레이밍을 뺀다
+  if (!who.people || who.face === false) tail = tail.replace(WT_FACE_TAIL, '');
   else if (!who.male) tail = tail.replace(/\bextremely handsome man,?\s*/i, '');
   parts.push(tail, 'no text');
   return parts.filter(Boolean).join(', ').replace(/,\s*,/g, ',').replace(/,\s*$/, '');
@@ -194,18 +521,24 @@ function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 �
   if (k === 'custom') return (($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim() || $('#naiStyle').value.trim()).replace(/,\s*$/, '');
   return WT_STYLE[k].head.replace('{MONO}', wtMono());
 }
+// 일반 등급에서 어린이·청소년 인물을 일부러 그릴 때(가족·학교·스포츠 장면)는 그림체의 '아이 막기' 네거티브를 푼다. 성인 등급은 그대로 막는다
+const WT_KID_NEG = /^(child|children|young|aged down|shota|loli|baby face|kid|toddler|teen|teenager)$/i;
+function wtKidsNeg(neg, text, nsfw){ return !nsfw && MINOR_RE.test(text || '') ? neg.split(',').map(x => x.trim()).filter(x => x && !WT_KID_NEG.test(x)).join(', ') : neg; }
 function wtStyleNeg(neg, nsfwArg, who){
   const k = wtStyleKey(); const st = WT_STYLE[k]; const nsfw = nsfwArg ?? (wtRating() === 'nsfw');
   let out = (st ? [neg, st.neg].filter(Boolean).join(', ') : neg).split(',').map(x => x.trim()).filter(Boolean);
   if (st?.dropNeg) out = out.filter(x => !st.dropNeg.test(x));
-  if (who?.female) out = out.filter(x => !/^(1girl|female)$/i.test(x));   // 여자 인물이 나오는 컷에서 그림체의 '1girl, female' 막기를 푼다
+  if (who?.female) out = out.filter(x => !/^(1girl|female|feminine face)$/i.test(x));   // 여자 인물이 나오는 컷에서 그림체의 '1girl, female' 막기를 푼다
   if (nsfw) out = out.filter(x => !NSFW_DROP_NEG.test(x));   // 성인 컷에서 벌린 입·표정을 막지 않는다
   if (nsfw) out.push(...NSFW_NEG_ADD.split(',').map(x => x.trim()));
+  else if (st?.safeNeg) out.push(...st.safeNeg.split(',').map(x => x.trim()));
   return [...new Set(out)].join(', ');
 }
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
 const wtNaiTextOn = () => $('#wtNaiText')?.checked ?? store.get('set.wtNaiText', false);
+// V5 최종 그림체 설정: 품질 태그 자동 추가 끔(no text 가 대사를 지운다), 네거 프리셋 없음, guidance 5(자글자글 방지), rescale 0
+const WT_V5_PARAMS = {qualityToggle: false, ucPreset: 3, cfg_rescale: 0, scale: 5};
 function wtPanelPrompt(panel, bubbleTexts){
   const rating = wtRating(), dict = wtDict();
   const names = String(panel.chars || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
@@ -215,14 +548,35 @@ function wtPanelPrompt(panel, bubbleTexts){
   const girls = found.filter(x => isGirl(dict.get(x))).length, boys = n - girls;
   const count = n === 0 ? 'no humans' : [boys ? (boys === 1 ? '1boy' : `${boys}boys`) : '', girls ? (girls === 1 ? '1girl' : `${girls}girls`) : ''].filter(Boolean).join(', ');
   const people = names.length > 0;
-  const who = {male: !n || boys > 0, female: girls > 0, people};
-  const tags = (panel.tags || '').trim() || (people ? 'upper body, looking at viewer' : 'scenery, wide shot');
+  // 손·물건 클로즈업 컷: 얼굴을 그리지 않게 (예전엔 '손에 쥔 우유' 컷에도 인물 얼굴 초상이 나왔다)
+  let tags = (panel.tags || '').trim() || (people ? 'upper body, looking at viewer' : 'scenery, wide shot');
+  // 쪽 설정(장소·빛·옷)을 컷마다 이어 붙여 컷끼리 같은 장면으로 보이게. 인물 이름은 사전 외형으로 바뀌므로 '이름 wears' 는 옷만 남긴다
+  const outfit = new Map(), place = [];
+  for (const seg of String(panel.setting || '').split(',').map(x => x.trim()).filter(Boolean)){ const m = seg.match(/^(.+?)\s+(?:wears|wearing|in)\s+(.+)$/i); if (m && (names.includes(m[1].trim()) || dict.has(m[1].trim()))){ if (names.includes(m[1].trim())) outfit.set(m[1].trim(), m[2].trim()); } else place.push(seg); }   // 이 컷에 없는 인물의 옷은 빼기
+  if (place.length) tags += ', ' + place.join(', ');
+  const handsOnly = people && /\b(hands?|fingers?|object focus|item focus|close-up of (?!(?:his |her |the )?face))\b/i.test(tags + ' ' + (panel.pose || '')) && !/\b(face|portrait|upper body|cowboy shot|full body|two shot|wide shot|head)\b/i.test(tags);
+  if (handsOnly) tags += ', 1.3::hands focus, close-up, head out of frame ::';
+  const who = {male: !n || boys > 0, female: girls > 0, people, face: !handsOnly};
   const base = wtStyleBase({count: people ? (n ? count : '') : 'no humans', tags, pose: (panel.pose || '').trim(), fx: !!panel.fx, nsfw: rating === 'nsfw', who});
   let neg = [$('#naiNeg').value.trim(), 'speech bubble, text, english text, korean text, subtitle, panel border'].filter(Boolean).join(', ');
   neg = wtStyleNeg(neg, undefined, who);
+  neg = wtKidsNeg(neg, [tags, ...found.map(x => dict.get(x))].join(' '), rating === 'nsfw');
   if (rating === 'nsfw') neg = neg.split(',').map(s => s.trim()).filter(s => s && s !== 'nsfw').join(', '); else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
   const cols = n === 1 ? [2] : n === 2 ? [1, 3] : n === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
-  const chars = found.slice(0, 6).map((name, i) => ({name, prompt: (rating === 'nsfw' && !/\badult\b/.test(dict.get(name)) ? 'adult, ' : '') + dict.get(name), negative: '', position: `${cols[i]},2`}));
+  // 손 컷: 얼굴·머리·표정 태그를 빼고 옷·손에 걸린 것만 남긴다(얼굴 태그가 남으면 노벨AI 가 얼굴을 그려 넣는다)
+  const HEADY = /\b(face|eyes?|eyebrows?|hair|undercut|bangs|ponytail|piercings?|ear|smirk|smile|grin|expression|glasses|acne|cheeks?|lips?|mouth|handsome|attractive|unattractive|plain|pretty|beautiful|nose|jaw|jawline|cigarette)\b/i;
+  const handTags = t => t.split(',').map(x => x.trim()).filter(x => x && !HEADY.test(x)).join(', ') + ', hands only, head out of frame';
+  const chars = found.slice(0, 6).map((name, i) => { let pr = dict.get(name); if (outfit.has(name)) pr += `, 1.2::wearing ${outfit.get(name)} ::`; if (handsOnly) pr = handTags(pr); return {name, prompt: (rating === 'nsfw' && !/\badult\b/.test(pr) ? 'adult, ' : '') + pr, negative: '', position: `${cols[i]},2`}; });
+  if (handsOnly) neg += ', face, head, eyes, portrait, letters, writing on objects';
+  // V5 최종 그림체: 남자 인물 칸엔 '성인 남자'를 앞에 박고(어려 보임·여성화 방지, 아카 남캐 프롬 공통), 안경 쓴 인물이 있으면 안 쓴 인물 칸 UC 에 안경을 넣어 번짐을 막는다(라운드 15 재혁 안경 번짐)
+  const v5 = !!WT_STYLE[wtStyleKey()]?.v5;
+  if (v5){
+    const hasGlasses = chars.some(c => /\bglasses\b/i.test(c.prompt));
+    for (const c of chars){
+      if (!isGirl(c.prompt) && !/\b(man|men|male)\b/i.test(c.prompt)) c.prompt = 'man, mature male, ' + c.prompt;
+      if (hasGlasses && !/\bglasses\b/i.test(c.prompt)) c.negative = 'glasses, eyewear';
+    }
+  }
   // 노벨AI 글자 그리기: 'no text' 를 빼고 프롬프트 맨 끝에 Text: 를 붙인다 (공식 문법: 맨 끝, 여러 개는 빈 줄로)
   let base2 = base;
   const bt = (bubbleTexts || []).map(x => String(x).trim()).filter(Boolean).slice(0, 2);
@@ -231,7 +585,7 @@ function wtPanelPrompt(panel, bubbleTexts){
     neg = neg.split(',').map(x => x.trim()).filter(x => x && !/^(speech bubble|text|english text|korean text|subtitle)$/i.test(x)).join(', ');
     base2 += '\nText: ' + bt.join('\n\n');
   }
-  return {base: base2, neg, chars, size: '', notes: '', rating};
+  return {base: base2, neg, chars, size: '', notes: '', rating, params: v5 ? WT_V5_PARAMS : undefined};
 }
 function wtSizeKey(pg, panel){ const bb = polyBox(polyPx(pg, panel)), r = (bb[2] - bb[0]) / (bb[3] - bb[1]); return r > 1.3 ? 'landscape' : r < 0.78 ? 'portrait' : 'square'; }
 const wtMinorBlock = p => wtRating() === 'nsfw' && MINOR_RE.test([p.base, ...p.chars.map(c => c.prompt)].join(' '));
@@ -240,43 +594,131 @@ async function wtGenPanel(pg, panel){
   const bt = panel.say?.length ? panel.say.map(t => t.slice(0, 40)) : (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
   const p = wtPanelPrompt(panel, bt);
   if (wtMinorBlock(p)) throw new Error('미성년을 떠올리게 하는 태그가 있어서 건너뛰었어요');
+  if (pg.seed) p.seed = (pg.seed + pg.panels.indexOf(panel) * 7919) % 4294967295;   // 같은 쪽 컷은 이웃한 씨앗(빛·색 결이 비슷하게)
   const blob = await naiGenBlob(p, wtSizeKey(pg, panel));
-  const id = await wtPutImage(blob); panel.img = id; panel.view = {ox: 0, oy: 0, s: 1}; return id;
+  const id = await wtPutImage(blob); panel.img = id; panel.view = {ox: 0, oy: 0, s: 1}; wtAutoLayout(pg, panel); return id;
 }
 
 /* ---------- 대본 → 쪽 ---------- */
-// 컷 하나에 말풍선·효과음·스티커를 놓는다.
-// 말풍선은 말하는 사람(chars 순서 = 그림 속 위치와 같은 줄)의 머리 위에 두고 꼬리를 그 사람 쪽으로, 글 길이에 맞춘 폭으로.
+// 컷 하나에 말풍선·효과음·스티커를 놓는다. 자리는 wtAutoLayout 이 잡는다(그림이 생기면 그림의 빈 곳을 찾아 다시 잡는다).
 // '말풍선 글자도 그림에 그리기'를 켜면 대사는 노벨AI 가 그림 안에 그리므로 겹치지 않게 대사 말풍선은 놓지 않고 컷에 적어 둔다(panel.say)
+const wtMonoStyle = () => { const k = wtStyleKey(); const st = WT_STYLE[k]; return !!st && /\b(monochrome|greyscale|grayscale|black and white)\b/i.test(st.head); };
 function wtPlace(pg, panel, spec){
-  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.7, Math.min(1.3, bw / 1000));
-  const items = []; const mk = o => { o.id = uid(); items.push(o); return o; };
-  const pi = pg.panels.indexOf(panel);
+  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.75, Math.min(1.2, bw / 1000));
+  const items = []; const mk = o => { o.id = uid(); o.auto = true; o.pid = panel.id; items.push(o); return o; };
+  const pi = pg.panels.indexOf(panel), mono = wtMonoStyle();
   const names = (spec.chars || []).map(String);
-  const cols = names.length === 1 ? [2] : names.length === 2 ? [1, 3] : names.length === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
-  const headX = i => bb[0] + bw * ((cols[i] ?? 2) / 5 + 0.1);
-  const clampX = x => Math.max(bb[0] + bw * 0.2, Math.min(bb[2] - bw * 0.2, x));
-  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.round(Math.min(bw, bh) * 0.42), rot: 0, pi});   // pi: 이 컷 안에서만 보이게 자른다
+  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.round(Math.min(bw, bh) * 0.42), rot: 0, pi, fixed: true});   // pi: 이 컷 안에서만 보이게 자른다
   const naiText = wtNaiTextOn(); panel.say = [];
-  let bi = 0, ni = 0;
+  const fs = Math.round(40 * Math.max(0.95, Math.min(1.12, bw / 1000)));   // 대사 글씨: 쪽 너비 1500 의 2.7% 안팎 (폰에서 읽히는 크기)
+  let order = 0;
   for (const b of (spec.bubbles || []).slice(0, 3)){
     const text = String(b.text || '').trim(); if (!text) continue;
-    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.08 + ni * 100 * sc, size: Math.round(40 * sc), w: Math.round(Math.min(bw * 0.5, 520 * sc)), text, line: 'thin', dash: true, tail: null}); ni++; continue; }
-    if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(54 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); continue; }
+    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1, size: Math.round(36 * sc), w: Math.round(Math.min(bw * 0.62, 560 * sc)), text, line: 'thin', tail: null, bf: 'serif', role: 'narr', ord: order++}); continue; }
+    if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.85, size: Math.round(50 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0, role: 'mono', ord: order++}); continue; }
     if (naiText){ panel.say.push(text); continue; }
     const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
     const who = names.indexOf(String(b.who || '').trim());
-    const sx = who >= 0 ? headX(who) : bb[0] + bw * (bi % 2 === 0 ? 0.72 : 0.28);
-    const x = clampX(sx + (who >= 0 ? (sx < bb[0] + bw / 2 ? bw * 0.06 : -bw * 0.06) : 0)), y = bb[1] + bh * (0.12 + 0.2 * bi) + ni * 130 * sc;   // 설명 상자가 있으면 그 아래로
-    const w = Math.round(Math.max(240, Math.min(bw * 0.5, Math.sqrt(text.length) * 105)));
-    const fs = Math.round(44 * Math.max(0.92, Math.min(1.15, bw / 1000)));   // 글씨는 컷이 작아도 쪽 너비(1500)의 3% 안팎으로 읽히게
-    mk({k: 'bubble', shape, x, y, size: fs, w, line: 'thin', text, tail: shape === 'shout' ? null : {x: sx, y: y + bh * (shape === 'thought' ? 0.1 : 0.2)}}); bi++;
+    const w = Math.round(Math.max(220, Math.min(bw * 0.46, 330 * Math.max(0.9, sc))));
+    mk({k: 'bubble', shape, x: bb[0] + bw / 2, y: bb[1] + bh * 0.2, size: shape === 'shout' ? Math.round(fs * 1.12) : fs, w, line: 'thin', text, bold: shape === 'shout', bf: shape === 'thought' ? 'hand' : undefined,
+      tail: shape === 'shout' ? null : {x: bb[0] + bw / 2, y: bb[1] + bh * 0.5}, who: who, nwho: names.length, role: 'say', ord: order++});
   }
-  (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.2 : 0.8), y: bb[1] + bh * (i ? 0.78 : 0.62), size: Math.round(Math.min(bw, bh) * 0.2), text: t, grad: (hash(t) % 4), rot: i ? 10 : -12, vert: !!s.vert, font: 'Black Han Sans'}); });
-  // 스티커는 말풍선이 없는 아래쪽 모서리에 (말풍선을 덮지 않게)
-  const stk = (spec.stickers || []).filter(k => k !== 'speed'); stk.forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.14 + i * 0.12), y: bb[1] + bh * (k === 'heart' ? 0.55 : 0.82), size: Math.round(Math.min(bw, bh) * 0.15), rot: i * 8 - 4}));
+  (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.25 : 0.78), y: bb[1] + bh * (i ? 0.75 : 0.6), size: Math.round(Math.min(bw, bh) * 0.19), text: t, grad: mono ? 6 : (hash(t) % 4), rot: i ? 8 : -10, vert: !!s.vert, font: 'heavy', role: 'sfx', ord: 50 + i}); });
+  (spec.stickers || []).filter(k => k !== 'speed').forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.14 + i * 0.12), y: bb[1] + bh * 0.8, size: Math.round(Math.min(bw, bh) * 0.13), rot: i * 8 - 4, mono, role: 'stk', ord: 60 + i}));
   return items;
 }
+/* ---------- 말풍선 자동 배치 ----------
+   그림이 있으면 그림을 작게 줄여 '복잡한 정도(윤곽선 밀도)' 지도를 만들고, 얼굴·몸처럼 선이 몰린 곳을 피해 빈 하늘·벽·여백에 놓는다.
+   웹툰 읽는 순서(위→아래)를 지키고, 서로 겹치지 않게, 꼬리는 말하는 사람 쪽으로 짧게. 사용자가 옮긴 것(auto=false)은 건드리지 않는다. */
+function wtBusyMap(pg, panel){
+  const im = panel.img ? WT.imgs.get(panel.img) : null; if (!im) return null;
+  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], C = 12;   // 12px 한 칸
+  const cw = Math.max(4, Math.ceil(bw / C)), ch = Math.max(4, Math.ceil(bh / C));
+  const c = document.createElement('canvas'); c.width = cw; c.height = ch; const g = c.getContext('2d', {willReadFrequently: true});
+  const v = panel.view || {}, s0 = Math.max(bw / im.width, bh / im.height), s = s0 * (v.s || 1), w = im.width * s, h = im.height * s;
+  g.drawImage(im, ((bw - w) / 2 + (v.ox || 0) * bw) / C, ((bh - h) / 2 + (v.oy || 0) * bh) / C, w / C, h / C);
+  const d = g.getImageData(0, 0, cw, ch).data, L = new Float32Array(cw * ch);
+  for (let i = 0; i < cw * ch; i++) L[i] = d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11;
+  const I = new Float64Array((cw + 1) * (ch + 1));   // 윤곽 세기의 누적합(아무 네모나 바로 평균을 낸다)
+  for (let y = 0; y < ch; y++){ let row = 0; for (let x = 0; x < cw; x++){
+    const i = y * cw + x, gx = x + 1 < cw ? L[i + 1] - L[i] : 0, gy = y + 1 < ch ? L[i + cw] - L[i] : 0;
+    const e = Math.min(1, Math.hypot(gx, gy) / 60) + (L[i] < 60 ? 0.35 : 0);   // 먹이 짙은 곳(머리카락·옷)도 조금 피한다
+    row += e; I[(y + 1) * (cw + 1) + x + 1] = I[y * (cw + 1) + x + 1] + row; } }
+  return (x0, y0, x1, y1) => {   // 쪽 좌표 네모 → 0~1
+    const a = Math.max(0, Math.min(cw, Math.floor((x0 - bb[0]) / C))), b = Math.max(0, Math.min(ch, Math.floor((y0 - bb[1]) / C)));
+    const c2 = Math.max(0, Math.min(cw, Math.ceil((x1 - bb[0]) / C))), d2 = Math.max(0, Math.min(ch, Math.ceil((y1 - bb[1]) / C)));
+    const n = (c2 - a) * (d2 - b); if (n <= 0) return 1;
+    return (I[d2 * (cw + 1) + c2] - I[b * (cw + 1) + c2] - I[d2 * (cw + 1) + a] + I[b * (cw + 1) + a]) / n;
+  };
+}
+const WT_MCTX = (() => { let c; return () => c || (c = document.createElement('canvas').getContext('2d')); })();
+function wtItemHalf(it){
+  const g = WT_MCTX();
+  if (it.k === 'bubble'){ const geo = bubbleGeom(g, it); return [geo.rx, geo.ry]; }
+  if (it.k === 'text'){ g.font = `700 ${it.size || 46}px ${WT_TEXT}`; const ls = wrapLines(g, it.text, it.w || 420); return [Math.max(30, ...ls.map(l => g.measureText(l).width)) / 2 + 12, ls.length * (it.size || 46) * 1.35 / 2 + 10]; }
+  if (it.k === 'sfx'){ const n = [...String(it.text || '')].length, z = it.size || 120; return it.vert ? [z * 0.6, z * 0.9 * n / 2 + z * 0.2] : [z * 0.95 * n / 2 + z * 0.24, z * 0.62]; }
+  return [(it.size || 120) * 0.6, (it.size || 120) * 0.6];
+}
+function wtAutoLayout(pg, panel){
+  const pts = polyPx(pg, panel), bb = polyBox(pts), bw = bb[2] - bb[0], bh = bb[3] - bb[1];
+  const mine = (pg.items || []).filter(it => it.auto && !it.fixed && (it.pid ? it.pid === panel.id : inPolyPx(it.x, it.y, pts)));
+  if (!mine.length) return;
+  const busy = wtBusyMap(pg, panel);
+  const placed = (pg.items || []).filter(it => !mine.includes(it) && inPolyPx(it.x, it.y, pts) && !(it.k === 'stk' && it.kind === 'speed')).map(it => { const [hw, hh] = wtItemHalf(it); return [it.x - hw, it.y - hh, it.x + hw, it.y + hh]; });
+  const inside = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].every(([x, y]) => inPolyPx(x, y, pts));
+  const over = (r) => placed.reduce((a, q) => { const w = Math.min(r[2], q[2]) - Math.max(r[0], q[0]), h = Math.min(r[3], q[3]) - Math.max(r[1], q[1]); return a + (w > 0 && h > 0 ? w * h : 0); }, 0);
+  const m = Math.max(16, bw * 0.025);
+  // 얼굴이 올 자리 짐작: 흑백 그림의 피부는 선이 적어 '빈 곳'처럼 보이므로 따로 피한다
+  const tg = `${panel.tags || ''} ${panel.pose || ''}`, nCh = String(panel.chars || '').split(/[,，、]/).filter(x => x.trim()).length;
+  const faces = [];
+  if (nCh && !/\b(hands? focus|head out of frame|from behind|back view)\b/i.test(tg)){
+    const close = /\b(close-up|face|portrait)\b/i.test(tg), far = /\b(full body|wide shot|from far|aerial)\b/i.test(tg);
+    const xs = [[0.5], [0.3, 0.7], [0.2, 0.5, 0.8]][Math.min(2, nCh - 1)];
+    for (const fx of xs){ const hwf = close ? 0.32 / Math.min(2, nCh) + 0.08 : far ? 0.07 : 0.14, y0 = close ? 0.12 : far ? 0.12 : 0.1, y1 = close ? 0.9 : far ? 0.3 : 0.5;
+      faces.push([bb[0] + bw * (fx - hwf), bb[1] + bh * y0, bb[0] + bw * (fx + hwf), bb[1] + bh * y1]); }
+  }
+  const faceHit = r => faces.reduce((a, q) => { const w = Math.min(r[2], q[2]) - Math.max(r[0], q[0]), h = Math.min(r[3], q[3]) - Math.max(r[1], q[1]); return a + (w > 0 && h > 0 ? w * h : 0); }, 0) / ((r[2] - r[0]) * (r[3] - r[1]));
+  let lastY = bb[1] - 1e9;
+  for (const it of mine.sort((a, b) => (a.ord ?? (a.y - bb[1]) / 1e4) - (b.ord ?? (b.y - bb[1]) / 1e4))){
+    const role = it.role || (it.k === 'bubble' ? (it.shape === 'box' ? 'narr' : 'say') : it.k === 'text' ? 'mono' : it.k === 'sfx' ? 'sfx' : 'stk');
+    const [hw, hh] = wtItemHalf(it);
+    if (hw * 2 + m * 2 > bw || hh * 2 + m * 2 > bh){ it.x = bb[0] + bw / 2; it.y = bb[1] + bh / 2; continue; }   // 컷보다 크면 가운데
+    const spk = it.who >= 0 && it.nwho ? bb[0] + bw * ([[0.5], [0.3, 0.7], [0.2, 0.5, 0.8]][Math.min(2, it.nwho - 1)][Math.min(it.who, 2)] ?? 0.5) : null;
+    const sx = Math.max(8, bw / 14), sy = Math.max(8, bh / 14), cands = [];
+    for (let y = bb[1] + m + hh; y <= bb[3] - m - hh; y += sy) for (let x = bb[0] + m + hw; x <= bb[2] - m - hw; x += sx){
+      const r = [x - hw, y - hh, x + hw, y + hh]; if (inside(...r)) cands.push({x, y, r, b: busy ? busy(...r) : 0});
+    }
+    if (!cands.length) continue;
+    // 복잡한 정도는 이 컷 안에서 상대값으로 (해칭 많은 흑백 그림은 어디나 복잡해서 절댓값이면 자리 선호가 묻힌다)
+    const bmin = Math.min(...cands.map(c => c.b)), bmax = Math.max(...cands.map(c => c.b)), bn = c => busy && bmax - bmin > 1e-3 ? (c.b - bmin) / (bmax - bmin) : 0;
+    let best = null;
+    for (const c of cands){
+      const {x, y, r} = c, fy = (y - bb[1]) / bh, fx = (x - bb[0]) / bw, B = bn(c);
+      let sc = B * 2.2 + over(r) / (hw * hh * 4) * 14 + (role === 'sfx' ? 0.6 : 1.8) * faceHit(r);   // 복잡한 곳(얼굴·몸)과 겹침을 피한다
+      if (role === 'say'){ sc += fy * 2.6; if (y < lastY + hh * 0.5) sc += 3; sc += spk != null ? Math.abs(x - spk) / bw * 0.7 : 0; sc += Math.max(0, 0.3 - Math.abs(fx - 0.5)) * (busy ? 0.6 : 2); }   // 위쪽, 읽는 순서, 말하는 사람 쪽, 얼굴이 오기 쉬운 한가운데는 덜
+      else if (role === 'narr') sc += fy * 3.2 + fx * 1.2;   // 설명 상자: 왼쪽 위
+      else if (role === 'mono') sc += (1 - fy) * 1.6 + Math.abs(fx - 0.5) * 0.6;   // 독백 글자: 아래쪽
+      else if (role === 'sfx') sc += Math.abs(fy - 0.6) * 0.8 - B * 1.4;   // 효과음: 얼굴만 아니면 동작 근처도 괜찮다 (위 B*2.2 와 합쳐 약하게 피한다)
+      else sc += (1 - fy) * 0.8;
+      if (!best || sc < best.sc) best = {sc, x, y};
+    }
+    if (!best) continue;
+    const dx = best.x - it.x, dy = best.y - it.y; it.x = best.x; it.y = best.y;
+    if (it.tail){
+      // 꼬리: 말하는 사람(없으면 아래쪽 가운데)을 향해 풍선 크기만큼만
+      const tx0 = spk ?? (bb[0] + bw * 0.5), ty0 = bb[1] + bh * 0.42;   // 말하는 사람의 얼굴·입 언저리
+      const ang = Math.atan2(ty0 - it.y, tx0 - it.x), co = Math.cos(ang), si = Math.sin(ang);
+      const rEdge = 1 / Math.sqrt((co / hw) ** 2 + (si / hh) ** 2), len = Math.max(40, Math.min(bh * 0.13, Math.hypot(tx0 - it.x, ty0 - it.y) - rEdge));
+      it.tail = {x: Math.max(bb[0] + 6, Math.min(bb[2] - 6, it.x + co * (rEdge + len))), y: Math.max(bb[1] + 6, Math.min(bb[3] - 6, it.y + si * (rEdge + len)))};
+    }
+    placed.push([it.x - hw, it.y - hh, it.x + hw, it.y + hh]);
+    if (role === 'say') lastY = it.y;
+  }
+}
+// 쪽 전체 다시 잡기(편집기 '말풍선 자리 다시 잡기' 버튼)
+function wtRelayout(pg, force){ for (const pn of pg.panels){ if (force) for (const it of pg.items) if (inPolyPx(it.x, it.y, polyPx(pg, pn)) && !it.fixed) { it.auto = true; it.pid = pn.id; } wtAutoLayout(pg, pn); } }
+window.nvWtRelayout = wtRelayout;
+$('#wtRelayout') && ($('#wtRelayout').onclick = e => { const pg = wtPage(); if (!pg) return; wtRelayout(pg, e.shiftKey); wtCommit(); wtRender(); toast(e.shiftKey ? '이 쪽의 글·효과를 모두 다시 놓았어요' : '자동으로 놓인 글·효과를 다시 놓았어요 (Shift+누르기: 손으로 옮긴 것까지)'); });
 function wtBuildFromScript(sc){
   const pages = [];
   for (const sp of sc.pages || []){
@@ -284,11 +726,12 @@ function wtBuildFromScript(sc){
     const want = {1: '1', 2: '2a', 3: '3a', 4: '4a'}[specs.length];
     const key = WT_LAYOUTS[sp.layout] && WT_LAYOUTS[sp.layout].polys.length === specs.length ? sp.layout : want;
     const pg = wtNewPage(key, 2000); const real = pg.panels;
-    specs.forEach((spec, i) => { const pn = real[i]; pn.scene = spec.scene || ''; pn.tags = spec.tags || ''; pn.pose = spec.pose || ''; pn.fx = !!spec.fx; pn.chars = (spec.chars || []).join(', '); });
+    pg.setting = String(sp.setting || '').trim() || (pages.at(-1)?.setting || ''); pg.seed = Math.floor(Math.random() * 4e9);   // 장소·빛·옷을 쪽 안 모든 컷에 같이 / 같은 쪽은 씨앗도 이웃하게
+    specs.forEach((spec, i) => { const pn = real[i]; pn.setting = pg.setting; pn.scene = spec.scene || ''; pn.tags = spec.tags || ''; pn.pose = spec.pose || ''; pn.fx = !!spec.fx; pn.chars = (spec.chars || []).join(', '); });
     const order = ['speed', 'stk', 'sfx', 'text', 'bubble'];   // 아래에 깔릴 것부터
     const items = []; specs.forEach((spec, i) => items.push(...wtPlace(pg, real[i], spec)));
     items.sort((a, b) => order.indexOf(a.k === 'stk' && a.kind === 'speed' ? 'speed' : a.k) - order.indexOf(b.k === 'stk' && b.kind === 'speed' ? 'speed' : b.k));
-    pg.items = items; pages.push(pg);
+    pg.items = items; real.forEach(pn => wtAutoLayout(pg, pn)); pages.push(pg);
   }
   return pages;
 }
@@ -321,6 +764,8 @@ function wtTameWarn(text){
 }
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
+// 성인 웹툰은 원하면 내 컴퓨터 AI(Ollama)로: Claude·Gemini 는 성인 대본을 거절하거나 순하게 바꾼다
+const wtClient = async sel => (wtRating() === 'nsfw' && store.get('set.naiNsfwOllama', false)) ? {prov: 'ollama'} : client(sel === 'default' ? '' : '#wtAI');
 let wtAbort = null;
 $('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); $('#wtSyn').value = WT.proj.synopsis || ''; $('#wtSynBox').hidden = !WT.proj.synopsis; wtSynStat(); };
 $('#wtAutoX').onclick = () => { $('#wtAutoBox').hidden = true; };
@@ -331,7 +776,7 @@ $('#wtAutoGo').onclick = async () => {
   if (wtAbort) return;
   const rating = wtRating(), dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(story + '\n' + dict.join('\n'), 'adult')) return;
-  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
+  const sel = $('#wtAI').value; const c = await wtClient(sel); if (!c) return;
   let n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)); const tone = $('#wtTone').selectedOptions[0].text;
   // 줄거리의 장면 수([1장] 같은 줄)가 쪽 수보다 많으면 쪽을 늘린다(예전엔 4쪽에 줄이느라 사건이 빠졌다)
   const scenes = (story.match(/^\s*\[[^\]]+\]/gm) || []).length;
@@ -339,7 +784,7 @@ $('#wtAutoGo').onclick = async () => {
   wtAbort = new AbortController(); $('#wtAutoGo').disabled = true; $('#wtAutoStop').hidden = false; wtAutoStat('대본 쓰는 중…');
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
   const known = new Set(dict.map(l => l.split(':')[0].trim()));
-  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (사건을 다 담으려면 ±2쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
+  const content = [{type: 'text', text: `${wtFrameLine()}쪽 수: ${n}쪽 (사건을 다 담으려면 ±2쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
   let res; try{ res = await stream(c, {messages: [{role: 'user', content}], system: SYSTEM_WT(), signal: wtAbort.signal, format: {type: 'json_schema', schema: WT_SCHEMA}}); }
   finally { wtAbort = null; $('#wtAutoGo').disabled = false; $('#wtAutoStop').hidden = true; }
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
@@ -354,6 +799,7 @@ $('#wtAutoGo').onclick = async () => {
   const panels = added.reduce((a, p) => a + p.panels.length, 0);
   wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요${newCast ? ` · 새 인물 ${newCast}명(외형·말투)을 사전에 넣었어요` : ''}.` + (wtTameWarn(JSON.stringify(sc.pages)) || ' 말풍선은 눌러서 옮기고 고칠 수 있어요.') + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
   wtGenSync();
+  if (store.get('set.wtAutoDraw', false) && naiToken() && wtTodo().length){ wtAutoStat('대본 끝 · 이어서 컷 그림을 만들어요…'); setTimeout(() => $('#wtGenAll').click(), 400); }   // 한 번에: 대본 → 컷 그림까지
 };
 
 /* ---------- 컷 그림 일괄 생성 (프로그램·폰 모두, 노벨AI) ---------- */
@@ -389,8 +835,10 @@ $('#wtImgGen').onclick = async () => {
 /* ---------- 그림체·인물 사전 칸 ---------- */
 function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark' && k !== 'spot'; $('#wtFrameRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
 $('#wtNaiText').checked = store.get('set.wtNaiText', false);
+if ($('#wtOllama')){ $('#wtOllama').checked = !!store.get('set.naiNsfwOllama', false); $('#wtOllama').onchange = () => { store.set('set.naiNsfwOllama', $('#wtOllama').checked); if ($('#naiNsfwOllama')) $('#naiNsfwOllama').checked = $('#wtOllama').checked; }; }
+if ($('#wtAutoDraw')){ $('#wtAutoDraw').checked = !!store.get('set.wtAutoDraw', false); $('#wtAutoDraw').onchange = () => store.set('set.wtAutoDraw', $('#wtAutoDraw').checked); }
 $('#wtNaiText').onchange = () => store.set('set.wtNaiText', $('#wtNaiText').checked);
-$('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
+$('#wtStyle').value = store.get('set.wtStyle', WT_DEFAULT_STYLE); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
 $('#wtStyle').onchange = wtStyleSync;
 $('#wtMono').onchange = () => store.set('set.wtMono', $('#wtMono').value);
 $('#wtFrame').value = store.get('set.wtFrame', 'mirror');
@@ -405,6 +853,19 @@ $('#wtAuto').addEventListener('click', () => { $('#wtChars').value = $('#naiChar
 $('#wtSynUse').onclick = () => { const v = $('#wtSyn').value.trim(); if (!v) return toast('줄거리가 비어 있어요'); WT.proj.synopsis = v; $('#wtAutoGo').click(); };
 $('#wtSyn').oninput = () => { if (WT.proj) WT.proj.synopsis = $('#wtSyn').value; };
 
+/* ---------- 이야기 틀: 많이 팔리는 웹툰·만화의 화 구성 공식을 줄거리·대본 AI 에게 함께 준다 ---------- */
+const WT_FRAMES = {
+  hook: '1화 공식: 첫 쪽 첫 컷에 이 이야기에서 가장 센 장면(훅)을 먼저 보여 준다 → 두 사람의 관계와 위치를 짧게 → 사건 → 감정이 꺾이는 반전 → 다음 화가 궁금한 장면에서 끊는다(클리프행어). 마지막 컷은 대사 한 줄이나 표정 클로즈업.',
+  pair: '2인 관계극: 힘의 차이(갑을·체격·계급)가 분명한 두 사람. 거리 두기 → 도발 → 몸이 닿는 순간 → 위계가 한 번 뒤집히는 컷 → 여운. 둘만 있는 공간(옥상·자취방·차 안·창고)을 쓴다. 쪽마다 둘의 거리가 조금씩 줄어든다.',
+  school: '학원·일진물: 계급이 정해진 교실과 복도 → 약자가 표적이 된다 → 예상 밖의 보호나 관심 → 주변의 시선과 소문 → 둘만 아는 비밀로 끝. 교복 대신 대학·직장으로 옮겨도 같은 구조.',
+  romcom: '로맨틱 코미디: 오해에서 시작 → 억지로 붙어 있어야 하는 상황 → 과장된 표정과 효과음이 있는 개그 컷 3번 이상 → 갑자기 조용해지는 설렘 한 컷 → 방해로 끊긴다.',
+  dark: '집착·피폐: 평범한 일상 → 이상한 흔적 → 확인 → 도망칠 수 없는 구조가 드러남 → 마지막 컷에 상대의 얼굴을 크게. 밝은 컷과 어두운 컷의 대비를 크게.',
+  gag: '개그: 쪽마다 4컷 리듬(설정 → 전개 → 비틀기 → 한 방). 마지막 컷은 리액션 표정을 크게, 효과음을 크게.',
+  fantasy: '판타지 각성: 약자의 초라한 일상 → 사건(던전·회귀·상태창) → 힘을 처음 쓰는 큰 컷 → 주변의 반응 → 더 큰 위협 예고로 끊는다.',
+};
+window.nvWtFrameLine = () => wtFrameLine();
+const wtFrameLine = () => { const v = $('#wtStoryFrame')?.value; return v && WT_FRAMES[v] ? `이야기 틀(이 구성 순서를 따른다): ${WT_FRAMES[v]}\n` : ''; };
+$('#wtStoryFrame') && ($('#wtStoryFrame').value = store.get('set.wtStoryFrame', ''), $('#wtStoryFrame').onchange = () => store.set('set.wtStoryFrame', $('#wtStoryFrame').value));
 /* ================= 줄거리 길게 쓰기 ================= */
 const WT_SYN_LEN = {
   short: {n: '3~6문장', beats: 0, say: '짧게. 한 장면의 흐름만.'},
@@ -452,12 +913,12 @@ async function wtSynRun(more){
   if (wtSynAbort) return;
   const rating = wtRating(), dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(seed + '\n' + dict.join('\n'), 'adult')) return;
-  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
+  const sel = $('#wtAI').value; const c = await wtClient(sel); if (!c) return;
   const L = WT_SYN_LEN[$('#wtSynLen').value] || WT_SYN_LEN.mid;
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
   wtSynAbort = new AbortController(); wtSynBusy(true); wtAutoStat(spice ? '줄거리를 맛깔나게 다시 쓰는 중…' : more ? '줄거리를 이어서 쓰는 중…' : '줄거리를 늘리는 중…');
   if (spice) WT.proj.synPrev = $('#wtSyn').value;
-  const text = `분량: ${L.n} — ${L.say}
+  const text = `${wtFrameLine()}분량: ${L.n} — ${L.say}
 장면(또는 화) 차례 개수: ${L.beats || '없이'}
 등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe).'}
 나오는 인물: ${cast.length ? cast.join(', ') : '(알아서 정한다)'}
@@ -549,7 +1010,7 @@ async function wtRefFromPages(w){
   wtAutoStat?.(`문체 참고: '${w.name}' ${fs.length}쪽의 말풍선을 읽는 중…`);
   const imgs = []; for (const f of fs){ try{ imgs.push(await spFileJpeg(f, 1024)); }catch{} }
   if (!imgs.length) return '';
-  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return '';
+  const sel = $('#wtAI').value; const c = await wtClient(sel); if (!c) return '';
   const r = await stream(c, {system: '너는 만화 글자 받아쓰기 담당이다. 그림 속 말풍선·속마음·나레이션 상자·효과음 글자를 읽는 순서대로 원문 그대로 옮겨 적는다. 번역·요약·설명은 하지 않는다. 한 줄에 말풍선 하나, 효과음은 [효과음] 을 앞에 붙인다. 쪽마다 --- 로 나눈다. 글자가 없는 쪽은 (없음).',
     messages: [{role: 'user', content: [...imgs.map(data => ({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}})), {type: 'text', text: '이 쪽들의 글자를 모두 받아써.'}]}]});
   if (!r.ok) throw new Error((r.note || '').trim() || '실패');
@@ -578,15 +1039,17 @@ wtModelSync();
 
 /* ---------- 노벨AI 탭도 같은 그림체를 쓴다 ---------- */
 // 06-ai-tabs.js 의 naiPack 이 부른다. 그림체를 고르면 그 공식, '직접 쓰기'면 하우스 스타일 칸.
-window.naiStyleFor = nsfw => { const P = wtStyleParts(nsfw); return {head: P.head || $('#naiStyle').value.trim().replace(/,\s*$/, ''), tail: P.tail, neg: n => wtStyleNeg(n, nsfw)}; };
+window.naiStyleFor = nsfw => { const P = wtStyleParts(nsfw); const fo = (P.key || '').startsWith('v43') && P.focus ? ', ' + P.focus : P.v5 && P.focusMale ? ', ' + P.focusMale : '';   // v43 B: 얼굴 보호 블록도 노벨AI 탭에 · V5 최종: 남자 얼굴 블록
+  return {head: (P.head || $('#naiStyle').value.trim().replace(/,\s*$/, '')) + fo, tail: P.tail, neg: n => wtStyleNeg(n, nsfw), params: P.v5 ? WT_V5_PARAMS : undefined}; };
 function naiStyleLabel(){
   const k = wtStyleKey(); const el = $('#naiStyleNow'); if (!el) return;
   el.textContent = k === 'custom' ? '지금 그림체: 아래 하우스 스타일 칸을 그대로 써요' : `지금 그림체: ${WT_STYLE[k].name}` + ((k === 'dark' || k === 'spot') ? ` · ${wtMono()}` : '');
 }
-$('#naiStyleSel').value = store.get('set.wtStyle', 'neon');
+$('#naiStyleSel').value = store.get('set.wtStyle', WT_DEFAULT_STYLE);
 $('#naiStyleSel').onchange = () => { $('#wtStyle').value = $('#naiStyleSel').value; store.set('set.wtStyle', $('#naiStyleSel').value); wtStyleSync(); naiStyleLabel(); };
 $('#wtStyle').addEventListener('change', () => { $('#naiStyleSel').value = $('#wtStyle').value; naiStyleLabel(); });
 $('#wtMono').addEventListener('change', naiStyleLabel);
 naiStyleLabel();
 
 window.nvWtPrompt = wtPanelPrompt;   // 시험용
+window.wtKidsNeg = wtKidsNeg;   // 노벨AI 탭(naiPack)에서도 쓴다

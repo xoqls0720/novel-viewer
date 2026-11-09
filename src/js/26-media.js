@@ -614,10 +614,19 @@ window.libShelf = () => libKind === 'all';
 window.libGoKind = k => { libKind = k; store.set('set.libKind', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
 const allWorks = () => works;
 window.nvAllWorks = allWorks;
+// 영상 칸 위 OTT 바로가기: 각 서비스를 기본 브라우저(폰은 새 탭)로 연다. 보기 전용 — 받기는 DRM 때문에 만들지 않는다.
+const OTT_LINKS = [['티빙', 'https://www.tving.com/'], ['넷플릭스', 'https://www.netflix.com/kr/'], ['디즈니+', 'https://www.disneyplus.com/ko-kr/home'], ['왓챠', 'https://watcha.com/']];
+function ottRow(){
+  const row = document.createElement('div'); row.className = 'ott-row';
+  row.innerHTML = '<b>바로 보기</b>' + OTT_LINKS.map(([, url]) => `<a href="${url}" target="_blank" rel="noopener"><span></span></a>`).join('');
+  row.querySelectorAll('a span').forEach((s, i) => s.textContent = OTT_LINKS[i][0]);
+  return row;
+}
 const _renderLib0 = renderLib;
 renderLib = function(){
   const all = works; works = all.filter(w => inKind(w));
   try{ _renderLib0(); } finally { works = all; }
+  if (libKind === 'video') $('#lib')?.prepend(ottRow());
   renderKinds();
 };
 function renderKinds(){

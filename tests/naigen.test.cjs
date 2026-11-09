@@ -20,7 +20,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
     };
   }, {png: PNG.toString('base64')});
   await p.goto(APP); await p.waitForTimeout(700);
-  await p.evaluate(() => { localStorage.setItem('nv.set.ngModel', JSON.stringify('nai-diffusion-4-5-full')); localStorage.removeItem('nv.set.ngV5'); localStorage.setItem('nv.set.stStart', 'false'); localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); localStorage.setItem('nv.provider', '"gemini"'); localStorage.setItem('nv.set.provider', '"gemini"'); localStorage.setItem('nv.set.naiChars', JSON.stringify('카엘: 1boy, adult, black hair, golden eyes')); localStorage.setItem('nv.set.naiStyle', JSON.stringify('masterpiece, korean webtoon style')); });
+  await p.evaluate(() => { localStorage.setItem('nv.set.ngModel', JSON.stringify('nai-diffusion-4-5-full')); localStorage.removeItem('nv.set.ngV5'); localStorage.setItem('nv.set.stStart', 'false'); localStorage.setItem('nv.gemKey', JSON.stringify('AIza-x')); localStorage.setItem('nv.provider', '"gemini"'); localStorage.setItem('nv.set.provider', '"gemini"'); localStorage.setItem('nv.set.naiChars', JSON.stringify('카엘: 1boy, adult, black hair, golden eyes')); localStorage.setItem('nv.set.naiStyle', JSON.stringify('masterpiece, korean webtoon style')); localStorage.setItem('nv.set.wtStyle', JSON.stringify('neon')); });
   await p.reload(); await p.waitForTimeout(800);
   await p.click('#tgTool').catch(() => {}); await p.click('.tabs button[data-tab=nai]'); await p.waitForTimeout(200);
   console.log('desktop ui:', await p.isVisible('#ngGo'), '| web hint hidden:', !(await p.isVisible('#ngWeb')));

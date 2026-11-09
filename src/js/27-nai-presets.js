@@ -151,9 +151,16 @@ const NP_CAST = {
   '서이준': '1boy, adult, mature male, 26 years old, tall, lean muscular build, pale skin, black hair swept back with loose strands over forehead, sharp grey eyes, long eyelashes, aristocratic features, black high-collar coat, silver brooch, leather gloves',
   '레온': '1boy, adult, mature male, 28 years old, muscular, broad chest, fair skin, golden blond short wavy hair, bright blue eyes, light freckles across nose, warm smile, white linen shirt, knight tabard, leather belt',
   '카엘': '1boy, adult, mature male, 33 years old, rugged, very muscular, sun-tanned skin, dark brown hair tied in a short low ponytail, amber eyes, scar across the bridge of the nose, stubble, worn leather armor, travel cloak, longsword at hip',
+  '강재혁': '1boy, adult, young adult man, 25 years old, very handsome, tall, lean muscular build, sharp fox-like eyes, bleached blond undercut with dark roots, multiple ear piercings, thin silver chain necklace, cocky smirk, open black track jacket, white t-shirt, cigarette behind ear',
+  '오동구': '1boy, adult, young adult man, 25 years old, plain unattractive face, chubby, overweight, soft round belly, round thick glasses, small eyes, messy unkempt black hair, light acne on cheeks, timid nervous expression, sweaty, oversized grey hoodie, baggy sweatpants',
+  '윤서호': '1boy, adult, young adult man, 22 years old medical student, very handsome, youthful boyish handsome face, soft features, smooth skin, neat soft black hair with bangs, thin silver round-rim glasses, white collared shirt, navy knit cardigan',
   '한태오': '1boy, adult, mature male, 29 years old, very muscular, bulky chest, thick thighs, tanned skin, short black crew cut, thick dark eyebrows, bright dark eyes, boyish grin, sleeveless black tank top, gym shorts',
 };
 const NP_PAIRS = [
+  {id: 'yangachi', name: '양아치 · 모범생 의대생 (강재혁·윤서호)', cast: ['강재혁', '윤서호'], for: '캐릭터챗 「강재혁」과 같은 설정 · 옥상·편의점·자취방 · 웹툰 대본',
+    voice: {'강재혁': '반말, 짧고 건들거림. 비웃듯 말끝을 올리고, 진심일 땐 오히려 말이 줄어든다', '윤서호': '차분한 존댓말, 논리적으로 또박또박 말한다. 당황하면 말이 짧아지고 안경을 고쳐 쓴다'}},
+  {id: 'yangachi_old', name: '(예전) 잘생긴 양아치 · 못생긴 찐따', cast: ['강재혁', '오동구'], for: '예전 화보 설정',
+    voice: {'강재혁': '반말, 짧고 건들거림. 비웃듯 말끝을 올리고, 진심일 땐 오히려 말이 줄어든다', '오동구': '존댓말, 말을 더듬고 끝을 흐린다. 속으로는 말이 많다(속마음 말풍선)'}},
   {id: 'cut37', name: '사진사 한서진 · 서른일곱 번째 컷', cast: ['한서진'], for: '그림체 E · 스팟컬러 구도(C1~C7) · 단색은 film amber'},
   {id: 'office', name: '사무실 선배·후배', cast: ['차민혁', '윤시우'], for: '야근 사무실 · 출장지 호텔'},
   {id: 'agency', name: '현장 요원 · 노련한 국장', cast: ['강도현', '백무진'], for: '사무실 · 표지 콜라주'},
@@ -177,9 +184,54 @@ function npCastFill(){
     const rest = naiCharsDict().filter(l => !pr.cast.some(n => l.startsWith(n + ':')));
     $('#naiChars').value = [...top, ...rest].join('\n');
     store.set('set.naiChars', $('#naiChars').value); if ($('#wtChars')) $('#wtChars').value = $('#naiChars').value;
+    if (pr.voice){ const v = (store.get('set.wtVoice', '') || '').split('\n').map(x => x.trim()).filter(x => x && !Object.keys(pr.voice).some(n => x.startsWith(n + ':'))); const vv = [...Object.entries(pr.voice).map(([n, t]) => `${n}: ${t}`), ...v].join('\n'); store.set('set.wtVoice', vv); if ($('#wtVoice')) $('#wtVoice').value = vv; }
+    if ($('#wtCast') && !$('#wtCast').value.trim()) $('#wtCast').value = pr.cast.join(', ');
     toast(`${pr.cast.join('·')} 을 인물 사전 맨 위에 넣었어요 · 잘 맞는 틀: ${pr.for}`);
     const pv = $('#naiPreset'); if (pv?.value) pv.dispatchEvent(new Event('change'));   // 고른 장면 틀이 있으면 새 인물로 다시
   };
 }
 npCastFill();
+(function(){ const w = $('#wtPair'), n = $('#naiCast'); if (!w || !n) return; w.innerHTML = n.innerHTML; w.onchange = () => { if (!w.value) return; n.value = w.value; n.dispatchEvent(new Event('change')); w.value = ''; }; })();   // 웹툰 만들기에서도 같은 인물 짝을 고른다
 window.nvNaiCast = {cast: NP_CAST, pairs: NP_PAIRS, line: npCastLine};   // 시험용
+
+/* ---------- 얼굴 원형 (v43, 2026-11-08) ----------
+   머리색·눈색만 바꾼 남자 8명이 모두 같은 얼굴로 나왔다 → 얼굴 원형을 2.0 무게로 인물 줄 맨 앞에 두면 같은 시드에서도 8명이 모두 갈렸다.
+   안전: baby face·youthful 은 쓰지 않는다(아이 얼굴이 나왔다). 소년미도 반드시 'adult man in his mid 20s'. */
+const NP_ARCH = [
+  ['강아지상', '2::tareme, droopy gentle eyes, soft rounded face, full lips, dimples, warm puppy-like face ::'],
+  ['여우상', '2::tsurime, sharp fox-like slanted eyes, narrow V-shaped face, thin lips, cold aristocratic face ::'],
+  ['거친 아저씨상', '2::square jaw, thick bushy eyebrows, broad nose, light stubble, rugged masculine face, late 30s ::'],
+  ['퇴폐상', '2::sanpaku eyes, gaunt hollow cheeks, dark circles under eyes, unsettling thin smile ::'],
+  ['소년미 (20대 중반 성인)', '2::boyish features, big round eyes, small nose, bright open face, adult man in his mid 20s ::'],
+  ['아이돌상', '2::hooded monolid eyes, high cheekbones, small sleek face, korean idol visual ::'],
+  ['흑인 미남', '2::dark-skinned man, wide nose, strong brow ridge, heavy-lidded eyes, full lips ::'],
+  ['중년 미남', '2::long face, deep-set eyes, prominent aquiline nose, sharp cheekbones, mature man in his 40s, faint crow\'s feet ::'],
+  ['나른한 한량', '2::heavy-lidded sleepy eyes, lazy half smile, scruffy stubble, laid-back face ::'],
+  ['군인상', '2::sharp monolid eyes, thick straight eyebrows, strong straight nose, stern face, buzz cut ::'],
+  ['미인상', '2::delicate pretty face, long eyelashes, beauty mark under his eye, elegant refined features ::'],
+  ['싸움꾼상', '2::scar across the bridge of his nose, crooked broken nose, wide jaw, boxer face ::'],
+  ['여자 · 처진눈', '2::tareme, soft droopy eyes, gentle round face, adult woman ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+  ['여자 · 고양이눈', '2::tsurime, cat-like upturned eyes, small sharp chin, cool elegant face, adult woman ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+  ['여자 · 주근깨', '2::freckles across the nose and cheeks, bright clear eyes, natural fresh face, adult woman ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+  ['여자 · 40대', '2::mature woman in her 40s, elegant fine lines at the eyes, calm knowing gaze ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+];
+const NP_ARCH_RE = new RegExp('(' + NP_ARCH.map(a => a[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + '),?\\s*', 'g');   // 우리가 넣은 원형만 찾아 바꾼다
+function npArchApply(i, who){
+  const a = NP_ARCH[i]; if (!a) return;
+  const lines = naiCharsDict();
+  while (lines.length <= who) lines.push(`${who ? '인물 ' + 'ABC'[lines.length] : '인물 A'}: ${a[2] ? '1girl, adult woman' : '1boy, adult, mature male'}`);
+  const L = lines[who], k = L.indexOf(':');
+  const name = k > 0 ? L.slice(0, k).trim() : `인물 ${'ABC'[who]}`;
+  let tags = (k > 0 ? L.slice(k + 1) : L).trim().replace(NP_ARCH_RE, '');
+  tags = tags.replace(/\b(baby face|youthful|soft cheeks)\b,?\s*/gi, '');
+  lines[who] = `${name}: ${a[1]}, ${tags}`.replace(/,\s*$/, '');
+  $('#naiChars').value = lines.join('\n'); store.set('set.naiChars', $('#naiChars').value); if ($('#wtChars')) $('#wtChars').value = $('#naiChars').value;
+  toast(`${name} 에게 '${a[0]}' 얼굴을 넣었어요`);
+  const pv = $('#naiPreset'); if (pv?.value) pv.dispatchEvent(new Event('change'));
+}
+(function(){
+  const sel = $('#naiArch'); if (!sel) return;
+  sel.innerHTML = '<option value="">고르기…</option><optgroup label="남자">' + NP_ARCH.map((a, i) => a[2] ? '' : `<option value="${i}">${esc(a[0])}</option>`).join('') + '</optgroup><optgroup label="여자">' + NP_ARCH.map((a, i) => a[2] ? `<option value="${i}">${esc(a[0])}</option>` : '').join('') + '</optgroup>';
+  sel.onchange = () => { if (sel.value === '') return; npArchApply(+sel.value, +($('#naiArchWho')?.value || 0)); sel.value = ''; };
+})();
+window.nvNaiArch = {list: NP_ARCH, apply: npArchApply};   // 시험용

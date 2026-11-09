@@ -7,6 +7,23 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: t
 if (!app.requestSingleInstanceLock()) app.quit();
 
 const APP_DIR = path.join(__dirname, 'app');
+// 바로 반영: 작업 폴더(D:\novel\novel-viewer)에 index.html 이 있으면 설치본 대신 그 파일을 띄운다.
+// 고친 판을 그 폴더에 넣으면 다시 설치하지 않아도 되고, 바뀌면 화면 위에 '새로 고침' 안내가 뜬다(Ctrl+R).
+// 끄려면 데이터 폴더의 live.json 에 {"off":true} 또는 다른 폴더 {"dir":"E:\\내폴더"}
+function liveDir(){
+  let cfg = {}; try{ cfg = JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'live.json'), 'utf8')); }catch{}
+  if (cfg.off) return null;
+  for (const d of [process.env.NV_LIVE_DIR, cfg.dir, 'D:\\novel\\novel-viewer'].filter(Boolean)){ try{ if (fs.statSync(path.join(d, 'index.html')).size > 100000) return d; }catch{} }
+  return null;
+}
+let LIVE = null;
+function watchLive(){
+  if (!LIVE) return; let t = 0;
+  try{ fs.watch(path.join(LIVE, 'index.html'), () => { clearTimeout(t); t = setTimeout(() => {
+    if (!win || win.isDestroyed()) return;
+    win.webContents.executeJavaScript(`(() => { if (document.getElementById('nvLiveBar')) return; const b = document.createElement('div'); b.id = 'nvLiveBar'; b.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99999;background:#111;color:#fff;padding:9px 14px;border-radius:10px;font:600 13px sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.3);display:flex;gap:10px;align-items:center'; b.innerHTML = '새 판이 준비됐어요 <button style="background:#fff;color:#111;border:0;border-radius:7px;padding:5px 10px;font-weight:700;cursor:pointer">새로 고침</button><button style="background:none;color:#bbb;border:0;cursor:pointer">나중에</button>'; const [r, x] = b.querySelectorAll('button'); r.onclick = () => location.reload(); x.onclick = () => b.remove(); document.body.append(b); })()`).catch(() => {});
+  }, 1500); }); }catch{}
+}
 const STATE = () => path.join(app.getPath('userData'), 'window.json');
 let win;
 
@@ -31,7 +48,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
   { label: '파일', submenu: [{ label: '데이터 폴더 열기', click: () => shell.openPath(app.getPath('userData')) }, { type: 'separator' }, { role: 'quit', label: '끝내기' }] },
   { label: '편집', submenu: [{ role: 'undo', label: '되돌리기' }, { role: 'redo', label: '다시 하기' }, { type: 'separator' }, { role: 'cut', label: '잘라내기' }, { role: 'copy', label: '복사' }, { role: 'paste', label: '붙여넣기' }, { role: 'selectAll', label: '모두 선택' }] },
   { label: '보기', submenu: [{ role: 'reload', label: '새로 고침' }, { role: 'togglefullscreen', label: '전체 화면' }, { type: 'separator' }, { role: 'resetZoom', label: '원래 크기' }, { role: 'zoomIn', label: '크게' }, { role: 'zoomOut', label: '작게' }, { type: 'separator' }, { role: 'toggleDevTools', label: '개발자 도구' }] },
-  { label: '도움말', submenu: [{ label: '업데이트 확인', click: () => checkUpdate(true) }, { label: '웹 버전 열기', click: () => shell.openExternal('https://xoqls0720.github.io/novel-viewer/') }, { label: `버전 ${app.getVersion()}`, enabled: false }] },
+  { label: '도움말', submenu: [{ label: '업데이트 확인', click: () => checkUpdate(true) }, { label: '웹 버전 열기', click: () => shell.openExternal('https://xoqls0720.github.io/novel-viewer/') }, { label: `버전 ${app.getVersion()}`, enabled: false }, { label: '화면 파일: ' + (liveDir() ? '작업 폴더 (바로 반영)' : '설치본'), enabled: false }] },
 ]));
 
 app.on('second-instance', () => { if (win){ if (win.isMinimized()) win.restore(); win.focus(); } });
@@ -45,11 +62,14 @@ app.whenReady().then(() => {
       return diskResponse(abs, req.headers.get('range'));
     }
     let p = decodeURIComponent(u.pathname); if (p === '/' || !p) p = '/index.html';
-    const file = path.normalize(path.join(APP_DIR, p));
-    if (!file.startsWith(APP_DIR)) return new Response('forbidden', { status: 403 });
+    // 바로 반영 폴더는 웹 앱 파일(index.html·아이콘 등 맨 위 파일)만 쓴다
+    const base = LIVE && fs.existsSync(path.join(LIVE, p)) && !p.slice(1).includes('/') ? LIVE : APP_DIR;
+    const file = path.normalize(path.join(base, p));
+    if (!file.startsWith(base)) return new Response('forbidden', { status: 403 });
     return net.fetch(pathToFileURL(file).toString());
   });
-  createWindow();
+  LIVE = liveDir();
+  createWindow(); watchLive();
   setTimeout(() => checkUpdate(false), 5000);
 });
 app.on('window-all-closed', () => app.quit());

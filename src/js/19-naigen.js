@@ -39,6 +39,7 @@ function naiBody(p, seed, sizeKey){
       v4_prompt: {caption: {base_caption: p.base, char_captions: cp.map(c => ({char_caption: c.prompt, centers: [c.center]}))}, use_coords: coords, use_order: true},
       v4_negative_prompt: {caption: {base_caption: p.neg, char_captions: cp.map(c => ({char_caption: c.uc, centers: [c.center]}))}, legacy_uc: false},
       negative_prompt: p.neg, deliberate_euler_ancestral_bug: false, prefer_brownian: true,
+      ...(p.params || {}),   // 그림체가 정한 V5 설정(품질 태그 끔·네거 프리셋 없음·guidance 5)이 마지막에 이긴다
     },
   };
 }
@@ -109,7 +110,9 @@ async function pxGenBlob(body){
   return new Blob([Uint8Array.from(atob(r.image), c => c.charCodeAt(0))], {type: r.type || 'image/jpeg'});
 }
 async function naiGenBlob(p, sizeKey, edit){
-  const body = naiBody(p, undefined, sizeKey); if (edit) edit(body);
+  const body = naiBody(p, p.seed, sizeKey); if (edit) edit(body);
+  if (typeof ngFaceApply === 'function' && !edit) await ngFaceApply(body);   // 얼굴 고정(씨앗·기준 그림·정밀 참조)
+  store.set('set.ngLastSeed', body.parameters.seed);
   imgGuard([body.input, ...(body.parameters.characterPrompts || []).map(c => c.prompt)].join(', '));
   if (store.get('set.ngEngine', 'nai') === 'pixai'){
     if (!DESKTOP) throw new Error('픽시AI 는 윈도우 프로그램에서만 쓸 수 있어요');
@@ -123,7 +126,7 @@ async function naiGenBlob(p, sizeKey, edit){
   const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'});
 }
 async function naiOne(p, desc){ return naiSaveBlob(await naiGenBlob(p), desc); }
-window.nvNai = {one: naiOne, pxPlain, imgGuard};   // 시험용
+window.nvNai = {one: naiOne, pxPlain, imgGuard, body: naiBody};   // 시험용
 { // 그리는 곳 고르기: 픽시AI 키는 이 기기에만 둔다(tr.key.* 는 백업에서 빠진다)
   const eng = $('#ngEngine'), row = $('#pxRow'), inp = $('#pxKey');
   const show = () => { row.hidden = eng.value !== 'pixai'; inp.placeholder = store.get('tr.key.pixai', '') ? '저장됨 (바꾸려면 새로 입력)' : '픽시AI API 키 (sk-...)'; };
@@ -144,7 +147,7 @@ async function naiSaveBlob(blob, desc){
 // 장면 설명 → 프롬프트(AI). naiGo 와 같은 길을 쓴다.
 async function naiPromptFor(desc){
   const rating = $('#naiRating').value, dict = naiCharsDict();
-  const c = await client('#naiProv'); if (!c) throw new Error('AI 설정이 필요해요');
+  const c = (rating === 'nsfw' && store.get('set.naiNsfwOllama', false)) ? {prov: 'ollama'} : await client('#naiProv'); if (!c) throw new Error('AI 설정이 필요해요');
   const content = [{type: 'text', text:
 `용도: ${$('#naiUse').selectedOptions[0].text}
 등급: ${rating === 'nsfw' ? '성인(nsfw). 성인 플랫폼용이고 모든 인물은 성인이다. 각 인물 prompt에 adult를 넣는다.' : '일반(safe). 노출·성적 요소 없이.'}

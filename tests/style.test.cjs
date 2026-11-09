@@ -2,7 +2,7 @@
 const { chromium } = require('playwright'); const path = require('path');
 (async () => { const b = await chromium.launch(); const p = await b.newPage();
   await p.goto('file://' + path.resolve(__dirname, '..') + '/index.html'); await p.waitForTimeout(800);
-  const r = await p.evaluate(() => {
+  const r = await p.evaluate(() => { const st = document.querySelector('#wtStyle'); st.value = 'neon'; st.dispatchEvent(new Event('change'));
     document.querySelector('#naiChars').value = '카엘: 1boy, adult, black hair, grey eyes\n레비안: 1girl, adult, silver hair, red eyes';
     const f = c => { const x = nvWtPrompt(c); return {base: x.base.slice(0, 400), neg: x.neg}; };
     return {pair: f({chars: '카엘, 레비안', tags: 'upper body'}), her: f({chars: '레비안', tags: 'upper body'}), land: f({chars: '', tags: 'castle gate, snow'})};

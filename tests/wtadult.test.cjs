@@ -20,7 +20,7 @@ const path = require('path'); const ROOT = path.resolve(__dirname, '..'); const 
     const mk = (n, t) => { const f = new File([t], n, {type: 'text/plain'}); f._rel = '성인/노벨/참고소설/' + n; return f; };
     await nvMedia.addFiles([mk('0001 1화.txt', '비가 왔다.\n\n거리는 조용했다.\n\n그는 걸었다.\n\n오래 걸었다.'), mk('0002 2화.txt', '"잠깐, 거기…!"\n\n"하앗… 읏, 안 돼…"\n\n"쉿. 옆집에 다 들려."\n\n"그, 그러니까 천천히…♡"')]);
   });
-  await p.click('#gnav [data-g=toon]'); await p.click('#wtNew'); await p.waitForTimeout(400); await p.click('#wtAuto'); await p.waitForTimeout(200);
+  await p.click('#gnav [data-g=toon]'); await p.click('#wtNew'); await p.waitForTimeout(400); await p.click('#wtAuto'); await p.evaluate(() => document.querySelectorAll('#wtAutoBox details').forEach(d => d.open = true)); await p.waitForTimeout(200);
   await p.selectOption('#wtRating', 'nsfw'); await p.selectOption('#wtHeat', 'hard');
   console.log('tone row shown:', !(await p.isHidden('#wtToneRow')));
   await p.selectOption('#wtAdultTone', 'pong');

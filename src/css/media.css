@@ -74,3 +74,9 @@
   .vinfo .vbtns { display: flex; gap: 6px; overflow-x: auto; flex: 1 1 100%; scrollbar-width: none; }
 }
 .vinfo .vbtns { display: flex; align-items: center; gap: 10px; }
+
+/* 영상 칸 OTT 바로가기 */
+.ott-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 2px 0 12px; }
+.ott-row b { font-size: 13px; color: var(--sub, #888); font-weight: 600; margin-right: 2px; }
+.ott-row a { display: inline-flex; align-items: center; padding: 7px 14px; border-radius: 999px; background: var(--card, rgba(128,128,128,.12)); border: 1px solid var(--line, rgba(128,128,128,.25)); font-size: 13px; font-weight: 600; text-decoration: none; color: inherit; }
+.ott-row a:hover { border-color: var(--acc, #7aa2ff); color: var(--acc, #7aa2ff); }

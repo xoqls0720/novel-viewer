@@ -73,3 +73,10 @@ body:not(.is-desktop) .nai-only{display:none!important}
 .wt-prev-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(8px + var(--sat)) 12px 8px;background:var(--panel)}
 .wt-prev-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center}
 .wt-prev-body canvas{display:block;width:min(100%,420px);height:auto;background:#fff}
+
+.wt-autoact{padding:10px 0 4px;background:var(--panel);border-top:1px solid var(--line,rgba(0,0,0,.08));display:flex;flex-direction:column;gap:6px;z-index:2}
+.wt-modalbox>*{flex-shrink:0}   /* 넘치면 접힌 칸이 눌려 찌그러지던 것 */
+.wt-autobox .fold{padding:0 12px}
+.wt-autobox .fold>summary{cursor:pointer;padding:10px 0;font-size:13px;margin:0 -12px;padding-left:12px;padding-right:12px}
+.wt-autobox .fold[open]{padding-bottom:10px}
+.wt-autobox .fold .row{margin-top:6px}

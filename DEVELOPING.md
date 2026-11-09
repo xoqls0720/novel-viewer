@@ -242,3 +242,53 @@ ovel` 의 `다운로더`. 찾으면 `dlDir` 로 기억한다(서재를 G: 로 �
 
 - 서재 위 칸: 전체 · 소설 · 웹툰 · 만화 · 영상 · 성인. '전체'에는 성인 작품이 없고, 프로그램을 켤 때마다 '전체'로 돌아간다. 홈의 '이어 읽기'와 서재의 '읽던 책'에도 성인 작품은 나오지 않는다(성인 칸 안에서만). 성인 작품을 읽다 홈·서재로 나오면 뒤의 읽는 화면을 가린다(`#app.hide-adult`).
 - 성인 폴더 밖에 있어도 이름으로 성인으로 본다(`ADULT_NAME`, 02-library.js): pawchive·fanbox·pixiv 같은 후원 사이트 폴더, 성인 애니 제작사, 동인지 쪽수 표기 `(37P)+PDF`, 커플링 `_가x나_`. 열쇠(읽던 자리)는 그대로이고 칸·묶음 이름만 '성인 …'. 못 알아본 작품은 카드를 오른쪽 클릭(길게 누르기)해 성인 칸으로 보내거나 되돌린다(`adultMark`, 기기끼리 맞춰짐). 성인인지 볼 때는 늘 `isAdult(w)`.
+
+## v43 라인업 그림체 · 얼굴 원형 (21-webtoon-ai.js · 27-nai-presets.js)
+
+- 그림체 고르기(`#naiStyleSel`·`#wtStyle`) 맨 위 'v43 라인업' 묶음 13개: 표지 1(남성향 웹소설)·표지 2(로판)·D 감성 반실사·D2 실사풍·B 7종(무드판·네온·따뜻함·호러·무협·궁정·느와르)·컬러 웹툰·흑백 만화. 키는 모두 `v43…`.
+- B 7종은 `V43_CORE_DIV`(작가 믹스에서 얼굴을 평균으로 모으던 무게를 낮춘 판) + 분위기. `focus`(얼굴 보호)는 사람이 있는 컷에, `focusMale`(성인 남자 보정)은 남자가 있는 컷에만 붙는다. 노벨AI 탭에도 얼굴 보호가 붙는다(`naiStyleFor`).
+- `safeNeg`: 일반 등급일 때만 네거티브에 `nude, nipples, explicit` 를 더한다(성인 등급이면 빠진다). `wide`: 전신·원경 컷(full body·wide shot·from above·back view)에서는 D 의 근접 프레이밍 꼬리를 뺀다.
+- 얼굴 원형(`#naiArch`, `NP_ARCH` 남 12·여 4): 고른 인물 줄 맨 앞에 2배 무게로 넣고, 우리가 넣은 원형이 이미 있으면 바꾼다. `baby face·youthful·soft cheeks` 는 지운다(아이 얼굴이 나왔다). 소년미도 'adult man in his mid 20s'.
+- 시험: `node tests/run.cjs v43`
+
+## 웹툰 만들기 개선 (2026-11-08 · 20-webtoon.js · 21-webtoon-ai.js)
+- 컷 틀 7개 추가: 사선 네 칸(4b), 만화 다섯·여섯 칸(5a·6a), 웹툰 여백 한·두 컷(w1·w2), 지그재그 세 컷(w3), 큰 컷+작은 컷(w4). 쪽 끝에 닿지 않는 컷은 '꽉 차게'여도 테두리를 다 긋는다.
+- 쪽 크기 '세로 스크롤 1500×4500'. 쪽 길이를 바꾸면 글·효과도 같은 비율 위치로 옮긴다. 컷 사이 '흰 여백 넓게(wide)', 테두리 굵기(proj.border: 자동/없이/4/8/14).
+- 말풍선: 떨림(wave)·전화·기계음(electric)·검은 독백(mono=검은 말풍선) 추가. 글꼴(bf: gothic/round/hand/heavy/serif)·굵게(bold). 설명 상자는 명조로 시작.
+- 이어 말하기(link): 고른 말풍선 아래에 같은 꼴을 붙이고 목으로 잇는다(목은 두 풍선을 그린 뒤 덮어 그린다).
+- 새 글은 고른 컷(글을 고른 상태면 그 글이 있는 컷) 안의 빈자리에 위→아래·왼→오 순서로 놓고, 바로 글 칸에 커서가 간다. 글이 늘면 컷 밖으로 나가지 않게 밀어 넣는다(wtKeepInside).
+- 빈 말풍선은 편집 화면에서만 흐리게 보이고(ph) 내보낼 때 빠진다. Ctrl+D 복제.
+- 이야기 틀(#wtStoryFrame, WT_FRAMES): 줄거리·대본 AI 에 화 구성 공식을 같이 준다(1화 공식·2인 관계극·학원·로코·집착·개그·판타지 각성).
+- 인물 짝 '잘생긴 양아치 · 못생긴 찐따'(강재혁·오동구, 25세 성인) + 말투. 웹툰 만들기의 '인물 짝'에서도 고른다. 그림체 성인 17 '흑백 망가 해칭'.
+- 시험: node tests/run.cjs wtnew
+
+## 태그로 바로 만들기 (2026-11-09 · 33-nai-direct.js)
+- 그림 프롬프트 탭 '태그로 바로 만들기': 노벨AI 태그를 AI 없이 받아 `기본 | 인물1 | 인물2` 로 나눠 naiPack 에 넣는다. 인물 칸이 인물 사전의 이름으로 시작하면 사전 외형을 앞에 붙인다.
+- nsfw·explicit·uncensored 태그가 있으면 등급을 성인으로 바꾼다. 성인 등급이면 adultGuard·MINOR_RE 로 미성년 표현을 막는다(그대로 유지).
+- '바로 그리기' = 프롬프트 만들기 + 그림 만들기(장면 칸을 비워 방금 만든 프롬프트로).
+- 내 조각(set.naiSnips): 지금 칸을 이름 붙여 저장, 넣으면 칸별로 이어 붙인다. 이름은 칸에 적는다(윈도우 프로그램은 prompt 창이 안 뜬다).
+- 성인 등급일 때 '장면 → 프롬프트'를 Ollama 로 돌리는 선택(set.naiNsfwOllama): naiGo·naiPromptFor 둘 다.
+- 시험: node tests/run.cjs naidirect
+
+## 얼굴 고정 (2026-11-09 · 34-nai-face.js)
+- 그림 만들기 위 '얼굴 고정'(#ngFace): off / seed / i2i / ref. naiGenBlob 이 naiBody 다음에 ngFaceApply(body) 를 부른다(edit 콜백이 있는 경로는 건드리지 않음). 방금 쓴 씨앗은 set.ngLastSeed.
+- seed: 고정 씨앗(#ngSeedFix). i2i(V5): 기준 그림을 생성 크기로 가운데 맞춰 꽉 채운 PNG → action img2img, strength(#ngI2iStr), noise 0, extra_noise_seed=seed.
+- ref(V4.5 정밀 참조, 장당 +5 Anlas, 세션당 한 번 확인): 모델을 nai-diffusion-4-5-full/curated 로 바꾸고 director_reference_images(1024×1536/1536×1024/1472×1472 중 비율이 가까운 크기, 검은 여백 PNG)·descriptions({caption:{base_caption:'character'|'character&style'|'style', char_captions:[]}, legacy_uc:false})·strength_values·secondary_strength_values(=1-충실도)·information_extracted([1]). V5 는 2026-11 기준 정밀 참조 미지원.
+- 기준 그림은 파일 또는 최근 장면 노트 그림, JPEG dataURL 로 set.ngRefImg 에 저장.
+- 시험: node tests/run.cjs ngface
+
+## 성인 웹툰 한 번에 (2026-11-09 · 21-webtoon-ai.js)
+- wtClient(sel): 웹툰 등급이 성인이고 set.naiNsfwOllama 가 켜져 있으면 줄거리·대본·대사 AI 를 Ollama 로 보낸다(노벨AI 탭 체크와 같은 설정, 웹툰 AI 칸의 #wtOllama 로도 켠다).
+- #wtAutoDraw(set.wtAutoDraw): 대본을 만든 뒤 컷 그림 일괄 생성을 이어서 누른다.
+- 얼굴 고정의 '이어 그리기(i2i)'는 웹툰 화면에서는 쓰지 않는다(컷마다 구도가 같아져서). 씨앗·정밀 참조는 그대로 적용.
+
+## 웹툰 만들기 손질 (2026-11-09) — 직접 한 화를 만들어 보며 고친 것
+- 시험: `IMGDIR=<그림 폴더> STYLE=v43a17 node tests/e2e_webtoon.cjs` → tests/out/e2e/page_N.jpg 로 쪽을 눈으로 본다(대본은 tests/data/e2e_script.json, 그림은 폴더의 jpg 를 컷 모양에 맞춰 잘라 흉내).
+- 줄바꿈(20-webtoon.js wrapLines): 낱말 단위로 끊고, 낱말이 칸보다 길 때만 글자로. ?!.,… 는 줄 머리에 오지 않는다. 말풍선은 wrapBalanced 로 줄 길이를 고르게.
+- 말풍선 자동 배치(21-webtoon-ai.js wtAutoLayout): 컷 그림을 12px 칸으로 줄여 윤곽 밀도 지도를 만들고(컷 안 상대값), 얼굴·몸을 피해 위쪽·말하는 사람 쪽·읽는 순서대로 놓는다. 설명 상자는 왼쪽 위, 독백 글자는 아래. 꼬리는 말하는 사람 쪽으로 짧게.
+  - 자동으로 놓인 것은 it.auto=true, 손으로 옮기면 false. 그림이 들어오면(노벨AI·파일·장면 노트) 그 컷을 다시 잡는다. 편집기 '말풍선 자리 다시 잡기'(Shift: 손으로 옮긴 것까지).
+  - 컷마다 id 가 생겼다(panel.id). 예전 작품은 id 가 없어 컷 안에 있는지로 판단한다.
+- 흑백 그림체(머리에 monochrome/greyscale): 효과음은 먹색(WT_SFX_GRAD[6]), 하트 스티커도 회색.
+- 손·물건 클로즈업 컷: 인물 태그에서 얼굴·머리·표정을 빼고 'hands only, head out of frame', 네거티브에 face·letters. 노벨AI 실제 생성으로 확인(얼굴 없이 손만 나옴).
+- 자동 만들기 창: 인물 → 줄거리 → 그림체·등급 → 쪽 수 → [대본 만들기]·[컷 그림 모두] (아래에 붙어 있음). 줄거리 늘리기·외형/말투·AI/모델은 접힌 칸으로.
+- 그림체 기본값 neon → v43toon (웹툰 · 컬러 웹툰 컷).

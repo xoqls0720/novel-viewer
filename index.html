@@ -969,6 +969,13 @@ body:not(.is-desktop) .nai-only{display:none!important}
 .wt-prev-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center}
 .wt-prev-body canvas{display:block;width:min(100%,420px);height:auto;background:#fff}
 
+.wt-autoact{padding:10px 0 4px;background:var(--panel);border-top:1px solid var(--line,rgba(0,0,0,.08));display:flex;flex-direction:column;gap:6px;z-index:2}
+.wt-modalbox>*{flex-shrink:0}   /* 넘치면 접힌 칸이 눌려 찌그러지던 것 */
+.wt-autobox .fold{padding:0 12px}
+.wt-autobox .fold>summary{cursor:pointer;padding:10px 0;font-size:13px;margin:0 -12px;padding-left:12px;padding-right:12px}
+.wt-autobox .fold[open]{padding-bottom:10px}
+.wt-autobox .fold .row{margin-top:6px}
+
 /* ================= 새 틀: 먹과 주홍 =================
    원칙: 길은 메뉴 하나, 한 번에 한 판, 글이 주인공.
    색은 흰 종이·먹 두 가지에 주홍(도장 빛) 하나만 — 주홍은 '지금 여기'와 '얼마나 왔나'에만 쓴다.
@@ -1514,6 +1521,12 @@ button:not(:disabled):active{transform:scale(.98)}
   .vinfo .vbtns { display: flex; gap: 6px; overflow-x: auto; flex: 1 1 100%; scrollbar-width: none; }
 }
 .vinfo .vbtns { display: flex; align-items: center; gap: 10px; }
+
+/* 영상 칸 OTT 바로가기 */
+.ott-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 2px 0 12px; }
+.ott-row b { font-size: 13px; color: var(--sub, #888); font-weight: 600; margin-right: 2px; }
+.ott-row a { display: inline-flex; align-items: center; padding: 7px 14px; border-radius: 999px; background: var(--card, rgba(128,128,128,.12)); border: 1px solid var(--line, rgba(128,128,128,.25)); font-size: 13px; font-weight: 600; text-decoration: none; color: inherit; }
+.ott-row a:hover { border-color: var(--acc, #7aa2ff); color: var(--acc, #7aa2ff); }
 /* ================= 고급 마감 =================
    리디·카카오페이지·밀리의 서재 화면을 재어 맞춘 값: 표지 1:1.4, 표지 모서리 3~5px, 칩은 알약, 그림자는 아주 옅게, 제목 자간 -0.03em.
    색 원칙은 shell.css 그대로(먹·종이·주홍). 이 파일은 맨 뒤에 붙어 앞 스타일을 덮는다. 빼면 예전 모습으로 돌아간다. */
@@ -1912,6 +1925,13 @@ button:active:not(:disabled){transform:scale(.975)}
       <div class="hint">한국어로 장면을 말하면 NovelAI(V4.5·V5) 프롬프트로 바꿔요. 인물 사전과 하우스 스타일은 저장돼서 매번 같은 그림체·외형으로 나와요.</div>
       <h3>장면</h3>
       <textarea id="naiIn" style="min-height:100px" placeholder="예) 무너진 성당, 자정. 라파엘이 한쪽 날개만 편 채 무릎 꿇은 {{user}}에게 장검을 겨눈다. 달빛, 금빛 균열 효과, 세로 표지 구도"></textarea>
+      <details id="naiTagBox" class="ngbox" open><summary>태그로 바로 만들기 · AI 없이 (수위 컷은 여기서)</summary>
+        <div class="hint">노벨AI 형식 태그를 그대로 붙여 넣어요. <b>|</b> 로 나누면 맨 앞은 장면 전체, 그다음은 인물 1·2… 칸으로 들어가요. 인물 칸을 이름(인물 사전에 있는 이름)으로 시작하면 사전의 외형이 앞에 자동으로 붙어요. 그림체·네거티브·등급은 아래에서 고른 그대로 감싸요.</div>
+        <textarea id="naiTags" style="min-height:96px" placeholder="예) 2boys, rooftop, dusk, cowboy shot, ... | 강재혁, smirk, leaning in | 오동구, flustered, looking away"></textarea>
+        <div class="row tight"><button id="naiTagChars">인물 사전 1·2번 칸 붙이기</button><button id="naiTagGo" class="primary">프롬프트 만들기 (AI 없이)</button><button id="naiTagDraw">바로 그리기</button></div>
+        <div class="row tight"><label>내 조각</label><select id="naiSnip" class="grow"><option value="">저장해 둔 태그 묶음…</option></select><button id="naiSnipAdd">넣기</button><input type="text" id="naiSnipName" placeholder="저장할 이름" style="width:120px"><button id="naiSnipSave">지금 칸 저장</button><button id="naiSnipDel">지우기</button></div>
+        <div class="row tight"><label class="hint"><input type="checkbox" id="naiNsfwOllama"> 성인 등급일 때 '장면 → 프롬프트'는 내 컴퓨터 AI(Ollama)로 바꾸기 (Claude·Gemini 는 수위 장면을 거절하거나 약하게 바꿔요)</label></div>
+      </details>
       <div class="row tight"><label>바로 쓰는 틀</label><select id="naiPreset" class="grow"><option value="">고르기…</option></select></div>
       <div class="hint">틀을 고르면 AI 없이 바로 프롬프트가 나와요. 인물 외형은 아래 인물 사전의 1·2번째 줄을 써요. 그림체는 아래에서 고른 것을 붙여요(받아 둔 성인 만화 그림체: <b>기본 C</b>는 준호·아카데미·용사처럼 굵은 선과 셀 음영, <b>기본 D</b>는 직장동료 류x최처럼 거친 손그림 선과 평평한 채색).</div>
       <div class="row"><label>등급</label><select id="naiRating"><option value="safe">일반</option><option value="nsfw">성인(nsfw)</option></select>
@@ -1933,6 +1953,17 @@ button:active:not(:disabled){transform:scale(.975)}
           <label>가이드</label><input type="number" id="ngScale" value="5" min="1" max="10" step="0.5" style="width:60px">
           <label>장면당</label><input type="number" id="ngEach" value="1" min="1" max="8" style="width:56px">장</div>
         <div class="row"><button id="ngGrab">노벨AI에서 설정 가져오기</button><button id="ngTplClear">가져온 설정 지우기</button></div>
+        <details id="ngFaceBox" class="ngbox"><summary>얼굴 고정 · 같은 인물을 여러 장면에서 같은 얼굴로</summary>
+          <div class="row tight"><label>방식</label><select id="ngFace" class="grow"><option value="off">쓰지 않기</option><option value="seed">① 씨앗 고정 (무료 · 얼굴이 꽤 비슷해짐)</option><option value="i2i">② 기준 그림 이어 그리기 (V5 · 무료 · 얼굴·옷 유지, 구도는 덜 바뀜)</option><option value="ref">③ 정밀 참조 (V4.5 · 장당 +5 Anlas · 얼굴 고정이 가장 강함)</option></select></div>
+          <div class="row tight" id="ngSeedRow"><label>씨앗</label><input type="number" id="ngSeedFix" placeholder="숫자" style="width:150px"><button id="ngSeedLast">방금 그림의 씨앗</button></div>
+          <div id="ngRefRow">
+            <div class="row tight"><label>기준 그림</label><input type="file" id="ngRefFile" accept="image/*" style="max-width:190px"><button id="ngRefScrap">최근 장면 노트 그림</button><button id="ngRefClear">비우기</button></div>
+            <img id="ngRefPrev" alt="" style="max-height:120px;border-radius:8px;display:none;margin:4px 0">
+            <div class="row tight" id="ngI2iRow"><label>바뀌는 정도</label><input type="range" id="ngI2iStr" min="0.3" max="0.85" step="0.05" value="0.6" class="grow"><output id="ngI2iOut">0.6</output></div>
+            <div class="row tight" id="ngPrRow"><label>참조</label><select id="ngRefType"><option value="character">얼굴·인물만</option><option value="character&amp;style">인물 + 그림체</option><option value="style">그림체만</option></select><label>세기</label><input type="number" id="ngRefStr" value="1" min="0" max="1" step="0.05" style="width:64px"><label>충실도</label><input type="number" id="ngRefFid" value="1" min="0" max="1" step="0.05" style="width:64px"></div>
+          </div>
+          <div class="hint" id="ngFaceHint">노벨AI V5 에는 아직 '정밀 참조(캐릭터 레퍼런스)'가 없어요(V4.5 에만 있음). 그래서 ①·② 는 V5 로 무료, ③ 은 그릴 때만 모델을 V4.5 로 바꿔 보내고 장당 5 Anlas 가 들어요. 어느 방식이든 인물 사전의 외형 태그와 얼굴 원형을 같이 쓰면 더 잘 고정돼요.</div>
+        </details>
         <div class="row"><button id="ngGo" class="primary">그림 만들기</button><button id="ngStop" hidden>멈추기</button><span class="hint grow" id="ngStat"></span></div>
         <div class="hint">'설정 가져오기'를 누르면 노벨AI 창이 열려요. 거기서 평소처럼 그림을 한 장 만들면 <b>토큰·모델·크기·스텝·샘플러</b>를 그대로 가져와서, 다음부터는 같은 설정으로 그려요. 만든 그림은 <b>장면 노트</b>에 저장되고 동기화돼요.</div>
       </div>
@@ -1942,9 +1973,11 @@ button:active:not(:disabled){transform:scale(.975)}
       <h3>인물 사전 <span class="hint">· 한 줄에 한 명: 이름: 외형 태그</span></h3>
       <div class="row tight"><label>인물 틀</label><select id="naiCast" class="grow"><option value="">고르기…</option></select></div>
       <div class="hint">받아 둔 성인 만화의 인물 유형(체형·머리·분위기)을 본떠 새로 만든 인물들이에요. 고르면 아래 사전 맨 위 두 줄로 들어가고, 위의 장면 틀이 그 두 사람으로 다시 나와요.</div>
+      <div class="row tight"><label>얼굴 원형</label><select id="naiArch" class="grow"><option value="">고르기…</option></select><select id="naiArchWho"><option value="0">1번 인물</option><option value="1">2번 인물</option><option value="2">3번 인물</option></select></div>
+      <div class="hint">같은 얼굴만 나오는 걸 막아요. 고른 원형이 그 인물 줄 맨 앞에 2배 무게로 들어가요(이미 있던 원형은 바꿔요). 인물마다 다른 원형을 골라요.</div>
       <textarea id="naiChars" style="min-height:90px" placeholder="라파엘: 1boy, adult, tall, long silver hair, golden eyes, one white wing, scar on left cheek, black priest coat&#10;세라온: 1boy, adult, short black hair, red eyes, horns, black armor"></textarea>
       <h3>그림체</h3>
-      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="editorial">화보 F · 흑백 에디토리얼</option><option value="watercolor">로맨스 G · 수채 잉크</option><option value="gothic">판타지 H · 고딕 동판화</option><option value="custom">직접 쓰기 (아래 칸)</option></select></div>
+      <div class="row tight"><select id="naiStyleSel" class="grow"><option value="toon3">1 · 웹툰</option></select></div>
       <div class="hint" id="naiStyleNow"></div>
       <h3>하우스 스타일 (직접 쓰기일 때 쓰는 칸)</h3>
       <textarea id="naiStyle" style="min-height:60px" placeholder="예) masterpiece, best quality, very aesthetic, (내가 쓰는 화가·화풍 태그)"></textarea>
@@ -2299,9 +2332,10 @@ button:active:not(:disabled){transform:scale(.975)}
       <div class="wt-sec">
         <h4>쪽</h4>
         <div class="wt-layouts" id="wtLayouts"></div>
-        <div class="row tight"><label>쪽 크기</label><select id="wtSize"><option value="2000">세로 3:4 (1500×2000)</option><option value="2250">세로 2:3 (1500×2250)</option><option value="1500">정사각 (1500×1500)</option><option value="3000">긴 컷 (1500×3000)</option></select></div>
-        <div class="row tight"><label>컷 사이</label><select id="wtGutter"><option value="bleed">꽉 차게 (검은 선)</option><option value="framed">여백 있게</option></select></div>
+        <div class="row tight"><label>쪽 크기</label><select id="wtSize"><option value="2000">세로 3:4 (1500×2000)</option><option value="2250">세로 2:3 (1500×2250)</option><option value="1500">정사각 (1500×1500)</option><option value="3000">긴 컷 (1500×3000)</option><option value="4500">세로 스크롤 (1500×4500)</option></select></div>
+        <div class="row tight"><label>컷 사이</label><select id="wtGutter"><option value="bleed">꽉 차게 (검은 선)</option><option value="framed">여백 있게</option><option value="wide">흰 여백 넓게 (웹툰)</option></select><label>테두리</label><select id="wtBorder"><option value="">자동</option><option value="0">없이</option><option value="4">얇게</option><option value="8">보통</option><option value="14">굵게</option></select></div>
         <div class="row tight"><button id="wtAddInset">작은 확대 컷 넣기</button><button id="wtPageText">글 쪽으로</button></div>
+        <div class="row tight"><button id="wtRelayout" class="grow" title="그림을 보고 얼굴·몸을 피해 빈 곳으로 말풍선·효과음을 다시 놓아요 (손으로 옮긴 것은 그대로)">말풍선 자리 다시 잡기</button></div>
       </div>
       <div class="wt-sec" id="wtPanelSec" hidden>
         <h4>선택한 컷</h4>
@@ -2314,7 +2348,7 @@ button:active:not(:disabled){transform:scale(.975)}
       <div class="wt-sec">
         <h4>글·효과 넣기</h4>
         <div class="wt-add" id="wtAdd">
-          <button data-add="speech">말풍선</button><button data-add="round">둥근 네모</button><button data-add="thought">속마음(구름)</button><button data-add="shout">외침</button><button data-add="whisper">속삭임</button>
+          <button data-add="speech">말풍선</button><button data-add="round">둥근 네모</button><button data-add="thought">속마음(구름)</button><button data-add="shout">외침</button><button data-add="whisper">속삭임</button><button data-add="wave">떨림</button><button data-add="electric">전화·기계음</button><button data-add="mono">검은 독백</button>
           <button data-add="narr">설명 상자</button><button data-add="text">외곽선 글자</button><button data-add="sfx">효과음</button>
           <button data-add="sweat">땀방울</button><button data-add="burst">충격 별</button><button data-add="heart">하트</button><button data-add="speed">집중선</button>
         </div>
@@ -2324,9 +2358,10 @@ button:active:not(:disabled){transform:scale(.975)}
         <textarea id="wtText" placeholder="글" style="min-height:64px"></textarea>
         <div class="row tight"><label>크기</label><input type="range" id="wtSizeR" min="14" max="260" class="grow"><output id="wtSizeO"></output></div>
         <div class="row tight" id="wtRotRow"><label>기울기</label><input type="range" id="wtRot" min="-60" max="60" class="grow"><output id="wtRotO"></output></div>
-        <div class="row tight" id="wtShapeRow"><label>모양</label><select id="wtShape"><option value="speech">말풍선</option><option value="round">둥근 네모</option><option value="thought">속마음(구름)</option><option value="shout">외침</option><option value="whisper">속삭임</option></select><label class="hint"><input type="checkbox" id="wtTail"> 꼬리</label><label class="hint"><input type="checkbox" id="wtDash"> 점선</label></div>
+        <div class="row tight" id="wtShapeRow"><label>모양</label><select id="wtShape"><option value="speech">말풍선</option><option value="round">둥근 네모</option><option value="thought">속마음(구름)</option><option value="shout">외침</option><option value="whisper">속삭임</option><option value="wave">떨림</option><option value="electric">전화·기계음</option></select><label class="hint"><input type="checkbox" id="wtTail"> 꼬리</label><label class="hint"><input type="checkbox" id="wtDash"> 점선</label></div>
         <div class="row tight" id="wtColorRow"><label>색</label><div class="wt-sw" id="wtSw"></div></div>
         <div class="row tight" id="wtVertRow"><label class="hint"><input type="checkbox" id="wtVert"> 세로</label><label class="hint"><input type="checkbox" id="wtHeart"> 하트</label><label class="hint"><input type="checkbox" id="wtBurst"> 흰 조각</label><select id="wtFont"><option value="brush">붓글씨</option><option value="round">둥근 손글씨</option><option value="heavy">굵은 고딕</option><option value="pen">가는 손글씨</option><option value="wild">거친 손글씨</option></select></div>
+        <div class="row tight" id="wtBubFontRow"><label>글꼴</label><select id="wtBubFont"><option value="gothic">고딕 (기본 대사)</option><option value="round">동글 (귀여운 대사)</option><option value="hand">손글씨 (속마음)</option><option value="heavy">굵은 고딕 (외침)</option><option value="serif">명조 (내레이션)</option></select><label class="hint"><input type="checkbox" id="wtBold"> 굵게</label><button id="wtLink">이어 말하기</button></div>
         <div class="row tight" id="wtLineRow"><label>풍선 선</label><select id="wtLine"><option value="thin">얇게</option><option value="none">없이</option><option value="bold">굵게</option></select></div>
         <div class="row tight"><button id="wtDup">복제</button><button id="wtFront">맨 위로</button><button id="wtBack">맨 뒤로</button><button id="wtDel" class="danger">지우기</button></div>
       </div>
@@ -2342,46 +2377,55 @@ button:active:not(:disabled){transform:scale(.975)}
     </div>
   </div>
   <div class="wt-modal" id="wtAutoBox" hidden>
-    <div class="wt-modalbox">
+    <div class="wt-modalbox wt-autobox">
       <div class="shh"><b>줄거리로 자동 만들기</b><button class="icon" id="wtAutoX" title="닫기"><svg class="i"><use href="#i-x"/></svg></button></div>
-      <textarea id="wtStory" placeholder="줄거리는 대충 적어도 돼요. 빈 곳은 AI가 채워요.&#10;예) 카엘이 눈 오는 날 신부를 맞이함" style="min-height:110px"></textarea>
-      <div class="row tight"><label>쪽 수</label><input type="number" id="wtPagesN" value="4" min="1" max="12" style="width:64px">
-        <label>컷 느낌</label><select id="wtTone"><option value="calm">잔잔하게</option><option value="tense">긴장감 있게</option><option value="comic">코믹하게</option></select>
-        <label>AI</label><select id="wtAI"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="ollama">Ollama</option></select></div>
+      <div class="hint"><b>① 인물</b> → <b>② 줄거리 대충</b> → <b>③ 만들기</b>. 대본·말풍선·컷 그림까지 이어서 만들어요.</div>
+      <div class="row tight"><label>인물 짝</label><select id="wtPair" class="grow"><option value="">고르기…</option></select></div>
       <div class="row tight"><label>인물</label><input type="text" id="wtCast" class="grow" placeholder="이 화에 나오는 인물 이름 (쉼표로: 카엘, 레비안, 새 인물도 괜찮아요)" autocomplete="off"></div>
-      <div class="hint">사전에 없는 이름은 AI가 외형을 지어내서 <b>인물 사전에 넣어 둬요.</b> 다음 화에서도 같은 외형으로 나와요.</div>
-      <details class="fold"><summary>인물 외형·말투 보기·고치기<svg class="i chev"><use href="#i-down"/></svg></summary>
-        <div class="hint" style="margin:4px 0 4px"><b>외형</b> — 그림에 쓰는 영어 태그 (노벨AI 탭의 인물 사전과 같은 칸)</div>
-        <textarea id="wtChars" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 영어 외형 태그&#10;카엘: 1boy, adult, black hair, golden eyes, black coat"></textarea>
-        <div class="hint" style="margin:8px 0 4px"><b>말투</b> — 대사를 쓸 때 쓰는 한국어 설명</div>
-        <textarea id="wtVoice" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 말투&#10;카엘: 낮은 반말, 짧고 명령적. 감정은 말끝을 흐리는 걸로만 드러낸다&#10;레비안: 짧은 존대, 과묵. 형을 '형님'이라 부른다"></textarea>
-      </details>
-      <div class="row tight"><label>그림 모델</label><select id="wtModel" class="grow"><option value="nai-diffusion-5-full">V5 Full · 성인 가능 (권장)</option><option value="nai-diffusion-5-curated">V5 Curated · 일반만</option><option value="nai-diffusion-4-5-full">V4.5 Full</option></select></div>
-      <div class="hint" id="wtModelHint"></div>
-      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="neon">기본 A · 야수파 + 네온</option><option value="dark">기본 B · 암실 룩</option><option value="comic">기본 C · 성인 웹코믹 셀 음영</option><option value="sketch">기본 D · 성인 웹코믹 손그림</option><option value="spot">기본 E · 스팟컬러 에디토리얼</option><option value="editorial">화보 F · 흑백 에디토리얼</option><option value="watercolor">로맨스 G · 수채 잉크</option><option value="gothic">판타지 H · 고딕 동판화</option><option value="custom">직접 쓰기</option></select></div>
-      <div class="row tight"><label class="hint grow" title="켜면 대사 말풍선을 노벨AI 가 그림 안에 직접 그려요(V5의 Text:). 그럴 땐 대본에서 따로 말풍선을 얹지 않아 겹치지 않아요. 영어·일본어는 정확하고 한글은 깨질 수 있어요"><input type="checkbox" id="wtNaiText"> 말풍선을 노벨AI 가 그림 안에 그리기 (켜면 따로 얹는 말풍선 없음 · 한글은 깨질 수 있음)</label></div>
+      <textarea id="wtStory" placeholder="줄거리는 대충 적어도 돼요. 빈 곳은 AI가 채워요.&#10;예) 새벽 편의점. 재혁이 동구를 놀리다가 옥상으로 오라고 한다" style="min-height:96px"></textarea>
+      <div class="row tight"><label>그림체</label><select id="wtStyle" class="grow"><option value="toon3">1 · 웹툰</option></select></div>
       <div class="row tight" id="wtMonoRow" hidden><label>단색</label><select id="wtMono"><option value="cold blue">cold blue · 7년 전 가이드</option><option value="red">red · 명부</option><option value="gold">gold · 흑요룡</option><option value="white and grey">white and grey · 날개</option><option value="teal">teal · 인어</option><option value="amber">amber · 성녀</option><option value="magenta">magenta · 아이돌</option><option value="dusty orange">dusty orange · 백신</option><option value="moonlight blue">moonlight blue · 늑대</option><option value="warm sepia">warm sepia · 캠퍼스</option><option value="film amber">film amber · 서른일곱 번째 컷</option><option value="safelight red">safelight red · 암실</option><option value="neon pink">neon pink · 스팟</option><option value="jade">jade · 스팟</option><option value="lemon yellow">lemon yellow · 스팟</option></select></div>
       <div class="row tight" id="wtFrameRow" hidden><label>액자</label><select id="wtFrame"><option value="mirror">거울 너머</option><option value="photo">젖은 사진 너머</option><option value="tank">수조 유리 너머</option><option value="shutter">셔터 틈 너머</option><option value="fence">철조망 너머</option><option value="booth">녹음 부스 유리 너머</option><option value="none">쓰지 않기</option></select></div>
       <textarea id="wtStyleIn" hidden style="min-height:54px" placeholder="앞에 붙일 화풍 태그를 직접 적어 주세요"></textarea>
-      <div class="hint">그림은 <b>nai-diffusion-5-full · 832×1216 · 28스텝 · scale 5 · k_euler_ancestral · karras</b>로 고정돼요.</div>
       <div class="row tight"><label>등급</label><select id="wtRating"><option value="safe">일반</option><option value="nsfw">성인 (19금)</option></select>
         <label>수위</label><select id="wtHeat"><option value="tease">은근하게 · 분위기와 암시</option><option value="mid" selected>보통 · 직접적이되 절제</option><option value="hard">직접적으로 · 노골적인 묘사</option></select></div>
       <div class="row tight" id="wtToneRow" hidden><label>톤</label><select id="wtAdultTone"><option value="drama">치정 · 진지하고 끈적하게</option><option value="pong">뽕빨 · 가볍고 노골적, 개그 섞어</option></select></div>
-      <div class="row tight"><label>문체 참고</label><select id="wtRef" class="grow"><option value="">없음</option></select></div>
+      <div class="row tight" id="wtActRow" hidden><label>컷 성인 태그</label><input type="text" id="wtAct" class="grow" placeholder="성인 컷 그림에 늘 더할 영어 태그 (예: yaoi, two boys)" autocomplete="off"></div>
       <div class="hint" id="wtRatingHint"></div>
       <div class="hint" id="wtProvWarn" hidden></div>
-      <div class="row tight" id="wtActRow" hidden><label>컷 성인 태그</label><input type="text" id="wtAct" class="grow" placeholder="성인 컷 그림에 늘 더할 영어 태그 (예: yaoi, two boys, kissing, bare chest)" autocomplete="off"></div>
-      <div class="row tight"><label>줄거리 분량</label><select id="wtSynLen"><option value="short">짧게 · 3~6문장</option><option value="mid" selected>보통 · 10문장 안팎</option><option value="long">길게 · 장면마다 한 줄씩</option><option value="arc">아주 길게 · 화 나누기까지</option></select></div>
-      <div class="row"><button id="wtSynGo" class="grow">줄거리 길게 쓰기</button><button id="wtSynMore">이어서 더 쓰기</button><button id="wtSynSpice" title="같은 사건·인물로, 덜 딱딱하고 더 맛깔나게 다시 써요">맛깔나게 다시 쓰기</button><button id="wtSynStop" hidden>멈추기</button></div>
-      <div class="hint">줄거리만 먼저 늘려 보고, 마음에 들면 아래에서 대본으로 넘기면 돼요.</div>
-      <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
+      <div class="row tight"><label>쪽 수</label><input type="number" id="wtPagesN" value="4" min="1" max="12" style="width:64px"><label>이야기 틀</label><select id="wtStoryFrame" class="grow"><option value="">자유</option><option value="hook">1화 공식 · 훅 → 관계 → 사건 → 반전 → 끊기</option><option value="pair">2인 관계극 · 힘의 차이 → 도발 → 접촉 → 뒤집힘</option><option value="school">학원·일진물 · 표적 → 뜻밖의 관심 → 비밀</option><option value="romcom">로맨틱 코미디 · 오해 → 붙어 있기 → 설렘 → 방해</option><option value="dark">집착·피폐 · 일상이 무너지는 순서</option><option value="gag">개그 · 쪽마다 4컷 리듬</option><option value="fantasy">판타지 각성 · 약자 → 사건 → 첫 힘 → 더 큰 위협</option></select></div>
+      <div class="row tight"><label class="hint"><input type="checkbox" id="wtAutoDraw"> 한 번에: 대본이 끝나면 컷 그림까지 이어서 만들기 (노벨AI)</label></div>
+      <div class="wt-autoact">
+        <div class="row"><button class="primary grow" id="wtAutoGo">대본 만들기</button><button id="wtAutoStop" hidden>멈추기</button></div>
+        <div class="row nai-only"><button id="wtGenAll" class="grow" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
+        <div class="hint" id="wtAutoStat"></div>
+      </div>
       <div id="wtSynBox" hidden>
         <div class="hint" style="margin:4px 0 4px"><b>줄거리</b> — 고쳐 쓰거나 이어서 더 늘려도 돼요</div>
         <textarea id="wtSyn" style="min-height:84px"></textarea>
         <div class="row tight"><button id="wtSynUse">이 줄거리로 대본 만들기</button><span class="hint grow" id="wtSynLenOut"></span></div>
       </div>
-      <div class="hint" id="wtAutoStat"></div>
-      <div class="row nai-only"><button id="wtGenAll" disabled>컷 그림 모두 만들기 (노벨AI)</button><button id="wtGenStop" hidden>멈추기</button></div>
+      <details class="fold"><summary>줄거리 먼저 늘려 보기<svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="row tight"><label>줄거리 분량</label><select id="wtSynLen"><option value="short">짧게 · 3~6문장</option><option value="mid" selected>보통 · 10문장 안팎</option><option value="long">길게 · 장면마다 한 줄씩</option><option value="arc">아주 길게 · 화 나누기까지</option></select></div>
+        <div class="row"><button id="wtSynGo" class="grow">줄거리 길게 쓰기</button><button id="wtSynMore">이어서 더 쓰기</button><button id="wtSynSpice" title="같은 사건·인물로, 덜 딱딱하고 더 맛깔나게 다시 써요">맛깔나게 다시 쓰기</button><button id="wtSynStop" hidden>멈추기</button></div>
+        <div class="row tight"><label>문체 참고</label><select id="wtRef" class="grow"><option value="">없음</option></select></div>
+      </details>
+      <details class="fold"><summary>인물 외형·말투 보기·고치기<svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="hint">사전에 없는 이름은 AI가 외형을 지어서 <b>인물 사전에 넣어 둬요.</b> 다음 화에서도 같은 외형으로 나와요.</div>
+        <div class="hint" style="margin:4px 0 4px"><b>외형</b> — 그림에 쓰는 영어 태그 (노벨AI 탭의 인물 사전과 같은 칸)</div>
+        <textarea id="wtChars" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 영어 외형 태그&#10;카엘: 1boy, adult, black hair, golden eyes, black coat"></textarea>
+        <div class="hint" style="margin:8px 0 4px"><b>말투</b> — 대사를 쓸 때 쓰는 한국어 설명</div>
+        <textarea id="wtVoice" style="min-height:84px" placeholder="한 줄에 한 명 — 이름: 말투&#10;카엘: 낮은 반말, 짧고 명령적. 감정은 말끝을 흐리는 걸로만 드러낸다&#10;레비안: 짧은 존대, 과묵. 형을 '형님'이라 부른다"></textarea>
+      </details>
+      <details class="fold"><summary>AI·그림 모델·세부 설정<svg class="i chev"><use href="#i-down"/></svg></summary>
+        <div class="row tight"><label>글 AI</label><select id="wtAI"><option value="default">기본 AI</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="ollama">Ollama</option></select>
+          <label>컷 느낌</label><select id="wtTone"><option value="calm">잔잔하게</option><option value="tense">긴장감 있게</option><option value="comic">코믹하게</option></select></div>
+        <div class="row tight"><label class="hint"><input type="checkbox" id="wtOllama"> 성인 등급이면 대본은 내 컴퓨터 AI(Ollama)로 (Claude·Gemini 는 성인 대본을 거절해요)</label></div>
+        <div class="row tight"><label>그림 모델</label><select id="wtModel" class="grow"><option value="nai-diffusion-5-full">V5 Full · 성인 가능 (권장)</option><option value="nai-diffusion-5-curated">V5 Curated · 일반만</option><option value="nai-diffusion-4-5-full">V4.5 Full</option></select></div>
+        <div class="hint" id="wtModelHint"></div>
+        <div class="row tight"><label class="hint grow" title="켜면 대사 말풍선을 노벨AI 가 그림 안에 직접 그려요(V5의 Text:). 영어·일본어는 정확하고 한글은 깨질 수 있어요"><input type="checkbox" id="wtNaiText"> 말풍선을 노벨AI 가 그림 안에 그리기 (한글은 깨질 수 있음)</label></div>
+        <div class="hint">컷 그림은 컷 모양에 맞춰 세로(832×1216)·가로(1216×832)·정사각(1024×1024)으로 뽑아요. 말풍선은 그림이 나오면 얼굴을 피해 빈 곳으로 다시 자리를 잡아요.</div>
+      </details>
     </div>
   </div>
 </section>
@@ -3920,8 +3964,9 @@ function naiPack(res){
   let neg = S.neg([$('#naiNeg').value.trim(), res.negative].filter(Boolean).join(', '));
   if (nsfw) neg = neg.split(',').map(s=>s.trim()).filter(s => s && s !== 'nsfw').join(', ');
   else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
+  if (window.wtKidsNeg) neg = wtKidsNeg(neg, [res.base_prompt, ...res.characters.map(c => c.prompt)].join(' '), nsfw);   // 일반 등급의 어린이 장면
   const chars = res.characters.map(c => ({...c, prompt: rating === 'nsfw' && !/\badult\b/.test(c.prompt) ? 'adult, ' + c.prompt : c.prompt}));
-  return {base, neg, chars, size: res.size, notes: res.notes, rating};
+  return {base, neg, chars, size: res.size, notes: res.notes, rating, params: S.params};
 }
 function fieldHTML(title, text){ return `<div class="field"><div class="fh"><span>${esc(title)}</span><button data-copy>복사</button></div><div class="fv">${esc(text)}</div></div>`; }
 function renderNai(p, el = $('#naiOut')){
@@ -3954,7 +3999,7 @@ $('#naiGo').onclick = async () => {
   const rating = $('#naiRating').value;
   const dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(desc + '\n' + dict.join('\n'), 'adult')) return;
-  const c = await client('#naiProv'); if (!c) return;
+  const c = (rating === 'nsfw' && store.get('set.naiNsfwOllama', false)) ? {prov: 'ollama'} : await client('#naiProv'); if (!c) return;   // 성인 장면은 원하면 내 컴퓨터 AI 로
   const content = [];
   if ($('#naiImg').checked){ const imgs = await pageImagesContent(); if (imgs?.length) content.push(imgs[0], {type:'text', text:'위 그림은 구도·분위기 참고용이다. 그림 속 인물을 그대로 베끼지 말고 인물 사전의 외형을 따른다.'}); }
   content.push({type:'text', text:
@@ -7297,6 +7342,7 @@ function naiBody(p, seed, sizeKey){
       v4_prompt: {caption: {base_caption: p.base, char_captions: cp.map(c => ({char_caption: c.prompt, centers: [c.center]}))}, use_coords: coords, use_order: true},
       v4_negative_prompt: {caption: {base_caption: p.neg, char_captions: cp.map(c => ({char_caption: c.uc, centers: [c.center]}))}, legacy_uc: false},
       negative_prompt: p.neg, deliberate_euler_ancestral_bug: false, prefer_brownian: true,
+      ...(p.params || {}),   // 그림체가 정한 V5 설정(품질 태그 끔·네거 프리셋 없음·guidance 5)이 마지막에 이긴다
     },
   };
 }
@@ -7367,7 +7413,9 @@ async function pxGenBlob(body){
   return new Blob([Uint8Array.from(atob(r.image), c => c.charCodeAt(0))], {type: r.type || 'image/jpeg'});
 }
 async function naiGenBlob(p, sizeKey, edit){
-  const body = naiBody(p, undefined, sizeKey); if (edit) edit(body);
+  const body = naiBody(p, p.seed, sizeKey); if (edit) edit(body);
+  if (typeof ngFaceApply === 'function' && !edit) await ngFaceApply(body);   // 얼굴 고정(씨앗·기준 그림·정밀 참조)
+  store.set('set.ngLastSeed', body.parameters.seed);
   imgGuard([body.input, ...(body.parameters.characterPrompts || []).map(c => c.prompt)].join(', '));
   if (store.get('set.ngEngine', 'nai') === 'pixai'){
     if (!DESKTOP) throw new Error('픽시AI 는 윈도우 프로그램에서만 쓸 수 있어요');
@@ -7381,7 +7429,7 @@ async function naiGenBlob(p, sizeKey, edit){
   const z = await JSZip.loadAsync(r.zip, {base64: true}); const f = Object.values(z.files).find(x => /\.png$/i.test(x.name)); return new Blob([await f.async('arraybuffer')], {type: 'image/png'});
 }
 async function naiOne(p, desc){ return naiSaveBlob(await naiGenBlob(p), desc); }
-window.nvNai = {one: naiOne, pxPlain, imgGuard};   // 시험용
+window.nvNai = {one: naiOne, pxPlain, imgGuard, body: naiBody};   // 시험용
 { // 그리는 곳 고르기: 픽시AI 키는 이 기기에만 둔다(tr.key.* 는 백업에서 빠진다)
   const eng = $('#ngEngine'), row = $('#pxRow'), inp = $('#pxKey');
   const show = () => { row.hidden = eng.value !== 'pixai'; inp.placeholder = store.get('tr.key.pixai', '') ? '저장됨 (바꾸려면 새로 입력)' : '픽시AI API 키 (sk-...)'; };
@@ -7402,7 +7450,7 @@ async function naiSaveBlob(blob, desc){
 // 장면 설명 → 프롬프트(AI). naiGo 와 같은 길을 쓴다.
 async function naiPromptFor(desc){
   const rating = $('#naiRating').value, dict = naiCharsDict();
-  const c = await client('#naiProv'); if (!c) throw new Error('AI 설정이 필요해요');
+  const c = (rating === 'nsfw' && store.get('set.naiNsfwOllama', false)) ? {prov: 'ollama'} : await client('#naiProv'); if (!c) throw new Error('AI 설정이 필요해요');
   const content = [{type: 'text', text:
 `용도: ${$('#naiUse').selectedOptions[0].text}
 등급: ${rating === 'nsfw' ? '성인(nsfw). 성인 플랫폼용이고 모든 인물은 성인이다. 각 인물 prompt에 adult를 넣는다.' : '일반(safe). 노출·성적 요소 없이.'}
@@ -7535,9 +7583,16 @@ const WT_LAYOUTS = {
   '3c': {name: '왼쪽 길게', polys: [[[0,0],[.5,0],[.5,1],[0,1]], [[.5,0],[1,0],[1,.5],[.5,.5]], [[.5,.5],[1,.5],[1,1],[.5,1]]]},
   '3d': {name: '사선 세 칸', polys: [[[0,0],[1,0],[1,.27],[0,.33]], [[0,.33],[1,.27],[1,.68],[0,.74]], [[0,.74],[1,.68],[1,1],[0,1]]]},
   '4a': {name: '네 칸', polys: [[[0,0],[.5,0],[.5,.5],[0,.5]], [[.5,0],[1,0],[1,.5],[.5,.5]], [[0,.5],[.5,.5],[.5,1],[0,1]], [[.5,.5],[1,.5],[1,1],[.5,1]]]},
+  '4b': {name: '사선 네 칸 (액션)', polys: [[[0,0],[.62,0],[.5,.42],[0,.42]], [[.62,0],[1,0],[1,.42],[.5,.42]], [[0,.42],[1,.42],[1,.62],[0,.74]], [[0,.74],[1,.62],[1,1],[0,1]]]},
+  '5a': {name: '만화 다섯 칸', polys: [[[0,0],[1,0],[1,.3],[0,.3]], [[0,.3],[.6,.3],[.6,.62],[0,.62]], [[.6,.3],[1,.3],[1,.62],[.6,.62]], [[0,.62],[.4,.62],[.4,1],[0,1]], [[.4,.62],[1,.62],[1,1],[.4,1]]]},
+  '6a': {name: '만화 여섯 칸', polys: [[[0,0],[.5,0],[.5,.333],[0,.333]], [[.5,0],[1,0],[1,.333],[.5,.333]], [[0,.333],[.5,.333],[.5,.667],[0,.667]], [[.5,.333],[1,.333],[1,.667],[.5,.667]], [[0,.667],[.5,.667],[.5,1],[0,1]], [[.5,.667],[1,.667],[1,1],[.5,1]]]},
+  'w1': {name: '웹툰 · 여백 한 컷', polys: [[[.06,.12],[.94,.12],[.94,.88],[.06,.88]]]},
+  'w2': {name: '웹툰 · 여백 두 컷', polys: [[[.04,.03],[.96,.03],[.96,.45],[.04,.45]], [[.04,.55],[.96,.55],[.96,.97],[.04,.97]]]},
+  'w3': {name: '웹툰 · 지그재그 세 컷', polys: [[[.04,.02],[.78,.02],[.78,.3],[.04,.3]], [[.22,.36],[.96,.36],[.96,.64],[.22,.64]], [[.04,.7],[.78,.7],[.78,.98],[.04,.98]]]},
+  'w4': {name: '웹툰 · 큰 컷 + 작은 컷', polys: [[[0,0],[1,0],[1,.62],[0,.62]], [[.08,.7],[.92,.7],[.92,.97],[.08,.97]]]},
 };
 const INSET_POLY = [[.04,.03],[.4,.03],[.4,.27],[.04,.27]];
-const WT_SFX_GRAD = [['#ff8a00', '#c2185b'], ['#ff4fb6', '#7b1fa2'], ['#ff3d3d', '#7a0000'], ['#4fc3f7', '#283593'], ['#ffd54f', '#e65100'], ['#ffffff', '#9e9e9e']];
+const WT_SFX_GRAD = [['#ff8a00', '#c2185b'], ['#ff4fb6', '#7b1fa2'], ['#ff3d3d', '#7a0000'], ['#4fc3f7', '#283593'], ['#ffd54f', '#e65100'], ['#ffffff', '#9e9e9e'], ['#3a3a3a', '#000000']];   // 6: 흑백 그림체용 먹색
 const WT_TEXT_COL = ['#ffffff', '#111111', '#ffd54f', '#ff8a80'];
 const WT_BUB_FILL = ['#ffffff', '#eceaf0', '#1c1c1e'];   // 흰 / 연회색 / 검정(속마음·회상)
 const WT = {list: [], proj: null, pi: 0, sel: null, hist: [], redo: [], imgs: new Map(), zoom: 1, drag: null, saveT: 0, thumbT: 0, busy: false};
@@ -7568,13 +7623,13 @@ async function wtPreload(){ const ids = new Set(); for (const pg of WT.proj.page
 /* ---------- 쪽·컷 만들기 ---------- */
 function wtNewPage(layout = '1', h = 2000){
   const L = WT_LAYOUTS[layout] || WT_LAYOUTS['1'];
-  return {id: uid(), h, layout, kind: 'comic', panels: L.polys.map(poly => ({poly, img: null, view: {ox: 0, oy: 0, s: 1}, tags: '', chars: '', scene: ''})), items: []};
+  return {id: uid(), h, layout, kind: 'comic', panels: L.polys.map(poly => ({id: uid(), poly, img: null, view: {ox: 0, oy: 0, s: 1}, tags: '', chars: '', scene: ''})), items: []};
 }
 function wtApplyLayout(pg, layout){
   const L = WT_LAYOUTS[layout]; if (!L) return;
   const old = pg.panels.filter(p => !p.inset);
   const insets = pg.panels.filter(p => p.inset);
-  const next = L.polys.map((poly, i) => ({poly, img: old[i]?.img || null, view: old[i]?.view || {ox: 0, oy: 0, s: 1}, tags: old[i]?.tags || '', chars: old[i]?.chars || '', scene: old[i]?.scene || ''}));
+  const next = L.polys.map((poly, i) => ({id: old[i]?.id || uid(), poly, img: old[i]?.img || null, view: old[i]?.view || {ox: 0, oy: 0, s: 1}, tags: old[i]?.tags || '', chars: old[i]?.chars || '', scene: old[i]?.scene || ''}));
   pg.panels = [...next, ...insets]; pg.layout = layout; pg.kind = 'comic';
 }
 function wtNewProject(name){ return {id: uid(), name: name || '새 웹툰', pages: [wtNewPage('2a')], gutter: 'bleed', updated: Date.now()}; }
@@ -7584,6 +7639,7 @@ function polyPx(pg, panel){
   const H = pg.h, gut = WT.proj.gutter; let pts = panel.poly.map(([x, y]) => [x * WT_W, y * H]);
   if (panel.inset) return pts;
   if (gut === 'framed'){ const m = 46; pts = panel.poly.map(([x, y]) => [m + x * (WT_W - 2 * m), m + y * (H - 2 * m)]); pts = polyInset(pts, 16); }
+  else if (gut === 'wide'){ const m = 60; pts = panel.poly.map(([x, y]) => [m + x * (WT_W - 2 * m), m + y * (H - 2 * m)]); pts = polyInset(pts, 34); }   // 웹툰식: 컷 사이 흰 여백을 넓게
   return pts;
 }
 function polyInset(p, d){   // 볼록 다각형 안쪽으로 d 만큼
@@ -7601,14 +7657,32 @@ const polyBox = pts => { let a = Infinity, b = Infinity, c = -Infinity, d = -Inf
 const inPolyPx = (x, y, pts) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++){ const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
 const hash = s => { let h = 7; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
 const rnd = seed => () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+// 한국어 줄바꿈: 낱말(띄어쓰기) 단위로 끊고, 한 낱말이 칸보다 길 때만 글자로 끊는다.
+// 문장부호(?!.,…~)는 줄 머리에 오지 않게 앞줄 끝에 붙인다 (예전엔 '그, 그 / 게', '혼자냐 / ?' 처럼 끊겼다)
+const WT_NOSTART = /^[,.?!…~·:;)\]」』”’"'\-—]+/;
 function wrapLines(g, text, maxW){
   const out = [];
   for (const para of String(text || '').split('\n')){
-    let line = '';
-    for (const ch of para){ if (line && g.measureText(line + ch).width > maxW){ out.push(line); line = ch.trim() ? ch : ''; } else line += ch; }
-    out.push(line);
+    const lines = []; let line = '';
+    for (const word of para.split(/\s+/).filter(Boolean)){
+      const cand = line ? line + ' ' + word : word;
+      if (g.measureText(cand).width <= maxW){ line = cand; continue; }
+      if (line){ lines.push(line); line = ''; }
+      if (g.measureText(word).width <= maxW){ line = word; continue; }
+      for (const ch of word){ if (line && g.measureText(line + ch).width > maxW){ lines.push(line); line = ch; } else line += ch; }   // 아주 긴 낱말만 글자로
+    }
+    lines.push(line);
+    for (let i = 1; i < lines.length; i++){ const m = lines[i].match(WT_NOSTART); if (m){ lines[i - 1] += m[0]; lines[i] = lines[i].slice(m[0].length).trim(); } }
+    out.push(...lines.filter((l, i) => l || i === 0 || lines.length === 1));
   }
-  return out;
+  return out.length ? out : [''];
+}
+// 말풍선용: 줄 수는 그대로 두고 폭을 줄여 줄 길이를 고르게 (한 줄만 길고 끝줄이 한두 글자인 꼴을 막는다)
+function wrapBalanced(g, text, maxW){
+  const base = wrapLines(g, text, maxW); if (base.length < 2) return base;
+  let lo = maxW * 0.35, hi = maxW, best = base;
+  for (let k = 0; k < 9; k++){ const mid = (lo + hi) / 2, t = wrapLines(g, text, mid); if (t.length <= base.length){ best = t; hi = mid; } else lo = mid; }
+  return best;
 }
 
 /* ---------- 그리기: 컷 ---------- */
@@ -7626,8 +7700,9 @@ function drawPanels(g, pg, k){
     } else if (!WT.exporting){ g.fillStyle = '#b9b5c4'; g.font = `600 ${Math.round(bw * 0.045)}px ${WT_FONT.body}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('그림 없음', bb[0] + bw / 2, bb[1] + bh / 2); }
     g.restore();
     // 꽉 차게: 쪽 가장자리에는 선을 긋지 않고 컷 사이 선만 긋는다(참고 자료처럼). 여백 있게·작은 컷은 테두리를 다 긋는다
-    const full = panel.inset || WT.proj.gutter === 'framed';
-    g.save(); g.lineJoin = 'miter'; g.lineCap = 'butt'; g.strokeStyle = '#111'; g.lineWidth = panel.inset ? 9 : (full ? 7 : 12);
+    const full = panel.inset || WT.proj.gutter === 'framed' || WT.proj.gutter === 'wide' || !pts.some(([x, y]) => x < 1.5 || y < 1.5 || x > WT_W - 1.5 || y > pg.h - 1.5);
+    const bwid = WT.proj.border ?? null; if (bwid === 0 && !panel.inset) continue;
+    g.save(); g.lineJoin = 'miter'; g.lineCap = 'butt'; g.strokeStyle = '#111'; g.lineWidth = panel.inset ? 9 : bwid != null ? bwid : (full ? 7 : 12);
     const onEdge = (a, b) => (a[0] < 1.5 && b[0] < 1.5) || (a[0] > WT_W - 1.5 && b[0] > WT_W - 1.5) || (a[1] < 1.5 && b[1] < 1.5) || (a[1] > pg.h - 1.5 && b[1] > pg.h - 1.5);
     if (full){ g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); }
     else for (let i = 0; i < pts.length; i++){ const a = pts[i], b = pts[(i + 1) % pts.length]; if (onEdge(a, b)) continue; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
@@ -7656,6 +7731,18 @@ function spikePath(g, cx, cy, rx, ry, seed, m = 20){
   for (let i = 0; i < m * 2; i++){ const a = i / (m * 2) * Math.PI * 2, k = i % 2 ? 0.78 : 1.1 + r() * 0.14; const x = cx + Math.cos(a) * rx * k, y = cy + Math.sin(a) * ry * k; i ? g.lineTo(x, y) : g.moveTo(x, y); }
   g.closePath();
 }
+function wavePath(g, cx, cy, rx, ry, seed){   // 떨리는 목소리: 잔물결 테두리
+  const n = 64, r = rnd(seed); const ph = r() * 6; g.beginPath();
+  for (let i = 0; i <= n; i++){ const a = i / n * Math.PI * 2, k = 1 + 0.035 * Math.sin(a * 22 + ph); const x = cx + Math.cos(a) * rx * k, y = cy + Math.sin(a) * ry * k; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.closePath();
+}
+function electricPath(g, cx, cy, rx, ry){   // 전화·방송·기계음: 톱니 네모
+  const x0 = cx - rx, y0 = cy - ry, w = rx * 2, h = ry * 2, t = Math.max(8, Math.min(rx, ry) * 0.09), step = t * 2.2; g.beginPath(); g.moveTo(x0, y0);
+  const edge = (ax, ay, bx, by, nx, ny) => { const L = Math.hypot(bx - ax, by - ay), n = Math.max(2, Math.round(L / step)); for (let i = 1; i <= n; i++){ const f = i / n, m = (i - 0.5) / n; g.lineTo(ax + (bx - ax) * m + nx * t, ay + (by - ay) * m + ny * t); g.lineTo(ax + (bx - ax) * f, ay + (by - ay) * f); } };
+  edge(x0, y0, x0 + w, y0, 0, -1); edge(x0 + w, y0, x0 + w, y0 + h, 1, 0); edge(x0 + w, y0 + h, x0, y0 + h, 0, 1); edge(x0, y0 + h, x0, y0, -1, 0); g.closePath();
+}
+const WT_BUB_FONTS = {gothic: WT_TEXT, hand: '"Nanum Pen Script","Gaegu",cursive', heavy: '"Black Han Sans","Do Hyeon",sans-serif', serif: '"Noto Serif KR","Gowun Batang",serif', round: '"Jua","Gaegu",sans-serif'};
+const bubFont = b => WT_BUB_FONTS[b.bf] || WT_TEXT;
 function roundRectPath(g, cx, cy, rx, ry, r){
   g.beginPath(); const x = cx - rx, y = cy - ry, w = rx * 2, h = ry * 2, k = Math.min(r, rx, ry);
   g.moveTo(x + k, y); g.lineTo(x + w - k, y); g.quadraticCurveTo(x + w, y, x + w, y + k);
@@ -7664,10 +7751,11 @@ function roundRectPath(g, cx, cy, rx, ry, r){
   g.lineTo(x, y + k); g.quadraticCurveTo(x, y, x + k, y); g.closePath();
 }
 function bubbleGeom(g, b){
-  const size = b.size || 38; g.font = `500 ${size}px ${WT_TEXT}`;
-  const lines = wrapLines(g, b.text, b.w || 300), lh = size * 1.5, tw = Math.max(40, ...lines.map(l => g.measureText(l).width)), th = lines.length * lh;
+  const size = b.size || 38; g.font = `500 ${size}px ${bubFont(b)}`;
+  const lines = wrapBalanced(g, b.text || b.ph || ' ', b.w || 300), lh = size * 1.42, tw = Math.max(40, ...lines.map(l => g.measureText(l).width)), th = lines.length * lh;
   if (b.shape === 'box') return {lines, lh, size, rx: tw / 2 + size * 0.9, ry: th / 2 + size * 0.6, tw, th};
   if (b.shape === 'round') return {lines, lh, size, rx: tw / 2 + size * 0.85, ry: th / 2 + size * 0.7, tw, th};
+  if (b.shape === 'electric') return {lines, lh, size, rx: tw / 2 + size * 1.0, ry: th / 2 + size * 0.8, tw, th};
   const pad = b.shape === 'shout' ? 1.0 : 0.8;
   return {lines, lh, size, rx: tw / 2 * 1.18 + size * pad, ry: th / 2 * 1.1 + size * (pad * 0.9), tw, th};
 }
@@ -7687,12 +7775,16 @@ function drawBubble(g, b){
   const hasTail = b.tail && b.shape !== 'box';
   const shape = () => {
     if (b.shape === 'shout') spikePath(g, b.x, b.y, geo.rx, geo.ry, seed);
+    else if (b.shape === 'wave') wavePath(g, b.x, b.y, geo.rx, geo.ry, seed);
+    else if (b.shape === 'electric') electricPath(g, b.x, b.y, geo.rx, geo.ry);
     else if (b.shape === 'round') roundRectPath(g, b.x, b.y, geo.rx, geo.ry, geo.size * 1.1);
     else if (b.shape === 'thought') blobPath(g, b.x, b.y, geo.rx, geo.ry, seed, 0.1, 16);
     else blobPath(g, b.x, b.y, geo.rx, geo.ry, seed, b.shape === 'whisper' ? 0.03 : 0.045, 14);
   };
   const dark0 = (b.fill || '#fff').toLowerCase() === '#1c1c1e';
-  g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
+  const empty = !String(b.text || '').trim();
+  g.save(); g.lineJoin = 'round'; g.lineCap = 'round'; if (empty) g.globalAlpha = 0.55;
+  const par = b.link ? (WT._curPage?.items || []).find(x => x.id === b.link && x.k === 'bubble') : null;
   if (b.shape === 'box'){
     g.fillStyle = b.fill || '#fff'; g.fillRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2);
     if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line * 0.8; if (b.dash) g.setLineDash([14, 10]); g.strokeRect(b.x - geo.rx, b.y - geo.ry, geo.rx * 2, geo.ry * 2); g.setLineDash([]); }
@@ -7707,9 +7799,18 @@ function drawBubble(g, b){
       [[0.35, 0.09], [0.68, 0.062], [0.95, 0.04]].forEach(([t, rr]) => { const R = Math.min(geo.rx, geo.ry) * rr * 2.2; g.beginPath(); g.arc(sx + (b.tail.x - sx) * t, sy + (b.tail.y - sy) * t, R, 0, 7); g.fillStyle = b.fill || '#fff'; g.fill(); if (line){ g.lineWidth = line * 0.8; g.strokeStyle = dark0 ? '#555' : '#111'; g.stroke(); } });
     }
   }
+  // 이어 말하기: 두 풍선을 그린 뒤 목을 덮어 그려 테두리가 목을 가로지르지 않게 한다
+  if (par && par._hw){
+    const ang = Math.atan2(b.y - par.y, b.x - par.x), wN = Math.min(geo.ry, par._hh) * 0.28, nx = -Math.sin(ang) * wN, ny = Math.cos(ang) * wN;
+    const at = (o, rx, ry, k, sg) => [o.x + sg * Math.cos(ang) * rx * k, o.y + sg * Math.sin(ang) * ry * k];
+    const i1 = at(par, par._hw, par._hh, 0.8, 1), i2 = at(b, geo.rx, geo.ry, 0.8, -1), e1 = at(par, par._hw, par._hh, 0.97, 1), e2 = at(b, geo.rx, geo.ry, 0.97, -1);
+    g.beginPath(); g.moveTo(i1[0] + nx, i1[1] + ny); g.lineTo(i2[0] + nx, i2[1] + ny); g.lineTo(i2[0] - nx, i2[1] - ny); g.lineTo(i1[0] - nx, i1[1] - ny); g.closePath(); g.fillStyle = b.fill || '#fff'; g.fill();
+    if (line){ g.strokeStyle = dark0 ? '#555' : '#111'; g.lineWidth = line; g.beginPath(); g.moveTo(e1[0] + nx, e1[1] + ny); g.lineTo(e2[0] + nx, e2[1] + ny); g.moveTo(e1[0] - nx, e1[1] - ny); g.lineTo(e2[0] - nx, e2[1] - ny); g.stroke(); }
+  }
   const dark = (b.fill || '#fff').toLowerCase() === '#1c1c1e';
   g.fillStyle = dark ? '#f4f4f6' : b.shape === 'whisper' ? '#4a4a4a' : '#121212'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = `${b.shape === 'shout' ? 700 : 500} ${geo.size}px ${WT_TEXT}`;
+  g.font = `${b.shape === 'shout' || b.bold ? 700 : 500} ${geo.size}px ${bubFont(b)}`;
+  if (empty) g.fillStyle = '#9a96a6';
   const y0 = b.y - (geo.lines.length - 1) * geo.lh / 2; geo.lines.forEach((l, i) => g.fillText(l, b.x, y0 + i * geo.lh));
   g.restore();
 }
@@ -7763,23 +7864,27 @@ function drawSticker(g, s){
   g.save(); g.translate(s.x, s.y); g.rotate((s.rot || 0) * Math.PI / 180); g.lineJoin = 'round';
   if (s.kind === 'sweat'){
     s._hw = sz * 0.5; s._hh = sz * 0.6;
-    [[0, 0, 1], [sz * 0.5, sz * 0.34, 0.7], [-sz * 0.3, sz * 0.5, 0.55]].forEach(([dx, dy, k]) => { g.save(); g.translate(dx, dy); g.scale(k, k); g.beginPath(); g.moveTo(0, -sz * 0.4); g.bezierCurveTo(sz * 0.34, sz * 0.02, sz * 0.28, sz * 0.36, 0, sz * 0.36); g.bezierCurveTo(-sz * 0.28, sz * 0.36, -sz * 0.34, sz * 0.02, 0, -sz * 0.4); g.closePath(); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 6; g.strokeStyle = '#1a2840'; g.stroke(); g.beginPath(); g.arc(-sz * 0.08, sz * 0.12, sz * 0.06, 0, 7); g.fillStyle = '#bcd6ef'; g.fill(); g.restore(); });
+    [[0, 0, 1], [sz * 0.5, sz * 0.34, 0.7], [-sz * 0.3, sz * 0.5, 0.55]].forEach(([dx, dy, k]) => { g.save(); g.translate(dx, dy); g.scale(k, k); g.beginPath(); g.moveTo(0, -sz * 0.4); g.bezierCurveTo(sz * 0.34, sz * 0.02, sz * 0.28, sz * 0.36, 0, sz * 0.36); g.bezierCurveTo(-sz * 0.28, sz * 0.36, -sz * 0.34, sz * 0.02, 0, -sz * 0.4); g.closePath(); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 6; g.strokeStyle = s.mono ? '#111' : '#1a2840'; g.stroke(); g.beginPath(); g.arc(-sz * 0.08, sz * 0.12, sz * 0.06, 0, 7); g.fillStyle = s.mono ? '#cfcfcf' : '#bcd6ef'; g.fill(); g.restore(); });
   } else if (s.kind === 'burst'){
     starPath(g, 9, sz * 0.62, sz * 0.26, hash('b' + Math.round(s.x))); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 8; g.strokeStyle = '#111'; g.stroke();
   } else if (s.kind === 'heart'){
     const p = () => { g.beginPath(); g.moveTo(0, sz * 0.34); g.bezierCurveTo(-sz * 0.7, -sz * 0.1, -sz * 0.36, -sz * 0.5, 0, -sz * 0.18); g.bezierCurveTo(sz * 0.36, -sz * 0.5, sz * 0.7, -sz * 0.1, 0, sz * 0.34); g.closePath(); };
-    p(); g.lineWidth = sz * 0.2; g.strokeStyle = '#fff'; g.stroke(); const gr = g.createLinearGradient(0, -sz * 0.4, 0, sz * 0.4); gr.addColorStop(0, '#ff9a3c'); gr.addColorStop(1, '#e91e63'); g.fillStyle = gr; g.fill(); g.lineWidth = 4; g.strokeStyle = '#7a0d3a'; g.stroke();
+    p(); g.lineWidth = sz * 0.2; g.strokeStyle = '#fff'; g.stroke(); const gr = g.createLinearGradient(0, -sz * 0.4, 0, sz * 0.4); gr.addColorStop(0, s.mono ? '#5a5a5a' : '#ff9a3c'); gr.addColorStop(1, s.mono ? '#111' : '#e91e63'); g.fillStyle = gr; g.fill(); g.lineWidth = 4; g.strokeStyle = s.mono ? '#000' : '#7a0d3a'; g.stroke();
   } else if (s.kind === 'speed'){
     s._hw = s._hh = sz * 0.9; const r = rnd(hash('s' + Math.round(s.x + s.y))); g.fillStyle = '#111';
     for (let i = 0; i < 70; i++){ const a = r() * Math.PI * 2, r0 = sz * (0.55 + r() * 0.2), r1 = sz * (1.0 + r() * 0.55), w = 0.012 + r() * 0.02; g.beginPath(); g.moveTo(Math.cos(a - w) * r1, Math.sin(a - w) * r1); g.lineTo(Math.cos(a) * r0, Math.sin(a) * r0); g.lineTo(Math.cos(a + w) * r1, Math.sin(a + w) * r1); g.closePath(); g.fill(); }
   }
   g.restore();
 }
-function drawItem(g, it){ (it.k === 'bubble' ? drawBubble : {text: drawOutlined, sfx: drawSfx, stk: drawSticker}[it.k])?.(g, it); }
+function drawItem(g, it){
+  if (WT.exporting && ['bubble', 'text'].includes(it.k) && !String(it.text || '').trim()) return;   // 비워 둔 말풍선은 내보낼 때 빼고
+  if (it.k === 'text' && !String(it.text || '').trim()){ const t2 = {...it, text: it.ph || '글'}; drawOutlined(g, t2); it._hw = t2._hw; it._hh = t2._hh; return; }
+  (it.k === 'bubble' ? drawBubble : {text: drawOutlined, sfx: drawSfx, stk: drawSticker}[it.k])?.(g, it);
+}
 
 /* ---------- 쪽 한 장 그리기 ---------- */
 function wtRenderPage(g, pg, k, opts = {}){
-  g.save(); g.scale(k, k); g.fillStyle = '#fff'; g.fillRect(0, 0, WT_W, pg.h);
+  g.save(); g.scale(k, k); g.fillStyle = '#fff'; g.fillRect(0, 0, WT_W, pg.h); WT._curPage = pg;
   if (pg.kind === 'text'){ /* 글 쪽: 바탕만 */ } else drawPanels(g, pg, k);
   // 집중선처럼 컷에 묶인 것(pi)은 그 컷 밖으로 나가지 않게 잘라서 그린다
   for (const it of pg.items){
@@ -7848,16 +7953,16 @@ function wtPageOp(a){
 }
 
 /* ---------- 되돌리기 ---------- */
-const wtSnap = () => JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter, synopsis: WT.proj.synopsis || ''});
+const wtSnap = () => JSON.stringify({pages: WT.proj.pages, gutter: WT.proj.gutter, border: WT.proj.border ?? null, synopsis: WT.proj.synopsis || ''});
 function wtCommit(){ const s = wtSnap(); if (WT.hist.at(-1) === s) return; WT.hist.push(s); if (WT.hist.length > 80) WT.hist.shift(); WT.redo = []; wtSaveSoon(); }
-function wtRestore(s){ const d = JSON.parse(s); WT.proj.pages = d.pages; WT.proj.gutter = d.gutter; WT.proj.synopsis = d.synopsis || ''; WT.pi = Math.min(WT.pi, d.pages.length - 1); WT.sel = null; wtBuildPages(); wtSideSync(); wtRender(); wtSaveSoon(); }
+function wtRestore(s){ const d = JSON.parse(s); WT.proj.pages = d.pages; WT.proj.gutter = d.gutter; WT.proj.border = d.border ?? null; WT.proj.synopsis = d.synopsis || ''; WT.pi = Math.min(WT.pi, d.pages.length - 1); WT.sel = null; wtBuildPages(); wtSideSync(); wtRender(); wtSaveSoon(); }
 $('#wtUndo').onclick = () => { if (WT.hist.length < 2) return; WT.redo.push(WT.hist.pop()); wtRestore(WT.hist.at(-1)); };
 $('#wtRedo').onclick = () => { const s = WT.redo.pop(); if (!s) return; WT.hist.push(s); wtRestore(s); };
 
 /* ---------- 옆 칸(선택에 맞춰 보이기) ---------- */
 function wtSideSync(){
   const pg = wtPage(); if (!pg) return;
-  $('#wtSize').value = String(pg.h); $('#wtGutter').value = WT.proj.gutter || 'bleed';
+  $('#wtSize').value = String(pg.h); $('#wtGutter').value = WT.proj.gutter || 'bleed'; if ($('#wtBorder')) $('#wtBorder').value = WT.proj.border == null ? '' : String(WT.proj.border);
   $$('#wtLayouts button').forEach(b => b.classList.toggle('on', b.dataset.l === pg.layout));
   const sel = WT.sel, panel = sel?.t === 'panel' ? pg.panels[sel.i] : null, it = sel?.t === 'item' ? pg.items[sel.i] : null;
   $('#wtPanelSec').hidden = !panel; $('#wtItemSec').hidden = !it;
@@ -7868,6 +7973,8 @@ function wtSideSync(){
     $('#wtRotRow').hidden = it.k === 'bubble'; $('#wtShapeRow').hidden = it.k !== 'bubble'; $('#wtShape').disabled = it.shape === 'box';
     $('#wtShape').value = it.shape || 'speech'; $('#wtTail').checked = !!it.tail; $('#wtDash').checked = !!it.dash;
     $('#wtColorRow').hidden = !['sfx', 'text', 'bubble'].includes(it.k); $('#wtVertRow').hidden = it.k !== 'sfx'; $('#wtLineRow').hidden = it.k !== 'bubble';
+    if ($('#wtBubFont')){ $('#wtBubFontRow').hidden = it.k !== 'bubble'; $('#wtBubFont').value = it.bf || 'gothic'; $('#wtBold').checked = !!it.bold; }
+    $('#wtText').placeholder = it.ph ? `${it.ph}을(를) 적어 주세요` : '글';
     $('#wtVert').checked = !!it.vert; $('#wtHeart').checked = !!it.heart; $('#wtBurst').checked = it.burst !== false; $('#wtFont').value = SFX_FONTS[it.font] ? it.font : 'brush'; $('#wtLine').value = it.line || 'thin';
     const sw = $('#wtSw'); sw.innerHTML = '';
     if (it.k === 'sfx') WT_SFX_GRAD.forEach((g2, i) => { const b = document.createElement('button'); b.style.background = `linear-gradient(${g2[0]},${g2[1]})`; b.className = (it.grad ?? 0) === i ? 'on' : ''; b.onclick = () => { it.grad = i; wtCommit(); wtSideSync(); wtRender(); }; sw.append(b); });
@@ -7916,6 +8023,7 @@ $('#wtCv').addEventListener('pointermove', e => {
   if (d.m === 'pan'){ const p = pg.panels[sel.i]; p.view.ox = d.ox + (x - d.x) / d.bw; p.view.oy = d.oy + (y - d.y) / d.bh; d.moved = true; }
   else {
     const it = pg.items[sel.i]; if (!it) return;
+    if (d.m === 'move' || d.m === 'tail') it.auto = false;
     if (d.m === 'move'){ it.x = x - d.dx; it.y = y - d.dy; if (it.tail){ it.tail.x = it.x + d.tx; it.tail.y = it.y + d.ty; } }
     else if (d.m === 'tail'){ it.tail.x = x; it.tail.y = y; }
     else if (d.m === 'size'){ const [lx, ly] = localPt(it, x, y); const k = Math.max(0.2, Math.hypot(lx, ly) / (d.d0 || 1)); if (it.k === 'bubble'){ it.size = Math.max(16, Math.min(160, Math.round(d.s0 * k))); it.w = Math.max(120, Math.round(d.w0 * k)); } else it.size = Math.max(16, Math.min(300, Math.round(d.s0 * k))); wtSideSync(); }
@@ -7940,6 +8048,7 @@ document.addEventListener('keydown', e => {
   const pg = wtPage(); const sel = WT.sel;
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault(); (e.shiftKey ? $('#wtRedo') : $('#wtUndo')).click(); return; }
   if (sel?.t === 'item' && (e.key === 'Delete' || e.key === 'Backspace')){ e.preventDefault(); $('#wtDel').click(); return; }
+  if (sel?.t === 'item' && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd'){ e.preventDefault(); $('#wtDup').click(); return; }
   if (sel?.t === 'item'){ const it = pg.items[sel.i], st = e.shiftKey ? 20 : 4; const mv = {ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st]}[e.key]; if (mv && it){ e.preventDefault(); it.x += mv[0]; it.y += mv[1]; if (it.tail){ it.tail.x += mv[0]; it.tail.y += mv[1]; } wtRender(); clearTimeout(WT.keyT); WT.keyT = setTimeout(wtCommit, 400); } }
 });
 
@@ -7947,17 +8056,46 @@ document.addEventListener('keydown', e => {
 function wtCenterFor(pg){ const s = WT.sel; if (s?.t === 'panel'){ const bb = polyBox(polyPx(pg, pg.panels[s.i])); return [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2, bb]; } return [WT_W / 2, pg.h / 2, [0, 0, WT_W, pg.h]]; }
 function wtAddItem(kind, at){
   const pg = wtPage(); let [cx, cy] = at || wtCenterFor(pg); let it;
-  if (!at){ const n = pg.items.filter(x => Math.hypot((x.x || 0) - cx, (x.y || 0) - cy) < 180).length; cx += n * 56; cy += n * 56; }   // 같은 자리에 겹쳐 쌓이지 않게 조금씩 비껴 놓는다
-  if (['speech', 'round', 'thought', 'shout', 'whisper'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 38, w: 300, line: 'thin', text: kind === 'shout' ? '뭐라고!' : '대사를 적어 주세요', tail: kind === 'shout' ? null : {x: cx + 30, y: cy + 160}};
-  else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 38, w: 480, line: 'thin', text: '설명을 적어 주세요', tail: null};
-  else if (kind === 'text') it = {k: 'text', x: cx, y: cy, size: 52, w: 520, text: '속마음을 적어 주세요', color: '#ffffff', rot: 0};
+  if (!at) [cx, cy] = wtFreeSpot(pg, kind);   // 고른 컷(없으면 쪽) 안에서 다른 글·효과와 겹치지 않는 자리, 읽는 순서(위→아래, 왼→오)대로
+  if (['speech', 'round', 'thought', 'shout', 'whisper', 'wave', 'electric', 'mono'].includes(kind)) it = {k: 'bubble', shape: kind, x: cx, y: cy, size: 38, w: 300, line: 'thin', text: kind === 'shout' ? '뭐라고!' : '', ph: '대사', tail: kind === 'shout' ? null : {x: cx + 30, y: cy + 160}};
+  else if (kind === 'narr') it = {k: 'bubble', shape: 'box', x: cx, y: cy, size: 38, w: 480, line: 'thin', text: '', ph: '설명', bf: 'serif', tail: null};
+  else if (kind === 'text') it = {k: 'text', x: cx, y: cy, size: 52, w: 520, text: '', ph: '속마음', color: '#ffffff', rot: 0};
   else if (kind === 'sfx') it = {k: 'sfx', x: cx, y: cy, size: 150, text: '두근', grad: 0, rot: -10, vert: false, font: 'brush', heart: false, burst: false};
   else it = {k: 'stk', kind, x: cx, y: cy, size: kind === 'speed' ? 260 : 130, rot: 0};
-  it.id = uid(); pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtSideSync(); wtRender(); return it;
+  if (kind === 'mono'){ it.shape = 'speech'; it.fill = '#1c1c1e'; it.ph = '독백'; }
+  it.id = uid(); pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtSideSync(); wtRender();
+  if (!at && ['bubble', 'text', 'sfx'].includes(it.k)) setTimeout(() => { const t = $('#wtText'); t?.focus(); t?.select(); }, 30);   // 넣자마자 바로 글을 친다
+  return it;
+}
+function wtKeepInside(pg, it){   // 글이 늘어 풍선이 커져도 컷(또는 쪽) 밖으로 삐져나가지 않게
+  if (!it || it.k !== 'bubble') return; const c = document.createElement('canvas').getContext('2d'); const geo = bubbleGeom(c, it);
+  const pn = pg.panels.find(p => inPolyPx(it.x, it.y, polyPx(pg, p))); const bb = pn ? polyBox(polyPx(pg, pn)) : [0, 0, WT_W, pg.h];
+  const m = 14, nx = Math.min(Math.max(it.x, bb[0] + geo.rx + m), bb[2] - geo.rx - m), ny = Math.min(Math.max(it.y, bb[1] + geo.ry + m), bb[3] - geo.ry - m);
+  if (bb[2] - bb[0] > geo.rx * 2 + 2 * m){ const dx = nx - it.x; it.x = nx; if (it.tail) it.tail.x += dx; }
+  if (bb[3] - bb[1] > geo.ry * 2 + 2 * m){ const dy = ny - it.y; it.y = ny; if (it.tail) it.tail.y += dy; }
+}
+function wtFreeSpot(pg, kind){
+  const sel = WT.sel, si = sel?.t === 'item' ? pg.items[sel.i] : null;
+  const pn = sel?.t === 'panel' ? pg.panels[sel.i] : si ? pg.panels.find(p => inPolyPx(si.x, si.y, polyPx(pg, p))) : null;   // 글을 고른 채로 더 넣으면 그 글이 있는 컷 안에
+  const bb = pn ? polyBox(polyPx(pg, pn)) : [0, 0, WT_W, pg.h];
+  const hw = kind === 'narr' ? 260 : ['sfx', 'speed'].includes(kind) ? 150 : 190, hh = kind === 'sfx' ? 110 : 95;
+  const boxes = pg.items.map(x => [x.x - (x._hw || 150), x.y - (x._hh || 80), x.x + (x._hw || 150), x.y + (x._hh || 80)]);
+  const free = (x, y) => !boxes.some(b => x + hw > b[0] && x - hw < b[2] && y + hh > b[1] && y - hh < b[3]);
+  const stepX = Math.max(80, (bb[2] - bb[0]) / 6), stepY = Math.max(70, (bb[3] - bb[1]) / 8);
+  for (let y = bb[1] + hh + 24; y <= bb[3] - hh - 10; y += stepY) for (let x = bb[0] + hw + 24; x <= bb[2] - hw - 10; x += stepX) if (free(x, y)) return [x, y];
+  const [cx, cy] = [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2]; return [cx + (pg.items.length % 5) * 40, cy + (pg.items.length % 5) * 40];
+}
+// 이어 말하기: 고른 말풍선 아래(공간이 없으면 옆)에 같은 꼴의 말풍선을 붙이고 목으로 잇는다
+function wtLinkBubble(){
+  const pg = wtPage(), par = wtItem(); if (!par || par.k !== 'bubble') return toast('먼저 이어 붙일 말풍선을 골라 주세요');
+  const below = par.y + (par._hh || 80) * 2.3 < pg.h - 60;
+  const it = {k: 'bubble', shape: par.shape === 'box' ? 'speech' : par.shape, x: below ? par.x + (par._hw || 150) * 0.45 : par.x + (par._hw || 150) * 1.9, y: below ? par.y + (par._hh || 80) * 2.2 : par.y + 20,
+    size: par.size, w: par.w, line: par.line, fill: par.fill, bf: par.bf, text: '', ph: '이어지는 말', tail: null, link: par.id, id: uid()};
+  pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtSideSync(); wtRender(); setTimeout(() => $('#wtText')?.focus(), 30);
 }
 $('#wtAdd').onclick = e => { const k = e.target.dataset.add; if (k) wtAddItem(k); };
 const wtItem = () => { const s = WT.sel; return s?.t === 'item' ? wtPage().items[s.i] : null; };
-$('#wtText').oninput = () => { const it = wtItem(); if (!it) return; it.text = $('#wtText').value; wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 500); };
+$('#wtText').oninput = () => { const it = wtItem(); if (!it) return; it.text = $('#wtText').value; if (!it.link) wtKeepInside(wtPage(), it); wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 500); };
 $('#wtSizeR').oninput = () => { const it = wtItem(); if (!it) return; it.size = +$('#wtSizeR').value; $('#wtSizeO').textContent = it.size; if (it.k === 'bubble') it.w = Math.round(it.size * 7.8); wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 400); };
 $('#wtRot').oninput = () => { const it = wtItem(); if (!it) return; it.rot = +$('#wtRot').value; $('#wtRotO').textContent = it.rot + '°'; wtRender(); clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 400); };
 $('#wtShape').onchange = () => { const it = wtItem(); if (!it) return; it.shape = $('#wtShape').value; wtCommit(); wtRender(); };
@@ -7973,8 +8111,12 @@ $('#wtDel').onclick = () => { const s = WT.sel; if (s?.t !== 'item') return; wtP
 $('#wtFront').onclick = () => { const s = WT.sel, pg = wtPage(); if (s?.t !== 'item') return; const [it] = pg.items.splice(s.i, 1); pg.items.push(it); WT.sel = {t: 'item', i: pg.items.length - 1}; wtCommit(); wtRender(); };
 
 /* ---------- 쪽·컷 설정 ---------- */
-$('#wtSize').onchange = () => { const pg = wtPage(); pg.h = +$('#wtSize').value; wtCommit(); wtBuildPages(); wtRender(); };
+$('#wtSize').onchange = () => { const pg = wtPage(), k = +$('#wtSize').value / pg.h; pg.h = +$('#wtSize').value; for (const it of pg.items){ const d = it.y * (k - 1); it.y += d; if (it.tail) it.tail.y += d; } wtCommit(); wtBuildPages(); wtRender(); };   // 쪽 길이를 바꾸면 글·효과도 같은 비율로 옮긴다
 $('#wtGutter').onchange = () => { WT.proj.gutter = $('#wtGutter').value; wtCommit(); wtRender(); };
+$('#wtBorder') && ($('#wtBorder').onchange = () => { const v = $('#wtBorder').value; WT.proj.border = v === '' ? null : +v; wtCommit(); wtRender(); });
+$('#wtBubFont') && ($('#wtBubFont').onchange = () => { const it = wtItem(); if (!it) return; it.bf = $('#wtBubFont').value; document.fonts?.load(`500 40px ${bubFont(it)}`, '가나다').then(wtRender).catch(() => {}); wtCommit(); wtRender(); });
+$('#wtBold') && ($('#wtBold').onchange = () => { const it = wtItem(); if (!it) return; it.bold = $('#wtBold').checked; wtCommit(); wtRender(); });
+$('#wtLink') && ($('#wtLink').onclick = wtLinkBubble);
 $('#wtAddInset').onclick = () => { const pg = wtPage(); pg.panels.push({poly: INSET_POLY, inset: true, img: null, view: {ox: 0, oy: 0, s: 1}, tags: '', chars: '', scene: ''}); WT.sel = {t: 'panel', i: pg.panels.length - 1}; wtCommit(); wtSideSync(); wtRender(); };
 $('#wtPageText').onclick = () => { const pg = wtPage(); pg.kind = pg.kind === 'text' ? 'comic' : 'text'; if (pg.kind === 'text' && !pg.items.some(i => i.k === 'text')){ const it = wtAddItem('text', [WT_W / 2, pg.h / 2]); it.color = '#111111'; it.size = 78; it.text = '제목이나 글을\n적어 주세요'; } WT.sel = null; wtCommit(); wtSideSync(); wtRender(); };
 $('#wtPanelTags').oninput = () => { const s = WT.sel; if (s?.t === 'panel'){ wtPage().panels[s.i].tags = $('#wtPanelTags').value; clearTimeout(WT.txT); WT.txT = setTimeout(wtCommit, 600); } };
@@ -7984,7 +8126,7 @@ $('#wtImgClear').onclick = () => { const s = WT.sel; if (s?.t === 'panel'){ wtPa
 $('#wtPanelDel').onclick = () => { const s = WT.sel, pg = wtPage(); if (s?.t !== 'panel') return; if (pg.panels.filter(p => !p.inset).length < 2 && !pg.panels[s.i].inset) return toast('컷을 바꾸려면 위의 틀을 골라 주세요'); pg.panels.splice(s.i, 1); WT.sel = null; wtCommit(); wtSideSync(); wtRender(); };
 async function wtSetPanelImage(blob, idx){
   const pg = wtPage(), s = idx ?? (WT.sel?.t === 'panel' ? WT.sel.i : pg.panels.findIndex(p => !p.img)); if (s < 0 || !pg.panels[s]) return toast('컷을 먼저 골라 주세요');
-  const id = await wtPutImage(blob); pg.panels[s].img = id; pg.panels[s].view = {ox: 0, oy: 0, s: 1}; WT.sel = {t: 'panel', i: s}; wtCommit(); wtSideSync(); wtRender();
+  const id = await wtPutImage(blob); pg.panels[s].img = id; pg.panels[s].view = {ox: 0, oy: 0, s: 1}; if (typeof wtAutoLayout === 'function') wtAutoLayout(pg, pg.panels[s]); WT.sel = {t: 'panel', i: s}; wtCommit(); wtSideSync(); wtRender();
 }
 $('#wtImgFile').onclick = () => { if (WT.sel?.t !== 'panel') return toast('컷을 먼저 눌러 골라 주세요'); $('#wtImgInput').click(); };
 $('#wtImgInput').onchange = async () => { const f = $('#wtImgInput').files[0]; $('#wtImgInput').value = ''; if (f) await wtSetPanelImage(f); };
@@ -8050,9 +8192,12 @@ $('#wtNew').onclick = async () => { WT.proj = wtNewProject(); WT.pi = 0; WT.sel 
 $('#wtName').oninput = () => wtSaveSoon();
 $('#wtMy').onclick = async () => { if (WT.proj){ clearTimeout(WT.saveT); await wtSaveNow(); } WT.proj = null; $('#wtHome').hidden = false; wtHomeRender(); };
 wtBuildLayouts();
+window.nvWT = {get WT(){ return WT; }, drawItem, wtRenderPage, wtPageCanvas, wrapLines, wrapBalanced};   // 시험용
 /* ================= 웹툰 자동 만들기: 줄거리 → 대본 → 쪽·컷·말풍선 → (컴퓨터) 컷 그림 ================= */
 const WT_LAYOUT_KEYS = Object.keys(WT_LAYOUTS);
 // 우리 기본 그림체 2종 (인수인계 문서 house_style v15 / 암실 룩 기준, NAI V5)
+// v43 B 시그니처: 작가 17명 믹스에서 얼굴을 평균으로 모으던 무게를 낮춘 판(CORE_DIV). 얼굴 원형(인물 사전)과 함께 쓴다
+const V43_CORE_DIV = '0.8::artist:krenz_cushart ::, 1.0::artist:rei_(sanbonzakura) ::, 0.6::artist:wakabayashi_toshiya ::, artist:rei_(sanbonzakura), 0.45::artist:blackbox_(blackbox9158) ::, 1.2::artist:oharu-chan ::, 0.8::artist:yamamoto_souichirou ::, 0.25::artist:meyoco ::, 0.75::artist:mika_pikazo ::, 0.42::artist:tobo_katsuo ::, 0.23::artist:hungry_clicker ::, 0.45::artist:john_kafka ::, 0.27::artist:na_tarapisu153 ::, 0.9::artist:gongzuotianxiadiyi, artist:mnnd ::, 0.8::artist:pigeon666 ::, 0.8::artist:ashinamaturi ::, year 2025, year 2026, -2::flat color ::, -2::artist collaboration ::, 2::highres ::, 1.3::best quality ::, amazing quality, best illustration, 1.3::soft shading ::, glossy hair, detailed eyes, cinematic lighting, rim light, depth of field, 1.4::semi-realistic ::, 1.2::realistic lighting ::, -1::manga ::, film grain, very aesthetic, absurdres, detailed eyes, 1.2::key visual ::, highly detailed, dramatic lighting, rim light, volumetric lighting, particles, wind, depth of field, 0.4::artist:ask_(askzy) ::, -1.2::bishounen ::, 1.8::graphite pencil lines, textured pencil strokes over vivid color ::, 1.4::calligraphic ink lines, ink drips and splatter ::, 1.1::detailed hands ::, 1.5::torn paper edges, rough watercolor paper texture, painting fading into blank paper at borders ::';
 const WT_STYLE = {
   neon: {
     name: '기본 A · 야수파 + 네온',
@@ -8116,8 +8261,324 @@ const WT_STYLE = {
     head: '1.4::ornate engraved linework ::, crosshatching, gothic illustration, 1.2::deep burgundy and antique gold ::, dramatic chiaroscuro, art nouveau frame, 1.1::mature male, adult man ::',
     tail: 'storytelling, cinematic composition, masterpiece, best quality, very aesthetic',
     neg: 'pastel, flat color, cute, chibi, 3d, child, young, aged down, shota, 1girl, female',
+  },  // ---------- v43 라인업 (2026-11-08, house_style_v43_lineup.md) · NovelAI V5 로 시험해 고른 상업용 그림체 ----------
+  v43nov: {
+    name: '표지 1 · 남성향 웹소설 표지',
+    head: '1.5::korean web novel cover illustration, epic action key visual, highly detailed digital painting ::, 1.3::dramatic rim lighting, glowing particles, cinematic depth ::, 1.1::dark sky area at the top ::, 1.4::the hero is large in the frame, face clearly visible ::, high complexity',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'letters, tiny figure, small character, bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+  v43rofan: {
+    name: '표지 2 · 로판 표지',
+    head: '1.5::romance fantasy web novel cover, ornate gold and ivory, soft glowing light, lavish costume detail, painterly semi-realistic ::, 1.3::flower petals drifting, sparkles ::, 1.2::empty space at the top for a title ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+  v43real: {
+    name: 'D · 감성 반실사 (팅글 결)',
+    head: '1.5::semi-realistic korean webtoon illustration, painterly realism, soft realistic shading ::, 1.3::detailed skin texture, pale porcelain skin, faint flush on cheeks and eyelids, glossy lips ::, 1.3::muted desaturated colors, soft natural window light, film photography mood ::, thick dark eyelashes, delicate handsome face, slightly messy hair',
+    tail: 'intimate close framing, shallow depth of field, high quality, very aesthetic',
+    neg: 'lowres, worst quality, bad quality, jpeg artifacts, watermark, signature, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, blurry, chibi, child, aged down, baby face, flat color, cel shading, lineart, thick outlines, torn paper, ink splatter, vivid saturated colors, neon, 1girl, female, deformed face, cross-eyed',
+    safeNeg: 'nude, nipples, explicit',
+    wide: /\b(intimate close framing|shallow depth of field)\b,?\s*/gi,
+  },
+  v43realph: {
+    name: 'D2 · 감성 실사풍',
+    head: '1.5::semi-realistic korean webtoon illustration, painterly realism, soft realistic shading ::, 1.3::detailed skin texture, pale porcelain skin, faint flush on cheeks and eyelids, glossy lips ::, 1.3::muted desaturated colors, soft natural window light, film photography mood ::, thick dark eyelashes, delicate handsome face, slightly messy hair, 1.3::photorealistic rendering, cinematic photograph look ::',
+    tail: 'intimate close framing, shallow depth of field, high quality, very aesthetic',
+    neg: 'lowres, worst quality, bad quality, jpeg artifacts, watermark, signature, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, blurry, chibi, child, aged down, baby face, flat color, cel shading, lineart, thick outlines, torn paper, ink splatter, vivid saturated colors, neon, 1girl, female, deformed face, cross-eyed',
+    safeNeg: 'nude, nipples, explicit',
+    wide: /\b(intimate close framing|shallow depth of field)\b,?\s*/gi,
+  },
+  v43bneon: {
+    name: 'B · 네온 (현판·헌터·아이돌·SF)',
+    head: V43_CORE_DIV + ', ' + 'vivid saturated colors, 1.8::fauvism, wild unnatural colors, green and violet shadows on skin ::, 1.5::neon noir, hot pink and electric cyan rim lights ::, low key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bwarm: {
+    name: 'B · 따뜻함 (로맨스·일상·가족)',
+    head: V43_CORE_DIV + ', ' + '1.5::warm afternoon sunlight, peach, cream and sky blue palette ::, 1.3::fauvism, lilac and mint colored shadows on skin ::, bright high key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bhorror: {
+    name: 'B · 호러 (호러·미스터리·피폐)',
+    head: V43_CORE_DIV + ', ' + '1.5::cold blue-grey palette, pale skin, a single spot of red ::, 1.3::fog, deep shadows ::, low key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bwuxia: {
+    name: 'B · 무협 (무협·동양 판타지·사극)',
+    head: V43_CORE_DIV + ', ' + '1.5::ink wash, jade green and black ink palette, vermilion accent ::, 1.3::fauvism, jade shadows on skin ::',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bcourt: {
+    name: 'B · 궁정 (로판·서양 판타지)',
+    head: V43_CORE_DIV + ', ' + '1.5::gold and ivory palette, candlelight amber glow ::, 1.3::fauvism, violet shadows on skin ::',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bnoir: {
+    name: 'B · 느와르 (조직·형사·복수)',
+    head: V43_CORE_DIV + ', ' + '1.5::blood red and ink black palette, crimson rim light ::, 1.3::fauvism, crimson shadows on skin ::, low key lighting',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43bmood: {
+    name: 'B · 무드판 (감성 캐릭터챗·유료 화보)',
+    head: V43_CORE_DIV + ', ' + '1.4::muted desaturated palette, soft grey and dusty rose, a single deep red accent ::, 1.3::soft natural window light, film photography mood ::, 1.2::fauvism, faint lilac shadows on skin ::, 1.3::pale porcelain skin, faint natural flush on cheeks and eyelids, slightly reddened eyelids, thick dark eyelashes, languid gaze ::, 1.1::naturally rosy lips ::',
+    tail: 'very aesthetic, masterpiece',
+    neg: 'lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, dithering, multiple views, logo, too many watermarks, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy, bad hands, extra fingers, blurry, text, watermark, signature, chibi, child, aged down, baby face, deformed face, dull eyes, cross-eyed, open mouth, dripping liquid, bad face, poorly drawn face, bad eyes, bad proportions, wrong head size, 2::bad hands, malformed hands, extra digits, fewer digits, fused fingers::, bad perspective, merged bodies, deformed bodies, ribbon, streamers, floating ribbons, vivid saturated colors, neon, lipstick, makeup',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43toon: {
+    name: '웹툰 · 컬러 웹툰 컷',
+    head: '1.6::korean full color webtoon panel, clean crisp lineart, soft cel shading, polished digital coloring ::, 1.2::bright readable colors, simple clean background ::',
+    tail: 'very aesthetic, best quality',
+    neg: 'bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+  v43manga: {
+    name: '만화 · 흑백 만화 페이지',
+    head: '4::monochrome, greyscale ::, 1.6::black and white manga page, ink lineart, screentone shading, speed lines ::, 1.4::clean black panel borders, white gutters ::',
+    tail: 'very aesthetic, best quality',
+    neg: 'color, colorful, bad anatomy, bad hands, extra fingers, fused fingers, deformed face, watermark, signature, child, aged down, baby face',
+    safeNeg: 'nude, nipples, explicit',
+  },  // ---------- 성인 그림체 5종 (2026-11-08) · 포스타입 성인 상위작·리디 BL 랭킹을 보고 만든 렌더링 결. 장면·수위는 인물 사전과 등급이 정한다 ----------
+  v43abl: {
+    name: '성인 1 · BL 광택 반실사 (리디 BL 결)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43afilm: {
+    name: '성인 2 · 관능 화보 필름 (땀·체온·조명)',
+    head: '1.5::intimate film photograph style illustration, painterly semi-realism ::, 1.4::sweat sheen on skin, faint steam, warm tungsten lamp light, deep soft shadows ::, 1.3::35mm film grain, shallow depth of field, muted warm palette, a single deep red accent ::, 1.2::sensual mood, half-lidded eyes, slightly parted lips ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'flat color, cel shading, thick outlines, vivid saturated colors, chibi, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43ahl: {
+    name: '성인 3 · 로맨스 수채 페인팅 (HL·여성향)',
+    head: '1.5::romance webtoon illustration, soft painterly coloring, delicate thin lineart ::, 1.3::pastel rose and cream palette, warm backlight, glowing rim light on skin ::, 1.2::dreamy bokeh, drifting petals ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'dark, gritty, chibi, 3d, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43adark: {
+    name: '성인 4 · 다크 집착물 (감금·집착·느와르)',
+    head: '1.5::dark romance illustration, high contrast chiaroscuro ::, 1.4::crimson and black palette, single hard key light, deep black shadows ::, 1.3::glossy skin, wet hair, intense possessive gaze, eyes clearly visible ::, 1.2::cinematic noir, film grain ::',
+    tail: 'very aesthetic, masterpiece, best quality',
+    neg: 'pastel, bright, flat color, chibi, face in complete shadow, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43aline: {
+    name: '성인 5 · 트레틀용 선화 (흑백 라인)',
+    head: '4::monochrome, lineart ::, 1.6::clean black lineart on pure white background, no shading, no color, uniform line weight ::, 1.3::anatomically accurate adult bodies, clear readable silhouette ::',
+    tail: 'best quality',
+    neg: 'color, shading, gradient, screentone, grey, background, scenery, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },  // ---------- 성인 그림체 6~16 (2026-11-08) · 성인 1(BL 광택)의 변주 + 다른 결 후보 12종 시험(G:\포스타입\성인그림체_후보12_고르기.jpg)에서 태빈이 모두 넣기로 함 ----------
+  v43a02: {
+    name: '성인 6 · BL 더 실사 (실사풍 미남 화보)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::semi_realistic ::, 1.3::realistic skin texture, visible skin pores, photorealistic lighting, cinematic photograph ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, cel shading, beard, stubble, facial hair, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a03: {
+    name: '성인 7 · BL 웹툰 선 강조 (연재 컷·표지)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::crisp clean manhwa lineart, ligne claire, sharp cel shading with glossy highlights ::, 1.2::korean webtoon cover art ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, blurry, painterly, sketch, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a04: {
+    name: '성인 8 · BL 근육 강조 (체격차·바라)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::bara, manly, thick muscular build, huge pectorals, thick neck, thick thighs ::, 1.2::light chest hair, light stubble ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, slender, skinny, bishounen, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a05: {
+    name: '성인 9 · 미인수 결 (가는 몸·고운 얼굴)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::slender beautiful man, delicate pretty face, long eyelashes, soft lean build, pale glossy skin ::, 1.3::warm amber key light with teal shadows, soft bloom ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, muscular, bara, stubble, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a06: {
+    name: '성인 10 · 야경 네온 (호텔·도시 밤)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.2::night city neon light through the window, soft magenta and cyan rim light ::, 1.1::rain streaks on glass ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, neon stains on skin, colored blotches, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a07: {
+    name: '성인 11 · 유화 붓터치 (소장용 화보)',
+    head: '1.5::korean BL webtoon illustration, semi-realistic manhwa, glossy rendering ::, 1.4::mature handsome men, defined muscular build, broad shoulders, sharp jawline, sharp narrow eyes ::, 1.3::glossy skin highlights, warm amber key light with teal shadows, soft bloom ::, 1.5::oil painting, thick visible brushstrokes, impasto texture, painterly ::, 1.2::rich warm palette ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, lineart, cel shading, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a08: {
+    name: '성인 12 · 게임 CG (오토메·BL 게임풍)',
+    head: '1.6::otome game CG, gacha splash art, game_cg, polished anime rendering ::, 1.4::mature handsome man, sharp eyes, defined muscles ::, 1.3::sparkling light particles, dramatic rim light, glossy highlights ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, realistic, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.5::face fully visible, unobstructed face, clear space around the face, strong separation between character and background ::, 1.3::a single soft key light falling across the eyes and cheekbones ::',
+    focusMale: '1.3::adult man, broad-shouldered silhouette, clean masculine presentation ::',
+  },
+  v43a09: {
+    name: '성인 13 · 일본 BL 만화 (가는 선·파스텔)',
+    head: '1.6::japanese BL manga illustration, thin sharp lineart, elegant long limbs, color screentone shading ::, 1.3::mature handsome man, narrow sharp eyes, tall slim muscular ::, 1.2::muted pastel palette, white background accents ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'flat color, chibi, 3d, realistic, thick lines, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43a10: {
+    name: '성인 14 · 그래픽노블 (굵은 먹·2색)',
+    head: '1.6::american graphic novel, bold black ink, heavy spot blacks, flat cel shadows, hatching ::, 1.4::rugged handsome man, square jaw, muscular ::, 1.2::limited palette, teal and orange ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'chibi, 3d, anime, soft shading, glossy, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43a11: {
+    name: '성인 15 · 3D 렌더 (실사 3D 피부)',
+    head: '1.6::semi-realistic 3d render, subsurface scattering skin, octane render, soft studio lighting ::, 1.4::handsome asian man, defined muscular build, sharp jawline ::, 1.2::shallow depth of field ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'chibi, 2d, lineart, flat color, anime, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },
+  v43a12: {
+    name: '성인 16 · 색연필 수채 (감성 굿즈)',
+    head: '1.6::colored pencil and watercolor sketch, visible paper texture, loose expressive lines, watercolor_pencil ::, 1.4::mature handsome man, defined muscles, sharp eyes ::, 1.2::warm sepia and rose palette ::',
+    tail: 'cinematic composition, very aesthetic, masterpiece, best quality',
+    neg: 'chibi, 3d, photorealistic, glossy, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli',
+    safeNeg: 'nude, nipples, explicit',
+  },  v43a17: {
+    name: '성인 17 · 흑백 망가 해칭 (2000년대 청년만화)',
+    head: '1.5::manga style, detailed lineart, thin lineart, high contrast, ink, traditional media ::, 1.4::monochrome, greyscale, screentone, hatching, crosshatching, hatching (texture), detailed shading ::, 1.3::realistic proportions, semi realistic, sharp eyes, small pupils, detailed eyes, 2000s (style) ::',
+    tail: 'masterpiece, best quality, very aesthetic',
+    neg: 'color, colorful, flat color, chibi, 3d, bad anatomy, bad hands, extra fingers, fewer digits, fused fingers, deformed face, cross-eyed, watermark, signature, child, aged down, baby face, shota, loli, ugly, long face, big chin, old man, rugged, beard, stubble',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: '1.4::extremely handsome man, beautiful sharp face, small face ::',
+  },
+
+
+
+  // ---------- 2026-11-09 정리: 태빈이 고른 결 (강재혁 캐릭터챗 시험 A·D). 쓰는 그림체는 WT_PICK 5개, 나머지는 예전 작품 호환용으로 숨긴다 ----------
+  mood: {
+    name: '무드 일러스트',
+    head: '1.0::artist:rei_(sanbonzakura) ::, 0.8::artist:krenz_cushart ::, 1.2::artist:oharu-chan ::, 0.75::artist:mika_pikazo ::, year 2025, 1.4::muted desaturated palette, soft grey and dusty rose ::, 1.3::soft natural light, film photography mood ::, 1.3::pale porcelain skin, faint natural flush, thick dark eyelashes ::, 1.3::soft shading, glossy hair, detailed eyes ::',
+    tail: 'clean hair, very aesthetic, masterpiece',
+    neg: 'lowres, worst quality, bad quality, jpeg artifacts, watermark, signature, text, logo, bad anatomy, bad hands, extra fingers, fused fingers, deformed face, cross-eyed, ugly, long face, big chin, old man, middle-aged, rugged, beard, stubble, child, aged down, baby face, shota, loli, stain, blotch, spots on hair, bad ears, feminine face, vivid saturated colors, neon, multiple views',
+    safeNeg: 'nude, nipples, explicit',
+    focus: '1.3::face clearly visible, beautiful detailed eyes ::',
+    focusMale: '1.5::extremely handsome man, masculine beautiful face, idol visual, small face, fair skin ::',
+  },
+  // ---------- 2026-11-09 최종 3종: 그림체 라운드 1~6에서 태빈이 고른 결 ----------
+  // ---------- 2026-11-09 최종 4종 (라운드 13~16 + 아카·X·공식 문서 학습). v5:true 는 노벨AI V5 문법 그대로 보낸다
+  // (품질 태그 자동 추가 끔 → 직접 쓴 품질줄, 네거 프리셋 없음, guidance 5, rescale 0). 인물 외형은 인물 칸에만, 장면은 base 에.
+  toon3: {
+    name: '웹툰 · 반실사 한국 웹툰 컬러',
+    v5: true,
+    head: 'masterpiece, best quality, very aesthetic, high complexity, -0.34::low complexity::, 2::medium complexity::, -1::artist collaboration::, attractive male, depthness, 1.3::semi-realistic korean manhwa, full color webtoon panel, painterly, clean ink outlines::, cinematic composition, expressive facial acting, natural body language',
+    tail: '',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, halftone, screentone, child, teenager, bishounen, aged down',
+    safeNeg: 'nude, nipples, explicit',
+    fx: '1.3::dynamic action, strong speed lines, impact effect, debris::',
+    focusMale: 'handsome, sharp jawline, 1.4::detailed face, detailed eyes::, -2::rounded jawline::',
+  },
+  manga3: {
+    name: '만화 · 일본 만화 흑백 (스크린톤·먹)',
+    v5: true,
+    head: 'masterpiece, best quality, high complexity, -1::artist collaboration::, attractive male, 1.6::japanese manga panel, black and white, monochrome, screentone, crisp ink lineart, solid black fills::, cinematic composition, expressive facial acting, natural body language, no color',
+    tail: '',
+    fx: '1.4::speed lines, impact lines, motion blur streaks::',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, 1.3::color, colorful::, 3d, korean webtoon, vertical scroll, child, teenager, bishounen, aged down',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: 'handsome, sharp jawline, 1.4::detailed face, detailed eyes::, -2::rounded jawline::',
+  },
+  chat3: {
+    name: '캐릭터챗 · 우리 하우스 그림체 (먹 번짐·네온)',
+    v5: true,
+    head: '0.8::artist:krenz_cushart ::, 1.0::artist:rei_(sanbonzakura) ::, 0.6::artist:wakabayashi_toshiya ::, 0.45::artist:blackbox_(blackbox9158) ::, 1.2::artist:oharu-chan ::, 0.8::artist:yamamoto_souichirou ::, 0.25::artist:meyoco ::, 0.75::artist:mika_pikazo ::, 0.42::artist:tobo_katsuo ::, 0.45::artist:john_kafka ::, 0.9::artist:gongzuotianxiadiyi, artist:mnnd ::, 0.8::artist:pigeon666 ::, 0.8::artist:ashinamaturi ::, year 2025, -1::artist collaboration ::, best quality, amazing quality, very aesthetic, high complexity, depthness, attractive male, 1.3::soft shading ::, glossy hair, detailed eyes, cinematic lighting, rim light, depth of field, 1.4::semi-realistic ::, 1.2::realistic lighting ::, -1::manga ::, 1.2::key visual ::, dramatic lighting, -1.2::bishounen ::, 1.6::graphite pencil lines, textured pencil strokes over vivid color ::, 1.4::calligraphic ink lines, ink drips and splatter ::, 1.1::detailed hands ::',
+    tail: '',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, child, teenager, aged down, torn paper, border, frame',
+    safeNeg: 'nude, nipples, explicit',
+    fx: '1.3::dynamic action, ink splatter bursting with the motion::',
+    focusMale: 'handsome, sharp jawline, three quarter view, 1.5::detailed face, detailed eyes::, -2::rounded jawline::, -0.5::round face::',
+    focusFemale: '1.4::beautiful face, detailed face, detailed eyes::',
+  },
+  adult3: {
+    name: '성인 · 성인 로맨스 웹툰 (윤기 반실사)',
+    v5: true,
+    head: 'masterpiece, best quality, very aesthetic, high complexity, depthness, attractive male, -1::artist collaboration::, 1.4::mature romance manhwa, adult BL webtoon key visual, semi-realistic, glossy painterly rendering, soft skin shading, subsurface scattering::, 1.3::warm low key lighting, amber lamp light and deep shadows, intimate atmosphere, sensual tension::',
+    tail: '',
+    neg: 'official art, official style, lowres, artistic error, worst quality, bad quality, jpeg artifacts, very displeasing, multiple views, logo, watermark, signature, bad anatomy, bad hands, mismatched pupils, child, teenager, bishounen, aged down, flat color',
+    safeNeg: 'nude, nipples, explicit',
+    focusMale: 'handsome, sharp jawline, 1.4::detailed face, detailed eyes::, -2::rounded jawline::',
   },
 };
+// 쓰는 그림체 4개 (2026-11-09 최종). 예전 키는 숨긴 칸으로 남겨 예전 작품·설정이 그대로 열리게 한다
+const WT_PICK = [['toon3', '1 · 웹툰 — 반실사 한국 웹툰 컬러 (웹툰 본문 기본)'], ['manga3', '2 · 만화 — 일본 만화 흑백 (스크린톤·먹)'], ['chat3', '3 · 캐릭터챗 — 우리 하우스 그림체 (표지·화보)'], ['adult3', '4 · 성인 — 성인 로맨스 웹툰 (윤기 반실사)']];
+const WT_DEFAULT_STYLE = 'toon3';
+function wtFillStyleSel(sel){
+  if (!sel) return; const pick = new Set(WT_PICK.map(x => x[0]));
+  sel.innerHTML = WT_PICK.map(([k, n]) => `<option value="${k}">${n}</option>`).join('') + '<option value="custom">직접 쓰기</option>'
+    + Object.keys(WT_STYLE).filter(k => !pick.has(k)).map(k => `<option value="${k}" hidden>예전 · ${WT_STYLE[k].name}</option>`).join('');
+}
+wtFillStyleSel(document.querySelector('#wtStyle')); wtFillStyleSel(document.querySelector('#naiStyleSel'));
+// 3종 정리(2026-11-09) 전에 저장된 그림체는 한 번만 새 기본으로 옮긴다 (예전 작품 안의 컷 설정은 그대로)
+if (!store.get('set.wtStyle3', false)){ const o = store.get('set.wtStyle', ''); if (o && o !== 'custom' && !WT_PICK.some(x => x[0] === o)) store.set('set.wtStyle', WT_DEFAULT_STYLE); store.set('set.wtStyle3', true); }
 const WT_FRAME = {mirror: 'a mirror', photo: 'a wet photograph', tank: 'aquarium glass', shutter: 'a gap in the shutters', fence: 'barbed wire', booth: 'recording booth glass', none: ''};
 const WT_MONO = ['cold blue', 'red', 'gold', 'white and grey', 'teal', 'amber', 'magenta', 'dusty orange', 'moonlight blue', 'warm sepia'];
 const WT_SCHEMA = {
@@ -8127,8 +8588,9 @@ const WT_SCHEMA = {
     synopsis: {type: 'string', description: '네가 채워 넣은 이번 화 줄거리. 한국어 3~6문장. 장소·시간, 무슨 일이 벌어지고, 감정이 어디서 꺾이고, 어떻게 끝나는지'},
     cast: {type: 'array', description: '사전에 없던 인물만. 외형 영어 태그와 한국어 말투를 지어서 채운다', items: {type: 'object', additionalProperties: false, required: ['name', 'tags', 'voice'],
       properties: {name: {type: 'string'}, tags: {type: 'string', description: '예: 1boy, adult, short black hair, grey eyes, black coat'}, voice: {type: 'string', description: '한국어 한 줄. 예: 낮은 반말, 짧고 명령적. 당황하면 말끝이 흐려진다'}}}},
-    pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'panels'],
+    pages: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['layout', 'setting', 'panels'],
       properties: {
+        setting: {type: 'string', description: '이 쪽의 장소·시간·빛과 인물별 옷을 영어 태그로. 예: "rooftop at night, chain-link fence, city lights, cold teal and amber light, 강재혁 wears black track jacket, 오동구 wears grey hoodie". 같은 장면이 이어지면 앞 쪽과 글자까지 똑같이'},
         layout: {type: 'string', description: '틀 키: ' + WT_LAYOUT_KEYS.join(', ')},
         panels: {type: 'array', items: {type: 'object', additionalProperties: false, required: ['scene', 'tags', 'pose', 'fx', 'chars', 'bubbles', 'sfx', 'stickers'],
           properties: {
@@ -8159,6 +8621,11 @@ const SYSTEM_WT_BASE = `너는 한국 웹툰 콘티 작가다. 줄거리를 쪽�
 - stickers: sweat(당황), burst(충격), heart(설렘), speed(집중선)를 감정이 튀는 컷에만 쓴다.
 - 인물: chars 에는 '나오는 인물'로 받은 이름과 사전에 있는 이름을 쓴다. 사전에 없던 이름은 cast 에 외형 영어 태그(성별·나이대·머리·눈·옷·특징 순, 모두 adult)와 한국어 말투를 지어서 한 번만 적는다. 줄거리에 새 인물이 필요하면 이름을 지어 cast 에 넣는다.
 - 말투: 받은 말투 설명이 있으면 그 인물의 대사는 반드시 그 말투로 쓴다(존대·반말, 길이, 말버릇, 호칭). 말투가 없는 인물은 cast 에 적은 말투를 따른다. 인물마다 말이 달라야 누가 말하는지 알 수 있다.
+- 이어짐(가장 중요): 컷은 따로 노는 그림이 아니라 한 흐름이다. 앞 컷의 마지막 동작·시선·대사가 다음 컷의 시작이 된다. 한 컷에서 질문하면 다음 컷에서 답하고, 누가 손을 뻗으면 다음 컷에서 그 손이 닿거나 뿌리쳐진다.
+- 장소가 바뀌면 그 쪽 첫 컷은 장소를 보여 주는 넓은 컷(wide shot, establishing)으로 열고 narr 상자로 시간·장소를 적는다. 장소가 같으면 setting 을 앞 쪽과 글자까지 똑같이 쓴다.
+- 옷은 화 전체에서 그대로다(갈아입는 사건이 있을 때만 바꾼다). 소품(우유·우산·담배)은 한 번 나오면 다음 컷에서도 같은 손, 같은 자리에 있다.
+- 컷 크기 문법: 새 장면 = 넓은 컷 → 대화 = 상반신을 번갈아(말하는 사람 쪽) → 감정이 정점 = 얼굴·눈·손 클로즈업 → 쪽 끝 = 다음 쪽이 궁금한 반응 컷.
+- 대사는 주고받는다. 같은 인물이 세 컷 넘게 혼자 말하지 않는다.
 {ADULT}
 출력은 JSON 하나만.`;
 const SYSTEM_WT = () => SYSTEM_WT_BASE.replace('{ADULT}', wtAdultRules() + '\n' + WT_NATURAL);
@@ -8208,7 +8675,7 @@ function wtAdultRules(){
 - 모든 인물은 20세 이상 성인이다. 미성년을 떠올리게 하는 말(학생·교복·어리다·작다 등)은 절대 쓰지 않는다. 실존 인물은 쓰지 않는다.`;
 }
 /* ---------- 그림체 ---------- */
-const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', 'neon'); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : 'neon'); };
+const wtStyleKey = () => { const k = $('#wtStyle')?.value || store.get('set.wtStyle', WT_DEFAULT_STYLE); return WT_STYLE[k] ? k : (k === 'custom' ? 'custom' : WT_DEFAULT_STYLE); };
 const wtMono = () => $('#wtMono')?.value || store.get('set.wtMono', 'cold blue');
 const wtFrame = () => WT_FRAME[$('#wtFrame')?.value || store.get('set.wtFrame', 'mirror')] ?? WT_FRAME.mirror;
 // 그림체를 머리·꼬리로 나눠 준다. 웹툰 컷과 노벨AI 탭이 같은 그림체를 쓰게 하는 한 곳.
@@ -8224,7 +8691,7 @@ function wtStyleParts(nsfw){
   if (k === 'dark'){ const fr = wtFrame(); if (fr) head.push(st.frame.replace('{FRAME}', fr)); }
   let tail = st.tail.replace('{MONO}', wtMono());
   if (nsfw){ tail = tail.replace(NSFW_DROP_POS, '').replace(/,\s*,/g, ','); head.push(WT_NSFW_TAGS[wtHeatKey()] || WT_NSFW_TAGS.mid); const a = wtActTags(); if (a) head.push(a); }
-  return {head: head.filter(Boolean).join(', '), tail, neg: st.neg, focus: st.focus, fx: st.fx, key: k};
+  return {head: head.filter(Boolean).join(', '), tail, neg: st.neg, focus: st.focus, focusMale: st.focusMale, focusFemale: st.focusFemale, fx: st.fx, wide: st.wide, key: k, v5: !!st.v5};
 }
 // 그림체 공식대로 base 를 만든다. 인물 자세(pose)는 1.45 로 올리고, 물감 튐은 전투·각성 컷에만 넣는다.
 // who: {male, female, people} — 그림체가 남자 주인공을 전제로 쓴 말(his handsome face, handsome man)은 남자가 있을 때만,
@@ -8232,11 +8699,14 @@ function wtStyleParts(nsfw){
 const WT_FACE_TAIL = /\b(extremely handsome man|beautiful detailed eyes|half-lidded eyes|looking at viewer|closed mouth|detailed hair strands)\b,?\s*/gi;
 function wtStyleBase({count, tags, pose, fx, nsfw, who = {male: true, female: false, people: true}}){
   const P = wtStyleParts(nsfw); const parts = [P.head];
-  if (P.key === 'neon' || P.key === 'spot'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
+  if (P.key === 'neon' || P.key === 'spot'){ if (fx && P.fx) parts.push(P.fx); if (P.focus && who.people && who.face !== false) parts.push(who.male ? P.focus : P.focus.replace('his handsome face', 'the face')); }
+  else if (who.people && who.face !== false){ if (P.focus) parts.push(!who.male && P.focusFemale ? P.focusFemale : P.focus); if (who.male && P.focusMale) parts.push(P.focusMale); }
+  if (fx && P.fx && P.key !== 'neon' && P.key !== 'spot') parts.push(P.fx);   // 최종 3종: 전투·각성 컷에만 움직임·기운   // v43 B: 얼굴 보호 + 성인 남자 보정
   parts.push(count, tags);
   if (pose && who.people) parts.push(`1.45::${pose} ::`);
   let tail = P.tail || '';
-  if (!who.people) tail = tail.replace(WT_FACE_TAIL, '');
+  if (P.wide && /\b(full body|wide shot|from far|from above|aerial|back view)\b/i.test(`${tags} ${pose || ''}`)) tail = tail.replace(P.wide, '');   // 전신·원경 컷엔 근접 프레이밍을 뺀다
+  if (!who.people || who.face === false) tail = tail.replace(WT_FACE_TAIL, '');
   else if (!who.male) tail = tail.replace(/\bextremely handsome man,?\s*/i, '');
   parts.push(tail, 'no text');
   return parts.filter(Boolean).join(', ').replace(/,\s*,/g, ',').replace(/,\s*$/, '');
@@ -8246,18 +8716,24 @@ function wtStyleTags(){   // 미리 보기·시험용: 지금 그림체의 앞 �
   if (k === 'custom') return (($('#wtStyleIn')?.value || store.get('set.wtStyleIn', '')).trim() || $('#naiStyle').value.trim()).replace(/,\s*$/, '');
   return WT_STYLE[k].head.replace('{MONO}', wtMono());
 }
+// 일반 등급에서 어린이·청소년 인물을 일부러 그릴 때(가족·학교·스포츠 장면)는 그림체의 '아이 막기' 네거티브를 푼다. 성인 등급은 그대로 막는다
+const WT_KID_NEG = /^(child|children|young|aged down|shota|loli|baby face|kid|toddler|teen|teenager)$/i;
+function wtKidsNeg(neg, text, nsfw){ return !nsfw && MINOR_RE.test(text || '') ? neg.split(',').map(x => x.trim()).filter(x => x && !WT_KID_NEG.test(x)).join(', ') : neg; }
 function wtStyleNeg(neg, nsfwArg, who){
   const k = wtStyleKey(); const st = WT_STYLE[k]; const nsfw = nsfwArg ?? (wtRating() === 'nsfw');
   let out = (st ? [neg, st.neg].filter(Boolean).join(', ') : neg).split(',').map(x => x.trim()).filter(Boolean);
   if (st?.dropNeg) out = out.filter(x => !st.dropNeg.test(x));
-  if (who?.female) out = out.filter(x => !/^(1girl|female)$/i.test(x));   // 여자 인물이 나오는 컷에서 그림체의 '1girl, female' 막기를 푼다
+  if (who?.female) out = out.filter(x => !/^(1girl|female|feminine face)$/i.test(x));   // 여자 인물이 나오는 컷에서 그림체의 '1girl, female' 막기를 푼다
   if (nsfw) out = out.filter(x => !NSFW_DROP_NEG.test(x));   // 성인 컷에서 벌린 입·표정을 막지 않는다
   if (nsfw) out.push(...NSFW_NEG_ADD.split(',').map(x => x.trim()));
+  else if (st?.safeNeg) out.push(...st.safeNeg.split(',').map(x => x.trim()));
   return [...new Set(out)].join(', ');
 }
 /* ---------- 컷 → 노벨AI 프롬프트 ---------- */
 function wtDict(){ const m = new Map(); for (const l of naiCharsDict()){ const i = l.indexOf(':'); if (i > 0) m.set(l.slice(0, i).trim(), l.slice(i + 1).trim()); } return m; }
 const wtNaiTextOn = () => $('#wtNaiText')?.checked ?? store.get('set.wtNaiText', false);
+// V5 최종 그림체 설정: 품질 태그 자동 추가 끔(no text 가 대사를 지운다), 네거 프리셋 없음, guidance 5(자글자글 방지), rescale 0
+const WT_V5_PARAMS = {qualityToggle: false, ucPreset: 3, cfg_rescale: 0, scale: 5};
 function wtPanelPrompt(panel, bubbleTexts){
   const rating = wtRating(), dict = wtDict();
   const names = String(panel.chars || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
@@ -8267,14 +8743,35 @@ function wtPanelPrompt(panel, bubbleTexts){
   const girls = found.filter(x => isGirl(dict.get(x))).length, boys = n - girls;
   const count = n === 0 ? 'no humans' : [boys ? (boys === 1 ? '1boy' : `${boys}boys`) : '', girls ? (girls === 1 ? '1girl' : `${girls}girls`) : ''].filter(Boolean).join(', ');
   const people = names.length > 0;
-  const who = {male: !n || boys > 0, female: girls > 0, people};
-  const tags = (panel.tags || '').trim() || (people ? 'upper body, looking at viewer' : 'scenery, wide shot');
+  // 손·물건 클로즈업 컷: 얼굴을 그리지 않게 (예전엔 '손에 쥔 우유' 컷에도 인물 얼굴 초상이 나왔다)
+  let tags = (panel.tags || '').trim() || (people ? 'upper body, looking at viewer' : 'scenery, wide shot');
+  // 쪽 설정(장소·빛·옷)을 컷마다 이어 붙여 컷끼리 같은 장면으로 보이게. 인물 이름은 사전 외형으로 바뀌므로 '이름 wears' 는 옷만 남긴다
+  const outfit = new Map(), place = [];
+  for (const seg of String(panel.setting || '').split(',').map(x => x.trim()).filter(Boolean)){ const m = seg.match(/^(.+?)\s+(?:wears|wearing|in)\s+(.+)$/i); if (m && (names.includes(m[1].trim()) || dict.has(m[1].trim()))){ if (names.includes(m[1].trim())) outfit.set(m[1].trim(), m[2].trim()); } else place.push(seg); }   // 이 컷에 없는 인물의 옷은 빼기
+  if (place.length) tags += ', ' + place.join(', ');
+  const handsOnly = people && /\b(hands?|fingers?|object focus|item focus|close-up of (?!(?:his |her |the )?face))\b/i.test(tags + ' ' + (panel.pose || '')) && !/\b(face|portrait|upper body|cowboy shot|full body|two shot|wide shot|head)\b/i.test(tags);
+  if (handsOnly) tags += ', 1.3::hands focus, close-up, head out of frame ::';
+  const who = {male: !n || boys > 0, female: girls > 0, people, face: !handsOnly};
   const base = wtStyleBase({count: people ? (n ? count : '') : 'no humans', tags, pose: (panel.pose || '').trim(), fx: !!panel.fx, nsfw: rating === 'nsfw', who});
   let neg = [$('#naiNeg').value.trim(), 'speech bubble, text, english text, korean text, subtitle, panel border'].filter(Boolean).join(', ');
   neg = wtStyleNeg(neg, undefined, who);
+  neg = wtKidsNeg(neg, [tags, ...found.map(x => dict.get(x))].join(' '), rating === 'nsfw');
   if (rating === 'nsfw') neg = neg.split(',').map(s => s.trim()).filter(s => s && s !== 'nsfw').join(', '); else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
   const cols = n === 1 ? [2] : n === 2 ? [1, 3] : n === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
-  const chars = found.slice(0, 6).map((name, i) => ({name, prompt: (rating === 'nsfw' && !/\badult\b/.test(dict.get(name)) ? 'adult, ' : '') + dict.get(name), negative: '', position: `${cols[i]},2`}));
+  // 손 컷: 얼굴·머리·표정 태그를 빼고 옷·손에 걸린 것만 남긴다(얼굴 태그가 남으면 노벨AI 가 얼굴을 그려 넣는다)
+  const HEADY = /\b(face|eyes?|eyebrows?|hair|undercut|bangs|ponytail|piercings?|ear|smirk|smile|grin|expression|glasses|acne|cheeks?|lips?|mouth|handsome|attractive|unattractive|plain|pretty|beautiful|nose|jaw|jawline|cigarette)\b/i;
+  const handTags = t => t.split(',').map(x => x.trim()).filter(x => x && !HEADY.test(x)).join(', ') + ', hands only, head out of frame';
+  const chars = found.slice(0, 6).map((name, i) => { let pr = dict.get(name); if (outfit.has(name)) pr += `, 1.2::wearing ${outfit.get(name)} ::`; if (handsOnly) pr = handTags(pr); return {name, prompt: (rating === 'nsfw' && !/\badult\b/.test(pr) ? 'adult, ' : '') + pr, negative: '', position: `${cols[i]},2`}; });
+  if (handsOnly) neg += ', face, head, eyes, portrait, letters, writing on objects';
+  // V5 최종 그림체: 남자 인물 칸엔 '성인 남자'를 앞에 박고(어려 보임·여성화 방지, 아카 남캐 프롬 공통), 안경 쓴 인물이 있으면 안 쓴 인물 칸 UC 에 안경을 넣어 번짐을 막는다(라운드 15 재혁 안경 번짐)
+  const v5 = !!WT_STYLE[wtStyleKey()]?.v5;
+  if (v5){
+    const hasGlasses = chars.some(c => /\bglasses\b/i.test(c.prompt));
+    for (const c of chars){
+      if (!isGirl(c.prompt) && !/\b(man|men|male)\b/i.test(c.prompt)) c.prompt = 'man, mature male, ' + c.prompt;
+      if (hasGlasses && !/\bglasses\b/i.test(c.prompt)) c.negative = 'glasses, eyewear';
+    }
+  }
   // 노벨AI 글자 그리기: 'no text' 를 빼고 프롬프트 맨 끝에 Text: 를 붙인다 (공식 문법: 맨 끝, 여러 개는 빈 줄로)
   let base2 = base;
   const bt = (bubbleTexts || []).map(x => String(x).trim()).filter(Boolean).slice(0, 2);
@@ -8283,7 +8780,7 @@ function wtPanelPrompt(panel, bubbleTexts){
     neg = neg.split(',').map(x => x.trim()).filter(x => x && !/^(speech bubble|text|english text|korean text|subtitle)$/i.test(x)).join(', ');
     base2 += '\nText: ' + bt.join('\n\n');
   }
-  return {base: base2, neg, chars, size: '', notes: '', rating};
+  return {base: base2, neg, chars, size: '', notes: '', rating, params: v5 ? WT_V5_PARAMS : undefined};
 }
 function wtSizeKey(pg, panel){ const bb = polyBox(polyPx(pg, panel)), r = (bb[2] - bb[0]) / (bb[3] - bb[1]); return r > 1.3 ? 'landscape' : r < 0.78 ? 'portrait' : 'square'; }
 const wtMinorBlock = p => wtRating() === 'nsfw' && MINOR_RE.test([p.base, ...p.chars.map(c => c.prompt)].join(' '));
@@ -8292,43 +8789,131 @@ async function wtGenPanel(pg, panel){
   const bt = panel.say?.length ? panel.say.map(t => t.slice(0, 40)) : (pg.items || []).filter(it => it.k === 'bubble' && it.text && it.x >= bb[0] && it.x <= bb[2] && it.y >= bb[1] && it.y <= bb[3]).map(it => it.text.slice(0, 40));
   const p = wtPanelPrompt(panel, bt);
   if (wtMinorBlock(p)) throw new Error('미성년을 떠올리게 하는 태그가 있어서 건너뛰었어요');
+  if (pg.seed) p.seed = (pg.seed + pg.panels.indexOf(panel) * 7919) % 4294967295;   // 같은 쪽 컷은 이웃한 씨앗(빛·색 결이 비슷하게)
   const blob = await naiGenBlob(p, wtSizeKey(pg, panel));
-  const id = await wtPutImage(blob); panel.img = id; panel.view = {ox: 0, oy: 0, s: 1}; return id;
+  const id = await wtPutImage(blob); panel.img = id; panel.view = {ox: 0, oy: 0, s: 1}; wtAutoLayout(pg, panel); return id;
 }
 
 /* ---------- 대본 → 쪽 ---------- */
-// 컷 하나에 말풍선·효과음·스티커를 놓는다.
-// 말풍선은 말하는 사람(chars 순서 = 그림 속 위치와 같은 줄)의 머리 위에 두고 꼬리를 그 사람 쪽으로, 글 길이에 맞춘 폭으로.
+// 컷 하나에 말풍선·효과음·스티커를 놓는다. 자리는 wtAutoLayout 이 잡는다(그림이 생기면 그림의 빈 곳을 찾아 다시 잡는다).
 // '말풍선 글자도 그림에 그리기'를 켜면 대사는 노벨AI 가 그림 안에 그리므로 겹치지 않게 대사 말풍선은 놓지 않고 컷에 적어 둔다(panel.say)
+const wtMonoStyle = () => { const k = wtStyleKey(); const st = WT_STYLE[k]; return !!st && /\b(monochrome|greyscale|grayscale|black and white)\b/i.test(st.head); };
 function wtPlace(pg, panel, spec){
-  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.7, Math.min(1.3, bw / 1000));
-  const items = []; const mk = o => { o.id = uid(); items.push(o); return o; };
-  const pi = pg.panels.indexOf(panel);
+  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], sc = Math.max(0.75, Math.min(1.2, bw / 1000));
+  const items = []; const mk = o => { o.id = uid(); o.auto = true; o.pid = panel.id; items.push(o); return o; };
+  const pi = pg.panels.indexOf(panel), mono = wtMonoStyle();
   const names = (spec.chars || []).map(String);
-  const cols = names.length === 1 ? [2] : names.length === 2 ? [1, 3] : names.length === 3 ? [0, 2, 4] : [0, 1, 3, 4, 2, 2];
-  const headX = i => bb[0] + bw * ((cols[i] ?? 2) / 5 + 0.1);
-  const clampX = x => Math.max(bb[0] + bw * 0.2, Math.min(bb[2] - bw * 0.2, x));
-  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.round(Math.min(bw, bh) * 0.42), rot: 0, pi});   // pi: 이 컷 안에서만 보이게 자른다
+  if (spec.stickers?.includes('speed')) mk({k: 'stk', kind: 'speed', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.5, size: Math.round(Math.min(bw, bh) * 0.42), rot: 0, pi, fixed: true});   // pi: 이 컷 안에서만 보이게 자른다
   const naiText = wtNaiTextOn(); panel.say = [];
-  let bi = 0, ni = 0;
+  const fs = Math.round(40 * Math.max(0.95, Math.min(1.12, bw / 1000)));   // 대사 글씨: 쪽 너비 1500 의 2.7% 안팎 (폰에서 읽히는 크기)
+  let order = 0;
   for (const b of (spec.bubbles || []).slice(0, 3)){
     const text = String(b.text || '').trim(); if (!text) continue;
-    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.08 + ni * 100 * sc, size: Math.round(40 * sc), w: Math.round(Math.min(bw * 0.5, 520 * sc)), text, line: 'thin', dash: true, tail: null}); ni++; continue; }
-    if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.86 - bi * 70, size: Math.round(54 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0}); continue; }
+    if (b.type === 'narr'){ mk({k: 'bubble', shape: 'box', x: bb[0] + bw * 0.3, y: bb[1] + bh * 0.1, size: Math.round(36 * sc), w: Math.round(Math.min(bw * 0.62, 560 * sc)), text, line: 'thin', tail: null, bf: 'serif', role: 'narr', ord: order++}); continue; }
+    if (b.type === 'text'){ mk({k: 'text', x: bb[0] + bw * 0.5, y: bb[1] + bh * 0.85, size: Math.round(50 * sc), w: Math.round(bw * 0.7), text, color: '#ffffff', rot: 0, role: 'mono', ord: order++}); continue; }
     if (naiText){ panel.say.push(text); continue; }
     const shape = ['speech', 'round', 'thought', 'shout', 'whisper'].includes(b.type) ? b.type : 'speech';
     const who = names.indexOf(String(b.who || '').trim());
-    const sx = who >= 0 ? headX(who) : bb[0] + bw * (bi % 2 === 0 ? 0.72 : 0.28);
-    const x = clampX(sx + (who >= 0 ? (sx < bb[0] + bw / 2 ? bw * 0.06 : -bw * 0.06) : 0)), y = bb[1] + bh * (0.12 + 0.2 * bi) + ni * 130 * sc;   // 설명 상자가 있으면 그 아래로
-    const w = Math.round(Math.max(240, Math.min(bw * 0.5, Math.sqrt(text.length) * 105)));
-    const fs = Math.round(44 * Math.max(0.92, Math.min(1.15, bw / 1000)));   // 글씨는 컷이 작아도 쪽 너비(1500)의 3% 안팎으로 읽히게
-    mk({k: 'bubble', shape, x, y, size: fs, w, line: 'thin', text, tail: shape === 'shout' ? null : {x: sx, y: y + bh * (shape === 'thought' ? 0.1 : 0.2)}}); bi++;
+    const w = Math.round(Math.max(220, Math.min(bw * 0.46, 330 * Math.max(0.9, sc))));
+    mk({k: 'bubble', shape, x: bb[0] + bw / 2, y: bb[1] + bh * 0.2, size: shape === 'shout' ? Math.round(fs * 1.12) : fs, w, line: 'thin', text, bold: shape === 'shout', bf: shape === 'thought' ? 'hand' : undefined,
+      tail: shape === 'shout' ? null : {x: bb[0] + bw / 2, y: bb[1] + bh * 0.5}, who: who, nwho: names.length, role: 'say', ord: order++});
   }
-  (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.2 : 0.8), y: bb[1] + bh * (i ? 0.78 : 0.62), size: Math.round(Math.min(bw, bh) * 0.2), text: t, grad: (hash(t) % 4), rot: i ? 10 : -12, vert: !!s.vert, font: 'Black Han Sans'}); });
-  // 스티커는 말풍선이 없는 아래쪽 모서리에 (말풍선을 덮지 않게)
-  const stk = (spec.stickers || []).filter(k => k !== 'speed'); stk.forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.14 + i * 0.12), y: bb[1] + bh * (k === 'heart' ? 0.55 : 0.82), size: Math.round(Math.min(bw, bh) * 0.15), rot: i * 8 - 4}));
+  (spec.sfx || []).slice(0, 2).forEach((s, i) => { const t = String(s.text || '').trim(); if (t) mk({k: 'sfx', x: bb[0] + bw * (i ? 0.25 : 0.78), y: bb[1] + bh * (i ? 0.75 : 0.6), size: Math.round(Math.min(bw, bh) * 0.19), text: t, grad: mono ? 6 : (hash(t) % 4), rot: i ? 8 : -10, vert: !!s.vert, font: 'heavy', role: 'sfx', ord: 50 + i}); });
+  (spec.stickers || []).filter(k => k !== 'speed').forEach((k, i) => mk({k: 'stk', kind: k, x: bb[0] + bw * (0.14 + i * 0.12), y: bb[1] + bh * 0.8, size: Math.round(Math.min(bw, bh) * 0.13), rot: i * 8 - 4, mono, role: 'stk', ord: 60 + i}));
   return items;
 }
+/* ---------- 말풍선 자동 배치 ----------
+   그림이 있으면 그림을 작게 줄여 '복잡한 정도(윤곽선 밀도)' 지도를 만들고, 얼굴·몸처럼 선이 몰린 곳을 피해 빈 하늘·벽·여백에 놓는다.
+   웹툰 읽는 순서(위→아래)를 지키고, 서로 겹치지 않게, 꼬리는 말하는 사람 쪽으로 짧게. 사용자가 옮긴 것(auto=false)은 건드리지 않는다. */
+function wtBusyMap(pg, panel){
+  const im = panel.img ? WT.imgs.get(panel.img) : null; if (!im) return null;
+  const bb = polyBox(polyPx(pg, panel)), bw = bb[2] - bb[0], bh = bb[3] - bb[1], C = 12;   // 12px 한 칸
+  const cw = Math.max(4, Math.ceil(bw / C)), ch = Math.max(4, Math.ceil(bh / C));
+  const c = document.createElement('canvas'); c.width = cw; c.height = ch; const g = c.getContext('2d', {willReadFrequently: true});
+  const v = panel.view || {}, s0 = Math.max(bw / im.width, bh / im.height), s = s0 * (v.s || 1), w = im.width * s, h = im.height * s;
+  g.drawImage(im, ((bw - w) / 2 + (v.ox || 0) * bw) / C, ((bh - h) / 2 + (v.oy || 0) * bh) / C, w / C, h / C);
+  const d = g.getImageData(0, 0, cw, ch).data, L = new Float32Array(cw * ch);
+  for (let i = 0; i < cw * ch; i++) L[i] = d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11;
+  const I = new Float64Array((cw + 1) * (ch + 1));   // 윤곽 세기의 누적합(아무 네모나 바로 평균을 낸다)
+  for (let y = 0; y < ch; y++){ let row = 0; for (let x = 0; x < cw; x++){
+    const i = y * cw + x, gx = x + 1 < cw ? L[i + 1] - L[i] : 0, gy = y + 1 < ch ? L[i + cw] - L[i] : 0;
+    const e = Math.min(1, Math.hypot(gx, gy) / 60) + (L[i] < 60 ? 0.35 : 0);   // 먹이 짙은 곳(머리카락·옷)도 조금 피한다
+    row += e; I[(y + 1) * (cw + 1) + x + 1] = I[y * (cw + 1) + x + 1] + row; } }
+  return (x0, y0, x1, y1) => {   // 쪽 좌표 네모 → 0~1
+    const a = Math.max(0, Math.min(cw, Math.floor((x0 - bb[0]) / C))), b = Math.max(0, Math.min(ch, Math.floor((y0 - bb[1]) / C)));
+    const c2 = Math.max(0, Math.min(cw, Math.ceil((x1 - bb[0]) / C))), d2 = Math.max(0, Math.min(ch, Math.ceil((y1 - bb[1]) / C)));
+    const n = (c2 - a) * (d2 - b); if (n <= 0) return 1;
+    return (I[d2 * (cw + 1) + c2] - I[b * (cw + 1) + c2] - I[d2 * (cw + 1) + a] + I[b * (cw + 1) + a]) / n;
+  };
+}
+const WT_MCTX = (() => { let c; return () => c || (c = document.createElement('canvas').getContext('2d')); })();
+function wtItemHalf(it){
+  const g = WT_MCTX();
+  if (it.k === 'bubble'){ const geo = bubbleGeom(g, it); return [geo.rx, geo.ry]; }
+  if (it.k === 'text'){ g.font = `700 ${it.size || 46}px ${WT_TEXT}`; const ls = wrapLines(g, it.text, it.w || 420); return [Math.max(30, ...ls.map(l => g.measureText(l).width)) / 2 + 12, ls.length * (it.size || 46) * 1.35 / 2 + 10]; }
+  if (it.k === 'sfx'){ const n = [...String(it.text || '')].length, z = it.size || 120; return it.vert ? [z * 0.6, z * 0.9 * n / 2 + z * 0.2] : [z * 0.95 * n / 2 + z * 0.24, z * 0.62]; }
+  return [(it.size || 120) * 0.6, (it.size || 120) * 0.6];
+}
+function wtAutoLayout(pg, panel){
+  const pts = polyPx(pg, panel), bb = polyBox(pts), bw = bb[2] - bb[0], bh = bb[3] - bb[1];
+  const mine = (pg.items || []).filter(it => it.auto && !it.fixed && (it.pid ? it.pid === panel.id : inPolyPx(it.x, it.y, pts)));
+  if (!mine.length) return;
+  const busy = wtBusyMap(pg, panel);
+  const placed = (pg.items || []).filter(it => !mine.includes(it) && inPolyPx(it.x, it.y, pts) && !(it.k === 'stk' && it.kind === 'speed')).map(it => { const [hw, hh] = wtItemHalf(it); return [it.x - hw, it.y - hh, it.x + hw, it.y + hh]; });
+  const inside = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].every(([x, y]) => inPolyPx(x, y, pts));
+  const over = (r) => placed.reduce((a, q) => { const w = Math.min(r[2], q[2]) - Math.max(r[0], q[0]), h = Math.min(r[3], q[3]) - Math.max(r[1], q[1]); return a + (w > 0 && h > 0 ? w * h : 0); }, 0);
+  const m = Math.max(16, bw * 0.025);
+  // 얼굴이 올 자리 짐작: 흑백 그림의 피부는 선이 적어 '빈 곳'처럼 보이므로 따로 피한다
+  const tg = `${panel.tags || ''} ${panel.pose || ''}`, nCh = String(panel.chars || '').split(/[,，、]/).filter(x => x.trim()).length;
+  const faces = [];
+  if (nCh && !/\b(hands? focus|head out of frame|from behind|back view)\b/i.test(tg)){
+    const close = /\b(close-up|face|portrait)\b/i.test(tg), far = /\b(full body|wide shot|from far|aerial)\b/i.test(tg);
+    const xs = [[0.5], [0.3, 0.7], [0.2, 0.5, 0.8]][Math.min(2, nCh - 1)];
+    for (const fx of xs){ const hwf = close ? 0.32 / Math.min(2, nCh) + 0.08 : far ? 0.07 : 0.14, y0 = close ? 0.12 : far ? 0.12 : 0.1, y1 = close ? 0.9 : far ? 0.3 : 0.5;
+      faces.push([bb[0] + bw * (fx - hwf), bb[1] + bh * y0, bb[0] + bw * (fx + hwf), bb[1] + bh * y1]); }
+  }
+  const faceHit = r => faces.reduce((a, q) => { const w = Math.min(r[2], q[2]) - Math.max(r[0], q[0]), h = Math.min(r[3], q[3]) - Math.max(r[1], q[1]); return a + (w > 0 && h > 0 ? w * h : 0); }, 0) / ((r[2] - r[0]) * (r[3] - r[1]));
+  let lastY = bb[1] - 1e9;
+  for (const it of mine.sort((a, b) => (a.ord ?? (a.y - bb[1]) / 1e4) - (b.ord ?? (b.y - bb[1]) / 1e4))){
+    const role = it.role || (it.k === 'bubble' ? (it.shape === 'box' ? 'narr' : 'say') : it.k === 'text' ? 'mono' : it.k === 'sfx' ? 'sfx' : 'stk');
+    const [hw, hh] = wtItemHalf(it);
+    if (hw * 2 + m * 2 > bw || hh * 2 + m * 2 > bh){ it.x = bb[0] + bw / 2; it.y = bb[1] + bh / 2; continue; }   // 컷보다 크면 가운데
+    const spk = it.who >= 0 && it.nwho ? bb[0] + bw * ([[0.5], [0.3, 0.7], [0.2, 0.5, 0.8]][Math.min(2, it.nwho - 1)][Math.min(it.who, 2)] ?? 0.5) : null;
+    const sx = Math.max(8, bw / 14), sy = Math.max(8, bh / 14), cands = [];
+    for (let y = bb[1] + m + hh; y <= bb[3] - m - hh; y += sy) for (let x = bb[0] + m + hw; x <= bb[2] - m - hw; x += sx){
+      const r = [x - hw, y - hh, x + hw, y + hh]; if (inside(...r)) cands.push({x, y, r, b: busy ? busy(...r) : 0});
+    }
+    if (!cands.length) continue;
+    // 복잡한 정도는 이 컷 안에서 상대값으로 (해칭 많은 흑백 그림은 어디나 복잡해서 절댓값이면 자리 선호가 묻힌다)
+    const bmin = Math.min(...cands.map(c => c.b)), bmax = Math.max(...cands.map(c => c.b)), bn = c => busy && bmax - bmin > 1e-3 ? (c.b - bmin) / (bmax - bmin) : 0;
+    let best = null;
+    for (const c of cands){
+      const {x, y, r} = c, fy = (y - bb[1]) / bh, fx = (x - bb[0]) / bw, B = bn(c);
+      let sc = B * 2.2 + over(r) / (hw * hh * 4) * 14 + (role === 'sfx' ? 0.6 : 1.8) * faceHit(r);   // 복잡한 곳(얼굴·몸)과 겹침을 피한다
+      if (role === 'say'){ sc += fy * 2.6; if (y < lastY + hh * 0.5) sc += 3; sc += spk != null ? Math.abs(x - spk) / bw * 0.7 : 0; sc += Math.max(0, 0.3 - Math.abs(fx - 0.5)) * (busy ? 0.6 : 2); }   // 위쪽, 읽는 순서, 말하는 사람 쪽, 얼굴이 오기 쉬운 한가운데는 덜
+      else if (role === 'narr') sc += fy * 3.2 + fx * 1.2;   // 설명 상자: 왼쪽 위
+      else if (role === 'mono') sc += (1 - fy) * 1.6 + Math.abs(fx - 0.5) * 0.6;   // 독백 글자: 아래쪽
+      else if (role === 'sfx') sc += Math.abs(fy - 0.6) * 0.8 - B * 1.4;   // 효과음: 얼굴만 아니면 동작 근처도 괜찮다 (위 B*2.2 와 합쳐 약하게 피한다)
+      else sc += (1 - fy) * 0.8;
+      if (!best || sc < best.sc) best = {sc, x, y};
+    }
+    if (!best) continue;
+    const dx = best.x - it.x, dy = best.y - it.y; it.x = best.x; it.y = best.y;
+    if (it.tail){
+      // 꼬리: 말하는 사람(없으면 아래쪽 가운데)을 향해 풍선 크기만큼만
+      const tx0 = spk ?? (bb[0] + bw * 0.5), ty0 = bb[1] + bh * 0.42;   // 말하는 사람의 얼굴·입 언저리
+      const ang = Math.atan2(ty0 - it.y, tx0 - it.x), co = Math.cos(ang), si = Math.sin(ang);
+      const rEdge = 1 / Math.sqrt((co / hw) ** 2 + (si / hh) ** 2), len = Math.max(40, Math.min(bh * 0.13, Math.hypot(tx0 - it.x, ty0 - it.y) - rEdge));
+      it.tail = {x: Math.max(bb[0] + 6, Math.min(bb[2] - 6, it.x + co * (rEdge + len))), y: Math.max(bb[1] + 6, Math.min(bb[3] - 6, it.y + si * (rEdge + len)))};
+    }
+    placed.push([it.x - hw, it.y - hh, it.x + hw, it.y + hh]);
+    if (role === 'say') lastY = it.y;
+  }
+}
+// 쪽 전체 다시 잡기(편집기 '말풍선 자리 다시 잡기' 버튼)
+function wtRelayout(pg, force){ for (const pn of pg.panels){ if (force) for (const it of pg.items) if (inPolyPx(it.x, it.y, polyPx(pg, pn)) && !it.fixed) { it.auto = true; it.pid = pn.id; } wtAutoLayout(pg, pn); } }
+window.nvWtRelayout = wtRelayout;
+$('#wtRelayout') && ($('#wtRelayout').onclick = e => { const pg = wtPage(); if (!pg) return; wtRelayout(pg, e.shiftKey); wtCommit(); wtRender(); toast(e.shiftKey ? '이 쪽의 글·효과를 모두 다시 놓았어요' : '자동으로 놓인 글·효과를 다시 놓았어요 (Shift+누르기: 손으로 옮긴 것까지)'); });
 function wtBuildFromScript(sc){
   const pages = [];
   for (const sp of sc.pages || []){
@@ -8336,11 +8921,12 @@ function wtBuildFromScript(sc){
     const want = {1: '1', 2: '2a', 3: '3a', 4: '4a'}[specs.length];
     const key = WT_LAYOUTS[sp.layout] && WT_LAYOUTS[sp.layout].polys.length === specs.length ? sp.layout : want;
     const pg = wtNewPage(key, 2000); const real = pg.panels;
-    specs.forEach((spec, i) => { const pn = real[i]; pn.scene = spec.scene || ''; pn.tags = spec.tags || ''; pn.pose = spec.pose || ''; pn.fx = !!spec.fx; pn.chars = (spec.chars || []).join(', '); });
+    pg.setting = String(sp.setting || '').trim() || (pages.at(-1)?.setting || ''); pg.seed = Math.floor(Math.random() * 4e9);   // 장소·빛·옷을 쪽 안 모든 컷에 같이 / 같은 쪽은 씨앗도 이웃하게
+    specs.forEach((spec, i) => { const pn = real[i]; pn.setting = pg.setting; pn.scene = spec.scene || ''; pn.tags = spec.tags || ''; pn.pose = spec.pose || ''; pn.fx = !!spec.fx; pn.chars = (spec.chars || []).join(', '); });
     const order = ['speed', 'stk', 'sfx', 'text', 'bubble'];   // 아래에 깔릴 것부터
     const items = []; specs.forEach((spec, i) => items.push(...wtPlace(pg, real[i], spec)));
     items.sort((a, b) => order.indexOf(a.k === 'stk' && a.kind === 'speed' ? 'speed' : a.k) - order.indexOf(b.k === 'stk' && b.kind === 'speed' ? 'speed' : b.k));
-    pg.items = items; pages.push(pg);
+    pg.items = items; real.forEach(pn => wtAutoLayout(pg, pn)); pages.push(pg);
   }
   return pages;
 }
@@ -8373,6 +8959,8 @@ function wtTameWarn(text){
 }
 const wtAutoStat = t => { $('#wtAutoStat').textContent = t; };
 const wtBlank = () => WT.proj.pages.length === 1 && !WT.proj.pages[0].items.length && !WT.proj.pages[0].panels.some(p => p.img);
+// 성인 웹툰은 원하면 내 컴퓨터 AI(Ollama)로: Claude·Gemini 는 성인 대본을 거절하거나 순하게 바꾼다
+const wtClient = async sel => (wtRating() === 'nsfw' && store.get('set.naiNsfwOllama', false)) ? {prov: 'ollama'} : client(sel === 'default' ? '' : '#wtAI');
 let wtAbort = null;
 $('#wtAuto').onclick = () => { if (!WT.proj) return; $('#wtAutoBox').hidden = false; wtAutoStat(''); wtGenSync(); $('#wtSyn').value = WT.proj.synopsis || ''; $('#wtSynBox').hidden = !WT.proj.synopsis; wtSynStat(); };
 $('#wtAutoX').onclick = () => { $('#wtAutoBox').hidden = true; };
@@ -8383,7 +8971,7 @@ $('#wtAutoGo').onclick = async () => {
   if (wtAbort) return;
   const rating = wtRating(), dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(story + '\n' + dict.join('\n'), 'adult')) return;
-  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
+  const sel = $('#wtAI').value; const c = await wtClient(sel); if (!c) return;
   let n = Math.max(1, Math.min(12, +$('#wtPagesN').value || 4)); const tone = $('#wtTone').selectedOptions[0].text;
   // 줄거리의 장면 수([1장] 같은 줄)가 쪽 수보다 많으면 쪽을 늘린다(예전엔 4쪽에 줄이느라 사건이 빠졌다)
   const scenes = (story.match(/^\s*\[[^\]]+\]/gm) || []).length;
@@ -8391,7 +8979,7 @@ $('#wtAutoGo').onclick = async () => {
   wtAbort = new AbortController(); $('#wtAutoGo').disabled = true; $('#wtAutoStop').hidden = false; wtAutoStat('대본 쓰는 중…');
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
   const known = new Set(dict.map(l => l.split(':')[0].trim()));
-  const content = [{type: 'text', text: `쪽 수: ${n}쪽 (사건을 다 담으려면 ±2쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
+  const content = [{type: 'text', text: `${wtFrameLine()}쪽 수: ${n}쪽 (사건을 다 담으려면 ±2쪽 괜찮음)\n컷 느낌: ${tone}\n등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe). 노출·성적 요소 없이.'}\n나오는 인물: ${cast.length ? cast.join(', ') : '(줄거리에서 알아서 정한다)'}\n그중 사전에 없어 외형을 지어야 하는 이름: ${cast.filter(x => !known.has(x)).join(', ') || '(없음)'}\n인물 사전(이름: 외형 — chars에는 이름만 쓴다):\n${dict.length ? dict.map(l => l.split(':')[0].trim() + ' — ' + l.slice(l.indexOf(':') + 1).trim().slice(0, 60)).join('\n') : '(없음)'}\n\n말투(이 말투대로 대사를 쓴다):\n${wtVoiceDict().length ? wtVoiceDict().join('\n') : '(없음 — cast 에 말투를 지어 넣는다)'}\n\n줄거리:\n${story}`}];
   let res; try{ res = await stream(c, {messages: [{role: 'user', content}], system: SYSTEM_WT(), signal: wtAbort.signal, format: {type: 'json_schema', schema: WT_SCHEMA}}); }
   finally { wtAbort = null; $('#wtAutoGo').disabled = false; $('#wtAutoStop').hidden = true; }
   if (!res.ok){ return wtAutoStat((res.note || '대본을 못 만들었어요').trim()); }
@@ -8406,6 +8994,7 @@ $('#wtAutoGo').onclick = async () => {
   const panels = added.reduce((a, p) => a + p.panels.length, 0);
   wtAutoStat(`${added.length}쪽 · ${panels}컷을 만들었어요${newCast ? ` · 새 인물 ${newCast}명(외형·말투)을 사전에 넣었어요` : ''}.` + (wtTameWarn(JSON.stringify(sc.pages)) || ' 말풍선은 눌러서 옮기고 고칠 수 있어요.') + (DESKTOP ? ' 이어서 컷 그림을 만들 수 있어요.' : ' 컷 그림은 장면 노트에서 가져오거나 컴퓨터 프로그램에서 만들 수 있어요.'));
   wtGenSync();
+  if (store.get('set.wtAutoDraw', false) && naiToken() && wtTodo().length){ wtAutoStat('대본 끝 · 이어서 컷 그림을 만들어요…'); setTimeout(() => $('#wtGenAll').click(), 400); }   // 한 번에: 대본 → 컷 그림까지
 };
 
 /* ---------- 컷 그림 일괄 생성 (프로그램·폰 모두, 노벨AI) ---------- */
@@ -8441,8 +9030,10 @@ $('#wtImgGen').onclick = async () => {
 /* ---------- 그림체·인물 사전 칸 ---------- */
 function wtStyleSync(){ const k = $('#wtStyle').value; $('#wtStyleIn').hidden = k !== 'custom'; $('#wtMonoRow').hidden = k !== 'dark' && k !== 'spot'; $('#wtFrameRow').hidden = k !== 'dark'; store.set('set.wtStyle', k); }
 $('#wtNaiText').checked = store.get('set.wtNaiText', false);
+if ($('#wtOllama')){ $('#wtOllama').checked = !!store.get('set.naiNsfwOllama', false); $('#wtOllama').onchange = () => { store.set('set.naiNsfwOllama', $('#wtOllama').checked); if ($('#naiNsfwOllama')) $('#naiNsfwOllama').checked = $('#wtOllama').checked; }; }
+if ($('#wtAutoDraw')){ $('#wtAutoDraw').checked = !!store.get('set.wtAutoDraw', false); $('#wtAutoDraw').onchange = () => store.set('set.wtAutoDraw', $('#wtAutoDraw').checked); }
 $('#wtNaiText').onchange = () => store.set('set.wtNaiText', $('#wtNaiText').checked);
-$('#wtStyle').value = store.get('set.wtStyle', 'neon'); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
+$('#wtStyle').value = store.get('set.wtStyle', WT_DEFAULT_STYLE); $('#wtMono').value = store.get('set.wtMono', 'cold blue'); $('#wtStyleIn').value = store.get('set.wtStyleIn', ''); wtStyleSync();
 $('#wtStyle').onchange = wtStyleSync;
 $('#wtMono').onchange = () => store.set('set.wtMono', $('#wtMono').value);
 $('#wtFrame').value = store.get('set.wtFrame', 'mirror');
@@ -8457,6 +9048,19 @@ $('#wtAuto').addEventListener('click', () => { $('#wtChars').value = $('#naiChar
 $('#wtSynUse').onclick = () => { const v = $('#wtSyn').value.trim(); if (!v) return toast('줄거리가 비어 있어요'); WT.proj.synopsis = v; $('#wtAutoGo').click(); };
 $('#wtSyn').oninput = () => { if (WT.proj) WT.proj.synopsis = $('#wtSyn').value; };
 
+/* ---------- 이야기 틀: 많이 팔리는 웹툰·만화의 화 구성 공식을 줄거리·대본 AI 에게 함께 준다 ---------- */
+const WT_FRAMES = {
+  hook: '1화 공식: 첫 쪽 첫 컷에 이 이야기에서 가장 센 장면(훅)을 먼저 보여 준다 → 두 사람의 관계와 위치를 짧게 → 사건 → 감정이 꺾이는 반전 → 다음 화가 궁금한 장면에서 끊는다(클리프행어). 마지막 컷은 대사 한 줄이나 표정 클로즈업.',
+  pair: '2인 관계극: 힘의 차이(갑을·체격·계급)가 분명한 두 사람. 거리 두기 → 도발 → 몸이 닿는 순간 → 위계가 한 번 뒤집히는 컷 → 여운. 둘만 있는 공간(옥상·자취방·차 안·창고)을 쓴다. 쪽마다 둘의 거리가 조금씩 줄어든다.',
+  school: '학원·일진물: 계급이 정해진 교실과 복도 → 약자가 표적이 된다 → 예상 밖의 보호나 관심 → 주변의 시선과 소문 → 둘만 아는 비밀로 끝. 교복 대신 대학·직장으로 옮겨도 같은 구조.',
+  romcom: '로맨틱 코미디: 오해에서 시작 → 억지로 붙어 있어야 하는 상황 → 과장된 표정과 효과음이 있는 개그 컷 3번 이상 → 갑자기 조용해지는 설렘 한 컷 → 방해로 끊긴다.',
+  dark: '집착·피폐: 평범한 일상 → 이상한 흔적 → 확인 → 도망칠 수 없는 구조가 드러남 → 마지막 컷에 상대의 얼굴을 크게. 밝은 컷과 어두운 컷의 대비를 크게.',
+  gag: '개그: 쪽마다 4컷 리듬(설정 → 전개 → 비틀기 → 한 방). 마지막 컷은 리액션 표정을 크게, 효과음을 크게.',
+  fantasy: '판타지 각성: 약자의 초라한 일상 → 사건(던전·회귀·상태창) → 힘을 처음 쓰는 큰 컷 → 주변의 반응 → 더 큰 위협 예고로 끊는다.',
+};
+window.nvWtFrameLine = () => wtFrameLine();
+const wtFrameLine = () => { const v = $('#wtStoryFrame')?.value; return v && WT_FRAMES[v] ? `이야기 틀(이 구성 순서를 따른다): ${WT_FRAMES[v]}\n` : ''; };
+$('#wtStoryFrame') && ($('#wtStoryFrame').value = store.get('set.wtStoryFrame', ''), $('#wtStoryFrame').onchange = () => store.set('set.wtStoryFrame', $('#wtStoryFrame').value));
 /* ================= 줄거리 길게 쓰기 ================= */
 const WT_SYN_LEN = {
   short: {n: '3~6문장', beats: 0, say: '짧게. 한 장면의 흐름만.'},
@@ -8504,12 +9108,12 @@ async function wtSynRun(more){
   if (wtSynAbort) return;
   const rating = wtRating(), dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(seed + '\n' + dict.join('\n'), 'adult')) return;
-  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return;
+  const sel = $('#wtAI').value; const c = await wtClient(sel); if (!c) return;
   const L = WT_SYN_LEN[$('#wtSynLen').value] || WT_SYN_LEN.mid;
   const cast = $('#wtCast').value.split(/[,，、]/).map(x => x.trim()).filter(Boolean);
   wtSynAbort = new AbortController(); wtSynBusy(true); wtAutoStat(spice ? '줄거리를 맛깔나게 다시 쓰는 중…' : more ? '줄거리를 이어서 쓰는 중…' : '줄거리를 늘리는 중…');
   if (spice) WT.proj.synPrev = $('#wtSyn').value;
-  const text = `분량: ${L.n} — ${L.say}
+  const text = `${wtFrameLine()}분량: ${L.n} — ${L.say}
 장면(또는 화) 차례 개수: ${L.beats || '없이'}
 등급: ${rating === 'nsfw' ? `성인(19금). ${wtHeat()}` : '일반(safe).'}
 나오는 인물: ${cast.length ? cast.join(', ') : '(알아서 정한다)'}
@@ -8601,7 +9205,7 @@ async function wtRefFromPages(w){
   wtAutoStat?.(`문체 참고: '${w.name}' ${fs.length}쪽의 말풍선을 읽는 중…`);
   const imgs = []; for (const f of fs){ try{ imgs.push(await spFileJpeg(f, 1024)); }catch{} }
   if (!imgs.length) return '';
-  const sel = $('#wtAI').value; const c = await client(sel === 'default' ? '' : '#wtAI'); if (!c) return '';
+  const sel = $('#wtAI').value; const c = await wtClient(sel); if (!c) return '';
   const r = await stream(c, {system: '너는 만화 글자 받아쓰기 담당이다. 그림 속 말풍선·속마음·나레이션 상자·효과음 글자를 읽는 순서대로 원문 그대로 옮겨 적는다. 번역·요약·설명은 하지 않는다. 한 줄에 말풍선 하나, 효과음은 [효과음] 을 앞에 붙인다. 쪽마다 --- 로 나눈다. 글자가 없는 쪽은 (없음).',
     messages: [{role: 'user', content: [...imgs.map(data => ({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}})), {type: 'text', text: '이 쪽들의 글자를 모두 받아써.'}]}]});
   if (!r.ok) throw new Error((r.note || '').trim() || '실패');
@@ -8630,18 +9234,20 @@ wtModelSync();
 
 /* ---------- 노벨AI 탭도 같은 그림체를 쓴다 ---------- */
 // 06-ai-tabs.js 의 naiPack 이 부른다. 그림체를 고르면 그 공식, '직접 쓰기'면 하우스 스타일 칸.
-window.naiStyleFor = nsfw => { const P = wtStyleParts(nsfw); return {head: P.head || $('#naiStyle').value.trim().replace(/,\s*$/, ''), tail: P.tail, neg: n => wtStyleNeg(n, nsfw)}; };
+window.naiStyleFor = nsfw => { const P = wtStyleParts(nsfw); const fo = (P.key || '').startsWith('v43') && P.focus ? ', ' + P.focus : P.v5 && P.focusMale ? ', ' + P.focusMale : '';   // v43 B: 얼굴 보호 블록도 노벨AI 탭에 · V5 최종: 남자 얼굴 블록
+  return {head: (P.head || $('#naiStyle').value.trim().replace(/,\s*$/, '')) + fo, tail: P.tail, neg: n => wtStyleNeg(n, nsfw), params: P.v5 ? WT_V5_PARAMS : undefined}; };
 function naiStyleLabel(){
   const k = wtStyleKey(); const el = $('#naiStyleNow'); if (!el) return;
   el.textContent = k === 'custom' ? '지금 그림체: 아래 하우스 스타일 칸을 그대로 써요' : `지금 그림체: ${WT_STYLE[k].name}` + ((k === 'dark' || k === 'spot') ? ` · ${wtMono()}` : '');
 }
-$('#naiStyleSel').value = store.get('set.wtStyle', 'neon');
+$('#naiStyleSel').value = store.get('set.wtStyle', WT_DEFAULT_STYLE);
 $('#naiStyleSel').onchange = () => { $('#wtStyle').value = $('#naiStyleSel').value; store.set('set.wtStyle', $('#naiStyleSel').value); wtStyleSync(); naiStyleLabel(); };
 $('#wtStyle').addEventListener('change', () => { $('#naiStyleSel').value = $('#wtStyle').value; naiStyleLabel(); });
 $('#wtMono').addEventListener('change', naiStyleLabel);
 naiStyleLabel();
 
 window.nvWtPrompt = wtPanelPrompt;   // 시험용
+window.wtKidsNeg = wtKidsNeg;   // 노벨AI 탭(naiPack)에서도 쓴다
 /* ================= 작가의 뷰어: 폰 화면 보기·내 글꼴·방향키·읽기 과녁·필사 ================= */
 const typing = e => /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
 const overlayOpen = () => !$('#studio').hidden || !$('#wt').hidden || $('#sketch').classList.contains('open');
@@ -9979,10 +10585,19 @@ window.libShelf = () => libKind === 'all';
 window.libGoKind = k => { libKind = k; store.set('set.libKind', k); renderLib(); $('#libPage')?.scrollTo?.(0, 0); };
 const allWorks = () => works;
 window.nvAllWorks = allWorks;
+// 영상 칸 위 OTT 바로가기: 각 서비스를 기본 브라우저(폰은 새 탭)로 연다. 보기 전용 — 받기는 DRM 때문에 만들지 않는다.
+const OTT_LINKS = [['티빙', 'https://www.tving.com/'], ['넷플릭스', 'https://www.netflix.com/kr/'], ['디즈니+', 'https://www.disneyplus.com/ko-kr/home'], ['왓챠', 'https://watcha.com/']];
+function ottRow(){
+  const row = document.createElement('div'); row.className = 'ott-row';
+  row.innerHTML = '<b>바로 보기</b>' + OTT_LINKS.map(([, url]) => `<a href="${url}" target="_blank" rel="noopener"><span></span></a>`).join('');
+  row.querySelectorAll('a span').forEach((s, i) => s.textContent = OTT_LINKS[i][0]);
+  return row;
+}
 const _renderLib0 = renderLib;
 renderLib = function(){
   const all = works; works = all.filter(w => inKind(w));
   try{ _renderLib0(); } finally { works = all; }
+  if (libKind === 'video') $('#lib')?.prepend(ottRow());
   renderKinds();
 };
 function renderKinds(){
@@ -10251,9 +10866,16 @@ const NP_CAST = {
   '서이준': '1boy, adult, mature male, 26 years old, tall, lean muscular build, pale skin, black hair swept back with loose strands over forehead, sharp grey eyes, long eyelashes, aristocratic features, black high-collar coat, silver brooch, leather gloves',
   '레온': '1boy, adult, mature male, 28 years old, muscular, broad chest, fair skin, golden blond short wavy hair, bright blue eyes, light freckles across nose, warm smile, white linen shirt, knight tabard, leather belt',
   '카엘': '1boy, adult, mature male, 33 years old, rugged, very muscular, sun-tanned skin, dark brown hair tied in a short low ponytail, amber eyes, scar across the bridge of the nose, stubble, worn leather armor, travel cloak, longsword at hip',
+  '강재혁': '1boy, adult, young adult man, 25 years old, very handsome, tall, lean muscular build, sharp fox-like eyes, bleached blond undercut with dark roots, multiple ear piercings, thin silver chain necklace, cocky smirk, open black track jacket, white t-shirt, cigarette behind ear',
+  '오동구': '1boy, adult, young adult man, 25 years old, plain unattractive face, chubby, overweight, soft round belly, round thick glasses, small eyes, messy unkempt black hair, light acne on cheeks, timid nervous expression, sweaty, oversized grey hoodie, baggy sweatpants',
+  '윤서호': '1boy, adult, young adult man, 22 years old medical student, very handsome, youthful boyish handsome face, soft features, smooth skin, neat soft black hair with bangs, thin silver round-rim glasses, white collared shirt, navy knit cardigan',
   '한태오': '1boy, adult, mature male, 29 years old, very muscular, bulky chest, thick thighs, tanned skin, short black crew cut, thick dark eyebrows, bright dark eyes, boyish grin, sleeveless black tank top, gym shorts',
 };
 const NP_PAIRS = [
+  {id: 'yangachi', name: '양아치 · 모범생 의대생 (강재혁·윤서호)', cast: ['강재혁', '윤서호'], for: '캐릭터챗 「강재혁」과 같은 설정 · 옥상·편의점·자취방 · 웹툰 대본',
+    voice: {'강재혁': '반말, 짧고 건들거림. 비웃듯 말끝을 올리고, 진심일 땐 오히려 말이 줄어든다', '윤서호': '차분한 존댓말, 논리적으로 또박또박 말한다. 당황하면 말이 짧아지고 안경을 고쳐 쓴다'}},
+  {id: 'yangachi_old', name: '(예전) 잘생긴 양아치 · 못생긴 찐따', cast: ['강재혁', '오동구'], for: '예전 화보 설정',
+    voice: {'강재혁': '반말, 짧고 건들거림. 비웃듯 말끝을 올리고, 진심일 땐 오히려 말이 줄어든다', '오동구': '존댓말, 말을 더듬고 끝을 흐린다. 속으로는 말이 많다(속마음 말풍선)'}},
   {id: 'cut37', name: '사진사 한서진 · 서른일곱 번째 컷', cast: ['한서진'], for: '그림체 E · 스팟컬러 구도(C1~C7) · 단색은 film amber'},
   {id: 'office', name: '사무실 선배·후배', cast: ['차민혁', '윤시우'], for: '야근 사무실 · 출장지 호텔'},
   {id: 'agency', name: '현장 요원 · 노련한 국장', cast: ['강도현', '백무진'], for: '사무실 · 표지 콜라주'},
@@ -10277,12 +10899,57 @@ function npCastFill(){
     const rest = naiCharsDict().filter(l => !pr.cast.some(n => l.startsWith(n + ':')));
     $('#naiChars').value = [...top, ...rest].join('\n');
     store.set('set.naiChars', $('#naiChars').value); if ($('#wtChars')) $('#wtChars').value = $('#naiChars').value;
+    if (pr.voice){ const v = (store.get('set.wtVoice', '') || '').split('\n').map(x => x.trim()).filter(x => x && !Object.keys(pr.voice).some(n => x.startsWith(n + ':'))); const vv = [...Object.entries(pr.voice).map(([n, t]) => `${n}: ${t}`), ...v].join('\n'); store.set('set.wtVoice', vv); if ($('#wtVoice')) $('#wtVoice').value = vv; }
+    if ($('#wtCast') && !$('#wtCast').value.trim()) $('#wtCast').value = pr.cast.join(', ');
     toast(`${pr.cast.join('·')} 을 인물 사전 맨 위에 넣었어요 · 잘 맞는 틀: ${pr.for}`);
     const pv = $('#naiPreset'); if (pv?.value) pv.dispatchEvent(new Event('change'));   // 고른 장면 틀이 있으면 새 인물로 다시
   };
 }
 npCastFill();
+(function(){ const w = $('#wtPair'), n = $('#naiCast'); if (!w || !n) return; w.innerHTML = n.innerHTML; w.onchange = () => { if (!w.value) return; n.value = w.value; n.dispatchEvent(new Event('change')); w.value = ''; }; })();   // 웹툰 만들기에서도 같은 인물 짝을 고른다
 window.nvNaiCast = {cast: NP_CAST, pairs: NP_PAIRS, line: npCastLine};   // 시험용
+
+/* ---------- 얼굴 원형 (v43, 2026-11-08) ----------
+   머리색·눈색만 바꾼 남자 8명이 모두 같은 얼굴로 나왔다 → 얼굴 원형을 2.0 무게로 인물 줄 맨 앞에 두면 같은 시드에서도 8명이 모두 갈렸다.
+   안전: baby face·youthful 은 쓰지 않는다(아이 얼굴이 나왔다). 소년미도 반드시 'adult man in his mid 20s'. */
+const NP_ARCH = [
+  ['강아지상', '2::tareme, droopy gentle eyes, soft rounded face, full lips, dimples, warm puppy-like face ::'],
+  ['여우상', '2::tsurime, sharp fox-like slanted eyes, narrow V-shaped face, thin lips, cold aristocratic face ::'],
+  ['거친 아저씨상', '2::square jaw, thick bushy eyebrows, broad nose, light stubble, rugged masculine face, late 30s ::'],
+  ['퇴폐상', '2::sanpaku eyes, gaunt hollow cheeks, dark circles under eyes, unsettling thin smile ::'],
+  ['소년미 (20대 중반 성인)', '2::boyish features, big round eyes, small nose, bright open face, adult man in his mid 20s ::'],
+  ['아이돌상', '2::hooded monolid eyes, high cheekbones, small sleek face, korean idol visual ::'],
+  ['흑인 미남', '2::dark-skinned man, wide nose, strong brow ridge, heavy-lidded eyes, full lips ::'],
+  ['중년 미남', '2::long face, deep-set eyes, prominent aquiline nose, sharp cheekbones, mature man in his 40s, faint crow\'s feet ::'],
+  ['나른한 한량', '2::heavy-lidded sleepy eyes, lazy half smile, scruffy stubble, laid-back face ::'],
+  ['군인상', '2::sharp monolid eyes, thick straight eyebrows, strong straight nose, stern face, buzz cut ::'],
+  ['미인상', '2::delicate pretty face, long eyelashes, beauty mark under his eye, elegant refined features ::'],
+  ['싸움꾼상', '2::scar across the bridge of his nose, crooked broken nose, wide jaw, boxer face ::'],
+  ['여자 · 처진눈', '2::tareme, soft droopy eyes, gentle round face, adult woman ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+  ['여자 · 고양이눈', '2::tsurime, cat-like upturned eyes, small sharp chin, cool elegant face, adult woman ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+  ['여자 · 주근깨', '2::freckles across the nose and cheeks, bright clear eyes, natural fresh face, adult woman ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+  ['여자 · 40대', '2::mature woman in her 40s, elegant fine lines at the eyes, calm knowing gaze ::, 1.3::adult woman, soft feminine features, graceful ::', true],
+];
+const NP_ARCH_RE = new RegExp('(' + NP_ARCH.map(a => a[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + '),?\\s*', 'g');   // 우리가 넣은 원형만 찾아 바꾼다
+function npArchApply(i, who){
+  const a = NP_ARCH[i]; if (!a) return;
+  const lines = naiCharsDict();
+  while (lines.length <= who) lines.push(`${who ? '인물 ' + 'ABC'[lines.length] : '인물 A'}: ${a[2] ? '1girl, adult woman' : '1boy, adult, mature male'}`);
+  const L = lines[who], k = L.indexOf(':');
+  const name = k > 0 ? L.slice(0, k).trim() : `인물 ${'ABC'[who]}`;
+  let tags = (k > 0 ? L.slice(k + 1) : L).trim().replace(NP_ARCH_RE, '');
+  tags = tags.replace(/\b(baby face|youthful|soft cheeks)\b,?\s*/gi, '');
+  lines[who] = `${name}: ${a[1]}, ${tags}`.replace(/,\s*$/, '');
+  $('#naiChars').value = lines.join('\n'); store.set('set.naiChars', $('#naiChars').value); if ($('#wtChars')) $('#wtChars').value = $('#naiChars').value;
+  toast(`${name} 에게 '${a[0]}' 얼굴을 넣었어요`);
+  const pv = $('#naiPreset'); if (pv?.value) pv.dispatchEvent(new Event('change'));
+}
+(function(){
+  const sel = $('#naiArch'); if (!sel) return;
+  sel.innerHTML = '<option value="">고르기…</option><optgroup label="남자">' + NP_ARCH.map((a, i) => a[2] ? '' : `<option value="${i}">${esc(a[0])}</option>`).join('') + '</optgroup><optgroup label="여자">' + NP_ARCH.map((a, i) => a[2] ? `<option value="${i}">${esc(a[0])}</option>` : '').join('') + '</optgroup>';
+  sel.onchange = () => { if (sel.value === '') return; npArchApply(+sel.value, +($('#naiArchWho')?.value || 0)); sel.value = ''; };
+})();
+window.nvNaiArch = {list: NP_ARCH, apply: npArchApply};   // 시험용
 /* ================= 받기: 모아받기·토끼 다운로더를 Novelist 안에서 ================= */
 // 다운로더(따로 켜던 .bat)는 Novelist 가 켜고 이 칸 안에 띄운다. pawchive 받기는 두 다운로더 안에 들어 있다.
 // 어디서 열든 받기는 다운로더가 있는 PC 가 하고, 받은 작품은 서재(구글 드라이브)에 저절로 들어온다.
@@ -10883,6 +11550,125 @@ async function wtPreview(){
   box.querySelector('button').onclick = close; addEventListener('keydown', esc, true);
   $('#wt').append(box);
 }
+/* ---------- 태그로 바로 만들기 (2026-11-09) ----------
+   '장면 → 프롬프트'는 AI(Claude·Gemini)가 성인 장면을 거절하거나 순하게 바꿔서 수위 컷이 잘 안 나왔다.
+   그래서 태빈이 직접 쓴 노벨AI 태그를 AI 없이 그대로 받아, 고른 그림체·인물 사전·네거티브·등급으로 감싸 준다.
+   막는 것은 그대로: 성인 등급이면 adultGuard·MINOR_RE 로 미성년 표현을 막는다. */
+function naiTagsParse(text){
+  const segs = String(text || '').split('|').map(x => x.trim()).filter(Boolean);
+  if (!segs.length) return null;
+  const dict = naiCharsDict(), map = new Map(dict.map(l => { const k = l.indexOf(':'); return [l.slice(0, k).trim(), l.slice(k + 1).trim()]; }));
+  const pos = ['B3', 'D3', 'C2', 'C4'];
+  const chars = segs.slice(1).map((seg, i) => {
+    const m = seg.match(/^([^,:]+?)\s*[,:]\s*(.*)$/s); let name = `인물 ${i + 1}`, prompt = seg;
+    if (m && map.has(m[1].trim())){ name = m[1].trim(); prompt = [map.get(name), m[2]].filter(Boolean).join(', '); }
+    else if (map.has(seg)){ name = seg; prompt = map.get(seg); }
+    return {name, prompt, negative: '', position: pos[i] || 'C3'};
+  });
+  return {base_prompt: segs[0], characters: chars, negative: '', size: '', notes: '태그로 바로 만듦'};
+}
+function naiTagsBuild(){
+  const t = $('#naiTags').value.trim(); if (!t) { toast('태그를 적어 주세요'); return null; }
+  if (/\b(nsfw|explicit|uncensored)\b/i.test(t) && $('#naiRating').value !== 'nsfw'){ $('#naiRating').value = 'nsfw'; $('#naiRating').dispatchEvent(new Event('change')); toast('성인 태그가 있어서 등급을 성인으로 바꿨어요'); }
+  const res = naiTagsParse(t); if (!res) return null;
+  const nsfw = $('#naiRating').value === 'nsfw';
+  if (nsfw && !adultGuard(t + '\n' + naiCharsDict().join('\n'), 'adult')) return null;
+  const p = naiPack(res);
+  if (nsfw && MINOR_RE.test([p.base, ...p.chars.map(x => x.prompt)].join(' '))){ toast('미성년을 떠올리게 하는 태그가 있어서 만들지 않았어요'); return null; }
+  renderNai(p); const h = store.get('naiHist', []); h.unshift({t: Date.now(), desc: '태그: ' + t.slice(0, 60), p}); store.set('naiHist', h.slice(0, 30)); renderNaiHist();
+  return p;
+}
+(function(){
+  const box = $('#naiTagBox'); if (!box) return;
+  $('#naiTags').value = store.get('set.naiTags', ''); $('#naiTags').oninput = () => { clearTimeout(naiTagsBuild._t); naiTagsBuild._t = setTimeout(() => store.set('set.naiTags', $('#naiTags').value), 500); };
+  $('#naiTagGo').onclick = () => { if (naiTagsBuild()) toast('프롬프트를 만들었어요. 아래 \'그림 만들기\'로 바로 그려요'); };
+  $('#naiTagDraw').onclick = () => { if (!naiTagsBuild()) return; $('#ngList').value = ''; $('#ngGo').click(); };   // 장면 칸이 비면 방금 만든 프롬프트로 그린다
+  $('#naiTagChars').onclick = () => {
+    const names = naiCharsDict().slice(0, 2).map(l => l.split(':')[0].trim()).filter(Boolean); if (!names.length) return toast('인물 사전이 비어 있어요');
+    const t = $('#naiTags').value.trim(), segs = t ? t.split('|').map(x => x.trim()) : ['']; segs.length = 1;
+    $('#naiTags').value = [segs[0], ...names].join(' | '); store.set('set.naiTags', $('#naiTags').value);
+  };
+  const snips = () => store.get('set.naiSnips', {});
+  const fill = () => { const s = snips(); $('#naiSnip').innerHTML = '<option value="">저장해 둔 태그 묶음…</option>' + Object.keys(s).map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join(''); };
+  fill();
+  // 이름은 칸에 적는다(윈도우 프로그램은 prompt 창을 못 띄운다)
+  $('#naiSnipSave').onclick = () => { const t = $('#naiTags').value.trim(); if (!t) return toast('저장할 태그가 없어요'); const name = ($('#naiSnipName').value.trim() || t.slice(0, 20)); $('#naiSnipName').value = ''; const s = snips(); s[name.trim()] = t; store.set('set.naiSnips', s); fill(); $('#naiSnip').value = name.trim(); toast('저장했어요'); };
+  $('#naiSnipAdd').onclick = () => { const k = $('#naiSnip').value; const t = snips()[k]; if (!t) return toast('넣을 묶음을 골라 주세요'); const cur = $('#naiTags').value.trim(); if (!cur) $('#naiTags').value = t; else { const a = cur.split('|'), b = t.split('|'); a[0] = [a[0].trim(), b[0].trim()].filter(Boolean).join(', '); for (let i = 1; i < b.length; i++) a[i] = [a[i]?.trim(), b[i].trim()].filter(Boolean).join(', '); $('#naiTags').value = a.map(x => x.trim()).join(' | '); } store.set('set.naiTags', $('#naiTags').value); };
+  $('#naiSnipDel').onclick = () => { const k = $('#naiSnip').value; if (!k) return; const s = snips(); delete s[k]; store.set('set.naiSnips', s); fill(); };
+  $('#naiNsfwOllama').checked = !!store.get('set.naiNsfwOllama', false); $('#naiNsfwOllama').onchange = () => store.set('set.naiNsfwOllama', $('#naiNsfwOllama').checked);
+})();
+window.nvNaiTags = {parse: naiTagsParse, build: naiTagsBuild};   // 시험용
+/* ---------- 얼굴 고정 (2026-11-09) ----------
+   노벨AI V5 는 정밀 참조(director reference)를 아직 받지 않는다(V4.5 만, 장당 +5 Anlas). 그래서 세 가지 길을 둔다.
+   ① 씨앗 고정: 같은 씨앗 + 같은 인물 태그면 얼굴이 꽤 비슷해진다(무료).
+   ② 기준 그림 이어 그리기(img2img, V5): 기준 그림을 같은 크기로 맞춰 strength 만큼만 바꾼다(무료, 얼굴·옷이 남는다).
+   ③ 정밀 참조(V4.5): director_reference_* 다섯 칸(이미지·설명·세기·1-충실도·1). 기준 그림은 1024×1536 / 1536×1024 / 1472×1472 중 가까운 크기에 검은 여백으로 맞춘 PNG.
+   (요청 모양은 NovelAI 웹 앱과 같게: NAIWeaver 요청 빌더 참고) */
+const NGF = {img: null};   // 기준 그림 dataURL(jpeg)
+const ngFaceMode = () => $('#ngFace')?.value || 'off';
+function ngFaceSync(){
+  const m = ngFaceMode();
+  $('#ngSeedRow').hidden = m !== 'seed'; $('#ngRefRow').hidden = !(m === 'i2i' || m === 'ref');
+  $('#ngI2iRow').hidden = m !== 'i2i'; $('#ngPrRow').hidden = m !== 'ref';
+  const pv = $('#ngRefPrev'); if (NGF.img){ pv.src = NGF.img; pv.style.display = ''; } else { pv.removeAttribute('src'); pv.style.display = 'none'; }
+}
+async function ngRefSet(blob){
+  const bm = await createImageBitmap(blob); const k = Math.min(1, 1536 / Math.max(bm.width, bm.height));
+  const c = document.createElement('canvas'); c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k); c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+  NGF.img = c.toDataURL('image/jpeg', 0.92); try{ store.set('set.ngRefImg', NGF.img); }catch{ toast('기준 그림이 커서 이번에만 써요(저장은 못 했어요)'); }
+  ngFaceSync(); toast('기준 그림을 정했어요');
+}
+async function ngRefCanvas(W, H, pad){   // 기준 그림을 W×H 로: pad=true 면 비율 유지 + 검은 여백, 아니면 가운데 맞춰 꽉 채우기
+  const im = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = NGF.img; });
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+  const k = pad ? Math.min(W / im.width, H / im.height) : Math.max(W / im.width, H / im.height);
+  const w = im.width * k, h = im.height * k; g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+  return c.toDataURL('image/png').split(',')[1];
+}
+let ngRefOk = false;
+async function ngFaceApply(body){
+  const m = ngFaceMode(), P = body.parameters; if (m === 'off') return body;
+  if (m === 'seed'){ const s = +$('#ngSeedFix').value; if (s > 0) P.seed = s; return body; }
+  if (!NGF.img) throw new Error('얼굴 고정: 기준 그림을 먼저 골라 주세요');
+  if (m === 'i2i' && $('#wt') && !$('#wt').hidden) return body;   // 웹툰 컷은 컷마다 구도가 달라야 해서 이어 그리기는 쓰지 않는다(씨앗·정밀 참조만)
+  if (m === 'i2i'){
+    body.action = 'img2img'; P.image = await ngRefCanvas(P.width, P.height, false); P.strength = +$('#ngI2iStr').value || 0.6; P.noise = 0; P.extra_noise_seed = P.seed; P.add_original_image = true;
+    return body;
+  }
+  // ③ 정밀 참조: 모델을 V4.5 로(같은 계열 full/curated), V5 전용 키는 뺀다
+  if (!ngRefOk){ if (!confirm('정밀 참조는 노벨AI V4.5 로 그리고, 한 장마다 5 Anlas 가 들어요. 계속할까요?')) throw new Error('정밀 참조를 취소했어요'); ngRefOk = true; }
+  if (!/nai-diffusion-4-5/.test(body.model)) body.model = /curated/.test(body.model) ? 'nai-diffusion-4-5-curated' : 'nai-diffusion-4-5-full';
+  delete P.deliberate_euler_ancestral_bug;
+  const ar = P.width / P.height, T = [[1024, 1536], [1536, 1024], [1472, 1472]].sort((a, b) => Math.abs(a[0] / a[1] - ar) - Math.abs(b[0] / b[1] - ar))[0];
+  const im = await new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = NGF.img; }), iar = im.width / im.height;
+  const TT = [[1024, 1536], [1536, 1024], [1472, 1472]].sort((a, b) => Math.abs(a[0] / a[1] - iar) - Math.abs(b[0] / b[1] - iar))[0];
+  P.director_reference_images = [await ngRefCanvas(TT[0], TT[1], true)];
+  P.director_reference_descriptions = [{caption: {base_caption: $('#ngRefType').value || 'character', char_captions: []}, legacy_uc: false}];
+  P.director_reference_strength_values = [Math.max(0, Math.min(1, +$('#ngRefStr').value || 1))];
+  P.director_reference_secondary_strength_values = [1 - Math.max(0, Math.min(1, +$('#ngRefFid').value || 1))];
+  P.director_reference_information_extracted = [1];
+  void T; return body;
+}
+(function(){
+  if (!$('#ngFaceBox')) return;
+  $('#ngFace').value = store.get('set.ngFace', 'off'); $('#ngSeedFix').value = store.get('set.ngSeedFix', '') || '';
+  NGF.img = store.get('set.ngRefImg', null);
+  ['ngI2iStr', 'ngRefStr', 'ngRefFid'].forEach(id => { const v = store.get('set.' + id, null); if (v != null) $('#' + id).value = v; $('#' + id).addEventListener('input', () => { store.set('set.' + id, $('#' + id).value); if (id === 'ngI2iStr') $('#ngI2iOut').textContent = $('#ngI2iStr').value; }); });
+  $('#ngI2iOut').textContent = $('#ngI2iStr').value;
+  const rt = store.get('set.ngRefType', null); if (rt) $('#ngRefType').value = rt; $('#ngRefType').onchange = () => store.set('set.ngRefType', $('#ngRefType').value);
+  $('#ngFace').onchange = () => { store.set('set.ngFace', ngFaceMode()); ngFaceSync(); };
+  $('#ngSeedFix').oninput = () => store.set('set.ngSeedFix', $('#ngSeedFix').value);
+  $('#ngSeedLast').onclick = () => { const s = store.get('set.ngLastSeed', 0); if (!s) return toast('아직 그린 그림이 없어요'); $('#ngSeedFix').value = s; store.set('set.ngSeedFix', s); toast('방금 그림의 씨앗을 넣었어요'); };
+  $('#ngRefFile').onchange = e => { const f = e.target.files?.[0]; if (f) ngRefSet(f); e.target.value = ''; };
+  $('#ngRefClear').onclick = () => { NGF.img = null; store.set('set.ngRefImg', null); ngFaceSync(); };
+  $('#ngRefScrap').onclick = async () => {
+    let all = []; try{ all = await idb.tx('readonly', st => st.getAll(), 'scraps'); }catch{}
+    const r = all.filter(x => x.blob).sort((a, b) => b.t - a.t)[0]; if (!r) return toast('장면 노트에 그림이 없어요');
+    ngRefSet(r.blob instanceof Blob ? r.blob : new Blob([r.blob], {type: 'image/jpeg'}));
+  };
+  ngFaceSync();
+})();
+window.nvNgFace = {apply: ngFaceApply, set: ngRefSet, NGF};   // 시험용
 </script>
 </body>
 </html>

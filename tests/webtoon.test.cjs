@@ -30,15 +30,15 @@ const path = require('path'); const fs = require('fs'); const ROOT = path.resolv
   for (const k of ['speech', 'thought', 'narr', 'sfx', 'sweat', 'burst', 'heart', 'text', 'shout']){ await p.click(`#wtAdd [data-add=${k}]`); await p.waitForTimeout(80); }
   console.log('items:', await p.evaluate(() => document.querySelector('#wtItemSec') && !document.querySelector('#wtItemSec').hidden));
   // 마지막 말풍선 글 고치기
-  await p.mouse.click(box.x + box.w * 0.5, box.y + box.h * 0.2); await p.click('#wtAdd [data-add=speech]'); await p.fill('#wtText', '자, 잠깐만…\n왜 이렇게 붙는 건데'); await p.waitForTimeout(150);
+  await p.mouse.click(box.x + box.w * 0.5, box.y + box.h * 0.2); await p.click('#wtAdd [data-add=speech]'); await p.fill('#wtText', '자, 잠깐만…\n왜 이렇게 붙는 건데'); await p.waitForTimeout(900);
   await p.screenshot({path: path.join(__dirname, 'out', 'wt_editor.png')});
   // 내보내기: 이 쪽 PNG
   const [dl] = await Promise.all([p.waitForEvent('download'), p.selectOption('#wtExport', 'this')]);
   const f = path.join(__dirname, 'out', 'wt_page.png'); await dl.saveAs(f); const buf = fs.readFileSync(f);
   console.log('export png:', buf.slice(1, 4).toString(), '| size', buf.readUInt32BE(16) + 'x' + buf.readUInt32BE(20));
   // 저장·되돌리기
-  await p.waitForTimeout(1000); console.log('saved status:', await p.textContent('#wtSaved'));
-  const n0 = await p.evaluate(() => 0); await p.click('#wtUndo'); await p.waitForTimeout(200); await p.click('#wtRedo');
+  for (let i = 0; i < 20 && !/저장됨/.test(await p.textContent('#wtSaved')); i++) await p.waitForTimeout(250); console.log('saved status:', await p.textContent('#wtSaved'));
+  const n0 = await p.evaluate(() => 0); await p.click('#wtUndo'); await p.waitForTimeout(200); await p.click('#wtRedo'); await p.waitForTimeout(1200);
   // 다시 열기
   await p.click('#wtClose'); await p.waitForTimeout(300); await p.reload(); await p.waitForTimeout(700); await p.click('#gnav [data-g=toon]'); await p.waitForTimeout(400);
   console.log('listed after reload:', await p.$$eval('#wtList .it b', e => e.map(x => x.textContent)));

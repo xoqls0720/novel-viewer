@@ -173,8 +173,9 @@ function naiPack(res){
   let neg = S.neg([$('#naiNeg').value.trim(), res.negative].filter(Boolean).join(', '));
   if (nsfw) neg = neg.split(',').map(s=>s.trim()).filter(s => s && s !== 'nsfw').join(', ');
   else if (!/\bnsfw\b/.test(neg)) neg = 'nsfw, ' + neg;
+  if (window.wtKidsNeg) neg = wtKidsNeg(neg, [res.base_prompt, ...res.characters.map(c => c.prompt)].join(' '), nsfw);   // 일반 등급의 어린이 장면
   const chars = res.characters.map(c => ({...c, prompt: rating === 'nsfw' && !/\badult\b/.test(c.prompt) ? 'adult, ' + c.prompt : c.prompt}));
-  return {base, neg, chars, size: res.size, notes: res.notes, rating};
+  return {base, neg, chars, size: res.size, notes: res.notes, rating, params: S.params};
 }
 function fieldHTML(title, text){ return `<div class="field"><div class="fh"><span>${esc(title)}</span><button data-copy>복사</button></div><div class="fv">${esc(text)}</div></div>`; }
 function renderNai(p, el = $('#naiOut')){
@@ -207,7 +208,7 @@ $('#naiGo').onclick = async () => {
   const rating = $('#naiRating').value;
   const dict = naiCharsDict();
   if (rating === 'nsfw' && !adultGuard(desc + '\n' + dict.join('\n'), 'adult')) return;
-  const c = await client('#naiProv'); if (!c) return;
+  const c = (rating === 'nsfw' && store.get('set.naiNsfwOllama', false)) ? {prov: 'ollama'} : await client('#naiProv'); if (!c) return;   // 성인 장면은 원하면 내 컴퓨터 AI 로
   const content = [];
   if ($('#naiImg').checked){ const imgs = await pageImagesContent(); if (imgs?.length) content.push(imgs[0], {type:'text', text:'위 그림은 구도·분위기 참고용이다. 그림 속 인물을 그대로 베끼지 말고 인물 사전의 외형을 따른다.'}); }
   content.push({type:'text', text:
